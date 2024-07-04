@@ -1,0 +1,37 @@
+{
+	"schemaVersion": 1,
+	"id": "easierworldcreator",
+	"version": "1.0.0",
+	"name": "Easier-World-Creator",
+	"description": "Mod To help creating Features",
+	"authors": [
+		"Me!"
+	],
+	"contact": {
+		"homepage": "https://fabricmc.net/",
+		"sources": "https://github.com/FabricMC/fabric-example-mod"
+	},
+	"license": "MIT",
+	"icon": "assets/easierworldcreator/icon.png",
+	"environment": "server",
+	"entrypoints": {
+		"main": [
+			"net.rodofire.easierworldcreator.Easierworldcreator"
+		],
+		"fabric-datagen": [
+			"net.rodofire.easierworldcreator.EasierworldcreatorDataGenerator"
+		]
+	},
+	"mixins": [
+		"easierworldcreator.mixins.json"
+	],
+	"depends": {
+		"fabricloader": ">=0.15.11",
+		"minecraft": "~1.20.1",
+		"java": ">=17",
+		"fabric-api": "*"
+	},
+	"suggests": {
+		"another-mod": "*"
+	}
+}
