@@ -155,16 +155,22 @@ public class GenSpiral {
 
         public static void generateElipsoidFullSpiral(int xradius, int zradius, int height, int turn, int start, int end, StructureWorldAccess world, BlockPos pos, boolean force, List<BlockState> blockState) {
             //we have to take the largest value in order to don't have any hole in the feature
-            if(xradius>=zradius) {
+            if (xradius >= zradius) {
                 for (int i = start; i <= end; i++) {
                     generateElipsoidSpiral(i, i * zradius / xradius, height, turn, world, pos, force, 0, null, blockState);
                 }
             }
         }
-        public static void generateCircleElipsoidSpiral(int xradius, int zradius, int height, int turn, int radius, StructureWorldAccess world, BlockPos pos, boolean force, List<BlockState> blockState ){
-            for (int i = 0; i <= radius; i++) {
-                for(int x = 0; x <= 360; x+=45/i){
-                    generateElipsoidSpiral(xradius, zradius, height, turn, world, pos, force, 0, null, blockState);
+
+        public static void generateCircleElipsoidSpiral(int xradius, int zradius, int height, int turn, int radius, StructureWorldAccess world, BlockPos pos, boolean force, List<BlockState> blockState) {
+            BlockPos.Mutable mutable = new BlockPos.Mutable();
+            int squaredradius = radius * radius;
+            for (int x = -radius; x <= radius; x++) {
+                for (int z = -radius; z <= radius; z++) {
+                    if (x * x + z * z <= squaredradius) {
+                        mutable.set(pos, x, 0, z);
+                        generateElipsoidSpiral(xradius, zradius, height, turn, world, mutable, force, 0, null, blockState);
+                    }
                 }
             }
         }
