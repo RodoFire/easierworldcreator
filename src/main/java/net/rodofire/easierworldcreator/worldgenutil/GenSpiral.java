@@ -43,7 +43,7 @@ public class GenSpiral {
 
                 mutable.set(pos, x, y, z);
                 BlockState state = world.getBlockState(mutable);
-                if (state.getHardness(world, mutable) <= 0) return;
+                if (state.getHardness(world, mutable) < 0) return;
                 if (!force) {
                     if (!state.isAir() && blocksToForce.stream().noneMatch(state.getBlock()::equals)) continue;
                 }
@@ -131,21 +131,23 @@ public class GenSpiral {
          */
         public static void generateElipsoidSpiral(int xradius, int zradius, int height, int turn, StructureWorldAccess world, BlockPos pos, boolean force, double k, List<Block> blocksToForce, List<BlockState> blocksToPlace) {
             BlockPos.Mutable mutable = new BlockPos.Mutable();
+            System.out.println("ok  " + blocksToPlace + "  " + blocksToForce);
             int blockstatelenght = blocksToPlace.size();
             if (turn <= 0) {
                 Easierworldcreator.LOGGER.error("param turn can't be <= 0");
             }
-            double f = (1.5 * turn);
-            double a = (double) 360 / (1.5 * height);
+            int maxlarge = Math.max(xradius, zradius);
+            double f = (turn * maxlarge);
+            double a = (double) 360 / ( height * maxlarge);
 
-            for (double i = 0; i < 1.5 * turn * height; i++) {
+            for (double i = 0; i < maxlarge * turn * height; i++) {
                 int x = (int) (xradius * FastMaths.getFastCos(a * i + k));
                 int z = (int) (zradius * FastMaths.getFastSin(a * i + k));
                 int y = (int) (i / f);
 
                 mutable.set(pos, x, y, z);
                 BlockState state = world.getBlockState(mutable);
-                if (state.getHardness(world, mutable) <= 0) return;
+                if (state.getHardness(world, mutable) < 0) return;
                 if (!force) {
                     if (!state.isAir() && blocksToForce.stream().noneMatch(state.getBlock()::equals)) continue;
                 }
