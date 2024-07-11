@@ -5,7 +5,7 @@
 	"name": "Easier-World-Creator",
 	"description": "Mod To help creating Features",
 	"authors": [
-		"Me!"
+		"RodoFire"
 	],
 	"contact": {
 		"homepage": "https://fabricmc.net/",
@@ -13,7 +13,7 @@
 	},
 	"license": "MIT",
 	"icon": "assets/easierworldcreator/icon.png",
-	"environment": "server",
+	"environment": "*",
 	"entrypoints": {
 		"main": [
 			"net.rodofire.easierworldcreator.Easierworldcreator"
