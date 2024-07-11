@@ -43,7 +43,7 @@ public class GenSpiral {
 
                 mutable.set(pos, x, y, z);
                 BlockState state = world.getBlockState(mutable);
-                if (state.getHardness(world, mutable) < 0) return;
+                if (state.getHardness(world, mutable) < 0) continue;
                 if (!force) {
                     if (!state.isAir() && blocksToForce.stream().noneMatch(state.getBlock()::equals)) continue;
                 }
@@ -147,7 +147,7 @@ public class GenSpiral {
 
                 mutable.set(pos, x, y, z);
                 BlockState state = world.getBlockState(mutable);
-                if (state.getHardness(world, mutable) < 0) return;
+                if (state.getHardness(world, mutable) < 0) continue;
                 if (!force) {
                     if (!state.isAir() && blocksToForce.stream().noneMatch(state.getBlock()::equals)) continue;
                 }
