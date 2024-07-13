@@ -23,7 +23,7 @@ import net.rodofire.easierworldcreator.Easierworldcreator;
 
 import java.util.Optional;
 public class BlockRelated {
-    public static class ModBlocks {
+    /*public static class ModBlocks {
         public static final Block FEATURETESTER = Registry.register(Registries.BLOCK, new Identifier(Easierworldcreator.MOD_ID, "featuretester"), new FeatureBlock(FabricBlockSettings.copyOf(Blocks.OAK_SAPLING), FeaturesRelated.ModConfiguredFeatures.FEATURE_TESTER_KEY));
 
         public static void registerModBlocks() {
@@ -73,5 +73,5 @@ public class BlockRelated {
             System.out.println("rrrr");
             world.setBlockState(pos, state, Block.NOTIFY_ALL);
         }
-    }
+    }*/
 }

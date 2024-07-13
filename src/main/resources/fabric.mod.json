@@ -13,7 +13,7 @@
 	},
 	"license": "MIT",
 	"icon": "assets/easierworldcreator/icon.png",
-	"environment": "*",
+	"environment": "server",
 	"entrypoints": {
 		"main": [
 			"net.rodofire.easierworldcreator.Easierworldcreator"

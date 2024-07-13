@@ -10,12 +10,12 @@ import net.rodofire.easierworldcreator.devtest.FeaturesRelated;
 public class EasierworldcreatorDataGenerator implements DataGeneratorEntrypoint {
 	@Override
 	public void onInitializeDataGenerator(FabricDataGenerator fabricDataGenerator) {
-		FabricDataGenerator.Pack pack = fabricDataGenerator.createPack();
-		pack.addProvider(ModWorldGenerator::new);
+		/*FabricDataGenerator.Pack pack = fabricDataGenerator.createPack();
+		pack.addProvider(ModWorldGenerator::new);*/
 	}
 
-	@Override
+	/*@Override
 	public void buildRegistry(RegistryBuilder registryBuilder) {
 		registryBuilder.addRegistry(RegistryKeys.CONFIGURED_FEATURE, FeaturesRelated.ModConfiguredFeatures::bootstrap);
-	}
+	}*/
 }
