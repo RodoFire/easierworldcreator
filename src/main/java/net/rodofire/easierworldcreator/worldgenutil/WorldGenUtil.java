@@ -1,7 +1,15 @@
 package net.rodofire.easierworldcreator.worldgenutil;
 
+import net.minecraft.block.Block;
+import net.minecraft.block.BlockState;
+import net.minecraft.block.Blocks;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.random.Random;
+import net.minecraft.world.StructureWorldAccess;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class WorldGenUtil {
 
@@ -47,6 +55,17 @@ public class WorldGenUtil {
 
     public static int getSign(float a) {
         return (a < 0) ? -1 : 1;
+    }
+
+    //method to verify that the block is not an unbreakable block or not and to verify if the block can be put or not
+    public static void verifyBlock(StructureWorldAccess world, boolean force, List<Block> blocksToForce, List<BlockState> blocksToPlace, BlockPos.Mutable mutable, int length) {
+        BlockState state2 = world.getBlockState(mutable);
+        if (state2.getHardness(world, mutable) < 0) return ;
+        if (!force) {
+            if(blocksToForce == null) blocksToForce = List.of(Blocks.BEDROCK);
+            if (!state2.isAir() && blocksToForce.stream().noneMatch(state2.getBlock()::equals)) return ;
+        }
+        world.setBlockState(mutable, blocksToPlace.get(Random.create().nextBetween(0, length)), 2);
     }
 
 
