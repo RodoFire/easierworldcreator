@@ -51,6 +51,24 @@ public class GenSpheres {
 
 
     //Using carthesian coordinates beacause it have better performance than using trigonometry
+
+    /**
+     * allow you to generate a full elipsoid
+     * @param world the world it will spawn in
+     * @param largex the x axis radius
+     * @param largey the y aris radius
+     * @param largez the z axis radius
+     * @param pos the center of the ellipsoid
+     * @param force force the putting of the blocks
+     * @param minx the start of the circle on the x axis
+     * @param maxx the end of the circle on the x axis
+     * @param miny the start of the circle on the y axis
+     * @param maxy the end of the circle on the y axis
+     * @param minz the start of the circle on the z axis
+     * @param maxz the end of the circle on the z axis
+     * @param blocksToForce list of blocks that the structure can still force if force = true
+     * @param blocksToPlace list of blockState that will be placed randomly (if only one blockstate is given, the block will be the only block put
+     */
     public static void generateFullEllipsoid(StructureWorldAccess world, int largex, int largey, int largez, BlockPos pos, boolean force, int minx, int maxx, int miny, int maxy, int minz, int maxz, List<Block> blocksToForce, List<BlockState> blocksToPlace) {
         BlockPos.Mutable mutable = new BlockPos.Mutable();
         int length = blocksToPlace.size() - 1;
@@ -65,13 +83,7 @@ public class GenSpheres {
                 for (float z = minz; z <= maxz; z++) {
                     if ((x * x) / (largexsquared) + (y * y) / (largeysquared) + (z * z) / (largezsquared) <= 1) {
                         mutable.set(pos, (int) x, (int) y, (int) z);
-                        BlockState state2 = world.getBlockState(mutable);
-                        if (state2.getHardness(world, mutable) < 0) continue;
-                        if (!force) {
-                            if (!state2.isAir() && blocksToForce.stream().noneMatch(state2.getBlock()::equals))
-                                continue;
-                        }
-                        world.setBlockState(mutable, blocksToPlace.get(Random.create().nextBetween(0, length)), 2);
+                        WorldGenUtil.verifyBlock(world, force, blocksToForce, blocksToPlace, mutable, length);
                     }
                 }
             }
@@ -96,6 +108,22 @@ public class GenSpheres {
 
 
     //better performance when generating an empty sphere
+
+    /**
+     * generate an empty elipsoid
+     * @param world the world the structure will spawn in
+     * @param largex the x radius
+     * @param largey the y radius
+     * @param largez the z radius
+     * @param pos the center of the elipsoid
+     * @param force force the spawn of the structure by replacing already existing blocks
+     * @param minlarge the start of the horizontal radius (for a full elipsoid put 0 - 360 or -180 - 180)
+     * @param maxlarge the end of the horizontal radius
+     * @param minheight the start of the vertical radius (for a full elipsoid put -90 to 90
+     * @param maxheight the end of the vertical radius
+     * @param blocksToForce the list of blocks that the structure can still force if force = true
+     * @param blocksToPlace the list of blockstate that the structure will pose in a random order
+     */
     public static void generateEmptyEllipsoid(StructureWorldAccess world, int largex, int largey, int largez, BlockPos pos, boolean force, int minlarge, int maxlarge, int minheight, int maxheight, List<Block> blocksToForce, List<BlockState> blocksToPlace) {
         int maxlarge1 = Math.max(largez, Math.max(largex, largey));
         BlockPos.Mutable mutable = new BlockPos.Mutable();
@@ -107,12 +135,7 @@ public class GenSpheres {
                 int z = (int) (largex * FastMaths.getFastSin(theta) * FastMaths.getFastCos(phi));
                 mutable.set(pos, x, y, z);
 
-                BlockState state2 = world.getBlockState(mutable);
-                if (state2.getHardness(world, mutable) < 0) return;
-                if (!force) {
-                    if (!state2.isAir() && blocksToForce.stream().noneMatch(state2.getBlock()::equals)) continue;
-                }
-                world.setBlockState(mutable, blocksToPlace.get(Random.create().nextBetween(0, length)), 2);
+                WorldGenUtil.verifyBlock(world, force, blocksToForce, blocksToPlace, mutable, length);
             }
         }
     }
