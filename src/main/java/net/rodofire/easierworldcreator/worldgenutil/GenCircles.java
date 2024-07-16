@@ -157,10 +157,10 @@ public class GenCircles {
     public static void placeOvalBlocks(StructureWorldAccess world, int centerX, int centerZ, int x, int y, int z, boolean force, List<Block> blocksToForce, List<BlockState> blockToPlace) {
         BlockPos.Mutable pos = new BlockPos.Mutable();
         int length = blockToPlace.size() - 1;
-        WorldGenUtil.verifyBlock(world, force, blocksToForce, blockToPlace, pos.set(centerX + x, 0, centerZ + z), length);
-        WorldGenUtil.verifyBlock(world, force, blocksToForce, blockToPlace, pos.set(centerX + x, 0, centerZ - z), length);
-        WorldGenUtil.verifyBlock(world, force, blocksToForce, blockToPlace, pos.set(centerX - x, 0, centerZ + z), length);
-        WorldGenUtil.verifyBlock(world, force, blocksToForce, blockToPlace, pos.set(centerX - x, 0, centerZ - z), length);
+        WorldGenUtil.verifyBlock(world, force, blocksToForce, blockToPlace, pos.set(centerX + x, 0, centerZ + z));
+        WorldGenUtil.verifyBlock(world, force, blocksToForce, blockToPlace, pos.set(centerX + x, 0, centerZ - z));
+        WorldGenUtil.verifyBlock(world, force, blocksToForce, blockToPlace, pos.set(centerX - x, 0, centerZ + z));
+        WorldGenUtil.verifyBlock(world, force, blocksToForce, blockToPlace, pos.set(centerX - x, 0, centerZ - z));
 
     }
 
@@ -175,12 +175,11 @@ public class GenCircles {
         int length = blocksToPlace.size() - 1;
 
         BlockPos.Mutable mutable = new BlockPos.Mutable();
-        System.out.println(end2 + "  " + end1);
         for (int i = 0; i <= 2 * z; i++) {
             mutable.set(start1, 0, 0, -i);
-            WorldGenUtil.verifyBlock(world, force, blocksToForce, blocksToPlace, mutable, length);
+            WorldGenUtil.verifyBlock(world, force, blocksToForce, blocksToPlace, mutable);
             mutable.set(start2, 0, 0, -i);
-            WorldGenUtil.verifyBlock(world, force, blocksToForce, blocksToPlace, mutable, length);
+            WorldGenUtil.verifyBlock(world, force, blocksToForce, blocksToPlace, mutable);
 
         }
         //GenLines.drawLine(world, start1, end1, blockstate.get(Random.create().nextBetween(0,length)), force);

@@ -57,15 +57,28 @@ public class WorldGenUtil {
         return (a < 0) ? -1 : 1;
     }
 
+
+    //return a random int between minheight and maxheight if the chance
+    public static int getSecondHeight(float chance, int maxheight) {
+        return getSecondHeight(chance, 0, maxheight);
+    }
+    public static int getSecondHeight(float chance, int minheight, int maxheight) {
+        if(Random.create().nextFloat() < chance) {
+            return Random.create().nextBetween(minheight, maxheight);
+        }
+        return 0;
+    }
+
     //method to verify that the block is not an unbreakable block or not and to verify if the block can be put or not
-    public static void verifyBlock(StructureWorldAccess world, boolean force, List<Block> blocksToForce, List<BlockState> blocksToPlace, BlockPos.Mutable mutable, int length) {
-        BlockState state2 = world.getBlockState(mutable);
-        if (state2.getHardness(world, mutable) < 0) return ;
+    public static void verifyBlock(StructureWorldAccess world, boolean force, List<Block> blocksToForce, List<BlockState> blocksToPlace, BlockPos pos) {
+        BlockState state2 = world.getBlockState(pos);
+        int length = blocksToPlace.size()-1;
+        if (state2.getHardness(world, pos) < 0) return ;
         if (!force) {
             if(blocksToForce == null) blocksToForce = List.of(Blocks.BEDROCK);
             if (!state2.isAir() && blocksToForce.stream().noneMatch(state2.getBlock()::equals)) return ;
         }
-        world.setBlockState(mutable, blocksToPlace.get(Random.create().nextBetween(0, length)), 2);
+        world.setBlockState(pos, blocksToPlace.get(Random.create().nextBetween(0, length)), 2);
     }
 
 
