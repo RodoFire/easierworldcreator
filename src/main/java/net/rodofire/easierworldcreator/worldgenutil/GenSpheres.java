@@ -83,7 +83,7 @@ public class GenSpheres {
                 for (float z = minz; z <= maxz; z++) {
                     if ((x * x) / (largexsquared) + (y * y) / (largeysquared) + (z * z) / (largezsquared) <= 1) {
                         mutable.set(pos, (int) x, (int) y, (int) z);
-                        WorldGenUtil.verifyBlock(world, force, blocksToForce, blocksToPlace, mutable, length);
+                        WorldGenUtil.verifyBlock(world, force, blocksToForce, blocksToPlace, mutable);
                     }
                 }
             }
@@ -135,7 +135,7 @@ public class GenSpheres {
                 int z = (int) (largex * FastMaths.getFastSin(theta) * FastMaths.getFastCos(phi));
                 mutable.set(pos, x, y, z);
 
-                WorldGenUtil.verifyBlock(world, force, blocksToForce, blocksToPlace, mutable, length);
+                WorldGenUtil.verifyBlock(world, force, blocksToForce, blocksToPlace, mutable);
             }
         }
     }
