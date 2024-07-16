@@ -4,6 +4,7 @@ import net.fabricmc.api.ModInitializer;
 
 import net.rodofire.easierworldcreator.devtest.BlockRelated;
 import net.rodofire.easierworldcreator.devtest.FeaturesRelated;
+import net.rodofire.easierworldcreator.util.FastMaths;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,6 +18,8 @@ public class Easierworldcreator implements ModInitializer {
 		//BlockRelated.ModBlocks.registerModBlocks();
 
 		//FeaturesRelated.ModFeatures.addFeatures();
+
+		FastMaths.registerMaths();
 
 		LOGGER.info("Starting Easierworldcreator");
 	}
