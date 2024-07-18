@@ -1,11 +1,26 @@
 package net.rodofire.easierworldcreator.worldgenutil;
 
+import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.registry.tag.BlockTags;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Direction;
 import net.minecraft.world.StructureWorldAccess;
 
+import java.util.List;
+
 public class GenLines {
+    public static void generateAxisLine(StructureWorldAccess world, BlockPos pos, int length,Direction dir,BlockState state){
+        generateAxisLine(world,pos,length,dir,false,null, List.of(state));
+    }
+
+    public static void generateAxisLine(StructureWorldAccess world, BlockPos pos, int length, Direction dir,boolean force, List<Block> blocksToForce, List<BlockState> blocksToPlace) {
+        for (int i = 0; i < length; i++){
+            WorldGenUtil.verifyBlock(world,force,blocksToForce,blocksToPlace,pos.offset(dir,i));
+        }
+    }
+
+
     public static void drawLine(StructureWorldAccess world, BlockPos start, BlockPos end, BlockState state) {
         drawLine(world, start, end, state, false);
     }

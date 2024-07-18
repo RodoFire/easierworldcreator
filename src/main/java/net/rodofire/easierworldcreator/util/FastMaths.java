@@ -5,12 +5,16 @@ import net.rodofire.easierworldcreator.Easierworldcreator;
 //Own implementation of maths focused on better performance since that precision is not needed that much
 public class FastMaths {
     //fast but unprecise, it is useful to use this when using high radius values
-    //fast but unprecise, it is useful to use this when using high radius values
+
     private static final int FAST_TRIGO_TABLE_SIZE = 360;
     private static final int FAST_TABLE_SIZE = 1000;
     private static final double[] cosfastTable = new double[FAST_TRIGO_TABLE_SIZE];
     private static final double[] sinfastTable = new double[FAST_TRIGO_TABLE_SIZE];
     private static final double[] expfastTable = new double[FAST_TABLE_SIZE];
+
+
+
+
     //took more time but more precise, you should use this when you need to generate big things
     private static final int PRECISE_TRIGO_TABLE_SIZE = 3600;
     private static final int PRECISE_TABLE_SIZE = 10000;
@@ -81,6 +85,17 @@ public class FastMaths {
             return 0;
         }
         return sinpreciseTable[((int) x * 10) % PRECISE_TRIGO_TABLE_SIZE] / cospreciseTable[((int) x * 10) % PRECISE_TRIGO_TABLE_SIZE];
+
+
+    }
+
+    public static double getPreciseExp(double x) {
+        if (x > 10.05) {
+            Easierworldcreator.LOGGER.warn("too big exponential, returning real exp value");
+            return Math.exp(x);
+        }
+        return exppreciseTable[((int) (x * 1000))];
+
     }
 
     public static double getPreciseExp(double x) {
@@ -91,10 +106,21 @@ public class FastMaths {
         return exppreciseTable[((int) (x * 1000))];
     }
 
-
     //get 3d length
     public static double getlength(int x, int y, int z) {
         return getFastsqrt(x * x + y * y + z * z);
+    }
+
+    public static double getlength(int x, int y, int z, float precision) {
+        return getFastsqrt(x * x + y * y + z * z, precision);
+    }
+
+    public static double getlength(float x, float y, float z) {
+        return getFastsqrt(x * x + y * y + z * z);
+    }
+
+    public static double getlength(float x, float y, float z, float precision) {
+        return getFastsqrt(x * x + y * y + z * z, precision);
     }
 
     //get 2d length
@@ -102,8 +128,23 @@ public class FastMaths {
         return getFastsqrt(x * x + z * z);
     }
 
+    public static double getLength(int x, int z, float precision) {
+        return getFastsqrt(x * x + z * z, precision);
+    }
+
+    public static double getLength(float x, float z) {
+        return getFastsqrt(x * x + z * z);
+    }
+
+    public static double getLength(float x, float z, float precision) {
+        return getFastsqrt(x * x + z * z, precision);
+    }
 
     public static double getFastsqrt(float number) {
+        return getFastsqrt(number, 0.2f);
+    }
+
+    public static double getFastsqrt(float number, float precision) {
 
         if (number < 0) {
             throw new IllegalArgumentException("Bound must be positive inside of sqrt");
@@ -116,13 +157,10 @@ public class FastMaths {
         float x = number;
         float prev;
 
-        //precision wanted
-        float epsilon = 0.05f;
-
         do {
             prev = x;
             x = (x + number / x) / 2;
-        } while (Math.abs(x - prev) > epsilon);
+        } while (Math.abs(x - prev) > precision);
         return x;
     }
 }

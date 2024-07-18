@@ -4,13 +4,46 @@ import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.random.Random;
 import net.minecraft.world.StructureWorldAccess;
 import net.rodofire.easierworldcreator.Easierworldcreator;
 import net.rodofire.easierworldcreator.util.FastMaths;
 
 import java.util.List;
 
+/*
+
+
+                                ..:::::::::....
+                      .-==-==-::==-:--==+=======----::-=-:.
+                 .-=---=::::-=+=+-:::-=---===--=-::--:::==--::-=-:.
+              =+=--==:--====-========-=---=++=+-===+=----:-==-:::-:::-+-
+           :*====+*++++++++++=====--:-+*=-=+=**===*++==::==-::-+==:::-::::+*:
+         =#=----=+-=====+*======*====++++===++******+**+=+++=-==-:---:::--:::-==:
+       *##==+*+=+--------+::--=+#++++*+++++=++*##%@@@@@%#%++===::--:--+++==+-::::::-.
+      *##*====-=++===++=-==::---=+=-====--====+=+++##*###*++=+*-::==----=::-:::..::-:::.
+     *****==*+===+=-----=++=---:::-++=--:=+=--==-+-==*=+===-====-:-*-::.-+-....-:--:::..:=
+    .***##=---====+++=------+====-:::==+-:::=+--=:.--=*=*==-:-:==--=::.-=-:...-=-.....:=::.:
+    .*#****====++===+-:--=+==--=-:-+--:-==*-:::=:-=+--===++--=-==.::-::-=-..::---....:-::..::=
+    .*++**+#+=--=-=-==*+--------=++-:::-=::::=#+-:-=::-=:.--::-:::=--==-...:=:.:-.=-.....-:...:=
+     #*****+*+=====++-=-+=---==------++=-:::-=::::-::-=+==-=+===+:..:-.:.--:..---:....-::- ..::.::
+     *@**+++++++++=-=====--+*::-----=------+#-::::+::::-:::::+:::::::.:=:..=+=.....-:...::::.  ..=.:
+     :@@#++*++**++===========-=+=-==-------+:::-:=#==---*----==----+=:-==-:..:.-:.....-=- .. -:. :.::
+      -@@%*++*+++++++==+=-------=+==++--:-=::::::-=:::::=:::::--:::::-::..:--:...::-.::...: .  ..-...:
+       -%%@%*+=++++++**+=-=--=-=+-------+*=:--:::+::-::::*::::::=:::::--::...-::.::==-. ....-. ..-... .
+         #@@%%*+++++*==+++++==+=--------==----=+=#===-:::=:::::::=::::::-::-=--==......-......::-   :.-
+          .@%##%#++*++===++=+**+--------+--------+--------=:----=+=-:::::=:::::::=::.....=....::.:  . -
+            -#####%*+====++=*+====+++=-+------------------+::::-::=-::::::-=:::::::-:..:..:--:....:  .+
+              .*%######*=+=++=========*==+*+----=-----------::--:::+::::::::-:::::::-:::=-:::=......::=
+                 =#########*=========+=========+#*+=--=---==::::::::+::::::::=::---====:::::::-.....-+-
+                    *%######*##**====+==========+================--==+=--====-+-:::-----:::::::-::====
+                      -@%#########*##+==========+============---==---=---------+--------=:::::-=*=--=:
+                         .*@%#########*****+++===-=========+===-====-==--------==--------=-=++==*==:
+                             :@@@%#*##**##************+====*----------*-------------=+*+++*+=++=*-
+                                 :*%@@%#****#####**********#*******************++*++++++++*=+=-.
+                                      .+#@%%%%##*+*********#************+++++++++*+++++++*-
+                                             :+%%%%%%%%###*#************+++********#%%:
+                                                     .:-=+##%%%%%%%%%%%%%%#***=:.
+ */
 public class GenSpheres {
     public static void generateHalfFullSphere(StructureWorldAccess world, int radius, BlockPos pos, Direction direction, BlockState state) {
         generateHalfFullElipsoid(world, radius, radius, radius, pos, direction, List.of(state));
@@ -54,18 +87,19 @@ public class GenSpheres {
 
     /**
      * allow you to generate a full elipsoid
-     * @param world the world it will spawn in
-     * @param largex the x axis radius
-     * @param largey the y aris radius
-     * @param largez the z axis radius
-     * @param pos the center of the ellipsoid
-     * @param force force the putting of the blocks
-     * @param minx the start of the circle on the x axis
-     * @param maxx the end of the circle on the x axis
-     * @param miny the start of the circle on the y axis
-     * @param maxy the end of the circle on the y axis
-     * @param minz the start of the circle on the z axis
-     * @param maxz the end of the circle on the z axis
+     *
+     * @param world         the world it will spawn in
+     * @param largex        the x axis radius
+     * @param largey        the y aris radius
+     * @param largez        the z axis radius
+     * @param pos           the center of the ellipsoid
+     * @param force         force the putting of the blocks
+     * @param minx          the start of the circle on the x axis
+     * @param maxx          the end of the circle on the x axis
+     * @param miny          the start of the circle on the y axis
+     * @param maxy          the end of the circle on the y axis
+     * @param minz          the start of the circle on the z axis
+     * @param maxz          the end of the circle on the z axis
      * @param blocksToForce list of blocks that the structure can still force if force = true
      * @param blocksToPlace list of blockState that will be placed randomly (if only one blockstate is given, the block will be the only block put
      */
@@ -111,16 +145,17 @@ public class GenSpheres {
 
     /**
      * generate an empty elipsoid
-     * @param world the world the structure will spawn in
-     * @param largex the x radius
-     * @param largey the y radius
-     * @param largez the z radius
-     * @param pos the center of the elipsoid
-     * @param force force the spawn of the structure by replacing already existing blocks
-     * @param minlarge the start of the horizontal radius (for a full elipsoid put 0 - 360 or -180 - 180)
-     * @param maxlarge the end of the horizontal radius
-     * @param minheight the start of the vertical radius (for a full elipsoid put -90 to 90
-     * @param maxheight the end of the vertical radius
+     *
+     * @param world         the world the structure will spawn in
+     * @param largex        the x radius
+     * @param largey        the y radius
+     * @param largez        the z radius
+     * @param pos           the center of the elipsoid
+     * @param force         force the spawn of the structure by replacing already existing blocks
+     * @param minlarge      the start of the horizontal radius (for a full elipsoid put 0 - 360 or -180 - 180)
+     * @param maxlarge      the end of the horizontal radius
+     * @param minheight     the start of the vertical radius (for a full elipsoid put -90 to 90
+     * @param maxheight     the end of the vertical radius
      * @param blocksToForce the list of blocks that the structure can still force if force = true
      * @param blocksToPlace the list of blockstate that the structure will pose in a random order
      */
