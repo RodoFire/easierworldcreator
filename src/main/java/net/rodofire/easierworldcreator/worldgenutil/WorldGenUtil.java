@@ -44,6 +44,10 @@ public class WorldGenUtil {
         return (Random.create().nextBetween(0, 1) == 0) ? 1 : -1;
     }
 
+    public static boolean getRandomBoolean(float chance){
+        return Random.create().nextFloat() < chance;
+    }
+
 
     public static int getSign(int a) {
         return (a < 0) ? -1 : 1;
