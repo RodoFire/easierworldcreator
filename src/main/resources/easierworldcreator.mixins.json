@@ -1,9 +1,8 @@
 {
 	"required": true,
-	"package": "net.rodofire.easierworldcreator.mixin",
+	"package": "net.rodofire.easierworldcreator",
 	"compatibilityLevel": "JAVA_17",
 	"mixins": [
-		"ExampleMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1

@@ -330,8 +330,9 @@ public class GenSpiral {
             BlockPos.Mutable mutable = new BlockPos.Mutable();
             int squaredradius = radius * radius;
             for (int x = -radius; x <= radius; x++) {
+                int xs = x*x;
                 for (int z = -radius; z <= radius; z++) {
-                    if (x * x + z * z <= squaredradius) {
+                    if (xs + z * z <= squaredradius) {
                         mutable.set(pos, x, 0, z);
                         generateElipsoidSpiral(xradius, zradius, height, turn, world, mutable, force, 0, null, blockState);
                     }

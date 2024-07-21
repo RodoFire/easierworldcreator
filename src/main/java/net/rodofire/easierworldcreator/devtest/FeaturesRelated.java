@@ -14,10 +14,12 @@ import net.minecraft.world.gen.feature.Feature;
 import net.minecraft.world.gen.feature.FeatureConfig;
 import net.minecraft.world.gen.feature.util.FeatureContext;
 import net.rodofire.easierworldcreator.Easierworldcreator;
-import net.rodofire.easierworldcreator.worldgenutil.GenCircles;
+import net.rodofire.easierworldcreator.worldgenutil.GenTore;
+
+import java.util.List;
 
 public class FeaturesRelated {
-    /*public static class FeatureTester extends Feature<DefaultFeatureConfig> {
+   /* public static class FeatureTester extends Feature<DefaultFeatureConfig> {
 
         public FeatureTester(Codec<DefaultFeatureConfig> configCodec) {
             super(configCodec);
@@ -32,7 +34,7 @@ public class FeaturesRelated {
             BlockState state = Blocks.REDSTONE_BLOCK.getDefaultState();
             long startTimeCartesian = System.nanoTime();
 
-            GenCircles.generateFullElipsoid(world, 50, 60, state, pos);
+            GenTore.EllipsoidTore.generateEmptyTore(world, pos, false, 5, 30, 4, 20,91,91, null, List.of(state));
 
             long endTimeCartesian = (System.nanoTime());
             long durationCartesian = (endTimeCartesian - startTimeCartesian) / 1000000;

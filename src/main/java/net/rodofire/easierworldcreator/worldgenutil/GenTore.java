@@ -106,11 +106,11 @@ public class GenTore {
                 int outerRadiusSquared = outerRadius * outerRadius;
                 int innerRadiusSquared = innerRadius * innerRadius;
                 for (int x = -outerRadius - innerRadius; x <= outerRadius + innerRadius; x++) {
+                    int xsquared = x * x;
                     for (int z = -outerRadius - innerRadius; z <= outerRadius + innerRadius; z++) {
+                        int zsquared = z * z;
                         for (int y = -outerRadius - innerRadius; y <= outerRadius + innerRadius; y++) {
-                            int xsquared = x * x;
                             int ysquared = y * y;
-                            int zsquared = z * z;
                             int a = xsquared + ysquared + zsquared + outerRadiusSquared - innerRadiusSquared;
                             if ((a * a) - 4 * outerRadiusSquared * (xsquared + ysquared) <= 0) {
                                 int x_rot = (int) (x * cosy - y * siny);
@@ -128,11 +128,11 @@ public class GenTore {
                 int outerRadiusSquared = outerRadius * outerRadius;
                 int innerRadiusSquared = innerRadius * innerRadius;
                 for (float x = -outerRadius - innerRadius; x <= outerRadius + innerRadius; x += 0.5f) {
+                    float xsquared = x * x;
                     for (float z = -outerRadius - innerRadius; z <= outerRadius + innerRadius; z += 0.5f) {
+                        float zsquared = z * z;
                         for (float y = -outerRadius - innerRadius; y <= outerRadius + innerRadius; y += 0.5f) {
-                            float xsquared = x * x;
                             float ysquared = y * y;
-                            float zsquared = z * z;
                             float a = xsquared + ysquared + zsquared + outerRadiusSquared - innerRadiusSquared;
                             if ((a * a) - 4 * outerRadiusSquared * (xsquared + ysquared) <= 0) {
                                 float x_rot = (int) (x * cosy - y * siny);
@@ -382,7 +382,7 @@ public class GenTore {
         }
 
         public static void generateEmptyTore(StructureWorldAccess world, BlockPos pos, int xinnerRadius, int xouterRadius, int zinnerRadius, int zouterRadius, BlockState blocksToPlace) {
-            generateEmptyTore(world, pos, false, xinnerRadius, xouterRadius, zinnerRadius, zouterRadius,  0, 0, null, List.of(blocksToPlace));
+            generateEmptyTore(world, pos, false, xinnerRadius, xouterRadius, zinnerRadius, zouterRadius, 0, 0, null, List.of(blocksToPlace));
         }
 
         /**

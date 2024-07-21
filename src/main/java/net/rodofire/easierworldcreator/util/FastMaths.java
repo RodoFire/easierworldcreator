@@ -98,13 +98,7 @@ public class FastMaths {
 
     }
 
-    public static double getPreciseExp(double x) {
-        if (x > 10.05) {
-            Easierworldcreator.LOGGER.warn("too big exponential, returning real exp value");
-            return Math.exp(x);
-        }
-        return exppreciseTable[((int) (x * 1000))];
-    }
+
 
     //get 3d length
     public static double getlength(int x, int y, int z) {
