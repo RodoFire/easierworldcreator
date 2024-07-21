@@ -2,7 +2,7 @@
 	"schemaVersion": 1,
 	"id": "easierworldcreator",
 
-	"version": "1.1.0",
+	"version": "1.1.2",
 
 	"name": "Easier-World-Creator",
 	"description": "Mod To help creating Features",
@@ -10,8 +10,9 @@
 		"RodoFire"
 	],
 	"contact": {
-		"homepage": "https://fabricmc.net/",
-		"sources": "https://github.com/FabricMC/fabric-example-mod"
+		"homepage": "https://modrinth.com/mod/ewc",
+		"sources": "https://github.com/RodoFire/easierworldcreator",
+		"issues": "https://github.com/RodoFire/easierworldcreator/issues"
 	},
 	"license": "MIT",
 	"icon": "assets/easierworldcreator/icon.png",
@@ -29,7 +30,7 @@
 	],
 	"depends": {
 		"fabricloader": ">=0.15.11",
-		"minecraft": ">=1.20.5",
+		"minecraft": ">=1.20.1",
 		"java": ">=17",
 		"fabric-api": "*"
 	},
