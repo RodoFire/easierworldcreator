@@ -5,11 +5,15 @@ import net.rodofire.easierworldcreator.Easierworldcreator;
 //Own implementation of maths focused on better performance since that precision is not needed that much
 public class FastMaths {
     //fast but unprecise, it is useful to use this when using high radius values
+
     private static final int FAST_TRIGO_TABLE_SIZE = 360;
     private static final int FAST_TABLE_SIZE = 1000;
     private static final double[] cosfastTable = new double[FAST_TRIGO_TABLE_SIZE];
     private static final double[] sinfastTable = new double[FAST_TRIGO_TABLE_SIZE];
     private static final double[] expfastTable = new double[FAST_TABLE_SIZE];
+
+
+
 
     //took more time but more precise, you should use this when you need to generate big things
     private static final int PRECISE_TRIGO_TABLE_SIZE = 3600;
@@ -81,6 +85,17 @@ public class FastMaths {
             return 0;
         }
         return sinpreciseTable[((int) x * 10) % PRECISE_TRIGO_TABLE_SIZE] / cospreciseTable[((int) x * 10) % PRECISE_TRIGO_TABLE_SIZE];
+
+
+    }
+
+    public static double getPreciseExp(double x) {
+        if (x > 10.05) {
+            Easierworldcreator.LOGGER.warn("too big exponential, returning real exp value");
+            return Math.exp(x);
+        }
+        return exppreciseTable[((int) (x * 1000))];
+
     }
 
     public static double getPreciseExp(double x) {
@@ -124,7 +139,6 @@ public class FastMaths {
     public static double getLength(float x, float z, float precision) {
         return getFastsqrt(x * x + z * z, precision);
     }
-
 
     public static double getFastsqrt(float number) {
         return getFastsqrt(number, 0.2f);
