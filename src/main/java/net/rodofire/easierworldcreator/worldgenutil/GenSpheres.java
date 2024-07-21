@@ -113,9 +113,11 @@ public class GenSpheres {
             Easierworldcreator.LOGGER.warn("generating huge sphere (diameter > 64)");
         }
         for (float x = minx; x <= maxx; x++) {
+            float xs = x*x/largexsquared;
             for (float y = miny; y <= maxy; y++) {
+                float ys = y*y/largeysquared + xs;
                 for (float z = minz; z <= maxz; z++) {
-                    if ((x * x) / (largexsquared) + (y * y) / (largeysquared) + (z * z) / (largezsquared) <= 1) {
+                    if (ys + (z * z) / (largezsquared) <= 1) {
                         mutable.set(pos, (int) x, (int) y, (int) z);
                         WorldGenUtil.verifyBlock(world, force, blocksToForce, blocksToPlace, mutable);
                     }
@@ -164,10 +166,13 @@ public class GenSpheres {
         BlockPos.Mutable mutable = new BlockPos.Mutable();
         int length = blocksToPlace.size() - 1;
         for (double theta = minlarge; theta <= maxlarge; theta += (double) 45 / maxlarge1) {
+            double xcostheta = largex * FastMaths.getFastCos(theta);
+            double zsinkheta = largez * FastMaths.getFastSin(theta);
             for (double phi = minheight; phi <= maxheight; phi += (double) 45 / maxlarge1) {
-                int x = (int) (largex * FastMaths.getFastCos(theta) * FastMaths.getFastCos(phi));
+                double cosphi = FastMaths.getFastCos(phi);
+                int x = (int) (xcostheta * cosphi);
                 int y = (int) (largey * FastMaths.getFastSin(phi));
-                int z = (int) (largex * FastMaths.getFastSin(theta) * FastMaths.getFastCos(phi));
+                int z = (int) (zsinkheta * cosphi);
                 mutable.set(pos, x, y, z);
 
                 WorldGenUtil.verifyBlock(world, force, blocksToForce, blocksToPlace, mutable);

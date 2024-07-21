@@ -14,8 +14,8 @@ public class EasierworldcreatorDataGenerator implements DataGeneratorEntrypoint 
 		pack.addProvider(ModWorldGenerator::new);*/
 	}
 
-	/*@Override
+	@Override
 	public void buildRegistry(RegistryBuilder registryBuilder) {
-		registryBuilder.addRegistry(RegistryKeys.CONFIGURED_FEATURE, FeaturesRelated.ModConfiguredFeatures::bootstrap);
-	}*/
+		//registryBuilder.addRegistry(RegistryKeys.CONFIGURED_FEATURE, FeaturesRelated.ModConfiguredFeatures::bootstrap);
+	}
 }

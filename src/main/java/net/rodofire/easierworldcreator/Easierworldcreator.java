@@ -14,10 +14,9 @@ public class Easierworldcreator implements ModInitializer {
 
 	@Override
 	public void onInitialize() {
-		//BlockRelated.ModItems.registerModItems();
-		//BlockRelated.ModBlocks.registerModBlocks();
-
-		//FeaturesRelated.ModFeatures.addFeatures();
+		/*BlockRelated.ModItems.registerModItems();
+		BlockRelated.ModBlocks.registerModBlocks();
+		FeaturesRelated.ModFeatures.addFeatures();*/
 
 		FastMaths.registerMaths();
 
