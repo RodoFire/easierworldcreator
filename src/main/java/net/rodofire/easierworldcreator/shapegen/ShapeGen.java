@@ -326,6 +326,7 @@ public abstract class ShapeGen {
 
     public void setXrotation(int xrotation) {
         this.xrotation = xrotation;
+        getRotations(this.xrotation, this.yrotation);
     }
 
     public int getYrotation() {
@@ -334,14 +335,17 @@ public abstract class ShapeGen {
 
     public void setYrotation(int yrotation) {
         this.yrotation = yrotation;
+        getRotations(this.xrotation, this.yrotation);
     }
 
     public void addXrotation(int xrotation) {
         this.xrotation += xrotation;
+        getRotations(this.xrotation, this.yrotation);
     }
 
     public void addYrotation(int yrotation) {
         this.yrotation += yrotation;
+        getRotations(this.xrotation, this.yrotation);
     }
 
     /*----------- Pos Related ----------*/
@@ -363,6 +367,8 @@ public abstract class ShapeGen {
 
 
     /*---------- Place Structure ----------*/
+
+    //Method to place the structure. Every change done after the method will not be taken in count
     public abstract void place();
 
 
@@ -427,7 +433,7 @@ public abstract class ShapeGen {
         float x_rot2 = (int) (x_rot * cosx + z * sinx);
         float z_rot = (int) (-x_rot * sinx + z * cosx);
 
-        return new BlockPos.Mutable().set((Vec3i) pos, (int) x_rot2, (int) y_rot, (int) z_rot);
+        return new BlockPos(new BlockPos.Mutable().set((Vec3i) pos, (int) x_rot2, (int) y_rot, (int) z_rot));
     }
 
     public void getGenTime(long startTime, boolean place) {
