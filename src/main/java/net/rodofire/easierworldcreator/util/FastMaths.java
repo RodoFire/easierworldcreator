@@ -12,9 +12,6 @@ public class FastMaths {
     private static final double[] sinfastTable = new double[FAST_TRIGO_TABLE_SIZE];
     private static final double[] expfastTable = new double[FAST_TABLE_SIZE];
 
-
-
-
     //took more time but more precise, you should use this when you need to generate big things
     private static final int PRECISE_TRIGO_TABLE_SIZE = 3600;
     private static final int PRECISE_TABLE_SIZE = 10000;
