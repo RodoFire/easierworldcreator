@@ -7,6 +7,7 @@ import net.minecraft.util.math.Direction;
 import net.minecraft.world.StructureWorldAccess;
 import net.rodofire.easierworldcreator.Easierworldcreator;
 import net.rodofire.easierworldcreator.util.FastMaths;
+import net.rodofire.easierworldcreator.shapegen.SphereGen;
 
 import java.util.List;
 
@@ -43,6 +44,11 @@ import java.util.List;
                                       .+#@%%%%##*+*********#************+++++++++*+++++++*-
                                              :+%%%%%%%%###*#************+++********#%%:
                                                      .:-=+##%%%%%%%%%%%%%%#***=:.
+ */
+@Deprecated()
+/**
+ * switch to new generation
+ * @see SphereGen
  */
 public class GenSpheres {
     public static void generateHalfFullSphere(StructureWorldAccess world, int radius, BlockPos pos, Direction direction, BlockState state) {
