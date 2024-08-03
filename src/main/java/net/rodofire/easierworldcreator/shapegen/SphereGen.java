@@ -58,10 +58,10 @@ public class SphereGen extends ShapeGen {
     private int zradius;
 
 
-    private boolean halfSphere;
-    private Direction direction;
+    private boolean halfSphere=false;
+    private Direction direction=Direction.UP;
 
-    private boolean empty;
+    private boolean empty=false;
 
     //Used for performance test
     private long startTime;
@@ -85,33 +85,14 @@ public class SphereGen extends ShapeGen {
      * @param xrotation        the rotation along the x-axis
      * @param yrotation        the rotation along the y-axis
      */
-    public SphereGen(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, List<BlockState> firstlayer, List<BlockState> secondlayer, List<BlockState> thirdlayer, int firstlayerdepth, int secondlayerdepth, int xradius, int yradius, int zradius, int xrotation, int yrotation, boolean force, List<Block> blockToForce, boolean halfSphere, Direction direction, boolean empty) {
-        super(world, pos, firstlayer, secondlayer, thirdlayer, firstlayerdepth, secondlayerdepth, force, blockToForce, xrotation, yrotation);
+    public SphereGen(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, List<BlockState> firstlayer, List<BlockState> secondlayer, List<BlockState> thirdlayer, int firstlayerdepth, int secondlayerdepth, int xradius, int yradius, int zradius, int xrotation, int yrotation,int seconxrotation, boolean force, List<Block> blockToForce, boolean halfSphere, Direction direction, boolean empty) {
+        super(world, pos, firstlayer, secondlayer, thirdlayer, firstlayerdepth, secondlayerdepth, force, blockToForce, xrotation, yrotation, seconxrotation);
         this.xradius = xradius;
         this.yradius = yradius;
         this.zradius = zradius;
         this.halfSphere = halfSphere;
         this.direction = direction;
         this.empty = empty;
-    }
-
-
-    /**
-     * init the shape generation
-     *
-     * @param world       the world the shape will be generated
-     * @param pos         the pos of the structure center
-     *                    -------------------------------------------------------------------------------------
-     * @param firstlayer  the list of blockstates that will be placed on top of the structure
-     * @param secondlayer the list of blockstates that will be placed in the second layer of the structure
-     * @param thirdlayer  the list of blockstates tha will be placed in the third layer of the structure
-     *                    these list shouldn't have blocks in common, or you might run into generation problems
-     */
-    public SphereGen(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, List<BlockState> firstlayer, List<BlockState> secondlayer, List<BlockState> thirdlayer, int xradius, int yradius, int zradius) {
-        super(world, pos, firstlayer, secondlayer, thirdlayer);
-        this.xradius = xradius;
-        this.yradius = yradius;
-        this.zradius = zradius;
     }
 
 
@@ -131,24 +112,6 @@ public class SphereGen extends ShapeGen {
         this.zradius = radius;
         this.empty = false;
     }
-
-    /**
-     * init the shape generation
-     *
-     * @param world  the world the shape will be generated
-     * @param pos    the pos of the structure center
-     *               -------------------------------------------------------------------------------------
-     * @param state  blockstate that will be placed on all the structure
-     * @param radius
-     */
-    public SphereGen(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, BlockState state, int radius) {
-        super(world, pos, List.of(state));
-        this.xradius = radius;
-        this.yradius = radius;
-        this.zradius = radius;
-        this.empty = false;
-    }
-
 
     /*---------- Empty Related ----------*/
 
@@ -187,7 +150,7 @@ public class SphereGen extends ShapeGen {
 
     /*---------- Place Structure ----------*/
     @Override
-    public void place() {
+    public void placeBlocks() {
         this.placeLayers(this.getStructureCoordinates());
         this.getGenTime(this.startTime, true);
     }
