@@ -8,12 +8,17 @@ import net.minecraft.util.math.Vec3i;
 import net.minecraft.world.StructureWorldAccess;
 import net.rodofire.easierworldcreator.Easierworldcreator;
 import net.rodofire.easierworldcreator.util.FastMaths;
+import net.rodofire.easierworldcreator.worldgenutil.BlockPlaceUtil;
+import net.rodofire.easierworldcreator.worldgenutil.FastNoiseLite;
 import net.rodofire.easierworldcreator.worldgenutil.WorldGenUtil;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 
-public abstract class ShapeGen {
+/**
+ * class to create custom shapes
+ */
+public abstract class Shape {
     @NotNull
     private StructureWorldAccess world;
     @NotNull
@@ -50,7 +55,13 @@ public abstract class ShapeGen {
     private BlockPos radialCenterPos = this.getPos();
 
     //Center of the structure if PlaceType == Pearticle
-    private Vec3d radialCenterVec3d = this.getPos().toCenterPos();
+    private Vec3d radialCenterVec3d;
+
+    private LayerPlace layerPlace = LayerPlace.RANDOM;
+    private FastNoiseLite noise = new FastNoiseLite();
+
+    //int for the number of placed Blocks, used if layerPlace == LayerPlace.ORDER
+    private int placedBlocks = 0;
 
     /**
      * init the shape gen
@@ -62,11 +73,16 @@ public abstract class ShapeGen {
      * @param force         force the blockPos if true (be careful if true, your structure will replace every block, you might destruct some constructions if it is bad used)
      * @param blocksToForce list of blocks that the structure can still replace if @param force = false
      */
-    public ShapeGen(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, List<BlockLayer> layers, boolean force, List<Block> blocksToForce, int xrotation, int yrotation, int secondxrotation) {
+    public Shape(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, List<BlockLayer> layers, boolean force, List<Block> blocksToForce, int xrotation, int yrotation, int secondxrotation) {
         this.world = world;
         this.pos = pos;
         this.force = force;
         this.blocksToForce = blocksToForce;
+        this.blockLayers = layers;
+        this.radialCenterPos = this.getPos();
+        this.radialCenterVec3d = this.getPos().toCenterPos();
+        noise.SetSeed((int) this.world.getSeed());
+        noise.SetFrequency(0.1f);
         getRotations(xrotation, yrotation, secondxrotation);
     }
 
@@ -76,9 +92,13 @@ public abstract class ShapeGen {
      * @param world the world the shape will be generated
      * @param pos   the pos of the structure center
      */
-    public ShapeGen(@NotNull StructureWorldAccess world, @NotNull BlockPos pos) {
+    public Shape(@NotNull StructureWorldAccess world, @NotNull BlockPos pos) {
         this.world = world;
         this.pos = pos;
+        this.radialCenterPos = this.getPos();
+        this.radialCenterVec3d = this.getPos().toCenterPos();
+        noise.SetSeed((int) this.world.getSeed());
+        noise.SetFrequency(0.1f);
     }
 
     public void getRotations(int xrotation, int yrotation, int secondxrotation) {
@@ -91,6 +111,8 @@ public abstract class ShapeGen {
         this.siny = FastMaths.getFastSin(yrotation);
         this.cosx2 = FastMaths.getFastCos(secondxrotation);
         this.sinx2 = FastMaths.getFastSin(secondxrotation);
+        this.radialCenterPos = this.getPos();
+        this.radialCenterVec3d = this.getPos().toCenterPos();
     }
 
     public LayersType getLayersType() {
@@ -102,9 +124,9 @@ public abstract class ShapeGen {
     }
 
     /*---------- Layers Related ----------*/
-
     public void setLayerDirection(Vec3d vect) {
-        this.directionalLayerDirection = vect;
+        this.directionalLayerDirection = vect.normalize();
+        System.out.println(this.directionalLayerDirection);
     }
 
     public boolean getForce() {
@@ -115,6 +137,15 @@ public abstract class ShapeGen {
         this.force = force;
     }
 
+
+    /*---------- LayerPlace Related ----------*/
+    public void setLayerPlace(LayerPlace layerPlace) {
+        this.layerPlace = layerPlace;
+    }
+
+    public LayerPlace getLayerPlace() {
+        return layerPlace;
+    }
     /*---------- Force Related ----------*/
 
     public List<Block> getBlocksToForce() {
@@ -205,6 +236,7 @@ public abstract class ShapeGen {
     public void addBlockLayer(BlockLayer blockLayer) {
         this.blockLayers.add(blockLayer);
     }
+
     public void removeBlockLayer(List<BlockLayer> blockLayers) {
         this.blockLayers.removeAll(blockLayers);
     }
@@ -229,6 +261,10 @@ public abstract class ShapeGen {
         this.blockLayers = blockLayers;
     }
 
+    public void setBlockLayers(BlockLayer... layers) {
+        this.blockLayers = List.of(layers);
+    }
+
     public BlockLayer getBlockLayer(int index) {
         if (index >= this.blockLayers.size()) {
             Easierworldcreator.LOGGER.error("int index >= blocklayer size");
@@ -240,6 +276,16 @@ public abstract class ShapeGen {
     public PlaceType getPlaceType() {
         return placeType;
     }
+
+    /*---------- Noise Related ----------*/
+    public void setNoise(FastNoiseLite noise) {
+        this.noise = noise;
+    }
+
+    public FastNoiseLite getNoise() {
+        return this.noise;
+    }
+
 
     /*---------- Place Related ----------*/
     public void setPlaceType(PlaceType placeType) {
@@ -267,55 +313,98 @@ public abstract class ShapeGen {
      */
     public void placeLayers(List<BlockPos> firstposlist) {
         if (this.layersType == LayersType.SURFACE) {
-            List<BlockPos> poslist = firstposlist;
-            for (int i = 0; i < this.blockLayers.size(); ++i) {
+            List<BlockPos> poslist = new ArrayList<>();
+            poslist = this.placeFirstSurfaceBlockLayers(firstposlist);
+            if (poslist == null) return;
+            for (int i = 1; i < this.blockLayers.size(); ++i) {
                 if (poslist.isEmpty()) return;
-                poslist = this.placeSurfaceBlockLayers(poslist, i);
+                //créer nouveau thread pour économiser du temps
+                //pendant que les positions seront calculées, les blocs précédents seront mis
+                List<List<BlockPos>> pos1 = this.placeSurfaceBlockLayers(poslist, i);
+                System.out.println("here");
+                poslist = pos1.get(1);
+                firstposlist = pos1.get(0);
+
+
+                //blocks qui seront poser sur le server thread
+                for (BlockPos pos : firstposlist) {
+                    this.placeBlocks(i - 1, pos);
+                }
             }
+            /*ExecutorService executor = Executors.newSingleThreadExecutor();
+            for (int i = 1; i < this.blockLayers.size(); ++i) {
+                if (poslist.isEmpty()) return;
+
+                // Soumettre la tâche de calcul des positions à un nouveau thread
+                List<BlockPos> finalPoslist = poslist;
+                int finalI = i;
+                Future<List<List<BlockPos>>> future = executor.submit(new Callable<List<List<BlockPos>>>() {
+                    @Override
+                    public List<List<BlockPos>> call() throws Exception {
+                        return placeSurfaceBlockLayers(finalPoslist, finalI);
+                    }
+                });
+
+                // Poser les blocs dans le thread principal pendant que le calcul est en cours
+                for (BlockPos pos : firstposlist) {
+                    this.placeBlocks(i - 1, pos);
+                }
+
+                try {
+                    // Attendre que le calcul des positions soit terminé
+                    List<List<BlockPos>> result = future.get();
+                    poslist = result.get(1);
+                    firstposlist = result.get(0);
+                } catch (InterruptedException | ExecutionException e) {
+                    e.printStackTrace();
+                }
+            }
+            executor.shutdown();*/
         } else if (this.layersType == LayersType.RADIAL) {
             this.placeRadialBlocks(firstposlist);
-        } else if (this.layersType == LayersType.CYLINDRICAL){
+        } else if (this.layersType == LayersType.CYLINDRICAL) {
             this.placeCylindricalBlocks(firstposlist);
+        } else {
+            this.placeDirectionalLayers(firstposlist);
         }
     }
 
-    //place the layers on the structure
-    public List<BlockPos> placeSurfaceBlockLayers(List<BlockPos> poslist, int layerIndex) {
-        /*List<BlockPos> newposlist = new ArrayList<BlockPos>();
-        for (BlockPos pos : poslist) {
-            //verify if the block on top is still in the previous Block Layer
-            if(i>0){
-                BlockState state = world.getBlockState(pos.up(this.blockLayers.get(i-1).getDepth()));
-                if (!WorldGenUtil.isBlockStateInBlockStateList(state, this.blockLayers.get(i-1).getBlockStates())){
-                    continue;
-                }
-            }
-            if(WorldGenUtil.verifyBlock(world,force,blocksToForce,blockLayers.get(i).getBlockStates(),pos)){
+
+    //place the first layer on the structure
+    public List<BlockPos> placeFirstSurfaceBlockLayers(List<BlockPos> firstposlist) {
+        List<BlockPos> newposlist = new ArrayList<BlockPos>();
+        for (BlockPos pos : firstposlist) {
+            this.setBlocksToForce(WorldGenUtil.addBlockStateListtoBlockList(this.blocksToForce, this.blockLayers.get(0).getBlockStates()));
+            if (verifyBlocks(pos)) {
                 newposlist.add(pos);
             }
         }
-        return newposlist;*/
-        List<BlockPos> newposlist = new ArrayList<>();
-        BlockLayer currentLayer = this.blockLayers.get(layerIndex);
-
-        // Precompute the depth and block states of the previous layer if it exists
-        int previousLayerDepth = layerIndex > 0 ? this.blockLayers.get(layerIndex - 1).getDepth() : 0;
-        Set<BlockState> previousLayerBlockStates = layerIndex > 0 ? new HashSet<>(this.blockLayers.get(layerIndex - 1).getBlockStates()) : Collections.emptySet();
-
-        for (BlockPos pos : poslist) {
-            if (layerIndex > 0) {
-                BlockState state = world.getBlockState(pos.up(previousLayerDepth));
-                if (!previousLayerBlockStates.contains(state)) {
-                    continue;
-                }
-            }
-
-            if (WorldGenUtil.verifyBlock(world, force, blocksToForce, currentLayer.getBlockStates(), pos)) {
-                newposlist.add(pos);
-            }
-        }
-
         return newposlist;
+    }
+
+    //place the other layers on the structure
+    //for every blockpos, it verify if the block in the world at the pos + depth is still in the first layer
+    public List<List<BlockPos>> placeSurfaceBlockLayers(List<BlockPos> poslist, int layerIndex) {
+        List<BlockPos> newposlist = new ArrayList<>();
+
+        // Precompute the depth of the previous layer if it exists
+        int previousLayerDepth = this.blockLayers.get(layerIndex - 1).getDepth();
+
+        // Convert poslist to a set for faster lookups
+        Set<BlockPos> posSet = new HashSet<>(poslist);
+        Iterator<BlockPos> iterator = poslist.iterator();
+
+        while (iterator.hasNext()) {
+            BlockPos pos = iterator.next();
+            BlockPos posUp = pos.up(previousLayerDepth);
+            if (!posSet.contains(posUp)) {
+                continue;
+            }
+            iterator.remove();
+            placeBlocks(layerIndex, pos);
+            newposlist.add(pos);
+        }
+        return List.of(poslist, newposlist);
     }
 
     public void placeCylindricalBlocks(List<BlockPos> posList) {
@@ -331,7 +420,7 @@ public abstract class ShapeGen {
             while (!(distance < maxdist && mindist < maxdist) || bl) {
                 a++;
                 if (a >= this.blockLayers.size()) {
-                    WorldGenUtil.verifyBlock(world, force, blocksToForce, blockLayers.get(this.blockLayers.size() - 1).getBlockStates(), pos);
+                    BlockPlaceUtil.setRandomBlockWithVerification(world, force, blocksToForce, blockLayers.get(this.blockLayers.size() - 1).getBlockStates(), pos);
                     bl = true;
                 }
                 mindist += maxdist;
@@ -340,6 +429,7 @@ public abstract class ShapeGen {
         }
     }
 
+    //be careful when using layers with 1 block depth, that might do some weird things
     public void placeRadialBlocks(List<BlockPos> posList) {
         for (BlockPos pos : posList) {
             float distance = WorldGenUtil.getDistance(radialCenterPos, pos);
@@ -347,14 +437,16 @@ public abstract class ShapeGen {
             int mindist = 0;
             int a = 0;
             boolean bl = false;
-            while (!(distance < maxdist && mindist < maxdist) || bl) {
-                a++;
+            while (!(distance <= maxdist && distance >= mindist)) {
+                System.out.println(distance + "  " + mindist + "  " + maxdist);
                 if (a >= this.blockLayers.size()) {
-                    WorldGenUtil.verifyBlock(world, force, blocksToForce, blockLayers.get(this.blockLayers.size() - 1).getBlockStates(), pos);
+                    placeBlocks(a--, pos);
                     bl = true;
+                    continue;
                 }
-                mindist += maxdist;
+                mindist = maxdist;
                 maxdist += this.blockLayers.get(a).getDepth();
+                a++;
             }
         }
     }
@@ -377,7 +469,7 @@ public abstract class ShapeGen {
         for (BlockPos pos : poslist) {
             for (int d = 0; d < depth; ++d) {
                 BlockPos targetPos = pos.add(direction.scale(d));
-                if (WorldGenUtil.verifyBlock(world, force, blocksToForce, blockStates, targetPos)) {
+                if (SetBlokStateUtil.setRandomBlockWithVerification(world, force, blocksToForce, blockStates, targetPos)) {
                     newposlist.add(targetPos);
                 }
             }
@@ -386,33 +478,11 @@ public abstract class ShapeGen {
         return newposlist;
     }*/
 
+
+    //TODO
+    //known bug where the first layers is a little wider than what it is supposed to be
     private void placeDirectionalLayers(List<BlockPos> firstposlist) {
-        /*Vec3d direction = this.directionalLayerDirection.normalize();
-        List<BlockPos> poslist = new ArrayList<>(firstposlist);
-
-        // Trier les positions selon la direction du vecteur
-        poslist.sort((pos1, pos2) -> Double.compare(
-                pos2.getX() * direction.x + pos2.getY() * direction.y + pos2.getZ() * direction.z,
-                pos1.getX() * direction.x + pos1.getY() * direction.y + pos1.getZ() * direction.z
-        ));
-
-        int currentLayerIndex = 0;
-        int remainingDepth = this.blockLayers.get(currentLayerIndex).getDepth();
-
-        for (BlockPos pos : poslist) {
-            if (WorldGenUtil.verifyBlock(world, force, blocksToForce, this.blockLayers.get(currentLayerIndex).getBlockStates(), pos)) {
-                remainingDepth--;
-                if (remainingDepth <= 0) {
-                    currentLayerIndex++;
-                    if (currentLayerIndex >= this.blockLayers.size()) {
-                        break;
-                    }
-                    remainingDepth = this.blockLayers.get(currentLayerIndex).getDepth();
-                }
-            }
-        }*/
-
-        Vec3d direction = this.directionalLayerDirection/*.normalize()*/;
+        Vec3d direction = this.directionalLayerDirection.normalize();
         List<BlockPos> poslist = new ArrayList<>(firstposlist);
 
         // Sort positions according to the directional vector
@@ -422,19 +492,43 @@ public abstract class ShapeGen {
 
         int u = 0;
         int a = this.blockLayers.get(u).getDepth();
+        float b;
+        float g = 0;
+        float h = 0;
+        List<BlockState> states = blockLayers.get(u).getBlockStates();
+        int size = this.blockLayers.size() - 1;
         for (BlockPos pos : poslist) {
-            if (WorldGenUtil.getDistanceFromPointToPlane(direction, firstPoint, pos) < a ) {
-                WorldGenUtil.verifyBlock(world, force, blocksToForce, blockLayers.get(u).getBlockStates(), pos);
-            }else {
-                u++;
-                a+=this.blockLayers.get(u).getDepth();
-                WorldGenUtil.verifyBlock(world, force, blocksToForce, blockLayers.get(u).getBlockStates(), pos);
+
+            if (u != size) {
+                b = WorldGenUtil.getDistanceFromPointToPlane(direction, firstPoint.toCenterPos(), pos.toCenterPos());
+                if (g == 0 && b != 0) {
+                    g = (float) (b);
+                    h = (float) ((a) * g + 0.00002);
+                }
+
+                if (b <= h) {
+                    BlockPlaceUtil.setRandomBlockWithVerification(world, force, blocksToForce, states, pos);
+                } else {
+                    u++;
+                    a += this.blockLayers.get(u).getDepth();
+                    h = (float) (a * g + 0.00002);
+                    states = blockLayers.get(u).getBlockStates();
+                    BlockPlaceUtil.setRandomBlockWithVerification(world, force, blocksToForce, states, pos);
+
+                }
+            }
+            //place the last layer on all the structure everything was placed
+            else {
+                BlockPlaceUtil.setRandomBlockWithVerification(world, force, blocksToForce, blockLayers.get(u).getBlockStates(), pos);
             }
         }
     }
 
 
     /*---------- Place Structure ----------*/
+    public BlockPos getCoordinatesRotation(Vec3d pos, BlockPos centerPos) {
+        return getCoordinatesRotation((float) pos.getX(), (float) pos.getY(), (float) pos.getZ(), centerPos);
+    }
 
     public BlockPos getCoordinatesRotation(float x, float y, float z, BlockPos pos) {
         // first x rotation
@@ -452,6 +546,14 @@ public abstract class ShapeGen {
         return new BlockPos(new BlockPos.Mutable().set((Vec3i) pos, (int) x_rot_z, (int) y_rot2, (int) z_rot2));
     }
 
+    public List<BlockPos> getCoordinatesRotationList(List<Vec3d> poslist, BlockPos centerPos) {
+        List<BlockPos> newposlist = new ArrayList<>();
+        for (Vec3d pos : poslist) {
+            newposlist.add(this.getCoordinatesRotation(pos, centerPos));
+        }
+        return newposlist;
+    }
+
     public void getGenTime(long startTime, boolean place) {
         long endTime = (System.nanoTime());
         long duration = (endTime - startTime) / 1000000;
@@ -462,7 +564,43 @@ public abstract class ShapeGen {
         }
     }
 
-    //change how the blocks are put
+    //place blocks without verification
+    public void placeBlocks(int index, BlockPos pos) {
+        if (this.layerPlace == LayerPlace.RANDOM) {
+            BlockPlaceUtil.placeRandomBlock(world, this.blockLayers.get(index).getBlockStates(), pos);
+        } else if (this.layerPlace == LayerPlace.NOISE2D) {
+            BlockPlaceUtil.placeBlockWith2DNoise(world, this.blockLayers.get(index).getBlockStates(), pos, this.noise);
+        } else if (this.layerPlace == LayerPlace.NOISE3D) {
+            BlockPlaceUtil.placeBlockWith3DNoise(world, this.blockLayers.get(index).getBlockStates(), pos, this.noise);
+        } else {
+            BlockPlaceUtil.placeBlockWithOrder(world, this.blockLayers.get(index).getBlockStates(), pos, this.placedBlocks);
+            this.placedBlocks = this.placedBlocks % (this.blockLayers.size() - 1);
+        }
+    }
+
+    //Place blocks with verification depending on the layer place
+    public boolean placeBlocksWithVerification(int index, BlockPos pos) {
+        if (this.layerPlace == LayerPlace.RANDOM) {
+            return BlockPlaceUtil.setRandomBlockWithVerification(world, this.force, this.blocksToForce, this.blockLayers.get(index).getBlockStates(), pos);
+        } else if (this.layerPlace == LayerPlace.NOISE2D) {
+            return BlockPlaceUtil.set2dNoiseBlockWithVerification(world, this.force, this.blocksToForce, this.blockLayers.get(index).getBlockStates(), pos, this.noise);
+        } else if (this.layerPlace == LayerPlace.NOISE3D) {
+            return BlockPlaceUtil.set3dNoiseBlockWithVerification(world, this.force, this.blocksToForce, this.blockLayers.get(index).getBlockStates(), pos, this.noise);
+        } else {
+            boolean bl = BlockPlaceUtil.setBlockWithOrderWithVerification(world, this.force, this.blocksToForce, this.blockLayers.get(index).getBlockStates(), pos, this.placedBlocks);
+            this.placedBlocks = (this.placedBlocks + 1) % (this.blockLayers.size() - 1);
+            return bl;
+        }
+    }
+
+    public boolean verifyBlocks(BlockPos pos) {
+        return BlockPlaceUtil.verifyBlock(this.world, this.force, blocksToForce, pos);
+    }
+
+
+    /**
+     * change how the blocks are put
+     */
     public enum LayersType {
         //more for a natural aspect
         //put the first BlockStates on top of the structure for a coordinate x and z,
@@ -477,11 +615,28 @@ public abstract class ShapeGen {
         ALONG_DIRECTION
     }
 
+    /**
+     * set the type of objects that will be placed
+     */
     public enum PlaceType {
         //place blocks
         BLOCKS,
         //place particles
         PARTICLE
+    }
+
+    /**
+     * set how the blocks/particles will be chosen inside a layer
+     */
+    public enum LayerPlace {
+        //will choose random Block/Particle in the layer
+        RANDOM,
+        //will place the first Block/particle in the layer, then the second, then the third, in the order
+        ORDER,
+        //will place the Block/Particle according to a 2d noise
+        NOISE2D,
+        //will place the Block/Particle according to a 3d noise
+        NOISE3D
     }
 
 
