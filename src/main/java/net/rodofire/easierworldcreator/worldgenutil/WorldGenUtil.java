@@ -9,7 +9,7 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.random.Random;
 import net.minecraft.world.StructureWorldAccess;
 import net.rodofire.easierworldcreator.Easierworldcreator;
-import net.rodofire.easierworldcreator.shapegen.BlockLayer;
+import net.rodofire.easierworldcreator.shapeutil.BlockLayer;
 import net.rodofire.easierworldcreator.util.FastMaths;
 
 import java.util.ArrayList;
@@ -78,18 +78,7 @@ public class WorldGenUtil {
         return 0;
     }
 
-    //method to verify that the block is not an unbreakable block or not and to verify if the block can be put or not. If the block was placed, it returns true
-    public static boolean verifyBlock(StructureWorldAccess world, boolean force, List<Block> blocksToForce, List<BlockState> blocksToPlace, BlockPos pos) {
-        BlockState state2 = world.getBlockState(pos);
-        int length = blocksToPlace.size() - 1;
-        if (state2.getHardness(world, pos) < 0) return false;
-        if (!force) {
-            if (blocksToForce == null) blocksToForce = List.of(Blocks.BEDROCK);
-            if (!state2.isAir() && blocksToForce.stream().noneMatch(state2.getBlock()::equals)) return false;
-        }
-        world.setBlockState(pos, blocksToPlace.get(Random.create().nextBetween(0, length)), 2);
-        return true;
-    }
+
 
     //verify if a block is in a list of BlockState
     public static boolean isBlockInBlockStateList(Block block, List<BlockState> state) {
@@ -132,22 +121,22 @@ public class WorldGenUtil {
         return block;
     }
 
-    public static float getDistanceFromPointToPlane(Vec3d normal, BlockPos pointOnPlane, BlockPos point) {
+    public static float getDistanceFromPointToPlane(Vec3d normal, Vec3d pointOnPlane, Vec3d point) {
         double A = normal.x;
         double B = normal.y;
         double C = normal.z;
 
         // Find D using a point on the plane
-        double D = -(A * pointOnPlane.getX() + B * pointOnPlane.getY() + C * pointOnPlane.getZ());
+        double D = -(A * pointOnPlane.x + B * pointOnPlane.y + C * pointOnPlane.z);
 
         // Coordinates of the point
-        double x0 = point.getX();
-        double y0 = point.getY();
-        double z0 = point.getZ();
+        double x0 = point.x;
+        double y0 = point.y;
+        double z0 = point.z;
 
         // Calculate the distance
         double numerator = Math.abs(A * x0 + B * y0 + C * z0 + D);
-        double denominator = Math.sqrt(A * A + B * B + C * C);
+        double denominator = FastMaths.getFastsqrt((float) (A * A + B * B + C * C),0.001f);
 
         return (float) (numerator / denominator);
     }

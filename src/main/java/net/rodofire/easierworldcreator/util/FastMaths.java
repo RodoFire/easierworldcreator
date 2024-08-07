@@ -98,19 +98,20 @@ public class FastMaths {
 
 
     //get 3d length
-    public static double getlength(int x, int y, int z) {
+    public static double getLength(int x, int y, int z) {
         return getFastsqrt(x * x + y * y + z * z);
     }
 
-    public static double getlength(int x, int y, int z, float precision) {
+    //return length with the precision wanted
+    public static double getLengthWPrecision(int x, int y, int z, float precision) {
         return getFastsqrt(x * x + y * y + z * z, precision);
     }
 
-    public static double getlength(float x, float y, float z) {
+    public static double getLength(float x, float y, float z) {
         return getFastsqrt(x * x + y * y + z * z);
     }
 
-    public static double getlength(float x, float y, float z, float precision) {
+    public static double getLengthWPrecision(float x, float y, float z, float precision) {
         return getFastsqrt(x * x + y * y + z * z, precision);
     }
 
@@ -119,7 +120,7 @@ public class FastMaths {
         return getFastsqrt(x * x + z * z);
     }
 
-    public static double getLength(int x, int z, float precision) {
+    public static double getLengthWPrecision(int x, int z, float precision) {
         return getFastsqrt(x * x + z * z, precision);
     }
 
@@ -127,7 +128,7 @@ public class FastMaths {
         return getFastsqrt(x * x + z * z);
     }
 
-    public static double getLength(float x, float z, float precision) {
+    public static double getLengthWPrecision(float x, float z, float precision) {
         return getFastsqrt(x * x + z * z, precision);
     }
 

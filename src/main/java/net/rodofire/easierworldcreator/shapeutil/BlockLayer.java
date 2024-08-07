@@ -1,4 +1,4 @@
-package net.rodofire.easierworldcreator.shapegen;
+package net.rodofire.easierworldcreator.shapeutil;
 
 import net.minecraft.block.BlockState;
 
@@ -137,5 +137,13 @@ public class BlockLayer {
      */
     public int size() {
         return blocks.size();
+    }
+
+    @Override
+    public String toString() {
+        return "BlockLayer{" +
+                "blocks=" + blocks +
+                ", depth=" + depth +
+                '}';
     }
 }

@@ -501,25 +501,26 @@ public abstract class Shape {
 
             if (u != size) {
                 b = WorldGenUtil.getDistanceFromPointToPlane(direction, firstPoint.toCenterPos(), pos.toCenterPos());
-                if (g == 0 && b != 0) {
+                if (g == 0 && b > 2.0E-4) {
                     g = (float) (b);
                     h = (float) ((a) * g + 0.00002);
+                    System.out.println(h);
                 }
 
                 if (b <= h) {
-                    BlockPlaceUtil.setRandomBlockWithVerification(world, force, blocksToForce, states, pos);
+                    placeBlocksWithVerification(states,pos);
                 } else {
                     u++;
                     a += this.blockLayers.get(u).getDepth();
                     h = (float) (a * g + 0.00002);
                     states = blockLayers.get(u).getBlockStates();
-                    BlockPlaceUtil.setRandomBlockWithVerification(world, force, blocksToForce, states, pos);
+                    placeBlocksWithVerification(states,pos);
 
                 }
             }
             //place the last layer on all the structure everything was placed
             else {
-                BlockPlaceUtil.setRandomBlockWithVerification(world, force, blocksToForce, blockLayers.get(u).getBlockStates(), pos);
+                placeBlocksWithVerification(u,pos);
             }
         }
     }
@@ -577,6 +578,18 @@ public abstract class Shape {
             this.placedBlocks = this.placedBlocks % (this.blockLayers.size() - 1);
         }
     }
+    public void placeBlocks(List<BlockState> states, BlockPos pos) {
+        if (this.layerPlace == LayerPlace.RANDOM) {
+            BlockPlaceUtil.placeRandomBlock(world, states, pos);
+        } else if (this.layerPlace == LayerPlace.NOISE2D) {
+            BlockPlaceUtil.placeBlockWith2DNoise(world, states, pos, this.noise);
+        } else if (this.layerPlace == LayerPlace.NOISE3D) {
+            BlockPlaceUtil.placeBlockWith3DNoise(world, states, pos, this.noise);
+        } else {
+            BlockPlaceUtil.placeBlockWithOrder(world, states, pos, this.placedBlocks);
+            this.placedBlocks = this.placedBlocks % (this.blockLayers.size() - 1);
+        }
+    }
 
     //Place blocks with verification depending on the layer place
     public boolean placeBlocksWithVerification(int index, BlockPos pos) {
@@ -588,6 +601,21 @@ public abstract class Shape {
             return BlockPlaceUtil.set3dNoiseBlockWithVerification(world, this.force, this.blocksToForce, this.blockLayers.get(index).getBlockStates(), pos, this.noise);
         } else {
             boolean bl = BlockPlaceUtil.setBlockWithOrderWithVerification(world, this.force, this.blocksToForce, this.blockLayers.get(index).getBlockStates(), pos, this.placedBlocks);
+            this.placedBlocks = (this.placedBlocks + 1) % (this.blockLayers.size() - 1);
+            return bl;
+        }
+    }
+
+    //precomputed list for little performance improvement
+    public boolean placeBlocksWithVerification(List<BlockState> states, BlockPos pos) {
+        if (this.layerPlace == LayerPlace.RANDOM) {
+            return BlockPlaceUtil.setRandomBlockWithVerification(world, this.force, this.blocksToForce, states, pos);
+        } else if (this.layerPlace == LayerPlace.NOISE2D) {
+            return BlockPlaceUtil.set2dNoiseBlockWithVerification(world, this.force, this.blocksToForce, states, pos, this.noise);
+        } else if (this.layerPlace == LayerPlace.NOISE3D) {
+            return BlockPlaceUtil.set3dNoiseBlockWithVerification(world, this.force, this.blocksToForce, states, pos, this.noise);
+        } else {
+            boolean bl = BlockPlaceUtil.setBlockWithOrderWithVerification(world, this.force, this.blocksToForce, states, pos, this.placedBlocks);
             this.placedBlocks = (this.placedBlocks + 1) % (this.blockLayers.size() - 1);
             return bl;
         }

@@ -91,9 +91,15 @@ public class CircleGen extends FillableShape {
                 float xsquared = x * x / radiusxsquared;
                 for (float z = -this.radiusz; z <= this.radiusz; z += 1) {
                     if (xsquared + (z * z) / radiuszsquared <= 1) {
-                        float innerXSquared = x * x / innerRadiusXSquared;
-                        float innerZSquared = z * z / innerRadiusZSquared;
-                        if (innerXSquared + innerZSquared > 1) { // pas dans l'ovale intérieur
+                        boolean bl=true;
+                        if(innerRadiusXSquared !=0) {
+                            float innerXSquared = x * x / innerRadiusXSquared;
+                            float innerZSquared = z * z / innerRadiusZSquared;
+                            if (innerXSquared + innerZSquared <= 1f) { // pas dans l'ovale intérieur
+                                bl = false;
+                            }
+                        }
+                        if (bl){
                             poslist.add(new BlockPos((int) (this.getPos().getX() + x), this.getPos().getY(), (int) (this.getPos().getZ() + z)));
                         }
                     }
@@ -138,6 +144,7 @@ public class CircleGen extends FillableShape {
 
     /*---------- Algorithm based on Bressen Algorithms for circle ----------*/
     public List<BlockPos> generateEmptyOval(int centerX, int centerZ, int y) {
+        System.out.println("bressan");
         int x = 0;
         int z = this.radiusz;
         int twoASquare = 2 * this.radiusx * this.radiusx;
@@ -200,11 +207,6 @@ public class CircleGen extends FillableShape {
             blockPosList.add(new BlockPos(centerX + x, y, centerZ - z));
             blockPosList.add(new BlockPos(centerX - x, y, centerZ + z));
             blockPosList.add(new BlockPos(centerX - x, y, centerZ - z));
-        } else {
-            blockPosList.add(this.getCoordinatesRotation(centerX + x, y, centerZ + z, new BlockPos(0, 0, 0)));
-            blockPosList.add(this.getCoordinatesRotation(centerX + x, y, centerZ - z, new BlockPos(0, 0, 0)));
-            blockPosList.add(this.getCoordinatesRotation(centerX - x, y, centerZ + z, new BlockPos(0, 0, 0)));
-            blockPosList.add(this.getCoordinatesRotation(centerX - x, y, centerZ - z, new BlockPos(0, 0, 0)));
         }
         return blockPosList;
     }
@@ -224,13 +226,6 @@ public class CircleGen extends FillableShape {
                 blockPosList.add(new BlockPos(mutable));
                 mutable.set(start2, 0, 0, -i);
                 blockPosList.add(new BlockPos(mutable));
-            }
-        } else {
-            for (int i = 0; i <= 2 * z; i++) {
-                mutable.set(start1, 0, 0, -i);
-                blockPosList.add(this.getCoordinatesRotation(x, 0, z - i, new BlockPos(centerX, y, centerZ)));
-                mutable.set(start2, 0, 0, -i);
-                blockPosList.add(this.getCoordinatesRotation(-x, 0, z - i, new BlockPos(centerX, y, centerZ)));
             }
         }
         return blockPosList;
