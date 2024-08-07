@@ -45,7 +45,7 @@ import java.util.List;
                                              :+%%%%%%%%###*#************+++********#%%:
                                                      .:-=+##%%%%%%%%%%%%%%#***=:.
  */
-@Deprecated()
+@Deprecated(forRemoval = true)
 /**
  * switch to new generation
  * @see SphereGen
@@ -125,7 +125,7 @@ public class GenSpheres {
                 for (float z = minz; z <= maxz; z++) {
                     if (ys + (z * z) / (largezsquared) <= 1) {
                         mutable.set(pos, (int) x, (int) y, (int) z);
-                        WorldGenUtil.verifyBlock(world, force, blocksToForce, blocksToPlace, mutable);
+                        BlockPlaceUtil.setRandomBlockWithVerification(world, force, blocksToForce, blocksToPlace, mutable);
                     }
                 }
             }
@@ -181,7 +181,7 @@ public class GenSpheres {
                 int z = (int) (zsinkheta * cosphi);
                 mutable.set(pos, x, y, z);
 
-                WorldGenUtil.verifyBlock(world, force, blocksToForce, blocksToPlace, mutable);
+                BlockPlaceUtil.setRandomBlockWithVerification(world, force, blocksToForce, blocksToPlace, mutable);
             }
         }
     }
