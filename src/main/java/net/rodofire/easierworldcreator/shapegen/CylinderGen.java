@@ -8,7 +8,6 @@ import net.rodofire.easierworldcreator.util.FastMaths;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 
@@ -65,12 +64,8 @@ public class CylinderGen extends FillableShape {
         long startTimeCartesian = System.nanoTime();
         List<Vec3d> veclist = new ArrayList<>();
         List<BlockPos> poslist = new ArrayList<>();
+        this.setFill();
 
-        if (this.getFillingType() == FillableShape.Type.HALF) {
-            this.setCustomFill(0.5f);
-        }
-        if (this.getCustomFill() > 1f) this.setCustomFill(1f);
-        if (this.getCustomFill() < 0f) this.setCustomFill(0f);
 
 
         if (this.getXrotation() % 180 == 0 && this.getYrotation() % 180 == 0 && this.getSecondXrotation() == 0 && (this.getFillingType() == FillableShape.Type.FULL || this.getFillingType() == FillableShape.Type.EMPTY)) {
@@ -80,12 +75,12 @@ public class CylinderGen extends FillableShape {
             }
         } else if (this.getFillingType() == FillableShape.Type.EMPTY) {
 
-            poslist.addAll(this.generateEmptyOval());
+            poslist.addAll(this.generateEmptyCylinder());
             this.setPos(this.getPos().up());
 
         } else {
 
-            poslist.addAll(this.generateFullOval());
+            poslist.addAll(this.generateFullCylinder());
             this.setPos(this.getPos().up());
 
             poslist.addAll(this.getCoordinatesRotationList(veclist, this.getPos()));
@@ -94,10 +89,12 @@ public class CylinderGen extends FillableShape {
         return poslist;
     }
 
-
-    public List<BlockPos> generateFullOval() {
+    /**
+     * this generates a full cylinder
+     * @return blockStates list of the structures
+     */
+    public List<BlockPos> generateFullCylinder() {
         List<BlockPos> poslist = new ArrayList<>();
-        BlockPos.Mutable mutable = new BlockPos.Mutable();
         int radiusxsquared = radiusx * radiusx;
         int radiuszsquared = radiusz * radiusz;
         float innerRadiusXSquared = (1 - this.getCustomFill()) * (1 - this.getCustomFill()) * radiusx * radiusx;
@@ -108,16 +105,16 @@ public class CylinderGen extends FillableShape {
                     float xsquared = x * x / radiusxsquared;
                     for (float z = -this.radiusz; z <= this.radiusz; z += 1f) {
                         if (xsquared + (z * z) / radiuszsquared <= 1) {
-                            boolean bl=true;
-                            if(innerRadiusXSquared !=0) {
+                            boolean bl = true;
+                            if (innerRadiusXSquared != 0) {
                                 float innerXSquared = x * x / innerRadiusXSquared;
                                 float innerZSquared = z * z / innerRadiusZSquared;
                                 if (innerXSquared + innerZSquared <= 1f) { // pas dans l'ovale intérieur
                                     bl = false;
                                 }
                             }
-                            if (bl){
-                                poslist.add(new BlockPos((int) (this.getPos().getX() + x), (int) (this.getPos().getY()+y), (int) (this.getPos().getZ() + z)));
+                            if (bl) {
+                                poslist.add(new BlockPos((int) (this.getPos().getX() + x), (int) (this.getPos().getY() + y), (int) (this.getPos().getZ() + z)));
                             }
                         }
                     }
@@ -129,10 +126,16 @@ public class CylinderGen extends FillableShape {
                     float xsquared = x * x / radiusxsquared;
                     for (float z = -this.radiusz; z <= this.radiusz; z += 0.5f) {
                         if (xsquared + (z * z) / radiuszsquared <= 1) {
-                            float innerXSquared = x * x / innerRadiusXSquared;
-                            float innerZSquared = z * z / innerRadiusZSquared;
-                            if (innerXSquared + innerZSquared > 1) {
-                                poslist.add(this.getCoordinatesRotation(x, y, z, this.getPos().up(height / 2)));
+                            boolean bl = true;
+                            if (innerRadiusXSquared != 0) {
+                                float innerXSquared = x * x / innerRadiusXSquared;
+                                float innerZSquared = z * z / innerRadiusZSquared;
+                                if (innerXSquared + innerZSquared <= 1f) { // pas dans l'ovale intérieur
+                                    bl = false;
+                                }
+                            }
+                            if (bl) {
+                                poslist.add(this.getCoordinatesRotation(x, y, z, this.getPos()));
                             }
                         }
                     }
@@ -142,7 +145,11 @@ public class CylinderGen extends FillableShape {
         return poslist;
     }
 
-    public List<BlockPos> generateEmptyOval() {
+    /**
+     * this generates a full cylinder
+     * @return blockStates list of the structures
+     */
+    public List<BlockPos> generateEmptyCylinder() {
         List<BlockPos> poslist = new ArrayList<>();
 
         if (this.getXrotation() % 180 == 0 && this.getYrotation() % 180 == 0 && this.getSecondXrotation() == 0) {
