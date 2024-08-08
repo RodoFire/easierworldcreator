@@ -12,9 +12,6 @@ public class FastMaths {
     private static final double[] sinfastTable = new double[FAST_TRIGO_TABLE_SIZE];
     private static final double[] expfastTable = new double[FAST_TABLE_SIZE];
 
-
-
-
     //took more time but more precise, you should use this when you need to generate big things
     private static final int PRECISE_TRIGO_TABLE_SIZE = 3600;
     private static final int PRECISE_TABLE_SIZE = 10000;
@@ -101,19 +98,20 @@ public class FastMaths {
 
 
     //get 3d length
-    public static double getlength(int x, int y, int z) {
+    public static double getLength(int x, int y, int z) {
         return getFastsqrt(x * x + y * y + z * z);
     }
 
-    public static double getlength(int x, int y, int z, float precision) {
+    //return length with the precision wanted
+    public static double getLengthWPrecision(int x, int y, int z, float precision) {
         return getFastsqrt(x * x + y * y + z * z, precision);
     }
 
-    public static double getlength(float x, float y, float z) {
+    public static double getLength(float x, float y, float z) {
         return getFastsqrt(x * x + y * y + z * z);
     }
 
-    public static double getlength(float x, float y, float z, float precision) {
+    public static double getLengthWPrecision(float x, float y, float z, float precision) {
         return getFastsqrt(x * x + y * y + z * z, precision);
     }
 
@@ -122,7 +120,7 @@ public class FastMaths {
         return getFastsqrt(x * x + z * z);
     }
 
-    public static double getLength(int x, int z, float precision) {
+    public static double getLengthWPrecision(int x, int z, float precision) {
         return getFastsqrt(x * x + z * z, precision);
     }
 
@@ -130,7 +128,7 @@ public class FastMaths {
         return getFastsqrt(x * x + z * z);
     }
 
-    public static double getLength(float x, float z, float precision) {
+    public static double getLengthWPrecision(float x, float z, float precision) {
         return getFastsqrt(x * x + z * z, precision);
     }
 

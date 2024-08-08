@@ -7,6 +7,7 @@ import net.minecraft.util.math.Direction;
 import net.minecraft.world.StructureWorldAccess;
 import net.rodofire.easierworldcreator.Easierworldcreator;
 import net.rodofire.easierworldcreator.util.FastMaths;
+import net.rodofire.easierworldcreator.shapegen.SphereGen;
 
 import java.util.List;
 
@@ -43,6 +44,11 @@ import java.util.List;
                                       .+#@%%%%##*+*********#************+++++++++*+++++++*-
                                              :+%%%%%%%%###*#************+++********#%%:
                                                      .:-=+##%%%%%%%%%%%%%%#***=:.
+ */
+@Deprecated(forRemoval = true)
+/**
+ * switch to new generation
+ * @see SphereGen
  */
 public class GenSpheres {
     public static void generateHalfFullSphere(StructureWorldAccess world, int radius, BlockPos pos, Direction direction, BlockState state) {
@@ -119,7 +125,7 @@ public class GenSpheres {
                 for (float z = minz; z <= maxz; z++) {
                     if (ys + (z * z) / (largezsquared) <= 1) {
                         mutable.set(pos, (int) x, (int) y, (int) z);
-                        WorldGenUtil.verifyBlock(world, force, blocksToForce, blocksToPlace, mutable);
+                        BlockPlaceUtil.setRandomBlockWithVerification(world, force, blocksToForce, blocksToPlace, mutable);
                     }
                 }
             }
@@ -175,7 +181,7 @@ public class GenSpheres {
                 int z = (int) (zsinkheta * cosphi);
                 mutable.set(pos, x, y, z);
 
-                WorldGenUtil.verifyBlock(world, force, blocksToForce, blocksToPlace, mutable);
+                BlockPlaceUtil.setRandomBlockWithVerification(world, force, blocksToForce, blocksToPlace, mutable);
             }
         }
     }

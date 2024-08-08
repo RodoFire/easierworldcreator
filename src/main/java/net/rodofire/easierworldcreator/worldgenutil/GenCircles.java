@@ -4,6 +4,7 @@ import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.StructureWorldAccess;
+import net.rodofire.easierworldcreator.shapegen.CircleGen;
 
 import java.util.List;
 /*
@@ -28,6 +29,12 @@ import java.util.List;
                                        ::..................::
                                           ::............::
                                               .::::::.
+ */
+@Deprecated(forRemoval = false)
+/**
+ * switch to new generation :
+ * @see CircleGen
+ * this class will not be updated anymore and won't receive any support
  */
 public class GenCircles {
     //Validate
@@ -179,10 +186,10 @@ public class GenCircles {
     public static void placeOvalBlocks(StructureWorldAccess world, int centerX, int centerZ, int x, int y, int z, boolean force, List<Block> blocksToForce, List<BlockState> blockToPlace) {
         BlockPos.Mutable pos = new BlockPos.Mutable();
         int length = blockToPlace.size() - 1;
-        WorldGenUtil.verifyBlock(world, force, blocksToForce, blockToPlace, pos.set(centerX + x, 0, centerZ + z));
-        WorldGenUtil.verifyBlock(world, force, blocksToForce, blockToPlace, pos.set(centerX + x, 0, centerZ - z));
-        WorldGenUtil.verifyBlock(world, force, blocksToForce, blockToPlace, pos.set(centerX - x, 0, centerZ + z));
-        WorldGenUtil.verifyBlock(world, force, blocksToForce, blockToPlace, pos.set(centerX - x, 0, centerZ - z));
+        BlockPlaceUtil.setRandomBlockWithVerification(world, force, blocksToForce, blockToPlace, pos.set(centerX + x, 0, centerZ + z));
+        BlockPlaceUtil.setRandomBlockWithVerification(world, force, blocksToForce, blockToPlace, pos.set(centerX + x, 0, centerZ - z));
+        BlockPlaceUtil.setRandomBlockWithVerification(world, force, blocksToForce, blockToPlace, pos.set(centerX - x, 0, centerZ + z));
+        BlockPlaceUtil.setRandomBlockWithVerification(world, force, blocksToForce, blockToPlace, pos.set(centerX - x, 0, centerZ - z));
 
     }
 
@@ -199,9 +206,9 @@ public class GenCircles {
         BlockPos.Mutable mutable = new BlockPos.Mutable();
         for (int i = 0; i <= 2 * z; i++) {
             mutable.set(start1, 0, 0, -i);
-            WorldGenUtil.verifyBlock(world, force, blocksToForce, blocksToPlace, mutable);
+            BlockPlaceUtil.setRandomBlockWithVerification(world, force, blocksToForce, blocksToPlace, mutable);
             mutable.set(start2, 0, 0, -i);
-            WorldGenUtil.verifyBlock(world, force, blocksToForce, blocksToPlace, mutable);
+            BlockPlaceUtil.setRandomBlockWithVerification(world, force, blocksToForce, blocksToPlace, mutable);
 
         }
         //GenLines.drawLine(world, start1, end1, blockstate.get(Random.create().nextBetween(0,length)), force);

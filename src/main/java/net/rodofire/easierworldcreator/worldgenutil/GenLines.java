@@ -9,6 +9,7 @@ import net.minecraft.world.StructureWorldAccess;
 
 import java.util.List;
 
+@Deprecated(forRemoval = false)
 public class GenLines {
     public static void generateAxisLine(StructureWorldAccess world, BlockPos pos, int length,Direction dir,BlockState state){
         generateAxisLine(world,pos,length,dir,false,null, List.of(state));
@@ -16,7 +17,7 @@ public class GenLines {
 
     public static void generateAxisLine(StructureWorldAccess world, BlockPos pos, int length, Direction dir,boolean force, List<Block> blocksToForce, List<BlockState> blocksToPlace) {
         for (int i = 0; i < length; i++){
-            WorldGenUtil.verifyBlock(world,force,blocksToForce,blocksToPlace,pos.offset(dir,i));
+            BlockPlaceUtil.setRandomBlockWithVerification(world,force,blocksToForce,blocksToPlace,pos.offset(dir,i));
         }
     }
 
