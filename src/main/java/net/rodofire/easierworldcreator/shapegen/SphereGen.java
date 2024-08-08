@@ -1,11 +1,13 @@
 package net.rodofire.easierworldcreator.shapegen;
 
 import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.StructureWorldAccess;
 import net.rodofire.easierworldcreator.Easierworldcreator;
+import net.rodofire.easierworldcreator.shapeutil.BlockLayer;
+import net.rodofire.easierworldcreator.shapeutil.FillableShape;
 import net.rodofire.easierworldcreator.util.FastMaths;
 import org.jetbrains.annotations.NotNull;
 
@@ -52,16 +54,15 @@ import java.util.List;
                                                      .:-=+##%%%%%%%%%%%%%%#***=:.
  */
 
-public class SphereGen extends ShapeGen {
-    private int xradius;
-    private int yradius;
-    private int zradius;
+public class SphereGen extends FillableShape {
+    private int radiusx;
+    private int radiusy;
+    private int radiusz;
 
 
-    private boolean halfSphere=false;
-    private Direction direction=Direction.UP;
+    private boolean halfSphere = false;
+    private Direction direction = Direction.UP;
 
-    private boolean empty=false;
 
     //Used for performance test
     private long startTime;
@@ -70,29 +71,21 @@ public class SphereGen extends ShapeGen {
     /**
      * init the shape generation
      *
-     * @param world            the world the shape will be generated
-     * @param pos              the pos of the structure center
-     *                         -------------------------------------------------------------------------------------
-     * @param firstlayer       the list of blockstates that will be placed on top of the structure
-     * @param secondlayer      the list of blockstates that will be placed in the second layer of the structure
-     * @param thirdlayer       the list of blockstates tha will be placed in the third layer of the structure
-     *                         these list shouldn't have blocks in common, or you might run into generation problems
-     * @param firstlayerdepth  int that represents the depth of the blockstates in the first layer
-     * @param secondlayerdepth int that represents the depth of the blockstates in the second layer
-     * @param xradius          the radius along the x-axis
-     * @param yradius          the radius along the y-axis
-     * @param zradius          the radius along the z axis
-     * @param xrotation        the rotation along the x-axis
-     * @param yrotation        the rotation along the y-axis
+     * @param world     the world the shape will be generated
+     * @param pos       the pos of the structure center
+     * @param radiusx   the radius along the x-axis
+     * @param radiusy   the radius along the y-axis
+     * @param radiusz   the radius along the z axis
+     * @param xrotation the rotation along the x-axis
+     * @param yrotation the rotation along the y-axis
      */
-    public SphereGen(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, List<BlockState> firstlayer, List<BlockState> secondlayer, List<BlockState> thirdlayer, int firstlayerdepth, int secondlayerdepth, int xradius, int yradius, int zradius, int xrotation, int yrotation,int seconxrotation, boolean force, List<Block> blockToForce, boolean halfSphere, Direction direction, boolean empty) {
-        super(world, pos, firstlayer, secondlayer, thirdlayer, firstlayerdepth, secondlayerdepth, force, blockToForce, xrotation, yrotation, seconxrotation);
-        this.xradius = xradius;
-        this.yradius = yradius;
-        this.zradius = zradius;
+    public SphereGen(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, int radiusx, List<BlockLayer> layers, int radiusy, int radiusz, int xrotation, int yrotation, int seconxrotation, boolean force, List<Block> blockToForce, boolean halfSphere, Direction direction) {
+        super(world, pos, layers, force, blockToForce, xrotation, yrotation, seconxrotation);
+        this.radiusx = radiusx;
+        this.radiusy = radiusy;
+        this.radiusz = radiusz;
         this.halfSphere = halfSphere;
         this.direction = direction;
-        this.empty = empty;
     }
 
 
@@ -101,58 +94,50 @@ public class SphereGen extends ShapeGen {
      *
      * @param world  the world the shape will be generated
      * @param pos    the pos of the structure center
-     *               -------------------------------------------------------------------------------------
-     * @param states list of blockstates that will be placed on all the structure
      * @param radius the radius of the sphere
      */
-    public SphereGen(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, List<BlockState> states, int radius) {
-        super(world, pos, states);
-        this.xradius = radius;
-        this.yradius = radius;
-        this.zradius = radius;
-        this.empty = false;
+    public SphereGen(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, int radius) {
+        super(world, pos);
+        this.radiusx = radius;
+        this.radiusy = radius;
+        this.radiusz = radius;
     }
 
-    /*---------- Empty Related ----------*/
-
-    public boolean isEmpty() {
-        return empty;
-    }
-
-    public void setEmpty(boolean empty) {
-        this.empty = empty;
-    }
-
-    public int getXradius() {
-        return xradius;
-    }
 
     /*---------- Radius Related ----------*/
-    public void setXradius(int xradius) {
-        this.xradius = xradius;
+
+    public int getRadiusx() {
+        return radiusx;
     }
 
-    public int getYradius() {
-        return yradius;
+    public void setRadiusx(int radiusx) {
+        this.radiusx = radiusx;
     }
 
-    public void setYradius(int yradius) {
-        this.yradius = yradius;
+    public int getRadiusy() {
+        return radiusy;
     }
 
-    public int getZradius() {
-        return zradius;
+    public void setRadiusy(int radiusy) {
+        this.radiusy = radiusy;
     }
 
-    public void setZradius(int zradius) {
-        this.zradius = zradius;
+    public int getRadiusz() {
+        return radiusz;
     }
 
-    /*---------- Place Structure ----------*/
+    public void setRadiusz(int radiusz) {
+        this.radiusz = radiusz;
+    }
+
     @Override
-    public void placeBlocks() {
-        this.placeLayers(this.getStructureCoordinates());
-        this.getGenTime(this.startTime, true);
+    public List<BlockPos> getBlockPos() {
+        return this.getStructureCoordinates();
+    }
+
+    @Override
+    public List<Vec3d> getVec3d() {
+        return List.of();
     }
 
     //calculate and return the coordinates
@@ -160,79 +145,79 @@ public class SphereGen extends ShapeGen {
         this.startTime = System.nanoTime();
 
         //verify if the rotations == 0 to avoid some unnecessary calculations
-        if (empty) {
+        if (this.getFillingType() == Type.EMPTY) {
             if (halfSphere) {
-                return this.generateHalfEmptyElipsoid(xradius, yradius, zradius, this.getPos(), direction);
+                return this.generateHalfEmptyElipsoid();
             } else {
-                return this.generateEmptyEllipsoid(xradius, yradius, zradius);
+                return this.generateEmptyEllipsoid();
             }
         } else {
             if (halfSphere) {
-                return this.generateHalfFullElipsoid(xradius, yradius, zradius, this.getPos(), direction);
+                return this.generateHalfFullElipsoid();
             } else {
-                return this.generateFullEllipsoid(xradius, yradius, zradius, this.getPos());
+                return this.generateFullEllipsoid();
             }
         }
     }
 
 
-    public List<BlockPos> generateHalfEmptyElipsoid(int xradius, int yradius, int zradius, BlockPos pos, Direction direction) {
+    public List<BlockPos> generateHalfEmptyElipsoid() {
         if (direction == Direction.UP) {
-            return generateEmptyEllipsoid(xradius, yradius, zradius, pos, 180, 180, 0, 90);
+            return generateEmptyEllipsoid(180, 180, 0, 90);
         }
         if (direction == Direction.DOWN) {
-            return generateEmptyEllipsoid(xradius, yradius, zradius, pos, 180, 180, -90, 0);
+            return generateEmptyEllipsoid(180, 180, -90, 0);
         }
         if (direction == Direction.WEST) {
-            return generateEmptyEllipsoid(xradius, yradius, zradius, pos, 0, 180, -90, 90);
+            return generateEmptyEllipsoid(0, 180, -90, 90);
         }
         if (direction == Direction.EAST) {
-            return generateEmptyEllipsoid(xradius, yradius, zradius, pos, -180, 0, -90, 90);
+            return generateEmptyEllipsoid(-180, 0, -90, 90);
         }
         if (direction == Direction.NORTH) {
-            return generateEmptyEllipsoid(xradius, yradius, zradius, pos, -90, 90, -90, 90);
+            return generateEmptyEllipsoid(-90, 90, -90, 90);
         }
-        return generateEmptyEllipsoid(xradius, yradius, zradius, pos, 90, 270, -90, 90);
+        return generateEmptyEllipsoid(90, 270, -90, 90);
     }
 
-    public List<BlockPos> generateEmptyEllipsoid(int xradius, int yradius, int zradius) {
-        return this.generateEmptyEllipsoid(xradius, yradius, zradius, this.getPos(), -180, 180, -90, 90);
+    public List<BlockPos> generateEmptyEllipsoid() {
+        return this.generateEmptyEllipsoid(-180, 180, -90, 90);
     }
 
-    public List<BlockPos> generateEmptyEllipsoid(int xradius, int yradius, int zradius, BlockPos pos, int minlarge, int maxlarge, int minheight, int maxheight) {
-        int maxlarge1 = Math.max(zradius, Math.max(xradius, yradius));
+    public List<BlockPos> generateEmptyEllipsoid(int minlarge, int maxlarge, int minheight, int maxheight) {
+        int maxlarge1 = Math.max(radiusz, Math.max(radiusx, radiusy));
 
         BlockPos.Mutable mutable = new BlockPos.Mutable();
         List<BlockPos> poslist = new ArrayList<>();
-        if (this.getYrotation() % 180 == 0) {
+        if (this.getXrotation() % 180 == 0 && this.getYrotation() % 180 == 0 && this.getSecondXrotation() % 180 == 0) {
             for (double theta = minlarge; theta <= maxlarge; theta += (double) 45 / maxlarge1) {
 
-                double xcostheta = xradius * FastMaths.getFastCos(theta);
-                double zsinkheta = zradius * FastMaths.getFastSin(theta);
+                double xcostheta = radiusx * FastMaths.getFastCos(theta);
+                double zsinkheta = radiusz * FastMaths.getFastSin(theta);
 
                 for (double phi = minheight; phi <= maxheight; phi += (double) 45 / maxlarge1) {
                     double cosphi = FastMaths.getFastCos(phi);
                     int x = (int) (xcostheta * cosphi);
-                    int y = (int) (yradius * FastMaths.getFastSin(phi));
+                    int y = (int) (radiusy * FastMaths.getFastSin(phi));
                     int z = (int) (zsinkheta * cosphi);
-                    mutable.set(pos, x, y, z);
+                    mutable.set(this.getPos(), x, y, z);
                     poslist.add(new BlockPos(mutable));
                 }
             }
         } else {
             for (double theta = minlarge; theta <= maxlarge; theta += (double) 45 / maxlarge1) {
 
-                double xcostheta = xradius * FastMaths.getFastCos(theta);
-                double zsinkheta = zradius * FastMaths.getFastSin(theta);
+                double xcostheta = radiusx * FastMaths.getFastCos(theta);
+                double zsinkheta = radiusz * FastMaths.getFastSin(theta);
 
                 for (double phi = minheight; phi <= maxheight; phi += (double) 45 / maxlarge1) {
                     double cosphi = FastMaths.getFastCos(phi);
                     float x = (float) (xcostheta * cosphi);
-                    float y = (float) (yradius * FastMaths.getFastSin(phi));
+                    float y = (float) (radiusy * FastMaths.getFastSin(phi));
                     float z = (float) (zsinkheta * cosphi);
 
 
-                    poslist.add(this.getCoordinatesRotation(x, y, z, pos));
+                    poslist.add(this.getCoordinatesRotation(x, y, z, this.getPos()));
                 }
             }
         }
@@ -241,27 +226,27 @@ public class SphereGen extends ShapeGen {
     }
 
 
-    public List<BlockPos> generateHalfFullElipsoid(int xradius, int yradius, int zradius, BlockPos pos, Direction direction) {
+    public List<BlockPos> generateHalfFullElipsoid() {
         if (direction == Direction.UP) {
-            return this.generateFullEllipsoid(xradius, yradius, zradius, pos, -xradius, xradius, 0, yradius, -zradius, zradius);
+            return this.generateFullEllipsoid(-radiusx, radiusx, 0, radiusy, -radiusz, radiusz);
         }
         if (direction == Direction.DOWN) {
-            return this.generateFullEllipsoid(xradius, yradius, zradius, pos, -xradius, xradius, -yradius, 0, -zradius, zradius);
+            return this.generateFullEllipsoid(-radiusx, radiusx, -radiusy, 0, -radiusz, radiusz);
         }
         if (direction == Direction.WEST) {
-            return this.generateFullEllipsoid(xradius, yradius, zradius, pos, 0, xradius, -yradius, yradius, -zradius, zradius);
+            return this.generateFullEllipsoid(0, radiusx, -radiusy, radiusy, -radiusz, radiusz);
         }
         if (direction == Direction.EAST) {
-            return this.generateFullEllipsoid(xradius, yradius, zradius, pos, -xradius, 0, -yradius, yradius, -zradius, zradius);
+            return this.generateFullEllipsoid(-radiusx, 0, -radiusy, radiusy, -radiusz, radiusz);
         }
         if (direction == Direction.NORTH) {
-            return this.generateFullEllipsoid(xradius, yradius, zradius, pos, -xradius, xradius, -yradius, yradius, -zradius, 0);
+            return this.generateFullEllipsoid(-radiusx, radiusx, -radiusy, radiusy, -radiusz, 0);
         }
-        return this.generateFullEllipsoid(xradius, yradius, zradius, pos, -xradius, xradius, -yradius, yradius, 0, zradius);
+        return this.generateFullEllipsoid(-radiusx, radiusx, -radiusy, radiusy, 0, radiusz);
     }
 
-    public List<BlockPos> generateFullEllipsoid(int xradius, int yradius, int zradius, BlockPos pos) {
-        return this.generateFullEllipsoid(xradius, yradius, zradius, pos, -xradius, xradius, -yradius, yradius, -zradius, zradius);
+    public List<BlockPos> generateFullEllipsoid() {
+        return this.generateFullEllipsoid(-radiusx, radiusx, -radiusy, radiusy, -radiusz, radiusz);
     }
 
     //Using carthesian coordinates beacause it have better performance than using trigonometry
@@ -269,30 +254,31 @@ public class SphereGen extends ShapeGen {
     /**
      * allow you to generate a full elipsoid
      *
-     * @param xradius the x axis radius
-     * @param yradius the y aris radius
-     * @param zradius the z axis radius
-     * @param pos     the center of the ellipsoid
-     * @param minx    the start of the circle on the x axis
-     * @param maxx    the end of the circle on the x axis
-     * @param miny    the start of the circle on the y axis
-     * @param maxy    the end of the circle on the y axis
-     * @param minz    the start of the circle on the z axis
-     * @param maxz    the end of the circle on the z axis
+     * @param minx the start of the circle on the x axis
+     * @param maxx the end of the circle on the x axis
+     * @param miny the start of the circle on the y axis
+     * @param maxy the end of the circle on the y axis
+     * @param minz the start of the circle on the z axis
+     * @param maxz the end of the circle on the z axis
      */
-    public List<BlockPos> generateFullEllipsoid(int xradius, int yradius, int zradius, BlockPos pos, int minx, int maxx, int miny, int maxy, int minz, int maxz) {
+    public List<BlockPos> generateFullEllipsoid(int minx, int maxx, int miny, int maxy, int minz, int maxz) {
         BlockPos.Mutable mutable = new BlockPos.Mutable();
+        this.setFill();
+        int largexsquared = radiusx * radiusx;
+        int largeysquared = radiusy * radiusy;
+        int largezsquared = radiusz * radiusz;
 
-        int largexsquared = xradius * xradius;
-        int largeysquared = yradius * yradius;
-        int largezsquared = zradius * zradius;
+        float innerRadiusXSquared = (1 - this.getCustomFill()) * (1 - this.getCustomFill()) * radiusx * radiusx;
+        float innerRadiusYSquared = (1 - this.getCustomFill()) * (1 - this.getCustomFill()) * radiusy * radiusy;
+        float innerRadiusZSquared = (1 - this.getCustomFill()) * (1 - this.getCustomFill()) * radiusz * radiusz;
 
 
-        if (xradius > 32 || yradius > 32 || zradius > 32) {
+
+        if (radiusx > 32 || radiusy > 32 || radiusz > 32) {
             Easierworldcreator.LOGGER.warn("generating huge sphere (diameter > 64)");
         }
         List<BlockPos> poslist = new ArrayList<BlockPos>();
-        if (this.getYrotation() % 180 == 0) {
+        if (this.getXrotation() % 180 == 0 && this.getYrotation() % 180 == 0 && this.getSecondXrotation() % 180 == 0) {
             for (float x = minx; x <= maxx; x++) {
                 float xs = x * x / largexsquared;
 
@@ -301,8 +287,18 @@ public class SphereGen extends ShapeGen {
 
                     for (float z = minz; z <= maxz; z++) {
                         if (ys + (z * z) / (largezsquared) <= 1) {
-                            mutable.set(pos, (int) x, (int) y, (int) z);
-                            poslist.add(new BlockPos(mutable));
+                            boolean bl = true;
+                            if (innerRadiusXSquared != 0) {
+                                float innerXSquared = x * x / innerRadiusXSquared;
+                                float innerYSquared = y * y / innerRadiusYSquared;
+                                float innerZSquared = z * z / innerRadiusZSquared;
+                                if (innerXSquared + innerZSquared + innerYSquared <= 1f) { // pas dans l'ovale intérieur
+                                    bl = false;
+                                }
+                            }
+                            if (bl) {
+                                poslist.add(new BlockPos((int) (this.getPos().getX() + x), (int) (this.getPos().getY() + y), (int) (this.getPos().getZ() + z)));
+                            }
                         }
                     }
                 }
@@ -316,7 +312,17 @@ public class SphereGen extends ShapeGen {
 
                     for (float z = minz; z <= maxz; z += 0.5f) {
                         if (ys + (z * z) / (largezsquared) <= 1) {
-                            poslist.add(getCoordinatesRotation(x, y, z, pos));
+                            boolean bl = true;
+                            if (innerRadiusXSquared != 0) {
+                                float innerXSquared = x * x / innerRadiusXSquared;
+                                float innerZSquared = z * z / innerRadiusZSquared;
+                                if (innerXSquared + innerZSquared <= 1f) { // pas dans l'ovale intérieur
+                                    bl = false;
+                                }
+                            }
+                            if (bl) {
+                                poslist.add(this.getCoordinatesRotation(x, y, z, this.getPos()));
+                            }
                         }
                     }
                 }
@@ -325,4 +331,6 @@ public class SphereGen extends ShapeGen {
         this.getGenTime(this.startTime, false);
         return poslist;
     }
+
+
 }
