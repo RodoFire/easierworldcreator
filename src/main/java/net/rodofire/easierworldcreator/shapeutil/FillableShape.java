@@ -2,6 +2,7 @@ package net.rodofire.easierworldcreator.shapeutil;
 
 import net.minecraft.block.Block;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.StructureWorldAccess;
 import org.jetbrains.annotations.NotNull;
 
@@ -28,6 +29,7 @@ public abstract class FillableShape extends Shape {
     public FillableShape(@NotNull StructureWorldAccess world, @NotNull BlockPos pos) {
         super(world, pos);
     }
+
 
     public FillableShape(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, List<BlockLayer> layers, boolean force, List<Block> blocksToForce, int xrotation, int yrotation, int secondxrotation) {
         super(world, pos, layers, force, blocksToForce, xrotation, yrotation, secondxrotation);
@@ -79,5 +81,13 @@ public abstract class FillableShape extends Shape {
      */
     public void setCustomFill(float customFill) {
         this.customFill = customFill;
+    }
+
+    protected void setFill(){
+        if (this.getFillingType() == FillableShape.Type.HALF) {
+            this.setCustomFill(0.5f);
+        }
+        if (this.getCustomFill() > 1f) this.setCustomFill(1f);
+        if (this.getCustomFill() < 0f) this.setCustomFill(0f);
     }
 }

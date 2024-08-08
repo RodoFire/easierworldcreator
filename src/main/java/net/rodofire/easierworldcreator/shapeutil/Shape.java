@@ -650,6 +650,7 @@ public abstract class Shape {
         //place blocks
         BLOCKS,
         //place particles
+        //particles are not implemented for the moment
         PARTICLE
     }
 

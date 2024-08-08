@@ -5,13 +5,15 @@ import net.minecraft.block.BlockState;
 import java.util.List;
 
 /**
- * Class to create layers.
- * Layers are composed of a list of BlockStates and an int.
- * The list is all the blockStates present in a layer
- * the int represents the depth of the blockStates
- * <p>
- * Be careful with the depth it should never be < 0.
- * There is also no interest in having a depth == 0.
+ * Represents a layer in a structure.
+ * Each layer consists of a list of {@link BlockState} objects and an integer.
+ * The list contains all the {@link BlockState} objects present in the layer,
+ * while the integer represents the depth of the layer.
+ *
+ * Be cautious with the depth parameter:
+ * The depth should never be less than 0.
+ * There is no benefit to having a depth equal to 0.
+
  */
 public class BlockLayer {
     private List<BlockState> blocks;

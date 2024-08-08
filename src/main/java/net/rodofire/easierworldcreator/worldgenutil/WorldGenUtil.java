@@ -2,12 +2,11 @@ package net.rodofire.easierworldcreator.worldgenutil;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.Vec3i;
 import net.minecraft.util.math.random.Random;
-import net.minecraft.world.StructureWorldAccess;
 import net.rodofire.easierworldcreator.Easierworldcreator;
 import net.rodofire.easierworldcreator.shapeutil.BlockLayer;
 import net.rodofire.easierworldcreator.util.FastMaths;
@@ -79,7 +78,6 @@ public class WorldGenUtil {
     }
 
 
-
     //verify if a block is in a list of BlockState
     public static boolean isBlockInBlockStateList(Block block, List<BlockState> state) {
         // Parcourir la liste des BlockState pour vérifier si le bloc correspond
@@ -136,7 +134,7 @@ public class WorldGenUtil {
 
         // Calculate the distance
         double numerator = Math.abs(A * x0 + B * y0 + C * z0 + D);
-        double denominator = FastMaths.getFastsqrt((float) (A * A + B * B + C * C),0.001f);
+        double denominator = FastMaths.getFastsqrt((float) (A * A + B * B + C * C), 0.001f);
 
         return (float) (numerator / denominator);
     }
@@ -181,5 +179,44 @@ public class WorldGenUtil {
         return i;
     }
 
+    public static Direction getDirection(BlockPos pos1, BlockPos pos2) {
+        if (pos1.getX() == pos2.getX() && pos1.getY() == pos2.getY()) {
+            return pos2.getZ() - pos1.getZ() < 0 ? Direction.WEST : Direction.EAST;
+        }
 
+        if (pos1.getX() == pos2.getX() && pos1.getZ() == pos2.getZ()) {
+            return pos2.getY() - pos1.getY() < 0 ? Direction.DOWN : Direction.UP;
+        }
+
+        if (pos1.getY() == pos2.getY() && pos1.getZ() == pos2.getZ()) {
+            return pos2.getX() - pos1.getX() < 0 ? Direction.SOUTH : Direction.NORTH;
+        }
+        return null;
+    }
+
+
+    public static BlockPos getCoordinatesRotation(float x, float y, float z, int rotationx, int rotationy, BlockPos pos) {
+        return getCoordinatesRotation(x, y, z, rotationx, rotationy, 0, pos);
+    }
+
+    public static BlockPos getCoordinatesRotation(float x, float y, float z, int rotationx, int rotationy, int secondrotationx, BlockPos pos) {
+        return getCoordinatesRotation(x, y, z, FastMaths.getFastCos(rotationx), FastMaths.getFastSin(rotationx), FastMaths.getFastCos(rotationy), FastMaths.getFastSin(rotationy), FastMaths.getFastCos(secondrotationx), FastMaths.getFastSin(secondrotationx), pos);
+    }
+
+    public static BlockPos getCoordinatesRotation(float x, float y, float z, double cosx, double sinx, double cosy, double siny, double cosx2, double sinx2, BlockPos pos) {
+        // first x rotation
+        float y_rot1 = (float) (y * cosx - z * sinx);
+        float z_rot1 = (float) (y * sinx + z * cosx);
+
+        // y rotation
+        float x_rot_z = (float) (x * cosy - y_rot1 * siny);
+        float y_rot_z = (float) (x * siny + y_rot1 * cosy);
+
+        // second x rotation
+        float y_rot2 = (float) (y_rot_z * cosx2 - z_rot1 * sinx2);
+        float z_rot2 = (float) (y_rot_z * sinx2 + z_rot1 * cosx2);
+
+        return new BlockPos(new BlockPos.Mutable().set((Vec3i) pos, (int) x_rot_z, (int) y_rot2, (int) z_rot2));
+
+    }
 }

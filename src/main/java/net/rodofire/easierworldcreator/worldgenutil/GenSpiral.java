@@ -6,11 +6,17 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.random.Random;
 import net.minecraft.world.StructureWorldAccess;
 import net.rodofire.easierworldcreator.Easierworldcreator;
+import net.rodofire.easierworldcreator.shapegen.SpiralGen;
 import net.rodofire.easierworldcreator.util.FastMaths;
 
 import java.util.ArrayList;
 import java.util.List;
 
+@Deprecated(forRemoval = true)
+/**
+ * switch to new generation
+ * @see SpiralGen
+ */
 public class GenSpiral {
 
     //all the methods in this classes will create a circular shape
