@@ -37,8 +37,8 @@ public abstract class Shape {
     private int secondxrotation = 0;
 
     //precalculated cos and sin table for every rotation
-    private double cosx = 1;
     private double cosx2 = 1;
+    private double cosx = 1;
     private double cosy = 1;
     private double sinx = 0;
     private double sinx2 = 0;
@@ -101,6 +101,7 @@ public abstract class Shape {
         noise.SetFrequency(0.1f);
     }
 
+    //calculate the cosinus and the sinus of the rotations
     public void getRotations(int xrotation, int yrotation, int secondxrotation) {
         this.xrotation = xrotation;
         this.yrotation = yrotation;
@@ -126,7 +127,6 @@ public abstract class Shape {
     /*---------- Layers Related ----------*/
     public void setLayerDirection(Vec3d vect) {
         this.directionalLayerDirection = vect.normalize();
-        System.out.println(this.directionalLayerDirection);
     }
 
     public boolean getForce() {
@@ -321,7 +321,6 @@ public abstract class Shape {
                 //créer nouveau thread pour économiser du temps
                 //pendant que les positions seront calculées, les blocs précédents seront mis
                 List<List<BlockPos>> pos1 = this.placeSurfaceBlockLayers(poslist, i);
-                System.out.println("here");
                 poslist = pos1.get(1);
                 firstposlist = pos1.get(0);
 
@@ -438,7 +437,6 @@ public abstract class Shape {
             int a = 0;
             boolean bl = false;
             while (!(distance <= maxdist && distance >= mindist)) {
-                System.out.println(distance + "  " + mindist + "  " + maxdist);
                 if (a >= this.blockLayers.size()) {
                     placeBlocks(a--, pos);
                     bl = true;
@@ -450,33 +448,6 @@ public abstract class Shape {
             }
         }
     }
-
-    /*private void placeDirectionalLayers(List<BlockPos> firstposlist) {
-        Vec3d direction = this.directionalLayerDirection.normalize();
-        List<BlockPos> poslist = new ArrayList<>(firstposlist);
-
-        for (int i = 0; i < this.blockLayers.size(); ++i) {
-            if (poslist.isEmpty()) return;
-            BlockLayer layer = this.blockLayers.get(i);
-
-            poslist = this.placeDirectionalBlockLayer(poslist, direction, layer.getDepth(), layer.getBlockStates());
-        }
-    }
-
-    private List<BlockPos> placeDirectionalBlockLayer(List<BlockPos> poslist, Vec3d direction, int depth, List<BlockState> blockStates) {
-        List<BlockPos> newposlist = new ArrayList<>();
-
-        for (BlockPos pos : poslist) {
-            for (int d = 0; d < depth; ++d) {
-                BlockPos targetPos = pos.add(direction.scale(d));
-                if (SetBlokStateUtil.setRandomBlockWithVerification(world, force, blocksToForce, blockStates, targetPos)) {
-                    newposlist.add(targetPos);
-                }
-            }
-        }
-
-        return newposlist;
-    }*/
 
 
     //TODO
@@ -504,7 +475,6 @@ public abstract class Shape {
                 if (g == 0 && b > 2.0E-4) {
                     g = (float) (b);
                     h = (float) ((a) * g + 0.00002);
-                    System.out.println(h);
                 }
 
                 if (b <= h) {
@@ -531,6 +501,7 @@ public abstract class Shape {
         return getCoordinatesRotation((float) pos.getX(), (float) pos.getY(), (float) pos.getZ(), centerPos);
     }
 
+    //return a BlockPos of a block after rotating it
     public BlockPos getCoordinatesRotation(float x, float y, float z, BlockPos pos) {
         // first x rotation
         float y_rot1 = (float) (y * cosx - z * sinx);
@@ -578,6 +549,8 @@ public abstract class Shape {
             this.placedBlocks = this.placedBlocks % (this.blockLayers.size() - 1);
         }
     }
+
+    //Place blocks without verification. Used for precomputed List<BlockStates> instead of searching it on the BlockLayer
     public void placeBlocks(List<BlockState> states, BlockPos pos) {
         if (this.layerPlace == LayerPlace.RANDOM) {
             BlockPlaceUtil.placeRandomBlock(world, states, pos);

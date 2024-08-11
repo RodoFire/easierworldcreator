@@ -6,10 +6,16 @@ import net.minecraft.registry.tag.BlockTags;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.world.StructureWorldAccess;
+import net.rodofire.easierworldcreator.shapegen.LineGen;
 
 import java.util.List;
 
 @Deprecated(forRemoval = false)
+/**
+ * switch to new generation :
+ * @see LineGen
+ * this class will not be updated anymore and won't receive any support
+ */
 public class GenLines {
     public static void generateAxisLine(StructureWorldAccess world, BlockPos pos, int length,Direction dir,BlockState state){
         generateAxisLine(world,pos,length,dir,false,null, List.of(state));

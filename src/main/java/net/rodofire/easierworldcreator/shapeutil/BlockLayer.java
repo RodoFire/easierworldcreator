@@ -9,11 +9,10 @@ import java.util.List;
  * Each layer consists of a list of {@link BlockState} objects and an integer.
  * The list contains all the {@link BlockState} objects present in the layer,
  * while the integer represents the depth of the layer.
- *
+ * <p>
  * Be cautious with the depth parameter:
  * The depth should never be less than 0.
  * There is no benefit to having a depth equal to 0.
-
  */
 public class BlockLayer {
     private List<BlockState> blocks;
@@ -88,7 +87,6 @@ public class BlockLayer {
     }
 
     /**
-     *
      * @param blocks change the BlockStates of a layer
      */
     public void setBlockStates(List<BlockState> blocks) {
@@ -97,6 +95,7 @@ public class BlockLayer {
 
     /**
      * add a BlockState to the layer
+     *
      * @param state BlockState to be added
      */
     public void addBlockState(BlockState state) {
@@ -105,6 +104,7 @@ public class BlockLayer {
 
     /**
      * add multiple BlockStates to the layer
+     *
      * @param states List of BlockState to be added
      */
     public void addBlockStates(List<BlockState> states) {
@@ -113,6 +113,7 @@ public class BlockLayer {
 
     /**
      * removes some BlockStates of the Layer
+     *
      * @param state list of BlockStates that will be removed
      */
     public void removeBlockState(List<BlockState> state) {
@@ -121,6 +122,7 @@ public class BlockLayer {
 
     /**
      * removes a BlockState of the Layer
+     *
      * @param state BlockState that will be removed
      */
     public void removeBlockState(BlockState state) {

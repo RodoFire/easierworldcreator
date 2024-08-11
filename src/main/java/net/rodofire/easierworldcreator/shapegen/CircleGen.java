@@ -42,18 +42,29 @@ public class CircleGen extends FillableShape {
     private int radiusz;
 
 
-    public CircleGen(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, @NotNull List<BlockLayer> layers, boolean force, List<Block> blocksToForce, int xrotation, int yrotation, int secondxrotation, boolean full, int radiusx, int radiusy) {
+    /**
+     * @param world           the world the spiral will spawn in
+     * @param pos             the center of the spiral
+     * @param layers          a list of layers that will be used for the structure
+     * @param force           boolean to force the pos of the blocks
+     * @param blocksToForce   a list of blocks that the blocks of the spiral can still force if force = false
+     * @param xrotation       first rotation around the x-axis
+     * @param yrotation       second rotation around the y-axis
+     * @param secondxrotation last rotation around the x-axis
+     * @param radiusx         the radius of the x-axis
+     * @param radiusz         the radius of the z-axis
+     */
+    public CircleGen(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, @NotNull List<BlockLayer> layers, boolean force, List<Block> blocksToForce, int xrotation, int yrotation, int secondxrotation, int radiusx, int radiusz) {
         super(world, pos, layers, force, blocksToForce, xrotation, yrotation, secondxrotation);
         this.radiusx = radiusx;
-        this.radiusz = radiusy;
+        this.radiusz = radiusz;
     }
 
-    public CircleGen(@NotNull StructureWorldAccess world, @NotNull BlockPos pos,  int radius) {
+    public CircleGen(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, int radius) {
         super(world, pos);
         this.radiusx = radius;
         this.radiusz = radius;
     }
-
 
 
     /*---------- Radius Related ----------*/
@@ -109,22 +120,22 @@ public class CircleGen extends FillableShape {
 
         int radiusxsquared = radiusx * radiusx;
         int radiuszsquared = radiusz * radiusz;
-        float innerRadiusXSquared = (1 - this.getCustomFill()) *(1 - this.getCustomFill()) * radiusx * radiusx;
-        float innerRadiusZSquared = (1 - this.getCustomFill()) *(1 - this.getCustomFill()) * radiusz * radiusz;
+        float innerRadiusXSquared = (1 - this.getCustomFill()) * (1 - this.getCustomFill()) * radiusx * radiusx;
+        float innerRadiusZSquared = (1 - this.getCustomFill()) * (1 - this.getCustomFill()) * radiusz * radiusz;
         if (this.getXrotation() % 180 == 0 && this.getYrotation() % 180 == 0 && this.getSecondXrotation() % 180 == 0) {
             for (float x = -this.radiusx; x <= this.radiusx; x += 1) {
                 float xsquared = x * x / radiusxsquared;
                 for (float z = -this.radiusz; z <= this.radiusz; z += 1) {
                     if (xsquared + (z * z) / radiuszsquared <= 1) {
-                        boolean bl=true;
-                        if(innerRadiusXSquared !=0) {
+                        boolean bl = true;
+                        if (innerRadiusXSquared != 0) {
                             float innerXSquared = x * x / innerRadiusXSquared;
                             float innerZSquared = z * z / innerRadiusZSquared;
                             if (innerXSquared + innerZSquared <= 1f) { // pas dans l'ovale intérieur
                                 bl = false;
                             }
                         }
-                        if (bl){
+                        if (bl) {
                             poslist.add(new BlockPos((int) (this.getPos().getX() + x), this.getPos().getY(), (int) (this.getPos().getZ() + z)));
                         }
                     }
@@ -168,8 +179,16 @@ public class CircleGen extends FillableShape {
     }
 
     /*---------- Algorithm based on Bressen Algorithms for circle ----------*/
+
+    /**
+     * this class is used when no rotation is present. This allow fast coordinates generation but don't work with rotations
+     *
+     * @param centerX the x coordinate of the center of the circle
+     * @param centerZ the z coordinate of the center of the circle
+     * @param y       the height of the circle
+     * @return
+     */
     public List<BlockPos> generateEmptyOval(int centerX, int centerZ, int y) {
-        System.out.println("bressan");
         int x = 0;
         int z = this.radiusz;
         int twoASquare = 2 * this.radiusx * this.radiusx;
@@ -265,7 +284,4 @@ public class CircleGen extends FillableShape {
         }
         return blockPosList;
     }
-
-
-
 }
