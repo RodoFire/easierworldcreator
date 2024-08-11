@@ -45,10 +45,11 @@ import java.util.List;
                                              :+%%%%%%%%###*#************+++********#%%:
                                                      .:-=+##%%%%%%%%%%%%%%#***=:.
  */
-@Deprecated(forRemoval = true)
+@Deprecated(forRemoval = false)
 /**
  * switch to new generation
  * @see SphereGen
+ * this class will not be updated anymore and won't receive any support
  */
 public class GenSpheres {
     public static void generateHalfFullSphere(StructureWorldAccess world, int radius, BlockPos pos, Direction direction, BlockState state) {

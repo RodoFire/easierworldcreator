@@ -4,6 +4,18 @@ import net.minecraft.client.particle.Particle;
 
 import java.util.List;
 
+/**
+ * Not implemented yet in the structures
+ * <p>
+ * Represents a layer in a structure.
+ * Each layer consists of a list of {@link Particle} objects and an integer.
+ * The list contains all the {@link Particle} objects present in the layer,
+ * while the integer represents the depth of the layer.
+ * <p>
+ * Be cautious with the depth parameter:
+ * The depth should never be less than 0.
+ * There is no benefit to having a depth equal to 0.
+ */
 public class ParticleLayer {
 
     private List<Particle> particles;
@@ -13,7 +25,7 @@ public class ParticleLayer {
      * init the ParticleLayer
      *
      * @param particles list of Particles
-     * @param depth  depth of the Particles
+     * @param depth     depth of the Particles
      */
     public ParticleLayer(List<Particle> particles, int depth) {
         this.particles = particles;
@@ -33,7 +45,7 @@ public class ParticleLayer {
      * init the ParticleLayer
      *
      * @param particle if the layer is only composed of one Particle, you don't necessary need to create a list (created automatically)
-     * @param depth list of Particles
+     * @param depth    list of Particles
      */
     public ParticleLayer(Particle particle, int depth) {
         this.particles = List.of(particle);
@@ -78,7 +90,6 @@ public class ParticleLayer {
     }
 
     /**
-     *
      * @param blocks change the Particles of a layer
      */
     public void setParticles(List<Particle> blocks) {
@@ -87,6 +98,7 @@ public class ParticleLayer {
 
     /**
      * add a Particle to the layer
+     *
      * @param particle Particle to be added
      */
     public void addParticle(Particle particle) {
@@ -95,6 +107,7 @@ public class ParticleLayer {
 
     /**
      * add multiple Particles to the layer
+     *
      * @param particles List of Particle to be added
      */
     public void addParticles(List<Particle> particles) {
@@ -103,6 +116,7 @@ public class ParticleLayer {
 
     /**
      * removes some Particles of the Layer
+     *
      * @param particle list of Particles that will be removed
      */
     public void removeParticle(List<Particle> particle) {
@@ -111,6 +125,7 @@ public class ParticleLayer {
 
     /**
      * removes a Particle of the Layer
+     *
      * @param particle Particle that will be removed
      */
     public void removeParticle(Particle particle) {

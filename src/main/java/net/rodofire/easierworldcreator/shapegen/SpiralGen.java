@@ -119,6 +119,10 @@ import java.util.List;
                                                                        ...
 
      */
+
+/**
+ * class to generates spiral related shapes
+ */
 public class SpiralGen extends Shape {
     //radius on the x-axis
     private int radiusx;
@@ -138,9 +142,23 @@ public class SpiralGen extends Shape {
     //set the radius of the outline on the z-axis
     private int outlineRadiusz = 1;
 
+    //the angle of the side
     private int helicoidAngle = 0;
 
-
+    /**
+     * @param world           the world the spiral will spawn in
+     * @param pos             the center of the spiral
+     * @param layers          a list of layers that will be used for the structure
+     * @param force           boolean to force the pos of the blocks
+     * @param blocksToForce   a list of blocks that the blocks of the spiral can still force if force = false
+     * @param xrotation       first rotation around the x-axis
+     * @param yrotation       second rotation around the y-axis
+     * @param secondxrotation last rotation around the x-axis
+     * @param radiusx         the radius of the x-axis
+     * @param radiusz         the radius of the z-axis
+     * @param height          the height of the spiral
+     * @param turnNumber      the number of turns that the structure will do before reaching the top
+     */
     public SpiralGen(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, List<BlockLayer> layers, boolean force, List<Block> blocksToForce, int xrotation, int yrotation, int secondxrotation, int radiusx, int radiusz, int height, float turnNumber) {
         super(world, pos, layers, force, blocksToForce, xrotation, yrotation, secondxrotation);
         this.radiusx = radiusx;
@@ -149,6 +167,12 @@ public class SpiralGen extends Shape {
         this.turnNumber = turnNumber;
     }
 
+    /**
+     * @param world  the world the spiral will spawn in
+     * @param pos    the center of the spiral
+     * @param radius the radius of the spiral
+     * @param height the height of the spiral
+     */
     public SpiralGen(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, int radius, int height) {
         super(world, pos);
         this.radiusx = radius;
@@ -224,6 +248,10 @@ public class SpiralGen extends Shape {
         return offset;
     }
 
+    /**
+     *
+     * @param offset the offset of the start of the spiral
+     */
     public void setOffset(int offset) {
         this.offset = offset;
     }
@@ -232,6 +260,10 @@ public class SpiralGen extends Shape {
         return helicoidAngle;
     }
 
+    /**
+     *
+     * @param helicoidAngle the angle of the blocks on the side
+     */
     public void setHelicoidAngle(int helicoidAngle) {
         this.helicoidAngle = helicoidAngle;
     }
@@ -242,7 +274,6 @@ public class SpiralGen extends Shape {
         this.getFilling();
         List<BlockPos> posList = new ArrayList<>();
         if (this.spiralType == SpiralType.DEFAULT) {
-            System.out.println("SpiralGen getBlockPos");
             return this.generateElipsoidSpiral(this.getPos());
         }
         if (this.spiralType == SpiralType.HELICOID || this.spiralType == SpiralType.HALF_HELICOID || this.spiralType == SpiralType.CUSTOM_HELICOOID) {
@@ -265,7 +296,11 @@ public class SpiralGen extends Shape {
         return List.of();
     }
 
-
+    /**
+     * generates a simple spiral
+     * @param pos the center of the spiral. This can be changed to match certain needing like when generating a large outline
+     * @return a list of blockPos that will be used to place the structure
+     */
     public List<BlockPos> generateElipsoidSpiral(BlockPos pos) {
         BlockPos.Mutable mutable = new BlockPos.Mutable();
         List<BlockPos> poslist = new ArrayList<BlockPos>();
@@ -305,7 +340,6 @@ public class SpiralGen extends Shape {
         Vec3d vec = new Vec3d(FastMaths.getFastCos(degangle), FastMaths.getFastSin(degangle), 0).normalize();
         double cosy = FastMaths.getFastCos(degangle);
         double siny = FastMaths.getFastSin(degangle);
-        System.out.println(cosy + "  " + siny);
         List<BlockPos> posList = new ArrayList<>();
 
         // Trouver une base orthonormée pour le plan orthogonal à direction
@@ -328,6 +362,11 @@ public class SpiralGen extends Shape {
         return posList;
     }
 
+    /**
+     * generates an helicoid if the {@link SpiralType} is set to HELICOID or double helicoid with their variants
+     *
+     * @return
+     */
     public List<BlockPos> generateHelicoid() {
         BlockPos.Mutable mutable = new BlockPos.Mutable();
         List<BlockPos> poslist = new ArrayList<BlockPos>();
@@ -395,11 +434,14 @@ public class SpiralGen extends Shape {
         return poslist;
     }
 
-    private void getFilling(){
-        if(spiralType == SpiralType.HELICOID || spiralType == SpiralType.DOUBLE_HELICOID){
-            this.spiralFilling=1f;
-        }else if(spiralType == SpiralType.HALF_HELICOID || spiralType == SpiralType.HALF_DOUBLE_HELICOID){
-            this.spiralFilling=0.5f;
+    /**
+     * change the filling of the spiral
+     */
+    private void getFilling() {
+        if (spiralType == SpiralType.HELICOID || spiralType == SpiralType.DOUBLE_HELICOID) {
+            this.spiralFilling = 1f;
+        } else if (spiralType == SpiralType.HALF_HELICOID || spiralType == SpiralType.HALF_DOUBLE_HELICOID) {
+            this.spiralFilling = 0.5f;
         }
     }
 

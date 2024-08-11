@@ -16,6 +16,7 @@ import java.util.List;
 /**
  * switch to new generation
  * @see SpiralGen
+ * this class will not be updated anymore and won't receive any support
  */
 public class GenSpiral {
 
