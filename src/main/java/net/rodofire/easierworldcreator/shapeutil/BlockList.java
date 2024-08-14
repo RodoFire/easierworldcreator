@@ -6,6 +6,7 @@ import net.minecraft.structure.StructureTemplate;
 import net.minecraft.util.math.BlockPos;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -13,7 +14,7 @@ import java.util.List;
  * this is an easier version of the {@link StructureTemplate.StructureBlockInfo}
  */
 public class BlockList {
-    private List<BlockPos> poslist;
+    private List<BlockPos> poslist = new ArrayList<BlockPos>();
     private BlockState blockstate;
     @Nullable
     private NbtCompound tag;
@@ -25,7 +26,8 @@ public class BlockList {
      * @param state the blockState related to the pos list
      */
     public BlockList(BlockPos pos, BlockState state) {
-        this.poslist = List.of(pos);
+        this.poslist = new ArrayList<BlockPos>();
+        this.poslist.add(pos);
         this.blockstate = state;
         this.tag = null;
     }
@@ -38,7 +40,8 @@ public class BlockList {
      * @param tag   the nbt of the block if it has an nbt
      */
     public BlockList(BlockPos pos, BlockState state, NbtCompound tag) {
-        this.poslist = List.of(pos);
+        this.poslist = new ArrayList<BlockPos>();
+        this.poslist.add(pos);
         this.blockstate = state;
         this.tag = tag;
     }
@@ -50,7 +53,7 @@ public class BlockList {
      * @param state
      */
     public BlockList(List<BlockPos> poslist, BlockState state) {
-        this.poslist = poslist;
+        this.poslist = new ArrayList<>(poslist);
         this.blockstate = state;
         this.tag = null;
     }
@@ -63,7 +66,7 @@ public class BlockList {
      * @param tag     the nbt of the block if it has an nbt
      */
     public BlockList(List<BlockPos> poslist, BlockState state, @Nullable NbtCompound tag) {
-        this.poslist = poslist;
+        this.poslist = new ArrayList<>(poslist);
         this.blockstate = state;
         this.tag = tag;
     }
