@@ -114,6 +114,7 @@ Transparent frame
                                     @@@@@%################%@@@@@
                                         @@@@@@@@@@@@@@@@@@@@
  */
+
 /**
  * class to generate cylinder
  * this class use methods to generate circles with some modifications for the height
@@ -124,8 +125,8 @@ public class CylinderGen extends FillableShape {
     private int height;
 
 
-    public CylinderGen(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, int radius, int height) {
-        super(world, pos);
+    public CylinderGen(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, int radius, int height, PlaceMoment placeMoment) {
+        super(world, pos, placeMoment);
         this.radiusx = radius;
         this.radiusz = radius;
         this.height = height;
@@ -170,7 +171,6 @@ public class CylinderGen extends FillableShape {
         this.setFill();
 
 
-
         if (this.getXrotation() % 180 == 0 && this.getYrotation() % 180 == 0 && this.getSecondXrotation() == 0 && (this.getFillingType() == FillableShape.Type.FULL || this.getFillingType() == FillableShape.Type.EMPTY)) {
             for (int i = 0; i <= height; i++) {
                 poslist.addAll(this.generateFatsOval());
@@ -194,6 +194,7 @@ public class CylinderGen extends FillableShape {
 
     /**
      * this generates a full cylinder
+     *
      * @return blockStates list of the structures
      */
     public List<BlockPos> generateFullCylinder() {
@@ -250,6 +251,7 @@ public class CylinderGen extends FillableShape {
 
     /**
      * this generates a full cylinder
+     *
      * @return blockStates list of the structures
      */
     public List<BlockPos> generateEmptyCylinder() {

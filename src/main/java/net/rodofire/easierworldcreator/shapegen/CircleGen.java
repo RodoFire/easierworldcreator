@@ -54,14 +54,14 @@ public class CircleGen extends FillableShape {
      * @param radiusx         the radius of the x-axis
      * @param radiusz         the radius of the z-axis
      */
-    public CircleGen(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, @NotNull List<BlockLayer> layers, boolean force, List<Block> blocksToForce, int xrotation, int yrotation, int secondxrotation, int radiusx, int radiusz) {
-        super(world, pos, layers, force, blocksToForce, xrotation, yrotation, secondxrotation);
+    public CircleGen(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, PlaceMoment placeMoment, @NotNull List<BlockLayer> layers, boolean force, List<Block> blocksToForce, int xrotation, int yrotation, int secondxrotation, int radiusx, int radiusz) {
+        super(world, pos,placeMoment, layers, force, blocksToForce, xrotation, yrotation, secondxrotation);
         this.radiusx = radiusx;
         this.radiusz = radiusz;
     }
 
-    public CircleGen(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, int radius) {
-        super(world, pos);
+    public CircleGen(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, int radius, PlaceMoment placeMoment) {
+        super(world, pos, placeMoment);
         this.radiusx = radius;
         this.radiusz = radius;
     }

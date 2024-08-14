@@ -159,8 +159,8 @@ public class SpiralGen extends Shape {
      * @param height          the height of the spiral
      * @param turnNumber      the number of turns that the structure will do before reaching the top
      */
-    public SpiralGen(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, List<BlockLayer> layers, boolean force, List<Block> blocksToForce, int xrotation, int yrotation, int secondxrotation, int radiusx, int radiusz, int height, float turnNumber) {
-        super(world, pos, layers, force, blocksToForce, xrotation, yrotation, secondxrotation);
+    public SpiralGen(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, PlaceMoment placeMoment, List<BlockLayer> layers, boolean force, List<Block> blocksToForce, int xrotation, int yrotation, int secondxrotation, int radiusx, int radiusz, int height, float turnNumber) {
+        super(world, pos, placeMoment, layers, force, blocksToForce, xrotation, yrotation, secondxrotation);
         this.radiusx = radiusx;
         this.radiusz = radiusz;
         this.height = height;
@@ -173,8 +173,8 @@ public class SpiralGen extends Shape {
      * @param radius the radius of the spiral
      * @param height the height of the spiral
      */
-    public SpiralGen(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, int radius, int height) {
-        super(world, pos);
+    public SpiralGen(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, PlaceMoment placeMoment, int radius, int height) {
+        super(world, pos, placeMoment);
         this.radiusx = radius;
         this.radiusz = radius;
         this.height = height;
@@ -249,7 +249,6 @@ public class SpiralGen extends Shape {
     }
 
     /**
-     *
      * @param offset the offset of the start of the spiral
      */
     public void setOffset(int offset) {
@@ -261,7 +260,6 @@ public class SpiralGen extends Shape {
     }
 
     /**
-     *
      * @param helicoidAngle the angle of the blocks on the side
      */
     public void setHelicoidAngle(int helicoidAngle) {
@@ -298,6 +296,7 @@ public class SpiralGen extends Shape {
 
     /**
      * generates a simple spiral
+     *
      * @param pos the center of the spiral. This can be changed to match certain needing like when generating a large outline
      * @return a list of blockPos that will be used to place the structure
      */

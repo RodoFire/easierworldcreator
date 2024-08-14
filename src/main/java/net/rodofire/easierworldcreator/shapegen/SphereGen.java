@@ -79,8 +79,8 @@ public class SphereGen extends FillableShape {
      * @param xrotation the rotation along the x-axis
      * @param yrotation the rotation along the y-axis
      */
-    public SphereGen(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, int radiusx, List<BlockLayer> layers, int radiusy, int radiusz, int xrotation, int yrotation, int seconxrotation, boolean force, List<Block> blockToForce, boolean halfSphere, Direction direction) {
-        super(world, pos, layers, force, blockToForce, xrotation, yrotation, seconxrotation);
+    public SphereGen(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, int radiusx, List<BlockLayer> layers, int radiusy, int radiusz, int xrotation, int yrotation, int seconxrotation, boolean force, List<Block> blockToForce, boolean halfSphere, Direction direction, PlaceMoment placeMoment) {
+        super(world, pos, placeMoment, layers, force, blockToForce, xrotation, yrotation, seconxrotation);
         this.radiusx = radiusx;
         this.radiusy = radiusy;
         this.radiusz = radiusz;
@@ -96,8 +96,8 @@ public class SphereGen extends FillableShape {
      * @param pos    the pos of the structure center
      * @param radius the radius of the sphere
      */
-    public SphereGen(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, int radius) {
-        super(world, pos);
+    public SphereGen(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, int radius, PlaceMoment placeMoment) {
+        super(world, pos, placeMoment);
         this.radiusx = radius;
         this.radiusy = radius;
         this.radiusz = radius;
@@ -271,7 +271,6 @@ public class SphereGen extends FillableShape {
         float innerRadiusXSquared = (1 - this.getCustomFill()) * (1 - this.getCustomFill()) * radiusx * radiusx;
         float innerRadiusYSquared = (1 - this.getCustomFill()) * (1 - this.getCustomFill()) * radiusy * radiusy;
         float innerRadiusZSquared = (1 - this.getCustomFill()) * (1 - this.getCustomFill()) * radiusz * radiusz;
-
 
 
         if (radiusx > 32 || radiusy > 32 || radiusz > 32) {

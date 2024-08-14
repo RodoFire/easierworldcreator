@@ -2,11 +2,16 @@ package net.rodofire.easierworldcreator.shapeutil;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3i;
+import net.minecraft.util.math.random.Random;
 import net.minecraft.world.StructureWorldAccess;
+import net.minecraft.world.chunk.Chunk;
 import net.rodofire.easierworldcreator.Easierworldcreator;
+import net.rodofire.easierworldcreator.nbtutil.SaveNbt;
 import net.rodofire.easierworldcreator.util.FastMaths;
 import net.rodofire.easierworldcreator.worldgenutil.BlockPlaceUtil;
 import net.rodofire.easierworldcreator.worldgenutil.FastNoiseLite;
@@ -63,6 +68,9 @@ public abstract class Shape {
     //int for the number of placed Blocks, used if layerPlace == LayerPlace.ORDER
     private int placedBlocks = 0;
 
+    private PlaceMoment placeMoment;
+    private String featureName;
+
     /**
      * init the shape gen
      *
@@ -73,9 +81,10 @@ public abstract class Shape {
      * @param force         force the blockPos if true (be careful if true, your structure will replace every block, you might destruct some constructions if it is bad used)
      * @param blocksToForce list of blocks that the structure can still replace if @param force = false
      */
-    public Shape(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, List<BlockLayer> layers, boolean force, List<Block> blocksToForce, int xrotation, int yrotation, int secondxrotation) {
+    public Shape(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, @NotNull PlaceMoment placeMoment, List<BlockLayer> layers, boolean force, List<Block> blocksToForce, int xrotation, int yrotation, int secondxrotation) {
         this.world = world;
         this.pos = pos;
+        this.placeMoment = placeMoment;
         this.force = force;
         this.blocksToForce = blocksToForce;
         this.blockLayers = layers;
@@ -92,9 +101,10 @@ public abstract class Shape {
      * @param world the world the shape will be generated
      * @param pos   the pos of the structure center
      */
-    public Shape(@NotNull StructureWorldAccess world, @NotNull BlockPos pos) {
+    public Shape(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, @NotNull PlaceMoment placeMoment) {
         this.world = world;
         this.pos = pos;
+        this.placeMoment = placeMoment;
         this.radialCenterPos = this.getPos();
         this.radialCenterVec3d = this.getPos().toCenterPos();
         noise.SetSeed((int) this.world.getSeed());
@@ -273,9 +283,6 @@ public abstract class Shape {
         return this.blockLayers.get(index);
     }
 
-    public PlaceType getPlaceType() {
-        return placeType;
-    }
 
     /*---------- Noise Related ----------*/
     public void setNoise(FastNoiseLite noise) {
@@ -292,10 +299,38 @@ public abstract class Shape {
         this.placeType = placeType;
     }
 
+    public PlaceType getPlaceType() {
+        return placeType;
+    }
+
+    public PlaceMoment getPlaceMoment() {
+        return placeMoment;
+    }
+
+    public void setPlaceMoment(PlaceMoment placeMoment) {
+        this.placeMoment = placeMoment;
+    }
+
     //Method to place the structure. Every change done after the method will not be taken in count
     public void place() {
         if (this.placeType == PlaceType.BLOCKS) {
-            this.placeLayers(this.getBlockPos());
+            if (this.placeMoment == PlaceMoment.WORLD_GEN) {
+                featureName = "Custom_feature_" + Random.create().nextLong();
+                List<BlockList> blockList = this.getLayers(this.getBlockPos());
+                SaveNbt.saveNbtDuringWorldGen(world, blockList, featureName);
+
+                ChunkPos chunk = new ChunkPos(this.getPos());
+                chunk.getStartPos();
+
+
+                List<Identifier> nbtlist = SaveNbt.loadNBTFiles(chunk);
+                if (!nbtlist.isEmpty()) {
+                    SaveNbt.generateNbtFiles(world, nbtlist, chunk);
+                    SaveNbt.removeNbtFiles(nbtlist);
+                }
+            } else {
+                this.placeLayers(this.getBlockPos());
+            }
         } else {
         }
     }
@@ -311,54 +346,65 @@ public abstract class Shape {
      *
      * @param firstposlist list of BlockPos of the structure
      */
+    public List<BlockList> getLayers(List<BlockPos> firstposlist) {
+        List<BlockList> blockLists = new ArrayList<>();
+        if (this.layersType == LayersType.SURFACE) {
+            List<BlockPos> poslist = new ArrayList<>();
+            poslist = this.placeFirstSurfaceBlockLayers(firstposlist);
+
+            if (poslist == null) {
+                List<BlockState> states = this.blockLayers.get(0).getBlockStates();
+                for (BlockPos pos : firstposlist) {
+                    verifyForBlockLayer(pos, states, blockLists);
+                }
+                return blockLists;
+            }
+
+            for (int i = 1; i < this.blockLayers.size(); ++i) {
+                if (poslist.isEmpty()) return blockLists;
+                List<List<BlockPos>> pos1 = this.placeSurfaceBlockLayers(poslist, i);
+                poslist = pos1.get(1);
+                firstposlist = pos1.get(0);
+                List<BlockState> states = this.blockLayers.get(i - 1).getBlockStates();
+
+                for (BlockPos pos : firstposlist) {
+                    verifyForBlockLayer(pos, states, blockLists);
+                }
+            }
+        } else if (this.layersType == LayersType.RADIAL) {
+            blockLists.addAll(this.getRadialBlocks(firstposlist));
+        } else if (this.layersType == LayersType.CYLINDRICAL) {
+            blockLists.addAll(this.getCylindricalBlocks(firstposlist));
+        } else {
+            blockLists.addAll(this.getRadialBlocks(firstposlist));
+        }
+
+        return blockLists;
+    }
+
+    /**
+     * place the layers of the structure starting from the first layer to the second to the third
+     *
+     * @param firstposlist list of BlockPos of the structure
+     */
     public void placeLayers(List<BlockPos> firstposlist) {
         if (this.layersType == LayersType.SURFACE) {
             List<BlockPos> poslist = new ArrayList<>();
             poslist = this.placeFirstSurfaceBlockLayers(firstposlist);
+
             if (poslist == null) return;
+
             for (int i = 1; i < this.blockLayers.size(); ++i) {
                 if (poslist.isEmpty()) return;
-                //créer nouveau thread pour économiser du temps
-                //pendant que les positions seront calculées, les blocs précédents seront mis
                 List<List<BlockPos>> pos1 = this.placeSurfaceBlockLayers(poslist, i);
                 poslist = pos1.get(1);
                 firstposlist = pos1.get(0);
 
 
-                //blocks qui seront poser sur le server thread
                 for (BlockPos pos : firstposlist) {
                     this.placeBlocks(i - 1, pos);
                 }
             }
-            /*ExecutorService executor = Executors.newSingleThreadExecutor();
-            for (int i = 1; i < this.blockLayers.size(); ++i) {
-                if (poslist.isEmpty()) return;
-
-                // Soumettre la tâche de calcul des positions à un nouveau thread
-                List<BlockPos> finalPoslist = poslist;
-                int finalI = i;
-                Future<List<List<BlockPos>>> future = executor.submit(new Callable<List<List<BlockPos>>>() {
-                    @Override
-                    public List<List<BlockPos>> call() throws Exception {
-                        return placeSurfaceBlockLayers(finalPoslist, finalI);
-                    }
-                });
-
-                // Poser les blocs dans le thread principal pendant que le calcul est en cours
-                for (BlockPos pos : firstposlist) {
-                    this.placeBlocks(i - 1, pos);
-                }
-
-                try {
-                    // Attendre que le calcul des positions soit terminé
-                    List<List<BlockPos>> result = future.get();
-                    poslist = result.get(1);
-                    firstposlist = result.get(0);
-                } catch (InterruptedException | ExecutionException e) {
-                    e.printStackTrace();
-                }
-            }
-            executor.shutdown();*/
         } else if (this.layersType == LayersType.RADIAL) {
             this.placeRadialBlocks(firstposlist);
         } else if (this.layersType == LayersType.CYLINDRICAL) {
@@ -400,7 +446,7 @@ public abstract class Shape {
                 continue;
             }
             iterator.remove();
-            placeBlocks(layerIndex, pos);
+            //placeBlocks(layerIndex, pos);
             newposlist.add(pos);
         }
         return List.of(poslist, newposlist);
@@ -478,20 +524,148 @@ public abstract class Shape {
                 }
 
                 if (b <= h) {
-                    placeBlocksWithVerification(states,pos);
+                    placeBlocksWithVerification(states, pos);
                 } else {
                     u++;
                     a += this.blockLayers.get(u).getDepth();
                     h = (float) (a * g + 0.00002);
                     states = blockLayers.get(u).getBlockStates();
-                    placeBlocksWithVerification(states,pos);
+                    placeBlocksWithVerification(states, pos);
 
                 }
             }
             //place the last layer on all the structure everything was placed
             else {
-                placeBlocksWithVerification(u,pos);
+                placeBlocksWithVerification(u, pos);
             }
+        }
+    }
+
+
+
+
+    /*-----------------------------------------------------------------------------------------------------------------------------*/
+
+
+    //place the first layer on the structure
+    public List<BlockPos> getFirstSurfaceBlockLayers(List<BlockPos> firstposlist) {
+        List<BlockPos> newposlist = new ArrayList<BlockPos>();
+        for (BlockPos pos : firstposlist) {
+            this.setBlocksToForce(WorldGenUtil.addBlockStateListtoBlockList(this.blocksToForce, this.blockLayers.get(0).getBlockStates()));
+            newposlist.add(pos);
+
+        }
+        return newposlist;
+    }
+
+    public List<BlockList> getCylindricalBlocks(List<BlockPos> posList) {
+        List<BlockList> blockLists = new ArrayList<>();
+        for (BlockPos pos : posList) {
+            //instead of a point in the world,
+            //we use the Y coordinate of the pos
+            //to get a straight line which creates a cylindrical shape instead of a circular shape
+            float distance = WorldGenUtil.getDistance(new BlockPos(this.radialCenterPos.getX(), pos.getY(), this.radialCenterPos.getZ()), pos);
+            int maxdist = this.blockLayers.get(0).getDepth();
+            int mindist = 0;
+            int a = 0;
+            boolean bl = false;
+            while (!(distance < maxdist && mindist < maxdist) || bl) {
+                a++;
+                if (a >= this.blockLayers.size()) {
+                    verifyForBlockLayer(pos, this.blockLayers.get(a).getBlockStates(), blockLists);
+                    bl = true;
+                }
+                mindist += maxdist;
+                maxdist += this.blockLayers.get(a).getDepth();
+            }
+        }
+        return blockLists;
+    }
+
+    //be careful when using layers with 1 block depth, that might do some weird things
+    public List<BlockList> getRadialBlocks(List<BlockPos> posList) {
+        List<BlockList> blockLists = new ArrayList<>();
+        for (BlockPos pos : posList) {
+            float distance = WorldGenUtil.getDistance(radialCenterPos, pos);
+            int maxdist = this.blockLayers.get(0).getDepth();
+            int mindist = 0;
+            int a = 0;
+            boolean bl = false;
+            while (!(distance <= maxdist && distance >= mindist)) {
+                if (a >= this.blockLayers.size()) {
+                    verifyForBlockLayer(pos, this.blockLayers.get(a).getBlockStates(), blockLists);
+                    bl = true;
+                    continue;
+                }
+                mindist = maxdist;
+                maxdist += this.blockLayers.get(a).getDepth();
+                a++;
+            }
+        }
+        return blockLists;
+    }
+
+
+    //TODO
+    //known bug where the first layers is a little wider than what it is supposed to be
+    private List<BlockList> getDirectionalLayers(List<BlockPos> firstposlist) {
+        Vec3d direction = this.directionalLayerDirection.normalize();
+        List<BlockPos> poslist = new ArrayList<>(firstposlist);
+        List<BlockList> blockLists = new ArrayList<>();
+
+        // Sort positions according to the directional vector
+        poslist.sort(Comparator.comparingDouble(pos -> -pos.getX() * direction.x - pos.getY() * direction.y - pos.getZ() * direction.z));
+
+        BlockPos firstPoint = poslist.get(0);
+
+        int u = 0;
+        int a = this.blockLayers.get(u).getDepth();
+        float b;
+        float g = 0;
+        float h = 0;
+        List<BlockState> states = blockLayers.get(u).getBlockStates();
+        int size = this.blockLayers.size() - 1;
+        for (BlockPos pos : poslist) {
+
+            if (u != size) {
+                b = WorldGenUtil.getDistanceFromPointToPlane(direction, firstPoint.toCenterPos(), pos.toCenterPos());
+                if (g == 0 && b > 2.0E-4) {
+                    g = (float) (b);
+                    h = (float) ((a) * g + 0.00002);
+                }
+
+                if (b <= h) {
+                    verifyForBlockLayer(pos, states, blockLists);
+                } else {
+                    u++;
+                    a += this.blockLayers.get(u).getDepth();
+                    h = (float) (a * g + 0.00002);
+                    states = blockLayers.get(u).getBlockStates();
+                    verifyForBlockLayer(pos, states, blockLists);
+
+                }
+            }
+            //place the last layer on all the structure everything was placed
+            else {
+                verifyForBlockLayer(pos, states, blockLists);
+            }
+        }
+        return blockLists;
+    }
+
+    private void verifyForBlockLayer(BlockPos pos, List<BlockState> states, List<BlockList> blockLists) {
+        boolean found;
+        BlockState state = getBlockToPlace(states, pos);
+        found = false;
+        for (BlockList blockList : blockLists) {
+            if (blockList.getBlockstate().equals(state)) {
+                blockList.addBlockPos(pos);
+                found = true;
+                break;
+            }
+        }
+        if (!found) {
+            blockLists.add(new BlockList(List.of(pos), state));
         }
     }
 
@@ -594,6 +768,37 @@ public abstract class Shape {
         }
     }
 
+    //Used to get the blocksState notably used during world gen, this doesn't place anything
+    public BlockState getBlockToPlace(int index, BlockPos pos) {
+        if (this.layerPlace == LayerPlace.RANDOM) {
+            return BlockPlaceUtil.getRandomBlock(this.blockLayers.get(index).getBlockStates());
+        } else if (this.layerPlace == LayerPlace.NOISE2D) {
+            return BlockPlaceUtil.getBlockWith2DNoise(this.blockLayers.get(index).getBlockStates(), pos, this.noise);
+        } else if (this.layerPlace == LayerPlace.NOISE3D) {
+            return BlockPlaceUtil.getBlockWith3DNoise(this.blockLayers.get(index).getBlockStates(), pos, this.noise);
+        } else {
+            BlockState blockState = BlockPlaceUtil.getBlockWithOrder(this.blockLayers.get(index).getBlockStates(), this.placedBlocks);
+            this.placedBlocks = (this.placedBlocks + 1) % (this.blockLayers.size() - 1);
+            return blockState;
+        }
+    }
+
+    //Used to get the blocksState notably used during world gen, this doesn't place anything
+    //Used for precomputed BlockState list
+    public BlockState getBlockToPlace(List<BlockState> states, BlockPos pos) {
+        if (this.layerPlace == LayerPlace.RANDOM) {
+            return BlockPlaceUtil.getRandomBlock(states);
+        } else if (this.layerPlace == LayerPlace.NOISE2D) {
+            return BlockPlaceUtil.getBlockWith2DNoise(states, pos, this.noise);
+        } else if (this.layerPlace == LayerPlace.NOISE3D) {
+            return BlockPlaceUtil.getBlockWith3DNoise(states, pos, this.noise);
+        } else {
+            BlockState blockState = BlockPlaceUtil.getBlockWithOrder(states, this.placedBlocks);
+            this.placedBlocks = (this.placedBlocks + 1) % (this.blockLayers.size() - 1);
+            return blockState;
+        }
+    }
+
     public boolean verifyBlocks(BlockPos pos) {
         return BlockPlaceUtil.verifyBlock(this.world, this.force, blocksToForce, pos);
     }
@@ -641,5 +846,12 @@ public abstract class Shape {
         NOISE3D
     }
 
-
+    //Define the moment the shape will be placed.
+    // It is really important that this does match what you want or you will run into issues or even crash
+    public enum PlaceMoment {
+        //used during the world generation
+        WORLD_GEN,
+        //used for any other moment than world gen
+        OTHER
+    }
 }

@@ -1,8 +1,6 @@
 package net.rodofire.easierworldcreator.shapegen;
 
 import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.registry.tag.BlockTags;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
@@ -18,13 +16,13 @@ import java.util.List;
 public class LineGen extends Shape {
     private BlockPos secondPos;
 
-    public LineGen(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, List<BlockLayer> layers, boolean force, List<Block> blocksToForce, int xrotation, int yrotation, int secondxrotation, BlockPos secondPos) {
-        super(world, pos, layers, force, blocksToForce, xrotation, yrotation, secondxrotation);
+    public LineGen(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, List<BlockLayer> layers, boolean force, List<Block> blocksToForce, int xrotation, int yrotation, int secondxrotation, BlockPos secondPos, PlaceMoment placeMoment) {
+        super(world, pos, placeMoment, layers, force, blocksToForce, xrotation, yrotation, secondxrotation);
         this.secondPos = secondPos;
     }
 
-    public LineGen(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, BlockPos secondPos) {
-        super(world, pos);
+    public LineGen(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, BlockPos secondPos, PlaceMoment placeMoment) {
+        super(world, pos, placeMoment);
         this.secondPos = secondPos;
     }
 
@@ -32,7 +30,7 @@ public class LineGen extends Shape {
     public List<BlockPos> getBlockPos() {
         Direction direction;
         //faster coordinates generation
-        if ((direction = WorldGenUtil.getDirection(this.getPos(),secondPos)) != null){
+        if ((direction = WorldGenUtil.getDirection(this.getPos(), secondPos)) != null) {
             return this.generateAxisLine(direction);
         }
         return this.drawLine();

@@ -90,16 +90,16 @@ public class TorusGen extends FillableShape {
     private float horizontalTorus = 1f;
 
 
-    public TorusGen(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, int innerRadius, int outerRadius) {
-        super(world, pos);
+    public TorusGen(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, PlaceMoment placeMoment, int innerRadius, int outerRadius) {
+        super(world, pos, placeMoment);
         this.innerRadiusx = innerRadius;
         this.outerRadiusx = outerRadius;
         this.innerRadiusz = innerRadius;
         this.outerRadiusz = outerRadius;
     }
 
-    public TorusGen(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, List<BlockLayer> layers, boolean force, List<Block> blocksToForce, int xrotation, int yrotation, int secondxrotation, int innerRadius, int outerRadius) {
-        super(world, pos, layers, force, blocksToForce, xrotation, yrotation, secondxrotation);
+    public TorusGen(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, PlaceMoment placeMoment, List<BlockLayer> layers, boolean force, List<Block> blocksToForce, int xrotation, int yrotation, int secondxrotation, int innerRadius, int outerRadius) {
+        super(world, pos, placeMoment, layers, force, blocksToForce, xrotation, yrotation, secondxrotation);
         this.innerRadiusx = innerRadius;
         this.outerRadiusx = outerRadius;
         this.innerRadiusz = innerRadius;
@@ -137,7 +137,6 @@ public class TorusGen extends FillableShape {
     public void setOuterRadiusz(int outerRadiusz) {
         this.outerRadiusz = outerRadiusz;
     }
-
 
 
     public TorusType getTorusType() {
@@ -182,6 +181,7 @@ public class TorusGen extends FillableShape {
     /**
      * generates a full tore / tore with custom filling
      * the shape with the torus might be different from the empty one if you're using custom torus filling
+     *
      * @return a list of every blockPos
      */
     public List<BlockPos> generateFullTore() {
@@ -277,6 +277,7 @@ public class TorusGen extends FillableShape {
     /**
      * generates an empty torus
      * the shape with the torus might be different from the full one if you're using custom torus filling
+     *
      * @return a list of every blockPos
      */
     public List<BlockPos> generateEmptyTore() {
@@ -310,19 +311,15 @@ public class TorusGen extends FillableShape {
         if (this.torusType == TorusType.FULL) {
             this.verticalTorus = 1f;
             this.horizontalTorus = 1f;
-        }
-        else if (this.torusType == TorusType.HORIZONTAL_HALF) {
+        } else if (this.torusType == TorusType.HORIZONTAL_HALF) {
             this.horizontalTorus = 0.5f;
             this.verticalTorus = 1f;
-        }
-        else if (this.torusType == TorusType.VERTICAL_HALF) {
+        } else if (this.torusType == TorusType.VERTICAL_HALF) {
             this.verticalTorus = 0.5f;
             this.horizontalTorus = 1f;
-        }
-        else if(this.torusType == TorusType.HORIZONTAL_CUSTOM){
+        } else if (this.torusType == TorusType.HORIZONTAL_CUSTOM) {
             this.verticalTorus = 1f;
-        }
-        else if(this.torusType == TorusType.VERTICAL_CUSTOM){
+        } else if (this.torusType == TorusType.VERTICAL_CUSTOM) {
             this.horizontalTorus = 1f;
         }
     }
