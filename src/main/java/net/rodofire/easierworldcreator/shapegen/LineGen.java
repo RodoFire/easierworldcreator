@@ -2,6 +2,7 @@ package net.rodofire.easierworldcreator.shapegen;
 
 import net.minecraft.block.Block;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.StructureWorldAccess;
@@ -10,9 +11,19 @@ import net.rodofire.easierworldcreator.shapeutil.Shape;
 import net.rodofire.easierworldcreator.worldgenutil.WorldGenUtil;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
+/**
+ * Class to generate Line related shapes
+ * <p>
+ * <p>
+ * Since 2.1.0, the shape doesn't return a {@link List<BlockPos>} but it returns instead a {@link List< Set  <BlockPos>>}
+ * Before 2.1.0, the BlockPos list was a simple list.
+ * Starting from 2.1.0, the shapes returns a list of {@link ChunkPos} that has a set of {@link BlockPos}
+ * The change from {@link List} to {@link Set} was done to avoid duplicates BlockPos wich resulted in unnecessary calculations.
+ * this allow easy multithreading for the Block assignment done in the {@link Shape} which result in better performance;
+ * </p>
+ */
 public class LineGen extends Shape {
     private BlockPos secondPos;
 
@@ -27,13 +38,16 @@ public class LineGen extends Shape {
     }
 
     @Override
-    public List<BlockPos> getBlockPos() {
+    public List<Set<BlockPos>> getBlockPos() {
         Direction direction;
+        Map<ChunkPos, Set<BlockPos>> chunkMap = new HashMap<>();
         //faster coordinates generation
         if ((direction = WorldGenUtil.getDirection(this.getPos(), secondPos)) != null) {
-            return this.generateAxisLine(direction);
+            this.generateAxisLine(direction, chunkMap);
+        } else {
+            this.drawLine(chunkMap);
         }
-        return this.drawLine();
+        return new ArrayList<>(chunkMap.values());
     }
 
     @Override
@@ -41,20 +55,22 @@ public class LineGen extends Shape {
         return List.of();
     }
 
-
-    public List<BlockPos> generateAxisLine(Direction dir) {
+    /**
+     * this method genarate the coordinates
+     * @param dir the direction of the line
+     * @param chunkMap the map used to get the coordinates
+     */
+    public void generateAxisLine(Direction dir, Map<ChunkPos, Set<BlockPos>> chunkMap) {
         int length = (int) WorldGenUtil.getDistance(this.getPos(), secondPos);
-        List<BlockPos> poslist = new ArrayList<BlockPos>();
         for (int i = 0; i < length; i++) {
-            poslist.add(this.getPos().offset(dir, i));
+            BlockPos pos = this.getPos().offset(dir, i);
+            WorldGenUtil.modifyChunkMap(pos, chunkMap);
         }
-        return poslist;
     }
 
 
-    public List<BlockPos> drawLine() {
-        List<BlockPos> poslist = new ArrayList<>();
-        poslist.add(this.getPos());
+    public void drawLine(Map<ChunkPos, Set<BlockPos>> chunkMap) {
+        WorldGenUtil.modifyChunkMap(this.getPos(), chunkMap);
 
         int x1 = this.getPos().getX();
         int y1 = this.getPos().getY();
@@ -87,7 +103,7 @@ public class LineGen extends Shape {
                 p1 += 2 * dy;
                 p2 += 2 * dz;
                 BlockPos currentPos = new BlockPos(x1, y1, z1);
-                poslist.add(currentPos);
+                WorldGenUtil.modifyChunkMap(currentPos, chunkMap);
             }
         } else if (dy >= dx && dy >= dz) {
             int p1 = 2 * dx - dy;
@@ -105,7 +121,7 @@ public class LineGen extends Shape {
                 p1 += 2 * dx;
                 p2 += 2 * dz;
                 BlockPos currentPos = new BlockPos(x1, y1, z1);
-                poslist.add(currentPos);
+                WorldGenUtil.modifyChunkMap(currentPos, chunkMap);
             }
         } else {
             int p1 = 2 * dy - dz;
@@ -123,9 +139,8 @@ public class LineGen extends Shape {
                 p1 += 2 * dy;
                 p2 += 2 * dx;
                 BlockPos currentPos = new BlockPos(x1, y1, z1);
-                poslist.add(currentPos);
+                WorldGenUtil.modifyChunkMap(currentPos, chunkMap);
             }
         }
-        return poslist;
     }
 }
