@@ -1,14 +1,16 @@
 package net.rodofire.easierworldcreator.shapegen;
 
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.StructureWorldAccess;
 import net.rodofire.easierworldcreator.shapeutil.FillableShape;
+import net.rodofire.easierworldcreator.shapeutil.Shape;
 import net.rodofire.easierworldcreator.util.FastMaths;
+import net.rodofire.easierworldcreator.worldgenutil.WorldGenUtil;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 /*
 
@@ -116,8 +118,15 @@ Transparent frame
  */
 
 /**
- * class to generate cylinder
- * this class use methods to generate circles with some modifications for the height
+ * Class to generate Sphere related shapes
+ * the methods in this class basically stack multiple circles to generate a cylinder
+ * <p>
+ * Since 2.1.0, the shape doesn't return a {@link List<BlockPos>} but it returns instead a {@link List< Set  <BlockPos>>}
+ * Before 2.1.0, the BlockPos list was a simple list.
+ * Starting from 2.1.0, the shapes returns a list of {@link ChunkPos} that has a set of {@link BlockPos}
+ * The change from {@link List} to {@link Set} was done to avoid duplicates BlockPos wich resulted in unnecessary calculations.
+ * this allow easy multithreading for the Block assignment done in the {@link Shape} which result in better performance;
+ * </p>
  */
 public class CylinderGen extends FillableShape {
     private int radiusx;
@@ -160,49 +169,51 @@ public class CylinderGen extends FillableShape {
     }
 
     @Override
-    public List<BlockPos> getBlockPos() {
+    public List<Set<BlockPos>> getBlockPos() {
         return this.generateCylinder();
     }
 
-    public List<BlockPos> generateCylinder() {
+    public List<Set<BlockPos>> generateCylinder() {
         long startTimeCartesian = System.nanoTime();
         List<Vec3d> veclist = new ArrayList<>();
         List<BlockPos> poslist = new ArrayList<>();
+        Map<ChunkPos, Set<BlockPos>> chunkMap = new HashMap<>();
         this.setFill();
 
-
+        //Rotating a shape requires more blocks.
+        //This verification is there to avoid some unnecessary calculations when the rotations don't have any impact on the number of blocks
         if (this.getXrotation() % 180 == 0 && this.getYrotation() % 180 == 0 && this.getSecondXrotation() == 0 && (this.getFillingType() == FillableShape.Type.FULL || this.getFillingType() == FillableShape.Type.EMPTY)) {
             for (int i = 0; i <= height; i++) {
-                poslist.addAll(this.generateFatsOval());
+                this.generateFatsOval(this.getPos().getX(), this.getPos().getZ(), this.getPos().getY(), chunkMap);
                 this.setPos(this.getPos().up());
             }
         } else if (this.getFillingType() == FillableShape.Type.EMPTY) {
 
-            poslist.addAll(this.generateEmptyCylinder());
+            this.generateEmptyCylinder(chunkMap);
             this.setPos(this.getPos().up());
 
         } else {
 
-            poslist.addAll(this.generateFullCylinder());
+            this.generateFullCylinder(chunkMap);
             this.setPos(this.getPos().up());
 
             poslist.addAll(this.getCoordinatesRotationList(veclist, this.getPos()));
         }
         this.getGenTime(startTimeCartesian, false);
-        return poslist;
+        return new ArrayList<>(chunkMap.values());
     }
 
     /**
      * this generates a full cylinder
-     *
-     * @return blockStates list of the structures
      */
-    public List<BlockPos> generateFullCylinder() {
-        List<BlockPos> poslist = new ArrayList<>();
+    public void generateFullCylinder(Map<ChunkPos, Set<BlockPos>> chunkMap) {
         int radiusxsquared = radiusx * radiusx;
         int radiuszsquared = radiusz * radiusz;
         float innerRadiusXSquared = (1 - this.getCustomFill()) * (1 - this.getCustomFill()) * radiusx * radiusx;
         float innerRadiusZSquared = (1 - this.getCustomFill()) * (1 - this.getCustomFill()) * radiusz * radiusz;
+
+        //Rotating a shape requires more blocks.
+        //This verification is there to avoid some unnecessary calculations when the rotations don't have any impact on the number of blocks
         if (this.getXrotation() % 180 == 0 && this.getYrotation() % 180 == 0 && this.getSecondXrotation() % 180 == 0) {
             for (float y = 0; y <= this.height; y += 1f) {
                 for (float x = -this.radiusx; x <= this.radiusx; x += 1f) {
@@ -218,7 +229,8 @@ public class CylinderGen extends FillableShape {
                                 }
                             }
                             if (bl) {
-                                poslist.add(new BlockPos((int) (this.getPos().getX() + x), (int) (this.getPos().getY() + y), (int) (this.getPos().getZ() + z)));
+                                BlockPos pos = new BlockPos((int) (this.getPos().getX() + x), this.getPos().getY(), (int) (this.getPos().getZ() + z));
+                                WorldGenUtil.modifyChunkMap(pos, chunkMap);
                             }
                         }
                     }
@@ -239,30 +251,29 @@ public class CylinderGen extends FillableShape {
                                 }
                             }
                             if (bl) {
-                                poslist.add(this.getCoordinatesRotation(x, y, z, this.getPos()));
+                                BlockPos pos = this.getCoordinatesRotation(x, 0, z, this.getPos());
+                                WorldGenUtil.modifyChunkMap(pos, chunkMap);
                             }
                         }
                     }
                 }
             }
         }
-        return poslist;
     }
 
     /**
      * this generates a full cylinder
-     *
-     * @return blockStates list of the structures
      */
-    public List<BlockPos> generateEmptyCylinder() {
-        List<BlockPos> poslist = new ArrayList<>();
-
+    public void generateEmptyCylinder(Map<ChunkPos, Set<BlockPos>> chunkMap) {
+        //Rotating a shape requires more blocks.
+        //This verification is there to avoid some unnecessary calculations when the rotations don't have any impact on the number of blocks
         if (this.getXrotation() % 180 == 0 && this.getYrotation() % 180 == 0 && this.getSecondXrotation() == 0) {
             for (float u = 0; u < 360; u += (float) 45 / Math.max(this.radiusz, this.radiusx)) {
                 float x = (float) (radiusx * FastMaths.getFastCos(u));
                 float z = (float) (radiusz * FastMaths.getFastSin(u));
                 for (float y = 0; y <= this.height; y += 1f) {
-                    poslist.add(new BlockPos((int) (this.getPos().getX() + x), (int) (this.getPos().getY() + y), (int) (this.getPos().getZ() + z)));
+                    BlockPos pos = new BlockPos((int) (this.getPos().getX() + x), this.getPos().getY(), (int) (this.getPos().getZ() + z));
+                    WorldGenUtil.modifyChunkMap(pos, chunkMap);
                 }
             }
         } else {
@@ -270,19 +281,24 @@ public class CylinderGen extends FillableShape {
                 float x = (float) (radiusx * FastMaths.getFastCos(u));
                 float z = (float) (radiusz * FastMaths.getFastSin(u));
                 for (float y = 0; y <= this.height; y += 0.5f) {
-                    poslist.add(this.getCoordinatesRotation(x, y, z, this.getPos()));
+                    BlockPos pos = this.getCoordinatesRotation(x, 0, z, this.getPos());
+                    WorldGenUtil.modifyChunkMap(pos, chunkMap);
                 }
             }
         }
-        return poslist;
     }
 
-    /*---------- Algorithm based on Bressen Algorithms for circle ----------*/
-    public List<BlockPos> generateFatsOval() {
-        int centerX = this.getPos().getX();
-        int centerZ = this.getPos().getZ();
-        int y = this.getPos().getY();
 
+    /*---------- Algorithm based on Bressen Algorithms for circle ----------*/
+    /**
+     * this class is used when no rotation is present. This allow fast coordinates generation but don't work with rotations
+     *
+     * @param centerX  the x coordinate of the center of the circle
+     * @param centerZ  the z coordinate of the center of the circle
+     * @param y        the height of the circle
+     * @param chunkMap the Map used to return the positions
+     */
+    public void generateFatsOval(int centerX, int centerZ, int y, Map<ChunkPos, Set<BlockPos>> chunkMap) {
         int x = 0;
         int z = this.radiusz;
         int twoASquare = 2 * this.radiusx * this.radiusx;
@@ -291,14 +307,13 @@ public class CylinderGen extends FillableShape {
         int dx = twoBSquare * x;
         int dz = twoASquare * z;
 
-        List<BlockPos> coordonates = new ArrayList<BlockPos>();
 
-        // Region 1
+        // Région 1
         while (dx < dz) {
-            if (this.getFillingType() != FillableShape.Type.FULL) {
-                coordonates.addAll(this.getOvalBlocks(centerX, centerZ, x, y, z));
+            if (this.getFillingType() == Type.FULL) {
+                placeFullOval(centerX, centerZ, y, x, z, chunkMap);
             } else {
-                coordonates.addAll(placeFullOval(centerX, centerZ, x, y, z));
+                addOvalBlocks(centerX, centerZ, x, y, z, chunkMap);
             }
             if (decision1 < 0) {
                 x++;
@@ -313,13 +328,13 @@ public class CylinderGen extends FillableShape {
             }
         }
 
-        // Region 2
+        // Région 2
         int decision2 = (int) (this.radiusz * this.radiusz * (x + 0.5) * (x + 0.5) + this.radiusx * this.radiusx * (z - 1) * (z - 1) - this.radiusx * this.radiusx * this.radiusz * this.radiusz);
         while (z >= 0) {
-            if (this.getFillingType() != FillableShape.Type.FULL) {
-                coordonates.addAll(this.getOvalBlocks(centerX, centerZ, x, y, z));
+            if (this.getFillingType() == Type.FULL) {
+                placeFullOval(centerX, centerZ, y, x, z, chunkMap);
             } else {
-                coordonates.addAll(placeFullOval(centerX, centerZ, x, y, z));
+                addOvalBlocks(centerX, centerZ, x, y, z, chunkMap);
             }
             if (decision2 > 0) {
                 z--;
@@ -333,64 +348,56 @@ public class CylinderGen extends FillableShape {
                 decision2 = decision2 + dx - dz + this.radiusx * this.radiusx;
             }
         }
-        return coordonates;
     }
 
-    public List<BlockPos> getOvalBlocks(int centerX, int centerZ, int x, int y, int z) {
-        BlockPos.Mutable pos = new BlockPos.Mutable();
-        List<BlockPos> blockPosList = new ArrayList<>();
-
+    /**
+     * Adds block positions to the chunkMap based on the given coordinates.
+     *
+     * @param centerX  The x-coordinate of the center of the oval
+     * @param centerZ  The z-coordinate of the center of the oval
+     * @param x        The x-coordinate in the context of the Bresenham algorithm
+     * @param y        The height of the oval
+     * @param z        The z-coordinate in the context of the Bresenham algorithm
+     * @param chunkMap The map of chunks with the block positions
+     */
+    public void addOvalBlocks(int centerX, int centerZ, int x, int y, int z, Map<ChunkPos, Set<BlockPos>> chunkMap) {
         if (this.getYrotation() % 180 == 0) {
-            blockPosList.add(new BlockPos(centerX + x, y, centerZ + z));
-            blockPosList.add(new BlockPos(centerX + x, y, centerZ - z));
-            blockPosList.add(new BlockPos(centerX - x, y, centerZ + z));
-            blockPosList.add(new BlockPos(centerX - x, y, centerZ - z));
-        } /*else {
-            blockPosList.add(this.getCoordinatesRotation(centerX + x, y, centerZ + z, new BlockPos(0, 0, 0)));
-            blockPosList.add(this.getCoordinatesRotation(centerX + x, y, centerZ - z, new BlockPos(0, 0, 0)));
-            blockPosList.add(this.getCoordinatesRotation(centerX - x, y, centerZ + z, new BlockPos(0, 0, 0)));
-            blockPosList.add(this.getCoordinatesRotation(centerX - x, y, centerZ - z, new BlockPos(0, 0, 0)));
-        }*/
-        return blockPosList;
+            BlockPos[] positions = {
+                    new BlockPos(centerX + x, y, centerZ + z),
+                    new BlockPos(centerX + x, y, centerZ - z),
+                    new BlockPos(centerX - x, y, centerZ + z),
+                    new BlockPos(centerX - x, y, centerZ - z)
+            };
+            for (BlockPos pos : positions) {
+                WorldGenUtil.modifyChunkMap(pos, chunkMap);
+            }
+        }
     }
 
-    //place lines between the blocks
-    public List<BlockPos> placeFullOval(int centerX, int centerZ, int x, int y, int z) {
+    /**
+     * Fills in the lines between the blocks for a complete oval.
+     *
+     * @param centerX  The x-coordinate of the center of the oval
+     * @param centerZ  The z-coordinate of the center of the oval
+     * @param x        The x-coordinate in the context of the Bresenham algorithm
+     * @param y        The height of the oval
+     * @param z        The z-coordinate in the context of the Bresenham algorithm
+     * @param chunkMap The map of chunks with the block positions
+     * @return The map of chunks with the block positions
+     */
+    public void placeFullOval(int centerX, int centerZ, int x, int y, int z, Map<ChunkPos, Set<BlockPos>> chunkMap) {
         BlockPos start1 = new BlockPos(centerX + x, y, centerZ + z);
         BlockPos start2 = new BlockPos(centerX - x, y, centerZ + z);
 
-        List<BlockPos> blockPosList = new ArrayList<>();
-
-        BlockPos.Mutable mutable = new BlockPos.Mutable();
-
         if (this.getYrotation() % 180 == 0) {
             for (int i = 0; i <= 2 * z; i++) {
-                mutable.set(start1, 0, 0, -i);
-                blockPosList.add(new BlockPos(mutable));
-                mutable.set(start2, 0, 0, -i);
-                blockPosList.add(new BlockPos(mutable));
+                BlockPos pos1 = new BlockPos(start1.getX(), start1.getY(), start1.getZ() - i);
+                BlockPos pos2 = new BlockPos(start2.getX(), start2.getY(), start2.getZ() - i);
+                WorldGenUtil.modifyChunkMap(pos1, chunkMap);
+                WorldGenUtil.modifyChunkMap(pos2, chunkMap);
             }
-        } /*else {
-            for (int i = 0; i <= 2 * z; i++) {
-                mutable.set(start1, 0, 0, -i);
-                blockPosList.add(this.getCoordinatesRotation(x, 0, z - i, new BlockPos(centerX, y, centerZ)));
-                mutable.set(start2, 0, 0, -i);
-                blockPosList.add(this.getCoordinatesRotation(-x, 0, z - i, new BlockPos(centerX, y, centerZ)));
-            }
-        }*/
-        return blockPosList;
-    }
-
-    public List<BlockPos> getCircleWithRotation() {
-        List<BlockPos> blockPosList = new ArrayList<>();
-        for (float a = -180; a <= 180; a += (float) 25 / (Math.max(this.radiusx, this.radiusz))) {
-            float x = (float) (this.radiusx * FastMaths.getFastCos(a));
-            float z = (float) (this.radiusz * FastMaths.getFastCos(a));
-            blockPosList.add(this.getCoordinatesRotation(x, 0, z, this.getPos()));
         }
-        return blockPosList;
     }
-
 
     @Override
     public List<Vec3d> getVec3d() {
