@@ -2,21 +2,19 @@ package net.rodofire.easierworldcreator.shapegen;
 
 import net.minecraft.block.Block;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.StructureWorldAccess;
 import net.rodofire.easierworldcreator.Easierworldcreator;
 import net.rodofire.easierworldcreator.shapeutil.BlockLayer;
 import net.rodofire.easierworldcreator.shapeutil.FillableShape;
+import net.rodofire.easierworldcreator.shapeutil.Shape;
 import net.rodofire.easierworldcreator.util.FastMaths;
+import net.rodofire.easierworldcreator.worldgenutil.WorldGenUtil;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
-import java.util.List;
-
-/**
- * Class to generate 3d spheres / Ellipsoid
- */
+import java.util.*;
 
 /*
 
@@ -54,6 +52,16 @@ import java.util.List;
                                                      .:-=+##%%%%%%%%%%%%%%#***=:.
  */
 
+/**
+ * Class to generate Sphere related shapes
+ * <p>
+ * Since 2.1.0, the shape doesn't return a {@link List<BlockPos>} but it returns instead a {@link List< Set  <BlockPos>>}
+ * Before 2.1.0, the BlockPos list was a simple list.
+ * Starting from 2.1.0, the shapes returns a list of {@link ChunkPos} that has a set of {@link BlockPos}
+ * The change from {@link List} to {@link Set} was done to avoid duplicates BlockPos wich resulted in unnecessary calculations.
+ * this allow easy multithreading for the Block assignment done in the {@link Shape} which result in better performance;
+ * </p>
+ */
 public class SphereGen extends FillableShape {
     private int radiusx;
     private int radiusy;
@@ -131,8 +139,8 @@ public class SphereGen extends FillableShape {
     }
 
     @Override
-    public List<BlockPos> getBlockPos() {
-        return this.getStructureCoordinates();
+    public List<Set<BlockPos>> getBlockPos() {
+        return this.getCircleCoordinates();
     }
 
     @Override
@@ -141,50 +149,49 @@ public class SphereGen extends FillableShape {
     }
 
     //calculate and return the coordinates
-    public List<BlockPos> getStructureCoordinates() {
+    public List<Set<BlockPos>> getCircleCoordinates() {
         this.startTime = System.nanoTime();
+        Map<ChunkPos, Set<BlockPos>> chunkMap = new HashMap<>();
 
         //verify if the rotations == 0 to avoid some unnecessary calculations
         if (this.getFillingType() == Type.EMPTY) {
             if (halfSphere) {
-                return this.generateHalfEmptyElipsoid();
+                this.generateHalfEmptyElipsoid(chunkMap);
             } else {
-                return this.generateEmptyEllipsoid();
+                this.generateEmptyEllipsoid(chunkMap);
             }
         } else {
             if (halfSphere) {
-                return this.generateHalfFullElipsoid();
+                this.generateHalfFullElipsoid(chunkMap);
             } else {
-                return this.generateFullEllipsoid();
+                this.generateFullEllipsoid(chunkMap);
             }
         }
+        return new ArrayList<>(chunkMap.values());
     }
 
 
-    public List<BlockPos> generateHalfEmptyElipsoid() {
+    public void generateHalfEmptyElipsoid(Map<ChunkPos, Set<BlockPos>> chunkMap) {
         if (direction == Direction.UP) {
-            return generateEmptyEllipsoid(180, 180, 0, 90);
+            generateEmptyEllipsoid(180, 180, 0, 90, chunkMap);
+        } else if (direction == Direction.DOWN) {
+            generateEmptyEllipsoid(180, 180, -90, 0, chunkMap);
+        } else if (direction == Direction.WEST) {
+            generateEmptyEllipsoid(0, 180, -90, 90, chunkMap);
+        } else if (direction == Direction.EAST) {
+            generateEmptyEllipsoid(-180, 0, -90, 90, chunkMap);
+        } else if (direction == Direction.NORTH) {
+            generateEmptyEllipsoid(-90, 90, -90, 90, chunkMap);
+        } else {
+            generateEmptyEllipsoid(90, 270, -90, 90, chunkMap);
         }
-        if (direction == Direction.DOWN) {
-            return generateEmptyEllipsoid(180, 180, -90, 0);
-        }
-        if (direction == Direction.WEST) {
-            return generateEmptyEllipsoid(0, 180, -90, 90);
-        }
-        if (direction == Direction.EAST) {
-            return generateEmptyEllipsoid(-180, 0, -90, 90);
-        }
-        if (direction == Direction.NORTH) {
-            return generateEmptyEllipsoid(-90, 90, -90, 90);
-        }
-        return generateEmptyEllipsoid(90, 270, -90, 90);
     }
 
-    public List<BlockPos> generateEmptyEllipsoid() {
-        return this.generateEmptyEllipsoid(-180, 180, -90, 90);
+    public void generateEmptyEllipsoid(Map<ChunkPos, Set<BlockPos>> chunkMap) {
+        this.generateEmptyEllipsoid(-180, 180, -90, 90, chunkMap);
     }
 
-    public List<BlockPos> generateEmptyEllipsoid(int minlarge, int maxlarge, int minheight, int maxheight) {
+    public void generateEmptyEllipsoid(int minlarge, int maxlarge, int minheight, int maxheight, Map<ChunkPos, Set<BlockPos>> chunkMap) {
         int maxlarge1 = Math.max(radiusz, Math.max(radiusx, radiusy));
 
         BlockPos.Mutable mutable = new BlockPos.Mutable();
@@ -201,7 +208,7 @@ public class SphereGen extends FillableShape {
                     int y = (int) (radiusy * FastMaths.getFastSin(phi));
                     int z = (int) (zsinkheta * cosphi);
                     mutable.set(this.getPos(), x, y, z);
-                    poslist.add(new BlockPos(mutable));
+                    WorldGenUtil.modifyChunkMap(new BlockPos(mutable), chunkMap);
                 }
             }
         } else {
@@ -215,38 +222,37 @@ public class SphereGen extends FillableShape {
                     float x = (float) (xcostheta * cosphi);
                     float y = (float) (radiusy * FastMaths.getFastSin(phi));
                     float z = (float) (zsinkheta * cosphi);
-
-
-                    poslist.add(this.getCoordinatesRotation(x, y, z, this.getPos()));
+                    BlockPos pos = this.getCoordinatesRotation(x, 0, z, this.getPos());
+                    WorldGenUtil.modifyChunkMap(pos, chunkMap);
                 }
             }
         }
         this.getGenTime(this.startTime, false);
-        return poslist;
     }
 
 
-    public List<BlockPos> generateHalfFullElipsoid() {
+    public void generateHalfFullElipsoid(Map<ChunkPos, Set<BlockPos>> chunkMap) {
         if (direction == Direction.UP) {
-            return this.generateFullEllipsoid(-radiusx, radiusx, 0, radiusy, -radiusz, radiusz);
+            this.generateFullEllipsoid(-radiusx, radiusx, 0, radiusy, -radiusz, radiusz, chunkMap);
         }
         if (direction == Direction.DOWN) {
-            return this.generateFullEllipsoid(-radiusx, radiusx, -radiusy, 0, -radiusz, radiusz);
+            this.generateFullEllipsoid(-radiusx, radiusx, -radiusy, 0, -radiusz, radiusz, chunkMap);
         }
         if (direction == Direction.WEST) {
-            return this.generateFullEllipsoid(0, radiusx, -radiusy, radiusy, -radiusz, radiusz);
+            this.generateFullEllipsoid(0, radiusx, -radiusy, radiusy, -radiusz, radiusz, chunkMap);
         }
         if (direction == Direction.EAST) {
-            return this.generateFullEllipsoid(-radiusx, 0, -radiusy, radiusy, -radiusz, radiusz);
+            this.generateFullEllipsoid(-radiusx, 0, -radiusy, radiusy, -radiusz, radiusz, chunkMap);
         }
         if (direction == Direction.NORTH) {
-            return this.generateFullEllipsoid(-radiusx, radiusx, -radiusy, radiusy, -radiusz, 0);
+            this.generateFullEllipsoid(-radiusx, radiusx, -radiusy, radiusy, -radiusz, 0, chunkMap);
+        } else {
+            this.generateFullEllipsoid(-radiusx, radiusx, -radiusy, radiusy, 0, radiusz, chunkMap);
         }
-        return this.generateFullEllipsoid(-radiusx, radiusx, -radiusy, radiusy, 0, radiusz);
     }
 
-    public List<BlockPos> generateFullEllipsoid() {
-        return this.generateFullEllipsoid(-radiusx, radiusx, -radiusy, radiusy, -radiusz, radiusz);
+    public void generateFullEllipsoid(Map<ChunkPos, Set<BlockPos>> chunkMap) {
+        this.generateFullEllipsoid(-radiusx, radiusx, -radiusy, radiusy, -radiusz, radiusz, chunkMap);
     }
 
     //Using carthesian coordinates beacause it have better performance than using trigonometry
@@ -261,7 +267,7 @@ public class SphereGen extends FillableShape {
      * @param minz the start of the circle on the z axis
      * @param maxz the end of the circle on the z axis
      */
-    public List<BlockPos> generateFullEllipsoid(int minx, int maxx, int miny, int maxy, int minz, int maxz) {
+    public void generateFullEllipsoid(int minx, int maxx, int miny, int maxy, int minz, int maxz, Map<ChunkPos, Set<BlockPos>> chunkMap) {
         BlockPos.Mutable mutable = new BlockPos.Mutable();
         this.setFill();
         int largexsquared = radiusx * radiusx;
@@ -296,7 +302,8 @@ public class SphereGen extends FillableShape {
                                 }
                             }
                             if (bl) {
-                                poslist.add(new BlockPos((int) (this.getPos().getX() + x), (int) (this.getPos().getY() + y), (int) (this.getPos().getZ() + z)));
+                                BlockPos pos = new BlockPos((int) (this.getPos().getX() + x), this.getPos().getY(), (int) (this.getPos().getZ() + z));
+                                WorldGenUtil.modifyChunkMap(pos, chunkMap);
                             }
                         }
                     }
@@ -320,7 +327,8 @@ public class SphereGen extends FillableShape {
                                 }
                             }
                             if (bl) {
-                                poslist.add(this.getCoordinatesRotation(x, y, z, this.getPos()));
+                                BlockPos pos = this.getCoordinatesRotation(x, 0, z, this.getPos());
+                                WorldGenUtil.modifyChunkMap(pos, chunkMap);
                             }
                         }
                     }
@@ -328,7 +336,6 @@ public class SphereGen extends FillableShape {
             }
         }
         this.getGenTime(this.startTime, false);
-        return poslist;
     }
 
 
