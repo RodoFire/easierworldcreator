@@ -121,11 +121,11 @@ Transparent frame
  * Class to generate Sphere related shapes
  * the methods in this class basically stack multiple circles to generate a cylinder
  * <p>
- * Since 2.1.0, the shape doesn't return a {@link List<BlockPos>} but it returns instead a {@link List< Set  <BlockPos>>}
- * Before 2.1.0, the BlockPos list was a simple list.
- * Starting from 2.1.0, the shapes returns a list of {@link ChunkPos} that has a set of {@link BlockPos}
- * The change from {@link List} to {@link Set} was done to avoid duplicates BlockPos wich resulted in unnecessary calculations.
- * this allow easy multithreading for the Block assignment done in the {@link Shape} which result in better performance;
+ * <p> - Since 2.1.0, the shape doesn't return a {@link List<BlockPos>} but it returns instead a {@code List<Set<BlockPos>>}
+ * <p> - Before 2.1.0, the BlockPos list was a simple list.
+ * <p> - Starting from 2.1.0, the shapes returns a list of {@link ChunkPos} that has a set of {@link BlockPos}
+ * <p>The change from {@link List} to {@link Set} was done to avoid duplicates BlockPos wich resulted in unnecessary calculations.
+ * <p>this allow easy multithreading for the Block assignment done in the {@link Shape} which result in better performance;
  * </p>
  */
 public class CylinderGen extends FillableShape {
@@ -175,8 +175,6 @@ public class CylinderGen extends FillableShape {
 
     public List<Set<BlockPos>> generateCylinder() {
         long startTimeCartesian = System.nanoTime();
-        List<Vec3d> veclist = new ArrayList<>();
-        List<BlockPos> poslist = new ArrayList<>();
         Map<ChunkPos, Set<BlockPos>> chunkMap = new HashMap<>();
         this.setFill();
 
@@ -195,9 +193,9 @@ public class CylinderGen extends FillableShape {
         } else {
 
             this.generateFullCylinder(chunkMap);
-            this.setPos(this.getPos().up());
+            //this.setPos(this.getPos().up());
 
-            poslist.addAll(this.getCoordinatesRotationList(veclist, this.getPos()));
+            //poslist.addAll(this.getCoordinatesRotationList(veclist, this.getPos()));
         }
         this.getGenTime(startTimeCartesian, false);
         return new ArrayList<>(chunkMap.values());
@@ -251,7 +249,7 @@ public class CylinderGen extends FillableShape {
                                 }
                             }
                             if (bl) {
-                                BlockPos pos = this.getCoordinatesRotation(x, 0, z, this.getPos());
+                                BlockPos pos = this.getCoordinatesRotation(x, y, z, this.getPos());
                                 WorldGenUtil.modifyChunkMap(pos, chunkMap);
                             }
                         }
@@ -290,6 +288,7 @@ public class CylinderGen extends FillableShape {
 
 
     /*---------- Algorithm based on Bressen Algorithms for circle ----------*/
+
     /**
      * this class is used when no rotation is present. This allow fast coordinates generation but don't work with rotations
      *
