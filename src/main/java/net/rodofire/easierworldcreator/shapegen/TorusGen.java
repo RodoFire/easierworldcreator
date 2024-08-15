@@ -300,7 +300,7 @@ public class TorusGen extends FillableShape {
             for (int u = 0; u <= this.verticalTorus * 360; u += 40 / maxouterRadius) {
                 for (int v = 0; v <= this.horizontalTorus * 360; v += 45 / maxinnerRadius) {
                     Vec3d vec = this.getEllipsoidalToreCoordinates(u, v);
-                    BlockPos pos = new BlockPos((int) (getPos().getX() + vec.x), (int) (getPos().getY() + vec.y), (int) (getPos().getZ() + vec.z))
+                    BlockPos pos = new BlockPos((int) (getPos().getX() + vec.x), (int) (getPos().getY() + vec.y), (int) (getPos().getZ() + vec.z));
                     WorldGenUtil.modifyChunkMap(pos, chunkMap);
                 }
             }
