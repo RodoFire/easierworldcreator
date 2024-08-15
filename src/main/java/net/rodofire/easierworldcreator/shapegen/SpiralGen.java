@@ -343,8 +343,6 @@ public class SpiralGen extends Shape {
      * @param pos the center of the spiral. This can be changed to match certain needing like when generating a large outline
      */
     public void generateElipsoidSpiral(BlockPos pos, Map<ChunkPos, Set<BlockPos>> chunkMap) {
-        BlockPos.Mutable mutable = new BlockPos.Mutable();
-        List<BlockPos> poslist = new ArrayList<BlockPos>();
         /*if (this.turnNumber <= 0) {
             Easierworldcreator.LOGGER.error("param turn can't be <= 0");
         }*/
@@ -359,7 +357,8 @@ public class SpiralGen extends Shape {
                 int x = (int) (radiusx * FastMaths.getFastCos(a * i + offset));
                 int z = (int) (radiusz * FastMaths.getFastSin(a * i + offset));
                 int y = (int) (i / f);
-                poslist.add(new BlockPos(pos.getX() + x, pos.getY() + y, pos.getZ() + z));
+                BlockPos pos1 = new BlockPos(pos.getX() + x, pos.getY() + y, pos.getZ() + z);
+                WorldGenUtil.modifyChunkMap(pos1, chunkMap);
             }
         } else {
             for (double i = 0; i < maxlarge * this.turnNumber * height; i += 0.5) {
@@ -369,7 +368,8 @@ public class SpiralGen extends Shape {
                 float x = (float) (radiusx * FastMaths.getFastCos(a * i + offset));
                 float z = (float) (radiusz * FastMaths.getFastSin(a * i + offset));
                 float y = (float) (i / f);
-                poslist.add(this.getCoordinatesRotation(x, y, z, pos));
+                BlockPos pos2 = this.getCoordinatesRotation(x, y, z, pos);
+                WorldGenUtil.modifyChunkMap(pos2, chunkMap);
             }
         }
     }
