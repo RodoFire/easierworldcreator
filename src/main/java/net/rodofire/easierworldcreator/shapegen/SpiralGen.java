@@ -352,8 +352,8 @@ public class SpiralGen extends Shape {
         if (this.getXrotation() % 180 == 0 && this.getYrotation() % 180 == 0 && this.getSecondXrotation() == 0) {
             for (double i = 0; i < maxlarge * this.turnNumber * height; i++) {
                 float percentage = (float) i / (maxlarge * this.turnNumber * height);
-                int radiusx = this.getXradius(percentage);
-                int radiusz = this.getZradius(percentage);
+                float radiusx = this.getXradius(percentage);
+                float radiusz = this.getZradius(percentage);
                 int x = (int) (radiusx * FastMaths.getFastCos(a * i + offset));
                 int z = (int) (radiusz * FastMaths.getFastSin(a * i + offset));
                 int y = (int) (i / f);
@@ -363,8 +363,8 @@ public class SpiralGen extends Shape {
         } else {
             for (double i = 0; i < maxlarge * this.turnNumber * height; i += 0.5) {
                 float percentage = (float) i / (maxlarge * this.turnNumber * height);
-                int radiusx = this.getXradius(percentage);
-                int radiusz = this.getZradius(percentage);
+                float radiusx = this.getXradius(percentage);
+                float radiusz = this.getZradius(percentage);
                 float x = (float) (radiusx * FastMaths.getFastCos(a * i + offset));
                 float z = (float) (radiusz * FastMaths.getFastSin(a * i + offset));
                 float y = (float) (i / f);
@@ -400,8 +400,6 @@ public class SpiralGen extends Shape {
      * generates an helicoid if the {@link SpiralType} is set to {@code HELICOID} or {@code DOUBLE_HELICOID} with their variants
      */
     public void generateHelicoid(Map<ChunkPos, Set<BlockPos>> chunkMap) {
-        BlockPos.Mutable mutable = new BlockPos.Mutable();
-        List<BlockPos> poslist = new ArrayList<BlockPos>();
         /*if (this.turnNumber <= 0) {
             Easierworldcreator.LOGGER.error("param turn can't be <= 0");
         }*/
@@ -410,13 +408,12 @@ public class SpiralGen extends Shape {
         double a = (double) 360 / (height * maxlarge);
 
 
-
         if (this.getXrotation() % 180 == 0 && this.getYrotation() % 180 == 0 && this.getSecondXrotation() == 0 && this.helicoidAngle.getLeft() < 45 && this.helicoidAngle.getLeft() > -45 && this.helicoidAngle.getRight() < 45 && this.helicoidAngle.getRight() > -45) {
             for (double i = 0; i < maxlarge * this.turnNumber * height; i++) {
 
                 float percentage = (float) i / (maxlarge * this.turnNumber * height);
-                int radiusx = this.getXradius(percentage);
-                int radiusz = this.getZradius(percentage);
+                float radiusx = this.getXradius(percentage);
+                float radiusz = this.getZradius(percentage);
                 float gainx = (float) (radiusx / maxlarge);
                 float gainz = (float) (radiusz / maxlarge);
 
@@ -450,11 +447,11 @@ public class SpiralGen extends Shape {
                 }
             }
         } else {
-            for (double i = 0; i < maxlarge * this.turnNumber * height; i+=0.5) {
+            for (double i = 0; i < maxlarge * this.turnNumber * height; i += 0.25) {
 
                 float percentage = (float) i / (maxlarge * this.turnNumber * height);
-                int radiusx = this.getXradius(percentage);
-                int radiusz = this.getZradius(percentage);
+                float radiusx = this.getXradius(percentage);
+                float radiusz = this.getZradius(percentage);
                 float gainx = (float) (radiusx / maxlarge);
                 float gainz = (float) (radiusz / maxlarge);
 
@@ -469,6 +466,7 @@ public class SpiralGen extends Shape {
 
                     int x = (int) (gainx * j * FastMaths.getFastCos(a * i + offset));
                     int z = (int) (gainz * j * FastMaths.getFastSin(a * i + offset));
+
                     double distance = FastMaths.getLength(x, z);
 
 
@@ -526,8 +524,8 @@ public class SpiralGen extends Shape {
      * @param percentage the percentage of the height we are at
      * @return the x radius of the spiral
      */
-    public int getXradius(float percentage) {
-        return (int) (radiusx.getRight() * (1 - percentage) + radiusz.getLeft() * percentage);
+    public float getXradius(float percentage) {
+        return (int) (radiusx.getLeft() * (1 - percentage) + radiusz.getRight() * percentage);
     }
 
     /**
@@ -536,8 +534,8 @@ public class SpiralGen extends Shape {
      * @param percentage the percentage of the height we are at
      * @return the x radius of the spiral
      */
-    public int getZradius(float percentage) {
-        return (int) (radiusz.getRight() * (1 - percentage) + radiusz.getLeft() * percentage);
+    public float getZradius(float percentage) {
+        return (int) (radiusz.getLeft() * (1 - percentage) + radiusz.getRight() * percentage);
     }
 
     /**
@@ -547,6 +545,6 @@ public class SpiralGen extends Shape {
      * @return the angle of the spiral
      */
     public int getAngle(float percentage) {
-        return (int) (helicoidAngle.getRight() * (1 - percentage) + helicoidAngle.getLeft() * percentage);
+        return (int) (helicoidAngle.getLeft() * (1 - percentage) + helicoidAngle.getRight() * percentage);
     }
 }

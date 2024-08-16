@@ -191,8 +191,10 @@ public class CircleGen extends FillableShape {
     }
 
     public List<Set<BlockPos>> generateEmptyOval() {
-        List<BlockPos> poslist = new ArrayList<>();
         Map<ChunkPos, Set<BlockPos>> chunkMap = new HashMap<>();
+
+        //Rotating a shape requires more blocks.
+        //This verification is there to avoid some unnecessary calculations when the rotations don't have any impact on the number of blocks
         if (this.getXrotation() % 180 == 0 && this.getYrotation() % 180 == 0 && this.getSecondXrotation() == 0) {
             for (float u = 0; u < 360; u += (float) 45 / Math.max(this.radiusz, this.radiusx)) {
                 float x = (float) (radiusx * FastMaths.getFastCos(u));
