@@ -29,7 +29,7 @@ import java.util.concurrent.Executors;
  * <p>It is used by this mod to divide a structure into chunks.
  * <p>If the structure is larger than a chunk, it will save the structure into chunks that will be saved into JSON files.
  * <p>The JSON files will then be saved into the following path : [save_name]/generated/easierworldcreator/[chunk.x-chunk.z]/custom_feature_[Random long].
- * <p>It will then be read by the following class {@link LoadChunkSapeInfo}
+ * <p>It will then be read by the following class {@link LoadChunkShapeInfo}
  * </p>
  * <p>
  * Since that to generate large structures, it requires to write and read the json file, be careful to don't have a too big structure.

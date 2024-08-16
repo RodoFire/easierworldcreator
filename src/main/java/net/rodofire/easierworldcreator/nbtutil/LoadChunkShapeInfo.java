@@ -30,8 +30,16 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
-public class LoadChunkSapeInfo {
-
+/**
+ * class to load JSON files related to multi-chunk features
+ */
+public class LoadChunkShapeInfo {
+    /**
+     * method to load structure from a JSON file
+     * @param world the world the shape will spawn in
+     * @param chunkFilePath the path of the shape
+     * @return a {@link List} used later to place the BlockStates
+     */
     public static List<BlockList> loadFromJson(StructureWorldAccess world, Path chunkFilePath) throws IOException {
         String jsonContent = Files.readString(chunkFilePath);
 
@@ -68,6 +76,9 @@ public class LoadChunkSapeInfo {
         return blockLists;
     }
 
+    /**
+     * method to place the structure
+     */
     public static void placeStructure(StructureWorldAccess world, List<BlockList> blockLists) {
         for (BlockList blockList : blockLists) {
             BlockState state = blockList.getBlockstate();
@@ -77,6 +88,9 @@ public class LoadChunkSapeInfo {
         }
     }
 
+    /**
+     * methode used to convert {@link String} to BlockState
+     */
     private static BlockState parseBlockState(StructureWorldAccess world, String stateString) {
         RegistryEntryLookup<Block> blockLookup = world.createCommandRegistryWrapper(RegistryKeys.BLOCK);
 
@@ -124,6 +138,10 @@ public class LoadChunkSapeInfo {
         return verifyFiles(world, new ChunkPos(pos));
     }
 
+    /**
+     * method to verify if there is json files in the chunk folder
+     * @return the list of the structure path to be placed later
+     */
     public static List<Path> verifyFiles(StructureWorldAccess world, ChunkPos chunk) throws IOException {
         List<Path> path = new ArrayList<>();
         Path generatedPath = Objects.requireNonNull(world.getServer()).getSavePath(WorldSavePath.GENERATED).normalize();
@@ -144,6 +162,11 @@ public class LoadChunkSapeInfo {
         return path;
     }
 
+    /**
+     * method to remove the {@code Block{}} to only get the {@link String} related to the block {@link Identifier}
+     * @param blockString
+     * @return
+     */
     public static String extractBlockName(String blockString) {
         if (blockString.startsWith("Block{") && blockString.endsWith("}")) {
             return blockString.substring(6, blockString.length() - 1);
