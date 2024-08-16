@@ -46,7 +46,6 @@ public class SaveNbt {
      */
     @SuppressWarnings("UnreachableCode")
     public static void saveNbtDuringWorldGen(StructureWorldAccess world, List<BlockList> blockLists, String featureName) {
-        // Map qui contient les listes de blocs groupées par ChunkPos
         Map<ChunkPos, List<StructureTemplate.StructureBlockInfo>> chunkBlockInfoMap = new HashMap<>();
 
         List<StructureTemplate.StructureBlockInfo> list = Lists.newArrayList();
@@ -59,10 +58,8 @@ public class SaveNbt {
                 StructureTemplate.StructureBlockInfo structureBlockInfo = new StructureTemplate.StructureBlockInfo(pos, blockState, null);
                 categorize(structureBlockInfo, list, list2, list3);
 
-                // Identifier le ChunkPos correspondant
                 ChunkPos chunkPos = new ChunkPos(pos);
 
-                // Ajouter le bloc à la liste appropriée dans la map
                 chunkBlockInfoMap.computeIfAbsent(chunkPos, k -> new ArrayList<>()).add(structureBlockInfo);
             }
         }

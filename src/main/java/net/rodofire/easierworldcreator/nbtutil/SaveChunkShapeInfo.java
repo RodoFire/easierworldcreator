@@ -25,11 +25,11 @@ import java.util.concurrent.Executors;
  * Since that the nbt is saved during world gen, no block entity should be present.
  * </p>
  * <p>
- * This class is used to create JSON files.
- * It is used by this mod to divide a structure into chunks.
- * If the structure is larger than a chunk, it will save the structure into chunks that will be saved into JSON files.
- * The JSON files will then be saved into the following path : [save_name]/generated/easierworldcreator/[chunk.x-chunk.z]/custom_feature_[Random long].
- * It will then be read by the following class {@link LoadChunkSapeInfo}
+ * <p>This class is used to create JSON files.
+ * <p>It is used by this mod to divide a structure into chunks.
+ * <p>If the structure is larger than a chunk, it will save the structure into chunks that will be saved into JSON files.
+ * <p>The JSON files will then be saved into the following path : [save_name]/generated/easierworldcreator/[chunk.x-chunk.z]/custom_feature_[Random long].
+ * <p>It will then be read by the following class {@link LoadChunkSapeInfo}
  * </p>
  * <p>
  * Since that to generate large structures, it requires to write and read the json file, be careful to don't have a too big structure.
@@ -53,16 +53,15 @@ public class SaveChunkShapeInfo {
      * @param worldAccess the world the structure will spawn in
      * @throws IOException avoid errors
      */
-    public static void saveDuringWorldGen(List<BlockList> blockLists, StructureWorldAccess worldAccess, String name) throws IOException {
+    public static void saveDuringWorldGen(Set<BlockList> blockLists, StructureWorldAccess worldAccess, String name) throws IOException {
         Path generatedPath = Objects.requireNonNull(worldAccess.getServer()).getSavePath(WorldSavePath.GENERATED).normalize();
         Path path = createFolders(generatedPath);
-        List<BlockList> sortedList = sortBlockPos(blockLists);
-        List<List<BlockList>> dividedList = divideBlocks(sortedList);
+        Set<BlockList> sortedList = sortBlockPos(blockLists);
+        List<Set<BlockList>> dividedList = divideBlocks(sortedList);
         ExecutorService executorService = Executors.newFixedThreadPool(THREAD_COUNT);
-        System.out.println("path " + generatedPath);
 
         if (generatedPath != null) {
-            for (List<BlockList> chunkBlockLists : dividedList) {
+            for (Set<BlockList> chunkBlockLists : dividedList) {
                 executorService.submit(() -> {
                     try {
                         saveToJson(chunkBlockLists, path, name);
@@ -71,6 +70,36 @@ public class SaveChunkShapeInfo {
                     }
                 });
             }
+        }
+    }
+
+    /**
+     * This is the main method on saving the structure into JSON files
+     * <p>
+     * I multithreaded this class for optimal performance.
+     * Since that the structure is divided into chunks, we can multithread the generation of files
+     * </p>
+     *
+     * @param blockLists  the list to divide into chunks and then saving it into JSON files
+     * @param worldAccess the world the structure will spawn in
+     * @throws IOException avoid errors
+     */
+    public static void saveChunkWorldGen(Set<BlockList> blockLists, StructureWorldAccess worldAccess, String name) throws IOException {
+        Path generatedPath = Objects.requireNonNull(worldAccess.getServer()).getSavePath(WorldSavePath.GENERATED).normalize();
+        Path path = createFolders(generatedPath);
+        Set<BlockList> sortedList = sortBlockPos(blockLists);
+        ExecutorService executorService = Executors.newFixedThreadPool(THREAD_COUNT);
+
+        if (generatedPath != null) {
+
+                executorService.submit(() -> {
+                    try {
+                        saveToJson(sortedList, path, name);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                });
+
         }
     }
 
@@ -93,10 +122,14 @@ public class SaveChunkShapeInfo {
      * @param blockLists the list of blockList that will be converted into json
      * @throws IOException avoid errors
      */
-    private static void saveToJson(List<BlockList> blockLists, Path basePath, String name) throws IOException {
+    private static void saveToJson(Set<BlockList> blockLists, Path basePath, String name) throws IOException {
         // Determine chunk-specific file path
         // You might need to extract the chunk position information from blockLists to create the file name
-        ChunkPos chunkPos = new ChunkPos(blockLists.get(0).getPoslist().get(0)); // extract from blockLists
+        Optional<BlockList> optional = blockLists.stream().findFirst();
+        if(optional.isEmpty()) {return;}
+        BlockList firstBlockList = optional.get();
+        ChunkPos chunkPos = new ChunkPos(firstBlockList.getPoslist().get(0)); // extract from blockLists
+
         Path chunkDirectoryPath = basePath.resolve("chunk_" + chunkPos.x + "_" + chunkPos.z);
         Files.createDirectories(chunkDirectoryPath);
         Path chunkFilePath = chunkDirectoryPath.resolve(name + ".json");
@@ -132,7 +165,7 @@ public class SaveChunkShapeInfo {
      * @param blockLists the list to sort
      * @return the sorted list
      */
-    public static List<BlockList> sortBlockPos(List<BlockList> blockLists) {
+    public static Set<BlockList> sortBlockPos(Set<BlockList> blockLists) {
         for (BlockList blockList : blockLists) {
             // Tri des positions par axe X, puis Y, puis Z
             blockList.getPoslist().sort(Comparator
@@ -149,15 +182,15 @@ public class SaveChunkShapeInfo {
      * @param blockLists the list to divide into a list of chunks
      * @return the blockLists divided into chunks
      */
-    public static List<List<BlockList>> divideBlocks(List<BlockList> blockLists) {
-        Map<ChunkPos, List<BlockList>> chunkMap = new HashMap<>();
+    public static List<Set<BlockList>> divideBlocks(Set<BlockList> blockLists) {
+        Map<ChunkPos, Set<BlockList>> chunkMap = new HashMap<>();
 
         for (BlockList blockList : blockLists) {
             for (BlockPos pos : blockList.getPoslist()) {
                 ChunkPos chunkPos = new ChunkPos(pos);
 
                 // Récupérer ou créer une liste pour ce chunk
-                List<BlockList> blockListsInChunk = chunkMap.computeIfAbsent(chunkPos, k -> new ArrayList<>());
+                Set<BlockList> blockListsInChunk = chunkMap.computeIfAbsent(chunkPos, k -> new HashSet<>());
 
                 // Cherche s'il existe déjà un BlockList dans ce chunk avec le même BlockState
                 Optional<BlockList> matchingBlockList = blockListsInChunk.stream()
