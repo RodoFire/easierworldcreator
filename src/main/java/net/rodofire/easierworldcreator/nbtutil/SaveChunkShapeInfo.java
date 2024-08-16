@@ -24,7 +24,6 @@ import java.util.concurrent.Executors;
  * That is a way to generate a really large structure.
  * Since that the nbt is saved during world gen, no block entity should be present.
  * </p>
- * <p>
  * <p>This class is used to create JSON files.
  * <p>It is used by this mod to divide a structure into chunks.
  * <p>If the structure is larger than a chunk, it will save the structure into chunks that will be saved into JSON files.

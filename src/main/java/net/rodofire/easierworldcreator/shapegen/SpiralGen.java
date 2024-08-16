@@ -123,7 +123,6 @@ import java.util.*;
 
 /**
  * Class to generate Spiral related shapes
- * <p>
  * <p>Since 2.1.0, the shape doesn't return a {@code List<BlockPos>} but it returns instead a {@code List<Set<BlockPos>>}
  * <p>Before 2.1.0, the BlockPos list was a simple list.
  * <p>Starting from 2.1.0, the shapes returns a list of {@link ChunkPos} that has a set of {@link BlockPos}

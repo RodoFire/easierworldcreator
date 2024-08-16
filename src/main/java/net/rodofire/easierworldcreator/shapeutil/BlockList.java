@@ -49,8 +49,8 @@ public class BlockList {
     /**
      * init a blockList
      *
-     * @param poslist
-     * @param state
+     * @param poslist the list of pos of the blockState
+     * @param state   the blockState related to the pos
      */
     public BlockList(List<BlockPos> poslist, BlockState state) {
         this.poslist = new ArrayList<>(poslist);
@@ -145,6 +145,7 @@ public class BlockList {
 
     /**
      * used to get the NBT tag of the specified NBT
+     *
      * @return the tag of the BlockList if it exists
      */
     public NbtCompound getTag() {
@@ -153,6 +154,7 @@ public class BlockList {
 
     /**
      * allow you to change the tag of the relatedBlock
+     *
      * @param tag the nbt parameter of the related Block
      */
     public void setTag(NbtCompound tag) {

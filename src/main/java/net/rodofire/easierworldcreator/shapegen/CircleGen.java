@@ -310,7 +310,6 @@ public class CircleGen extends FillableShape {
      * @param y The height of the oval
      * @param z The z-coordinate in the context of the Bresenham algorithm
      * @param chunkMap The map of chunks with the block positions
-     * @return The map of chunks with the block positions
      */
     public void placeFullOval(int centerX, int centerZ, int x, int y, int z, Map<ChunkPos, Set<BlockPos>> chunkMap) {
         BlockPos start1 = new BlockPos(centerX + x, y, centerZ + z);

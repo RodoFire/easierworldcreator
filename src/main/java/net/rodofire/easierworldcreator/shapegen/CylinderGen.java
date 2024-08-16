@@ -120,7 +120,6 @@ Transparent frame
 /**
  * Class to generate Sphere related shapes
  * the methods in this class basically stack multiple circles to generate a cylinder
- * <p>
  * <p> - Since 2.1.0, the shape doesn't return a {@link List<BlockPos>} but it returns instead a {@code List<Set<BlockPos>>}
  * <p> - Before 2.1.0, the BlockPos list was a simple list.
  * <p> - Starting from 2.1.0, the shapes returns a list of {@link ChunkPos} that has a set of {@link BlockPos}
@@ -382,7 +381,6 @@ public class CylinderGen extends FillableShape {
      * @param y        The height of the oval
      * @param z        The z-coordinate in the context of the Bresenham algorithm
      * @param chunkMap The map of chunks with the block positions
-     * @return The map of chunks with the block positions
      */
     public void placeFullOval(int centerX, int centerZ, int x, int y, int z, Map<ChunkPos, Set<BlockPos>> chunkMap) {
         BlockPos start1 = new BlockPos(centerX + x, y, centerZ + z);
