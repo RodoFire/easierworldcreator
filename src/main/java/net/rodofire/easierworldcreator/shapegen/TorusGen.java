@@ -2,15 +2,17 @@ package net.rodofire.easierworldcreator.shapegen;
 
 import net.minecraft.block.Block;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.StructureWorldAccess;
 import net.rodofire.easierworldcreator.shapeutil.BlockLayer;
 import net.rodofire.easierworldcreator.shapeutil.FillableShape;
+import net.rodofire.easierworldcreator.shapeutil.Shape;
 import net.rodofire.easierworldcreator.util.FastMaths;
+import net.rodofire.easierworldcreator.worldgenutil.WorldGenUtil;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 /*
 
                                          =======%
@@ -74,7 +76,13 @@ import java.util.List;
                                         @@%%%%%%%@                                         */
 
 /**
- * allow you to generate torus shape
+ * Class to generate Torus related shapes
+ * <p>Since 2.1.0, the shape doesn't return a {@link List<BlockPos>} but it returns instead a {@code List<Set<BlockPos>>}
+ * <p>Before 2.1.0, the BlockPos list was a simple list.
+ * <p>Starting from 2.1.0, the shapes returns a list of {@link ChunkPos} that has a set of {@link BlockPos}
+ * <p>The change from {@link List} to {@link Set} was done to avoid duplicates BlockPos wich resulted in unnecessary calculations.
+ * <p>this allow easy multithreading for the Block assignment done in the {@link Shape} which result in better performance;
+ * </p>
  */
 public class TorusGen extends FillableShape {
     private int innerRadiusx;
@@ -90,16 +98,16 @@ public class TorusGen extends FillableShape {
     private float horizontalTorus = 1f;
 
 
-    public TorusGen(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, int innerRadius, int outerRadius) {
-        super(world, pos);
+    public TorusGen(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, PlaceMoment placeMoment, int innerRadius, int outerRadius) {
+        super(world, pos, placeMoment);
         this.innerRadiusx = innerRadius;
         this.outerRadiusx = outerRadius;
         this.innerRadiusz = innerRadius;
         this.outerRadiusz = outerRadius;
     }
 
-    public TorusGen(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, List<BlockLayer> layers, boolean force, List<Block> blocksToForce, int xrotation, int yrotation, int secondxrotation, int innerRadius, int outerRadius) {
-        super(world, pos, layers, force, blocksToForce, xrotation, yrotation, secondxrotation);
+    public TorusGen(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, PlaceMoment placeMoment, List<BlockLayer> layers, boolean force, List<Block> blocksToForce, int xrotation, int yrotation, int secondxrotation, int innerRadius, int outerRadius) {
+        super(world, pos, placeMoment, layers, force, blocksToForce, xrotation, yrotation, secondxrotation);
         this.innerRadiusx = innerRadius;
         this.outerRadiusx = outerRadius;
         this.innerRadiusz = innerRadius;
@@ -139,7 +147,6 @@ public class TorusGen extends FillableShape {
     }
 
 
-
     public TorusType getTorusType() {
         return torusType;
     }
@@ -165,12 +172,15 @@ public class TorusGen extends FillableShape {
     }
 
     @Override
-    public List<BlockPos> getBlockPos() {
+    public List<Set<BlockPos>> getBlockPos() {
         setTorusFill();
+        Map<ChunkPos, Set<BlockPos>> chunkMap = new HashMap<>();
         if (this.getFillingType() == Type.EMPTY) {
-            return this.generateEmptyTore();
+            this.generateEmptyTore(chunkMap);
+        } else {
+            this.generateFullTore(chunkMap);
         }
-        return this.generateFullTore();
+        return new ArrayList<>(chunkMap.values());
     }
 
     @Override
@@ -182,9 +192,8 @@ public class TorusGen extends FillableShape {
     /**
      * generates a full tore / tore with custom filling
      * the shape with the torus might be different from the empty one if you're using custom torus filling
-     * @return a list of every blockPos
      */
-    public List<BlockPos> generateFullTore() {
+    public void generateFullTore(Map<ChunkPos, Set<BlockPos>> chunkMap) {
         this.setFill();
         List<BlockPos> poslist = new ArrayList<>();
 
@@ -227,7 +236,8 @@ public class TorusGen extends FillableShape {
                                 }
                             }*/
                             if (bl) {
-                                poslist.add(new BlockPos((int) (this.getPos().getX() + x), (int) (this.getPos().getY() + y), (int) (this.getPos().getZ() + z)));
+                                BlockPos pos = new BlockPos((int) (this.getPos().getX() + x), (int) (this.getPos().getY() + y), (int) (this.getPos().getZ() + z));
+                                WorldGenUtil.modifyChunkMap(pos, chunkMap);
                             }
                         }
 
@@ -262,7 +272,8 @@ public class TorusGen extends FillableShape {
                                 }
                             }*/
                             if (bl) {
-                                poslist.add(this.getCoordinatesRotation(x, y, z, this.getPos()));
+                                BlockPos pos = this.getCoordinatesRotation(x, y, z, this.getPos());
+                                WorldGenUtil.modifyChunkMap(pos, chunkMap);
                             }
                         }
                     }
@@ -270,16 +281,14 @@ public class TorusGen extends FillableShape {
             }
         }
 
-        return poslist;
     }
 
 
     /**
      * generates an empty torus
      * the shape with the torus might be different from the full one if you're using custom torus filling
-     * @return a list of every blockPos
      */
-    public List<BlockPos> generateEmptyTore() {
+    public void generateEmptyTore(Map<ChunkPos, Set<BlockPos>> chunkMap) {
         BlockPos.Mutable mutable = new BlockPos.Mutable();
         List<BlockPos> poslist = new ArrayList<>();
 
@@ -290,39 +299,34 @@ public class TorusGen extends FillableShape {
             for (int u = 0; u <= this.verticalTorus * 360; u += 40 / maxouterRadius) {
                 for (int v = 0; v <= this.horizontalTorus * 360; v += 45 / maxinnerRadius) {
                     Vec3d vec = this.getEllipsoidalToreCoordinates(u, v);
-
-                    poslist.add(new BlockPos((int) (getPos().getX() + vec.x), (int) (getPos().getY() + vec.y), (int) (getPos().getZ() + vec.z)));
-
+                    BlockPos pos = new BlockPos((int) (getPos().getX() + vec.x), (int) (getPos().getY() + vec.y), (int) (getPos().getZ() + vec.z));
+                    WorldGenUtil.modifyChunkMap(pos, chunkMap);
                 }
             }
         } else {
             for (int u = 0; u <= 360 * this.verticalTorus; u += 40 / maxouterRadius) {
                 for (int v = 0; v <= 360 * this.horizontalTorus; v += 45 / maxinnerRadius) {
                     Vec3d vec = this.getEllipsoidalToreCoordinates(u, v);
-                    poslist.add(this.getCoordinatesRotation((float) vec.x, (float) vec.y, (float) vec.z, this.getPos()));
+                    BlockPos pos = this.getCoordinatesRotation((float) vec.x, (float) vec.y, (float) vec.z, this.getPos());
+                    WorldGenUtil.modifyChunkMap(pos, chunkMap);
                 }
             }
         }
-        return poslist;
     }
 
     private void setTorusFill() {
         if (this.torusType == TorusType.FULL) {
             this.verticalTorus = 1f;
             this.horizontalTorus = 1f;
-        }
-        else if (this.torusType == TorusType.HORIZONTAL_HALF) {
+        } else if (this.torusType == TorusType.HORIZONTAL_HALF) {
             this.horizontalTorus = 0.5f;
             this.verticalTorus = 1f;
-        }
-        else if (this.torusType == TorusType.VERTICAL_HALF) {
+        } else if (this.torusType == TorusType.VERTICAL_HALF) {
             this.verticalTorus = 0.5f;
             this.horizontalTorus = 1f;
-        }
-        else if(this.torusType == TorusType.HORIZONTAL_CUSTOM){
+        } else if (this.torusType == TorusType.HORIZONTAL_CUSTOM) {
             this.verticalTorus = 1f;
-        }
-        else if(this.torusType == TorusType.VERTICAL_CUSTOM){
+        } else if (this.torusType == TorusType.VERTICAL_CUSTOM) {
             this.horizontalTorus = 1f;
         }
     }

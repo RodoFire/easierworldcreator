@@ -2,17 +2,14 @@ package net.rodofire.easierworldcreator.worldgenutil;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.util.math.Vec3i;
+import net.minecraft.util.math.*;
 import net.minecraft.util.math.random.Random;
 import net.rodofire.easierworldcreator.Easierworldcreator;
 import net.rodofire.easierworldcreator.shapeutil.BlockLayer;
+import net.rodofire.easierworldcreator.shapeutil.BlockList;
 import net.rodofire.easierworldcreator.util.FastMaths;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 public class WorldGenUtil {
 
@@ -106,6 +103,12 @@ public class WorldGenUtil {
 
     public static float getDistance(BlockPos pos1, BlockPos pos2, float precision) {
         return (float) FastMaths.getLengthWPrecision(pos1.getX() - pos2.getX(), pos1.getY() - pos2.getY(), pos1.getZ() - pos2.getZ(), precision);
+    }
+
+    public static boolean isPosAChunkFar(BlockPos pos1, BlockPos pos2) {
+        if(Math.abs(pos1.getX() - pos2.getX()) > 16) return true;
+        if(Math.abs(pos1.getZ() - pos2.getZ()) > 16) return true;
+        return false;
     }
 
 
@@ -218,5 +221,27 @@ public class WorldGenUtil {
 
         return new BlockPos(new BlockPos.Mutable().set((Vec3i) pos, (int) x_rot_z, (int) y_rot2, (int) z_rot2));
 
+    }
+
+    /**
+     * This methods allow you to divide a list of blockPos into chunks.
+     * It is used later to put the blocks
+     * @param posList
+     * @return
+     */
+    public static List<List<BlockPos>> divideBlockPosIntoChunk(List<BlockPos> posList){
+        Map<ChunkPos, List<BlockPos>> chunkMap = new HashMap<>();
+        for (BlockPos pos : posList){
+            ChunkPos chunkPos = new ChunkPos(pos);
+            List<BlockPos> blockPosInChunk = chunkMap.computeIfAbsent(chunkPos, k -> new ArrayList<>());
+            blockPosInChunk.add(pos);
+        }
+        return new ArrayList<>(chunkMap.values());
+    }
+
+    public static void modifyChunkMap(BlockPos pos, Map<ChunkPos, Set<BlockPos>> chunkMap) {
+        ChunkPos chunkPos = new ChunkPos(pos);
+        Set<BlockPos> blockPosInChunk = chunkMap.computeIfAbsent(chunkPos, k -> new HashSet<>());
+        blockPosInChunk.add(pos);
     }
 }

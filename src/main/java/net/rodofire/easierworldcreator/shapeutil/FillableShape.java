@@ -30,8 +30,8 @@ public abstract class FillableShape extends Shape {
      * @param world the world of the shape
      * @param pos   the pos of the shape (usually the center of the structure)
      */
-    public FillableShape(@NotNull StructureWorldAccess world, @NotNull BlockPos pos) {
-        super(world, pos);
+    public FillableShape(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, PlaceMoment placeMoment) {
+        super(world, pos, placeMoment);
     }
 
     /**
@@ -44,8 +44,8 @@ public abstract class FillableShape extends Shape {
      * @param yrotation       second rotation around the y-axis
      * @param secondxrotation last rotation around the x-axis
      */
-    public FillableShape(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, List<BlockLayer> layers, boolean force, List<Block> blocksToForce, int xrotation, int yrotation, int secondxrotation) {
-        super(world, pos, layers, force, blocksToForce, xrotation, yrotation, secondxrotation);
+    public FillableShape(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, PlaceMoment placeMoment, List<BlockLayer> layers, boolean force, List<Block> blocksToForce, int xrotation, int yrotation, int secondxrotation) {
+        super(world, pos, placeMoment, layers, force, blocksToForce, xrotation, yrotation, secondxrotation);
     }
 
     /**

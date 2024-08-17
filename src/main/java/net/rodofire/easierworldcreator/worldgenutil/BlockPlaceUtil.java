@@ -97,10 +97,42 @@ public class BlockPlaceUtil {
     //  - false: place block at the index with the index i-1
     private static void placeBlockWithNoise(StructureWorldAccess world, List<BlockState> blocksToPlace, BlockPos pos, float a) {
         int length = blocksToPlace.size() - 1;
-        for (float i = 1; i <= length; i += 1) {
-            if (a <= i * 2 / length - length) {
-                world.setBlockState(pos, blocksToPlace.get((int) i - 1), 2);
-            }
-        }
+        world.setBlockState(pos, blocksToPlace.get((int) ((length - 1) * a)),3);
+    }
+
+    //return the BlockState wanted based on randomness
+    //this method doesn't place the block
+    //It is notabely used during the shape gen during world gen
+    public static BlockState getRandomBlock(List<BlockState> blocksToPlace) {
+        return blocksToPlace.get(Random.create().nextBetween(0, blocksToPlace.size() - 1));
+    }
+
+    //return the BlockState wanted based on order
+    //this method doesn't place the block
+    //It is notabely used during the shape gen during world gen
+    public static BlockState getBlockWithOrder(List<BlockState> blocksToPlace, int i) {
+        return blocksToPlace.get(i);
+    }
+
+    //return the BlockState wanted based on 2d noise
+    //this method doesn't place the block
+    //It is notabely used during the shape gen during world gen
+    public static BlockState getBlockWith2DNoise(List<BlockState> blocksToPlace, BlockPos pos, FastNoiseLite noise) {
+        double a = noise.GetNoise(pos.getX(), pos.getZ());
+        return getBlockStateWithNoise(blocksToPlace, a);
+    }
+
+    //return the BlockState wanted based on 3d noise
+    //this method doesn't place the block
+    //It is notabely used during the shape gen during world gen
+    public static BlockState getBlockWith3DNoise(List<BlockState> blocksToPlace, BlockPos pos, FastNoiseLite noise) {
+        double a = noise.GetNoise(pos.getX(), pos.getY(), pos.getZ());
+        return getBlockStateWithNoise(blocksToPlace, a);
+    }
+
+    //simplify the choose of block
+    private static BlockState getBlockStateWithNoise(List<BlockState> blocksToPlace, double a) {
+        int length = blocksToPlace.size() - 1;
+        return blocksToPlace.get((int) ((length - 1) * a));
     }
 }
