@@ -207,8 +207,9 @@ public class SphereGen extends FillableShape {
                     int x = (int) (xcostheta * cosphi);
                     int y = (int) (radiusy * FastMaths.getFastSin(phi));
                     int z = (int) (zsinkheta * cosphi);
-                    mutable.set(this.getPos(), x, y, z);
-                    WorldGenUtil.modifyChunkMap(new BlockPos(mutable), chunkMap);
+                    BlockPos pos = mutable.set(this.getPos(), x, y, z);
+                    if(!this.biggerThanChunk && WorldGenUtil.isPosAChunkFar(pos,this.getPos())) this.biggerThanChunk = true;
+                    WorldGenUtil.modifyChunkMap(pos, chunkMap);
                 }
             }
         } else {
@@ -223,6 +224,7 @@ public class SphereGen extends FillableShape {
                     float y = (float) (radiusy * FastMaths.getFastSin(phi));
                     float z = (float) (zsinkheta * cosphi);
                     BlockPos pos = this.getCoordinatesRotation(x, 0, z, this.getPos());
+                    if(!this.biggerThanChunk && WorldGenUtil.isPosAChunkFar(pos,this.getPos())) this.biggerThanChunk = true;
                     WorldGenUtil.modifyChunkMap(pos, chunkMap);
                 }
             }
@@ -303,6 +305,7 @@ public class SphereGen extends FillableShape {
                             }
                             if (bl) {
                                 BlockPos pos = new BlockPos((int) (this.getPos().getX() + x), this.getPos().getY(), (int) (this.getPos().getZ() + z));
+                                if(!this.biggerThanChunk && WorldGenUtil.isPosAChunkFar(pos,this.getPos())) this.biggerThanChunk = true;
                                 WorldGenUtil.modifyChunkMap(pos, chunkMap);
                             }
                         }
@@ -328,6 +331,7 @@ public class SphereGen extends FillableShape {
                             }
                             if (bl) {
                                 BlockPos pos = this.getCoordinatesRotation(x, 0, z, this.getPos());
+                                if(!this.biggerThanChunk && WorldGenUtil.isPosAChunkFar(pos,this.getPos())) this.biggerThanChunk = true;
                                 WorldGenUtil.modifyChunkMap(pos, chunkMap);
                             }
                         }

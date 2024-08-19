@@ -237,6 +237,7 @@ public class TorusGen extends FillableShape {
                             }*/
                             if (bl) {
                                 BlockPos pos = new BlockPos((int) (this.getPos().getX() + x), (int) (this.getPos().getY() + y), (int) (this.getPos().getZ() + z));
+                                if(!this.biggerThanChunk && WorldGenUtil.isPosAChunkFar(pos,this.getPos())) this.biggerThanChunk = true;
                                 WorldGenUtil.modifyChunkMap(pos, chunkMap);
                             }
                         }
@@ -273,6 +274,7 @@ public class TorusGen extends FillableShape {
                             }*/
                             if (bl) {
                                 BlockPos pos = this.getCoordinatesRotation(x, y, z, this.getPos());
+                                if(!this.biggerThanChunk && WorldGenUtil.isPosAChunkFar(pos,this.getPos())) this.biggerThanChunk = true;
                                 WorldGenUtil.modifyChunkMap(pos, chunkMap);
                             }
                         }
@@ -300,6 +302,7 @@ public class TorusGen extends FillableShape {
                 for (int v = 0; v <= this.horizontalTorus * 360; v += 45 / maxinnerRadius) {
                     Vec3d vec = this.getEllipsoidalToreCoordinates(u, v);
                     BlockPos pos = new BlockPos((int) (getPos().getX() + vec.x), (int) (getPos().getY() + vec.y), (int) (getPos().getZ() + vec.z));
+                    if(!this.biggerThanChunk && WorldGenUtil.isPosAChunkFar(pos,this.getPos())) this.biggerThanChunk = true;
                     WorldGenUtil.modifyChunkMap(pos, chunkMap);
                 }
             }
@@ -308,6 +311,7 @@ public class TorusGen extends FillableShape {
                 for (int v = 0; v <= 360 * this.horizontalTorus; v += 45 / maxinnerRadius) {
                     Vec3d vec = this.getEllipsoidalToreCoordinates(u, v);
                     BlockPos pos = this.getCoordinatesRotation((float) vec.x, (float) vec.y, (float) vec.z, this.getPos());
+                    if(!this.biggerThanChunk && WorldGenUtil.isPosAChunkFar(pos,this.getPos())) this.biggerThanChunk = true;
                     WorldGenUtil.modifyChunkMap(pos, chunkMap);
                 }
             }
@@ -315,19 +319,27 @@ public class TorusGen extends FillableShape {
     }
 
     private void setTorusFill() {
-        if (this.torusType == TorusType.FULL) {
-            this.verticalTorus = 1f;
-            this.horizontalTorus = 1f;
-        } else if (this.torusType == TorusType.HORIZONTAL_HALF) {
-            this.horizontalTorus = 0.5f;
-            this.verticalTorus = 1f;
-        } else if (this.torusType == TorusType.VERTICAL_HALF) {
-            this.verticalTorus = 0.5f;
-            this.horizontalTorus = 1f;
-        } else if (this.torusType == TorusType.HORIZONTAL_CUSTOM) {
-            this.verticalTorus = 1f;
-        } else if (this.torusType == TorusType.VERTICAL_CUSTOM) {
-            this.horizontalTorus = 1f;
+        switch (this.torusType) {
+            case FULL:
+                this.verticalTorus = 1f;
+                this.horizontalTorus = 1f;
+                break;
+            case HORIZONTAL_HALF:
+                this.horizontalTorus = 0.5f;
+                this.verticalTorus = 1f;
+                break;
+            case VERTICAL_HALF:
+                this.verticalTorus = 0.5f;
+                this.horizontalTorus = 1f;
+                break;
+            case HORIZONTAL_CUSTOM:
+                this.verticalTorus = 1f;
+                break;
+            case VERTICAL_CUSTOM:
+                this.horizontalTorus = 1f;
+                break;
+            default:
+                throw new IllegalStateException("Unexpected value: " + this.torusType);
         }
     }
 
