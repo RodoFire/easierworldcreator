@@ -4,6 +4,8 @@ import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.util.math.*;
 import net.minecraft.util.math.random.Random;
+import net.minecraft.world.StructureWorldAccess;
+import net.minecraft.world.chunk.ChunkStatus;
 import net.rodofire.easierworldcreator.Easierworldcreator;
 import net.rodofire.easierworldcreator.shapeutil.BlockLayer;
 import net.rodofire.easierworldcreator.shapeutil.BlockList;
@@ -243,5 +245,9 @@ public class WorldGenUtil {
         ChunkPos chunkPos = new ChunkPos(pos);
         Set<BlockPos> blockPosInChunk = chunkMap.computeIfAbsent(chunkPos, k -> new HashSet<>());
         blockPosInChunk.add(pos);
+    }
+
+    public boolean isChunkGenerated(StructureWorldAccess world, ChunkPos chunkPos) {
+        return world.getChunkManager().getChunk(chunkPos.x, chunkPos.z, ChunkStatus.FULL, false) != null;
     }
 }
