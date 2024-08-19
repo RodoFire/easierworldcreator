@@ -22,6 +22,7 @@ import net.minecraft.world.chunk.Chunk;
 import net.rodofire.easierworldcreator.Easierworldcreator;
 import net.rodofire.easierworldcreator.shapeutil.BlockList;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -146,7 +147,6 @@ public class LoadChunkShapeInfo {
         List<Path> path = new ArrayList<>();
         Path generatedPath = Objects.requireNonNull(world.getServer()).getSavePath(WorldSavePath.GENERATED).normalize();
         Path chunkDirectoryPath = generatedPath.resolve(Easierworldcreator.MOD_ID + "/structures/chunk_" + chunk.x + "_" + chunk.z);
-        System.out.println(chunkDirectoryPath);
         try {
             if (Files.exists(chunkDirectoryPath) && Files.isDirectory(chunkDirectoryPath)) {
                 Files.list(chunkDirectoryPath).forEach(filePath -> {
@@ -172,5 +172,14 @@ public class LoadChunkShapeInfo {
             return blockString.substring(6, blockString.length() - 1);
         }
         throw new IllegalArgumentException("Invalid block string format: " + blockString);
+    }
+
+
+    public static void removeFile(Path path) {
+        File file = new File(path.toString());
+        if (file.exists()) {
+            boolean deleted = file.delete();
+        } else {
+        }
     }
 }

@@ -19,12 +19,13 @@ import java.util.List;
 @Mixin(ChunkGenerator.class)
 public abstract class ChunkGeneratorMixin {
     @Experimental
-    @Inject(method = "generateFeatures", at = @At(value = "INVOKE", target = "Lit/unimi/dsi/fastutil/ints/IntArraySet;<init>()V"), remap = false)
+    @Inject(method = "generateFeatures", at = @At(value = "INVOKE", target = "Lit/unimi/dsi/fastutil/ints/IntSet;size()I"), remap = false)
     private void onGenerateFeatures(StructureWorldAccess world, Chunk chunk, StructureAccessor structureAccessor, CallbackInfo ci) throws IOException {
         List<Path> pathlist = LoadChunkShapeInfo.verifyFiles(world, chunk);
         for (Path path : pathlist) {
             List<BlockList> blockLists = LoadChunkShapeInfo.loadFromJson(world, path);
             LoadChunkShapeInfo.placeStructure(world, blockLists);
+            LoadChunkShapeInfo.removeFile(path);
         }
     }
 }
