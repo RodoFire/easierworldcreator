@@ -111,6 +111,7 @@ public class CircleGen extends FillableShape {
         if (this.getCustomFill() < 0f) this.setCustomFill(0f);
 
         if (this.getXrotation() % 180 == 0 && this.getYrotation() % 180 == 0 && this.getSecondXrotation() == 0 && (this.getFillingType() == FillableShape.Type.FULL || this.getFillingType() == FillableShape.Type.EMPTY)) {
+            if(this.radiusz > 16 || this.radiusx > 16) this.biggerThanChunk = true;
             return this.generateEmptyOval(this.getPos().getX(), this.getPos().getZ(), this.getPos().getY());
         } else if (this.getFillingType() == FillableShape.Type.EMPTY) {
             return this.generateEmptyOval();
@@ -142,15 +143,14 @@ public class CircleGen extends FillableShape {
                         if (innerRadiusXSquared != 0) {
                             float innerXSquared = x * x / innerRadiusXSquared;
                             float innerZSquared = z * z / innerRadiusZSquared;
-                            if (innerXSquared + innerZSquared <= 1f) { // pas dans l'ovale intérieur
+                            if (innerXSquared + innerZSquared <= 1f) {
                                 bl = false;
                             }
                         }
                         if (bl) {
                             BlockPos pos = new BlockPos((int) (this.getPos().getX() + x), this.getPos().getY(), (int) (this.getPos().getZ() + z));
+                            if(!this.biggerThanChunk && WorldGenUtil.isPosAChunkFar(pos,this.getPos())) this.biggerThanChunk = true;
                             WorldGenUtil.modifyChunkMap(pos, chunkMap);
-
-                            //poslist.add(new BlockPos((int) (this.getPos().getX() + x), this.getPos().getY(), (int) (this.getPos().getZ() + z)));
                         }
                     }
                 }
@@ -171,17 +171,9 @@ public class CircleGen extends FillableShape {
                         }
                         if (bl) {
                             BlockPos pos = this.getCoordinatesRotation(x, 0, z, this.getPos());
+                            if(!this.biggerThanChunk && WorldGenUtil.isPosAChunkFar(pos,this.getPos())) this.biggerThanChunk = true;
                             WorldGenUtil.modifyChunkMap(pos, chunkMap);
-
-                            //poslist.add(new BlockPos((int) (this.getPos().getX() + x), this.getPos().getY(), (int) (this.getPos().getZ() + z)));
                         }
-
-
-                        /*float innerXSquared = x * x / innerRadiusXSquared;
-                        float innerZSquared = z * z / innerRadiusZSquared;
-                        if (innerXSquared + innerZSquared > 1) {
-                            poslist.add(this.getCoordinatesRotation(x, 0, z, this.getPos()));
-                        }*/
                     }
                 }
             }
@@ -199,16 +191,16 @@ public class CircleGen extends FillableShape {
             for (float u = 0; u < 360; u += (float) 45 / Math.max(this.radiusz, this.radiusx)) {
                 float x = (float) (radiusx * FastMaths.getFastCos(u));
                 float z = (float) (radiusz * FastMaths.getFastSin(u));
-
                 BlockPos pos = new BlockPos((int) (this.getPos().getX() + x), this.getPos().getY(), (int) (this.getPos().getZ() + z));
+                if(!this.biggerThanChunk && WorldGenUtil.isPosAChunkFar(pos,this.getPos())) this.biggerThanChunk = true;
                 WorldGenUtil.modifyChunkMap(pos, chunkMap);
             }
         } else {
             for (float u = 0; u < 360; u += (float) 35 / Math.max(this.radiusz, this.radiusx)) {
                 float x = (float) (radiusx * FastMaths.getFastCos(u));
                 float z = (float) (radiusz * FastMaths.getFastSin(u));
-
                 BlockPos pos = this.getCoordinatesRotation(x, 0, z, this.getPos());
+                if(!this.biggerThanChunk && WorldGenUtil.isPosAChunkFar(pos,this.getPos())) this.biggerThanChunk = true;
                 WorldGenUtil.modifyChunkMap(pos, chunkMap);
             }
         }

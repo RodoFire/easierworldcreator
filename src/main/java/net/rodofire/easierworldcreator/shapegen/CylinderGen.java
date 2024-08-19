@@ -227,6 +227,7 @@ public class CylinderGen extends FillableShape {
                             }
                             if (bl) {
                                 BlockPos pos = new BlockPos((int) (this.getPos().getX() + x), this.getPos().getY(), (int) (this.getPos().getZ() + z));
+                                if(!this.biggerThanChunk && WorldGenUtil.isPosAChunkFar(pos,this.getPos())) this.biggerThanChunk = true;
                                 WorldGenUtil.modifyChunkMap(pos, chunkMap);
                             }
                         }
@@ -249,6 +250,7 @@ public class CylinderGen extends FillableShape {
                             }
                             if (bl) {
                                 BlockPos pos = this.getCoordinatesRotation(x, y, z, this.getPos());
+                                if(!this.biggerThanChunk && WorldGenUtil.isPosAChunkFar(pos,this.getPos())) this.biggerThanChunk = true;
                                 WorldGenUtil.modifyChunkMap(pos, chunkMap);
                             }
                         }
@@ -270,6 +272,7 @@ public class CylinderGen extends FillableShape {
                 float z = (float) (radiusz * FastMaths.getFastSin(u));
                 for (float y = 0; y <= this.height; y += 1f) {
                     BlockPos pos = new BlockPos((int) (this.getPos().getX() + x), this.getPos().getY(), (int) (this.getPos().getZ() + z));
+                    if(!this.biggerThanChunk && WorldGenUtil.isPosAChunkFar(pos,this.getPos())) this.biggerThanChunk = true;
                     WorldGenUtil.modifyChunkMap(pos, chunkMap);
                 }
             }
@@ -279,6 +282,7 @@ public class CylinderGen extends FillableShape {
                 float z = (float) (radiusz * FastMaths.getFastSin(u));
                 for (float y = 0; y <= this.height; y += 0.5f) {
                     BlockPos pos = this.getCoordinatesRotation(x, 0, z, this.getPos());
+                    if(!this.biggerThanChunk && WorldGenUtil.isPosAChunkFar(pos,this.getPos())) this.biggerThanChunk = true;
                     WorldGenUtil.modifyChunkMap(pos, chunkMap);
                 }
             }
