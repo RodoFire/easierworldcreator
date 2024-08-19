@@ -2,7 +2,6 @@ package net.rodofire.easierworldcreator.shapeutil;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
-import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.Vec3d;
@@ -10,8 +9,8 @@ import net.minecraft.util.math.Vec3i;
 import net.minecraft.util.math.random.Random;
 import net.minecraft.world.StructureWorldAccess;
 import net.rodofire.easierworldcreator.Easierworldcreator;
+import net.rodofire.easierworldcreator.nbtutil.LoadChunkShapeInfo;
 import net.rodofire.easierworldcreator.nbtutil.SaveChunkShapeInfo;
-import net.rodofire.easierworldcreator.nbtutil.SaveNbt;
 import net.rodofire.easierworldcreator.util.FastMaths;
 import net.rodofire.easierworldcreator.worldgenutil.BlockPlaceUtil;
 import net.rodofire.easierworldcreator.worldgenutil.FastNoiseLite;
@@ -19,6 +18,7 @@ import net.rodofire.easierworldcreator.worldgenutil.WorldGenUtil;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -332,22 +332,24 @@ public abstract class Shape {
 
     /**
      * This method is the method to place the related Blocks
+     *
      * @param posList the {@link List} of {@link Set} of {@link BlockPos} calculated before, that will be placed
      * @throws IOException
      */
     public void place(List<Set<BlockPos>> posList) throws IOException {
+        Easierworldcreator.LOGGER.info("placing structure");
         if (this.placeType == PlaceType.BLOCKS) {
-
             //verify if the shape is larger than a chunk
             //if yes, we have to divide the structure into chunks
             ExecutorService executorService = Executors.newFixedThreadPool(THREAD_COUNT);
             if (this.placeMoment == PlaceMoment.WORLD_GEN && this.biggerThanChunk) {
+                Easierworldcreator.LOGGER.info("structure bigger than chunk");
                 featureName = "custom_feature_" + Random.create().nextLong();
 
                 ChunkPos chunk = new ChunkPos(this.getPos());
                 chunk.getStartPos();
-
-                for(Set<BlockPos> pos : posList) {
+                Easierworldcreator.LOGGER.info("generating chunk in chunkPos : " + chunk);
+                for (Set<BlockPos> pos : posList) {
                     executorService.submit(() -> {
                         try {
                             Set<BlockList> blockList = this.getLayers(pos);
@@ -357,13 +359,19 @@ public abstract class Shape {
                         }
                     });
                 }
+                List<Path> path = LoadChunkShapeInfo.verifyFiles(world, this.getPos());
+                for (Path path1 : path) {
+                    List<BlockList> blockLists = LoadChunkShapeInfo.loadFromJson(world, path1);
+                    LoadChunkShapeInfo.placeStructure(world, blockLists);
+                }
 
             }
             //In the case our structure isn't place during world gen or it is less than a chunk large
             else {
-                for(Set<BlockPos> pos : posList) {
+                for (Set<BlockPos> pos : posList) {
+                    Easierworldcreator.LOGGER.info("structure smaller than chunk");
                     //executorService.submit(() -> {
-                        this.placeLayers(pos);
+                    this.placeLayers(pos);
                     //});
                 }
 
@@ -409,6 +417,11 @@ public abstract class Shape {
                     verifyForBlockLayer(pos, states, blockLists);
                 }
             }
+            List<BlockState> states = this.blockLayers.get(this.blockLayers.size() - 1).getBlockStates();
+
+            for (BlockPos pos : poslist) {
+                verifyForBlockLayer(pos, states, blockLists);
+            }
         } else if (this.layersType == LayersType.RADIAL) {
             blockLists.addAll(this.getRadialBlocks(firstposlist));
         } else if (this.layersType == LayersType.CYLINDRICAL) {
@@ -438,10 +451,16 @@ public abstract class Shape {
                 poslist = pos1.get(1);
                 firstposlist = pos1.get(0);
 
+                List<BlockState> states = this.blockLayers.get(i - 1).getBlockStates();
 
                 for (BlockPos pos : firstposlist) {
-                    this.placeBlocks(i - 1, pos);
+                    this.placeBlocks(states, pos);
                 }
+            }
+            List<BlockState> states = this.blockLayers.get(this.blockLayers.size() - 1).getBlockStates();
+
+            for (BlockPos pos : poslist) {
+                this.placeBlocks(states, pos);
             }
         } else if (this.layersType == LayersType.RADIAL) {
             this.placeRadialBlocks(firstposlist);
@@ -480,7 +499,7 @@ public abstract class Shape {
      * and remove the {@link BlockPos} from the existing list.
      * <p>  -If not, it does nothing.
      *
-     * @param poslist the list of {@link BlockPos} of the precedent Layer
+     * @param poslist    the list of {@link BlockPos} of the precedent Layer
      * @param layerIndex the index to get the depth
      * @return two {@link List}.
      * One corresponding to the final {@code List<BlockPos>} of the previous layer.
@@ -564,6 +583,7 @@ public abstract class Shape {
      * <p> First, it sorts the list depending on the {@link Vec3d}.
      * <p> Then for every {@link Block}, it calculates the distance between the actual {@link Block} and the first one of the sorted list.
      * It will then place the Block corresponding to the actual depth, determined distance / first distance
+     *
      * @param firstposlist the list of the BlockPos
      */
     private void placeDirectionalLayers(Set<BlockPos> firstposlist) {
@@ -617,6 +637,7 @@ public abstract class Shape {
 
     /**
      * this is basically the same as previous except that it can't verify if it can place the Block.
+     *
      * @param firstposlist the first {@link List}
      * @return
      */
@@ -778,29 +799,39 @@ public abstract class Shape {
 
     //place blocks without verification
     public void placeBlocks(int index, BlockPos pos) {
-        if (this.layerPlace == LayerPlace.RANDOM) {
-            BlockPlaceUtil.placeRandomBlock(world, this.blockLayers.get(index).getBlockStates(), pos);
-        } else if (this.layerPlace == LayerPlace.NOISE2D) {
-            BlockPlaceUtil.placeBlockWith2DNoise(world, this.blockLayers.get(index).getBlockStates(), pos, this.noise);
-        } else if (this.layerPlace == LayerPlace.NOISE3D) {
-            BlockPlaceUtil.placeBlockWith3DNoise(world, this.blockLayers.get(index).getBlockStates(), pos, this.noise);
-        } else {
-            BlockPlaceUtil.placeBlockWithOrder(world, this.blockLayers.get(index).getBlockStates(), pos, this.placedBlocks);
-            this.placedBlocks = this.placedBlocks % (this.blockLayers.size() - 1);
+        switch (this.layerPlace) {
+            case RANDOM:
+                BlockPlaceUtil.placeRandomBlock(world, this.blockLayers.get(index).getBlockStates(), pos);
+                break;
+            case NOISE2D:
+                BlockPlaceUtil.placeBlockWith2DNoise(world, this.blockLayers.get(index).getBlockStates(), pos, this.noise);
+                break;
+            case NOISE3D:
+                BlockPlaceUtil.placeBlockWith3DNoise(world, this.blockLayers.get(index).getBlockStates(), pos, this.noise);
+                break;
+            default:
+                BlockPlaceUtil.placeBlockWithOrder(world, this.blockLayers.get(index).getBlockStates(), pos, this.placedBlocks);
+                this.placedBlocks = this.placedBlocks % (this.blockLayers.size() - 1);
+                break;
         }
     }
 
     //Place blocks without verification. Used for precomputed List<BlockStates> instead of searching it on the BlockLayer
     public void placeBlocks(List<BlockState> states, BlockPos pos) {
-        if (this.layerPlace == LayerPlace.RANDOM) {
-            BlockPlaceUtil.placeRandomBlock(world, states, pos);
-        } else if (this.layerPlace == LayerPlace.NOISE2D) {
-            BlockPlaceUtil.placeBlockWith2DNoise(world, states, pos, this.noise);
-        } else if (this.layerPlace == LayerPlace.NOISE3D) {
-            BlockPlaceUtil.placeBlockWith3DNoise(world, states, pos, this.noise);
-        } else {
-            BlockPlaceUtil.placeBlockWithOrder(world, states, pos, this.placedBlocks);
-            this.placedBlocks = this.placedBlocks % (this.blockLayers.size() - 1);
+        switch (this.layerPlace) {
+            case RANDOM:
+                BlockPlaceUtil.placeRandomBlock(world, states, pos);
+                break;
+            case NOISE2D:
+                BlockPlaceUtil.placeBlockWith2DNoise(world, states, pos, this.noise);
+                break;
+            case NOISE3D:
+                BlockPlaceUtil.placeBlockWith3DNoise(world, states, pos, this.noise);
+                break;
+            default:
+                BlockPlaceUtil.placeBlockWithOrder(world, states, pos, this.placedBlocks);
+                this.placedBlocks = this.placedBlocks % (this.blockLayers.size() - 1);
+                break;
         }
     }
 
@@ -812,16 +843,17 @@ public abstract class Shape {
      * @return boolean if the block was placed
      */
     public boolean placeBlocksWithVerification(int index, BlockPos pos) {
-        if (this.layerPlace == LayerPlace.RANDOM) {
-            return BlockPlaceUtil.setRandomBlockWithVerification(world, this.force, this.blocksToForce, this.blockLayers.get(index).getBlockStates(), pos);
-        } else if (this.layerPlace == LayerPlace.NOISE2D) {
-            return BlockPlaceUtil.set2dNoiseBlockWithVerification(world, this.force, this.blocksToForce, this.blockLayers.get(index).getBlockStates(), pos, this.noise);
-        } else if (this.layerPlace == LayerPlace.NOISE3D) {
-            return BlockPlaceUtil.set3dNoiseBlockWithVerification(world, this.force, this.blocksToForce, this.blockLayers.get(index).getBlockStates(), pos, this.noise);
-        } else {
-            boolean bl = BlockPlaceUtil.setBlockWithOrderWithVerification(world, this.force, this.blocksToForce, this.blockLayers.get(index).getBlockStates(), pos, this.placedBlocks);
-            this.placedBlocks = (this.placedBlocks + 1) % (this.blockLayers.size() - 1);
-            return bl;
+        switch (this.layerPlace) {
+            case RANDOM:
+                return BlockPlaceUtil.setRandomBlockWithVerification(world, this.force, this.blocksToForce, this.blockLayers.get(index).getBlockStates(), pos);
+            case NOISE2D:
+                return BlockPlaceUtil.set2dNoiseBlockWithVerification(world, this.force, this.blocksToForce, this.blockLayers.get(index).getBlockStates(), pos, this.noise);
+            case NOISE3D:
+                return BlockPlaceUtil.set3dNoiseBlockWithVerification(world, this.force, this.blocksToForce, this.blockLayers.get(index).getBlockStates(), pos, this.noise);
+            default:
+                boolean bl = BlockPlaceUtil.setBlockWithOrderWithVerification(world, this.force, this.blocksToForce, this.blockLayers.get(index).getBlockStates(), pos, this.placedBlocks);
+                this.placedBlocks = (this.placedBlocks + 1) % (this.blockLayers.size() - 1);
+                return bl;
         }
     }
 
@@ -834,47 +866,51 @@ public abstract class Shape {
      * @return boolean if the block was placed
      */
     public boolean placeBlocksWithVerification(List<BlockState> states, BlockPos pos) {
-        if (this.layerPlace == LayerPlace.RANDOM) {
-            return BlockPlaceUtil.setRandomBlockWithVerification(world, this.force, this.blocksToForce, states, pos);
-        } else if (this.layerPlace == LayerPlace.NOISE2D) {
-            return BlockPlaceUtil.set2dNoiseBlockWithVerification(world, this.force, this.blocksToForce, states, pos, this.noise);
-        } else if (this.layerPlace == LayerPlace.NOISE3D) {
-            return BlockPlaceUtil.set3dNoiseBlockWithVerification(world, this.force, this.blocksToForce, states, pos, this.noise);
-        } else {
-            boolean bl = BlockPlaceUtil.setBlockWithOrderWithVerification(world, this.force, this.blocksToForce, states, pos, this.placedBlocks);
-            this.placedBlocks = (this.placedBlocks + 1) % (this.blockLayers.size() - 1);
-            return bl;
+        switch (this.layerPlace) {
+            case RANDOM:
+                return BlockPlaceUtil.setRandomBlockWithVerification(world, this.force, this.blocksToForce, states, pos);
+            case NOISE2D:
+                return BlockPlaceUtil.set2dNoiseBlockWithVerification(world, this.force, this.blocksToForce, states, pos, this.noise);
+            case NOISE3D:
+                return BlockPlaceUtil.set3dNoiseBlockWithVerification(world, this.force, this.blocksToForce, states, pos, this.noise);
+            default:
+                boolean bl = BlockPlaceUtil.setBlockWithOrderWithVerification(world, this.force, this.blocksToForce, states, pos, this.placedBlocks);
+                this.placedBlocks = (this.placedBlocks + 1) % (this.blockLayers.size() - 1);
+                return bl;
         }
+
     }
 
     //Used to get the blocksState notably used during world gen, this doesn't place anything
     public BlockState getBlockToPlace(int index, BlockPos pos) {
-        if (this.layerPlace == LayerPlace.RANDOM) {
-            return BlockPlaceUtil.getRandomBlock(this.blockLayers.get(index).getBlockStates());
-        } else if (this.layerPlace == LayerPlace.NOISE2D) {
-            return BlockPlaceUtil.getBlockWith2DNoise(this.blockLayers.get(index).getBlockStates(), pos, this.noise);
-        } else if (this.layerPlace == LayerPlace.NOISE3D) {
-            return BlockPlaceUtil.getBlockWith3DNoise(this.blockLayers.get(index).getBlockStates(), pos, this.noise);
-        } else {
-            BlockState blockState = BlockPlaceUtil.getBlockWithOrder(this.blockLayers.get(index).getBlockStates(), this.placedBlocks);
-            this.placedBlocks = (this.placedBlocks + 1) % (this.blockLayers.size() - 1);
-            return blockState;
+        switch (this.layerPlace) {
+            case RANDOM:
+                return BlockPlaceUtil.getRandomBlock(this.blockLayers.get(index).getBlockStates());
+            case NOISE2D:
+                return BlockPlaceUtil.getBlockWith2DNoise(this.blockLayers.get(index).getBlockStates(), pos, this.noise);
+            case NOISE3D:
+                return BlockPlaceUtil.getBlockWith3DNoise(this.blockLayers.get(index).getBlockStates(), pos, this.noise);
+            default:
+                BlockState blockState = BlockPlaceUtil.getBlockWithOrder(this.blockLayers.get(index).getBlockStates(), this.placedBlocks);
+                this.placedBlocks = (this.placedBlocks + 1) % (this.blockLayers.size() - 1);
+                return blockState;
         }
     }
 
     //Used to get the blocksState notably used during world gen, this doesn't place anything
     //Used for precomputed BlockState list
     public BlockState getBlockToPlace(List<BlockState> states, BlockPos pos) {
-        if (this.layerPlace == LayerPlace.RANDOM) {
-            return BlockPlaceUtil.getRandomBlock(states);
-        } else if (this.layerPlace == LayerPlace.NOISE2D) {
-            return BlockPlaceUtil.getBlockWith2DNoise(states, pos, this.noise);
-        } else if (this.layerPlace == LayerPlace.NOISE3D) {
-            return BlockPlaceUtil.getBlockWith3DNoise(states, pos, this.noise);
-        } else {
-            BlockState blockState = BlockPlaceUtil.getBlockWithOrder(states, this.placedBlocks);
-            this.placedBlocks = (this.placedBlocks + 1) % (this.blockLayers.size() - 1);
-            return blockState;
+        switch (this.layerPlace) {
+            case RANDOM:
+                return BlockPlaceUtil.getRandomBlock(states);
+            case NOISE2D:
+                return BlockPlaceUtil.getBlockWith2DNoise(states, pos, this.noise);
+            case NOISE3D:
+                return BlockPlaceUtil.getBlockWith3DNoise(states, pos, this.noise);
+            default:
+                BlockState blockState = BlockPlaceUtil.getBlockWithOrder(states, this.placedBlocks);
+                this.placedBlocks = (this.placedBlocks + 1) % (this.blockLayers.size() - 1);
+                return blockState;
         }
     }
 
