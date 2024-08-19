@@ -150,7 +150,6 @@ public class LoadChunkShapeInfo {
         try {
             if (Files.exists(chunkDirectoryPath) && Files.isDirectory(chunkDirectoryPath)) {
                 Files.list(chunkDirectoryPath).forEach(filePath -> {
-                    System.out.println(filePath);
                     if (filePath.toString().endsWith(".json")) {
                         path.add(filePath);
                     }

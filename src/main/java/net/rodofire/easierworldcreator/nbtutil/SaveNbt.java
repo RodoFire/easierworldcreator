@@ -153,10 +153,8 @@ public class SaveNbt {
         List<Identifier> nbtList = new ArrayList<>();
         String chunkFolderPath = new Identifier(Easierworldcreator.MOD_ID, "generated/structures/" + chunk.x + "_" + chunk.z + "/").getPath();
         try {
-            System.out.println(chunkFolderPath);
             if (Files.exists(Path.of(chunkFolderPath)) && Files.isDirectory(Path.of(chunkFolderPath))) {
                 Files.list(Paths.get(chunkFolderPath)).forEach(filePath -> {
-                    System.out.println(filePath);
                     if (filePath.toString().endsWith(".nbt")) {
                         nbtList.add(new Identifier(Easierworldcreator.MOD_ID, chunk.x + "_" + chunk.z + "/" + filePath.getFileName().toString()));
                     }
