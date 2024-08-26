@@ -2,6 +2,7 @@ package net.rodofire.easierworldcreator.shapeutil;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
+import net.minecraft.particle.BlockStateParticleEffect;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.Vec3d;
@@ -25,9 +26,9 @@ import java.util.concurrent.Executors;
 
 /**
  * class to create custom shapes
- * <p>Since 2.1.0, the shape doesn't return a {@link List<BlockPos>} but it returns instead a {@code List<Set<BlockPos>>}
- * <p>Before 2.1.0, the BlockPos list was a simple list.
- * <p>Starting from 2.1.0, the shapes returns a list of {@link ChunkPos} that has a set of {@link BlockPos}
+ * <p> - Since 2.1.0, the shape doesn't return a {@link List<BlockPos>} but it returns instead a {@code List<Set<BlockPos>>}
+ * <p> - Before 2.1.0, the BlockPos list was a simple list.
+ * <p> - Starting from 2.1.0, the shapes returns a list of {@link ChunkPos} that has a set of {@link BlockPos}
  * <p>The change from {@link List} to {@link Set} was done to avoid duplicates BlockPos wich resulted in unnecessary calculations.
  * <p>this allow easy multithreading for the Block assignment done in the {@link Shape} which result in better performance;
  * </p>
@@ -37,6 +38,7 @@ public abstract class Shape {
     private StructureWorldAccess world;
     @NotNull
     private BlockPos pos;
+    private BlockPos offset = new BlockPos(0, 0, 0);
 
     private List<BlockLayer> blockLayers;
     private List<ParticleLayer> particleLayers;
@@ -81,9 +83,10 @@ public abstract class Shape {
     private String featureName;
 
     //boolean used to determine if we have to use the custom chunk building provided by the mod or not
-    protected boolean biggerThanChunk = true;
+    protected boolean biggerThanChunk = false;
 
     private static final int THREAD_COUNT = Runtime.getRuntime().availableProcessors();
+
 
     /**
      * init the shape gen
@@ -232,11 +235,11 @@ public abstract class Shape {
     }
 
     /*----------- Pos Related ----------*/
-    public BlockPos getPos() {
+    public @NotNull BlockPos getPos() {
         return pos;
     }
 
-    public void setPos(BlockPos pos) {
+    public void setPos(@NotNull BlockPos pos) {
         this.pos = pos;
     }
 
@@ -244,7 +247,7 @@ public abstract class Shape {
         this.pos.add(pos1);
     }
 
-    public StructureWorldAccess getWorld() {
+    public @NotNull StructureWorldAccess getWorld() {
         return world;
     }
 
@@ -339,21 +342,27 @@ public abstract class Shape {
     public void place(List<Set<BlockPos>> posList) throws IOException {
         Easierworldcreator.LOGGER.info("placing structure");
         if (this.placeType == PlaceType.BLOCKS) {
+
             //verify if the shape is larger than a chunk
             //if yes, we have to divide the structure into chunks
             ExecutorService executorService = Executors.newFixedThreadPool(THREAD_COUNT);
             if (this.placeMoment == PlaceMoment.WORLD_GEN && this.biggerThanChunk) {
+
+                if (!tryPlaceStructure(posList))
+                    Easierworldcreator.LOGGER.info("cannot place structure due to too much chunks generated around the original Pos");
                 Easierworldcreator.LOGGER.info("structure bigger than chunk");
+
                 featureName = "custom_feature_" + Random.create().nextLong();
 
                 ChunkPos chunk = new ChunkPos(this.getPos());
                 chunk.getStartPos();
                 Easierworldcreator.LOGGER.info("generating chunk in chunkPos : " + chunk);
+
                 for (Set<BlockPos> pos : posList) {
                     executorService.submit(() -> {
                         try {
                             Set<BlockList> blockList = this.getLayers(pos);
-                            SaveChunkShapeInfo.saveDuringWorldGen(blockList, world, featureName);
+                            SaveChunkShapeInfo.saveDuringWorldGen(blockList, world, featureName, offset);
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
@@ -758,6 +767,70 @@ public abstract class Shape {
 
 
     /*---------- Place Structure ----------*/
+
+    /**
+     * verify for a set of chunks if every chunks wasn't generated.
+     *
+     * @param chunks
+     * @return
+     */
+    private boolean canPos(Set<ChunkPos> chunks) {
+        for (ChunkPos chunk : chunks) {
+            if (WorldGenUtil.isChunkGenerated(getWorld(), chunk)) return false;
+        }
+        return true;
+    }
+
+    /**
+     * <p>Method to try placing the structure.
+     * <p>It will try to see if the structure can be placed in the near chunks.
+     * <p>If yes, it will set an offset that will be used when creating the files.
+     *
+     * @return {@link Boolean} that determines if the shape can be placed
+     */
+    private boolean tryPlaceStructure(List<Set<BlockPos>> posList) {
+        int maxOffset = 3;
+        List<ChunkPos> chunkList =new ArrayList<>();
+        for(Set<BlockPos> pos : posList) {
+            Optional<BlockPos> pos1 = pos.stream().findFirst();
+            pos1.ifPresent(blockPos -> chunkList.add(new ChunkPos(blockPos)));
+        }
+
+        for (int step = 0; step <= maxOffset; step++) {
+            for (int xOffset = -step; xOffset <= step; xOffset++) {
+                for (int zOffset = -step; zOffset <= step; zOffset++) {
+
+                    if (Math.abs(xOffset) + Math.abs(zOffset) == step) {
+
+                        BlockPos newPos = new BlockPos(xOffset * 16, 0, zOffset * 16);
+                        Set<ChunkPos> coveredChunks = this.getChunkCovered(newPos, chunkList);
+
+                        if (canPos(coveredChunks)) {
+                            this.offset = newPos;
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Method to get a chunk list to kwnow if the structure can be placed during worldgen;
+     *
+     * @param pos the center pos
+     */
+    protected Set<ChunkPos> getChunkCovered(BlockPos pos, List<ChunkPos> chunks) {
+        Set<ChunkPos> newchunks = new HashSet<>();
+        for(ChunkPos chunk : chunks) {
+            newchunks.add(new ChunkPos(chunk.getStartPos().add(pos)));
+        }
+        return newchunks;
+    }
+
+
     public BlockPos getCoordinatesRotation(Vec3d pos, BlockPos centerPos) {
         return getCoordinatesRotation((float) pos.getX(), (float) pos.getY(), (float) pos.getZ(), centerPos);
     }

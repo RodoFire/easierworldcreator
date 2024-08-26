@@ -52,7 +52,7 @@ public class SaveChunkShapeInfo {
      * @param worldAccess the world the structure will spawn in
      * @throws IOException avoid errors
      */
-    public static void saveDuringWorldGen(Set<BlockList> blockLists, StructureWorldAccess worldAccess, String name) throws IOException {
+    public static void saveDuringWorldGen(Set<BlockList> blockLists, StructureWorldAccess worldAccess, String name, BlockPos offset) throws IOException {
         Path generatedPath = Objects.requireNonNull(worldAccess.getServer()).getSavePath(WorldSavePath.GENERATED).normalize();
         Path path = createFolders(generatedPath);
         Set<BlockList> sortedList = sortBlockPos(blockLists);
@@ -63,7 +63,7 @@ public class SaveChunkShapeInfo {
             for (Set<BlockList> chunkBlockLists : dividedList) {
                 executorService.submit(() -> {
                     try {
-                        saveToJson(chunkBlockLists, path, name);
+                        saveToJson(chunkBlockLists, path, name, offset);
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
@@ -83,7 +83,7 @@ public class SaveChunkShapeInfo {
      * @param worldAccess the world the structure will spawn in
      * @throws IOException avoid errors
      */
-    public static void saveChunkWorldGen(Set<BlockList> blockLists, StructureWorldAccess worldAccess, String name) throws IOException {
+    public static void saveChunkWorldGen(Set<BlockList> blockLists, StructureWorldAccess worldAccess, String name, BlockPos offset) throws IOException {
         Path generatedPath = Objects.requireNonNull(worldAccess.getServer()).getSavePath(WorldSavePath.GENERATED).normalize();
         Path path = createFolders(generatedPath);
         Set<BlockList> sortedList = sortBlockPos(blockLists);
@@ -93,7 +93,7 @@ public class SaveChunkShapeInfo {
 
                 executorService.submit(() -> {
                     try {
-                        saveToJson(sortedList, path, name);
+                        saveToJson(sortedList, path, name, offset);
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
