@@ -128,7 +128,7 @@ public class SaveChunkShapeInfo {
         if(optional.isEmpty()) {return;}
 
         BlockList firstBlockList = optional.get();
-        ChunkPos chunkPos = new ChunkPos(firstBlockList.getPoslist().get(0)); // extract from blockLists
+        ChunkPos chunkPos = new ChunkPos(firstBlockList.getPoslist().get(0).add(offset)); // extract from blockLists
 
         Path chunkDirectoryPath = basePath.resolve("chunk_" + chunkPos.x + "_" + chunkPos.z);
         Files.createDirectories(chunkDirectoryPath);
