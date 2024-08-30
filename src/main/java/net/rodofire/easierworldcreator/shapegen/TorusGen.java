@@ -173,6 +173,7 @@ public class TorusGen extends FillableShape {
 
     @Override
     public List<Set<BlockPos>> getBlockPos() {
+        //long startTimeCartesian = System.nanoTime();
         setTorusFill();
         Map<ChunkPos, Set<BlockPos>> chunkMap = new HashMap<>();
         if (this.getFillingType() == Type.EMPTY) {
@@ -180,6 +181,9 @@ public class TorusGen extends FillableShape {
         } else {
             this.generateFullTore(chunkMap);
         }
+        //long endTimeCartesian = (System.nanoTime());
+        //long durationCartesian = (endTimeCartesian - startTimeCartesian) / 1000000;
+        //System.out.println("coordinate calculation took : " + durationCartesian + " ms");
         return new ArrayList<>(chunkMap.values());
     }
 
@@ -214,16 +218,19 @@ public class TorusGen extends FillableShape {
                 int xsquared = x * x;
                 for (int z = -b; z <= b; z++) {
                     int zsquared = z * z;
+                    int angle = (int) Math.toDegrees(Math.atan2(z, x));
+                    double outerRadius = getOuterRadius(angle);
+                    double innerRadius = getInnerRadius(angle);
+
+                    int outerRadiusSquared = (int) (outerRadius * outerRadius);
+                    int innerRadiusSquared = (int) (innerRadius * innerRadius);
+                    int a1 = xsquared  + zsquared + outerRadiusSquared - innerRadiusSquared;
+
                     for (int y = -b; y <= 2 * b * this.verticalTorus - b; y++) {
                         int ysquared = y * y;
 
-                        int angle = (int) Math.toDegrees(Math.atan2(z, x));
-                        double outerRadius = getOuterRadius(angle);
-                        double innerRadius = getInnerRadius(angle);
 
-                        int outerRadiusSquared = (int) (outerRadius * outerRadius);
-                        int innerRadiusSquared = (int) (innerRadius * innerRadius);
-                        int a = xsquared + ysquared + zsquared + outerRadiusSquared - innerRadiusSquared;
+                        int a = a1 + ysquared;
 
 
                         if ((a * a) - 4 * outerRadiusSquared * (xsquared + zsquared) <= 0) {
@@ -247,19 +254,22 @@ public class TorusGen extends FillableShape {
             }
         } else {
             for (float x = -b; x <= 2 * b * this.horizontalTorus - b; x += 0.5f) {
+                float xsquared = x * x;
                 for (float z = -b; z <= b; z += 0.5f) {
+                    float zsquared = z * z;
+
+                    int angle = (int) Math.toDegrees(Math.atan2(z, x));
+                    double outerRadius = getOuterRadius(angle);
+                    double innerRadius = getInnerRadius(angle);
+
+                    int outerRadiusSquared = (int) (outerRadius * outerRadius);
+                    int innerRadiusSquared = (int) (innerRadius * innerRadius);
+
+                    float a1 = xsquared  + zsquared + outerRadiusSquared - innerRadiusSquared;
                     for (float y = -b; y <= 2 * b * this.verticalTorus - b; y += 0.5f) {
-                        float xsquared = x * x;
                         float ysquared = y * y;
-                        float zsquared = z * z;
 
-                        int angle = (int) Math.toDegrees(Math.atan2(z, x));
-                        double outerRadius = getOuterRadius(angle);
-                        double innerRadius = getInnerRadius(angle);
-
-                        int outerRadiusSquared = (int) (outerRadius * outerRadius);
-                        int innerRadiusSquared = (int) (innerRadius * innerRadius);
-                        float a = xsquared + ysquared + zsquared + outerRadiusSquared - innerRadiusSquared;
+                        float a = a1 + ysquared;
 
                         if ((a * a) - 4 * outerRadiusSquared * (xsquared + ysquared) <= 0) {
                             //TODO
