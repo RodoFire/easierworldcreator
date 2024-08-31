@@ -1,4 +1,4 @@
-package net.rodofire.easierworldcreator.nbtutil;
+package net.rodofire.easierworldcreator.fileutil;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
@@ -30,6 +30,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * class to load JSON files related to multi-chunk features
@@ -49,6 +51,17 @@ public class LoadChunkShapeInfo {
         JsonArray jsonArray = gson.fromJson(jsonContent, JsonArray.class);
 
         List<BlockList> blockLists = new ArrayList<>();
+        String fileName = chunkFilePath.getFileName().toString();
+
+        Pattern pattern = Pattern.compile("\\[(-?\\d+),(-?\\d+)]_.*\\.json");
+        Matcher matcher = pattern.matcher(fileName);
+        int offsetX = 0, offsetZ = 0;
+
+        if (matcher.matches()) {
+            offsetX = Integer.parseInt(matcher.group(1));
+            offsetZ = Integer.parseInt(matcher.group(2));
+        }
+
 
         for (JsonElement element : jsonArray) {
             JsonObject jsonObject = element.getAsJsonObject();
@@ -63,9 +76,9 @@ public class LoadChunkShapeInfo {
 
             for (JsonElement posElement : positionsArray) {
                 JsonObject posObject = posElement.getAsJsonObject();
-                int x = posObject.get("x").getAsInt();
+                int x = posObject.get("x").getAsInt()+offsetX;
                 int y = posObject.get("y").getAsInt();
-                int z = posObject.get("z").getAsInt();
+                int z = posObject.get("z").getAsInt()+offsetZ;
                 posList.add(new BlockPos(x, y, z));
             }
 
@@ -143,22 +156,34 @@ public class LoadChunkShapeInfo {
      * method to verify if there is json files in the chunk folder
      * @return the list of the structure path to be placed later
      */
-    public static List<Path> verifyFiles(StructureWorldAccess world, ChunkPos chunk) throws IOException {
-        List<Path> path = new ArrayList<>();
+    public static List<Path> verifyFiles(StructureWorldAccess world, ChunkPos chunk) {
+        List<Path> pathList = new ArrayList<>();
         Path generatedPath = Objects.requireNonNull(world.getServer()).getSavePath(WorldSavePath.GENERATED).normalize();
-        Path chunkDirectoryPath = generatedPath.resolve(Easierworldcreator.MOD_ID + "/structures/chunk_" + chunk.x + "_" + chunk.z);
+        String chunkDirPrefix = "chunk_" + chunk.x + "_" + chunk.z;  // Prefix to match chunk directories
+
         try {
-            if (Files.exists(chunkDirectoryPath) && Files.isDirectory(chunkDirectoryPath)) {
-                Files.list(chunkDirectoryPath).forEach(filePath -> {
-                    if (filePath.toString().endsWith(".json")) {
-                        path.add(filePath);
+            if (Files.exists(generatedPath) && Files.isDirectory(generatedPath)) {
+                // List all directories in the generated path
+                Files.list(generatedPath).forEach(directoryPath -> {
+                    if (Files.isDirectory(directoryPath) && directoryPath.getFileName().toString().startsWith(chunkDirPrefix)) {
+                        // If the directory matches the pattern, list all files within it
+                        try {
+                            Files.list(directoryPath).forEach(filePath -> {
+                                if (filePath.toString().endsWith(".json") && !filePath.getFileName().toString().startsWith("false")) {
+                                    pathList.add(filePath);
+                                }
+                            });
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
                     }
                 });
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return path;
+
+        return pathList;
     }
 
     /**

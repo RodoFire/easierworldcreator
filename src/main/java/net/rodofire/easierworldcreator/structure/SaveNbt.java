@@ -1,14 +1,10 @@
-package net.rodofire.easierworldcreator.nbtutil;
+package net.rodofire.easierworldcreator.structure;
 
 import com.google.common.collect.Lists;
-import com.google.gson.Gson;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
 import net.minecraft.block.BlockState;
 import net.minecraft.structure.StructureTemplate;
 import net.minecraft.structure.StructureTemplateManager;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.WorldSavePath;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.EmptyBlockView;

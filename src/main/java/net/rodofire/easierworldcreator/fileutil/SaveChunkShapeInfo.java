@@ -1,4 +1,4 @@
-package net.rodofire.easierworldcreator.nbtutil;
+package net.rodofire.easierworldcreator.fileutil;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
@@ -52,7 +52,7 @@ public class SaveChunkShapeInfo {
      * @param worldAccess the world the structure will spawn in
      * @throws IOException avoid errors
      */
-    public static void saveDuringWorldGen(Set<BlockList> blockLists, StructureWorldAccess worldAccess, String name, BlockPos offset) throws IOException {
+    public static void saveDuringWorldGen(Set<BlockList> blockLists, StructureWorldAccess worldAccess, String name, BlockPos offset, long randomLong) throws IOException {
         Path generatedPath = Objects.requireNonNull(worldAccess.getServer()).getSavePath(WorldSavePath.GENERATED).normalize();
         Path path = createFolders(generatedPath);
         Set<BlockList> sortedList = sortBlockPos(blockLists);
@@ -63,7 +63,7 @@ public class SaveChunkShapeInfo {
             for (Set<BlockList> chunkBlockLists : dividedList) {
                 executorService.submit(() -> {
                     try {
-                        saveToJson(chunkBlockLists, path, name, offset);
+                        saveToJson(chunkBlockLists, path, name, offset, randomLong);
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
@@ -83,23 +83,20 @@ public class SaveChunkShapeInfo {
      * @param worldAccess the world the structure will spawn in
      * @throws IOException avoid errors
      */
-    public static void saveChunkWorldGen(Set<BlockList> blockLists, StructureWorldAccess worldAccess, String name, BlockPos offset) throws IOException {
+    public static void saveChunkWorldGen(Set<BlockList> blockLists, StructureWorldAccess worldAccess, String name, BlockPos offset, long randomLong) throws IOException {
         Path generatedPath = Objects.requireNonNull(worldAccess.getServer()).getSavePath(WorldSavePath.GENERATED).normalize();
         Path path = createFolders(generatedPath);
         Set<BlockList> sortedList = sortBlockPos(blockLists);
-        ExecutorService executorService = Executors.newFixedThreadPool(THREAD_COUNT);
+        //ExecutorService executorService = Executors.newFixedThreadPool(THREAD_COUNT);
 
-        if (generatedPath != null) {
-
-                executorService.submit(() -> {
-                    try {
-                        saveToJson(sortedList, path, name, offset);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                });
-
+        //executorService.submit(() -> {
+        try {
+            saveToJson(sortedList, path, name, offset, randomLong);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
+        //});
+
     }
 
     /**
@@ -121,18 +118,21 @@ public class SaveChunkShapeInfo {
      * @param blockLists the list of blockList that will be converted into json
      * @throws IOException avoid errors
      */
-    private static void saveToJson(Set<BlockList> blockLists, Path basePath, String name, BlockPos offset) throws IOException {
+    private static void saveToJson(Set<BlockList> blockLists, Path basePath, String name, BlockPos offset, long randomLong) throws IOException {
         // Determine chunk-specific file path
         // You might need to extract the chunk position information from blockLists to create the file name
         Optional<BlockList> optional = blockLists.stream().findFirst();
-        if(optional.isEmpty()) {return;}
+        if (optional.isEmpty()) {
+            return;
+        }
 
         BlockList firstBlockList = optional.get();
         ChunkPos chunkPos = new ChunkPos(firstBlockList.getPoslist().get(0).add(offset)); // extract from blockLists
 
-        Path chunkDirectoryPath = basePath.resolve("chunk_" + chunkPos.x + "_" + chunkPos.z);
+        Path chunkDirectoryPath = basePath.resolve("chunk_" + chunkPos.x + "_" + chunkPos.z + "_" + randomLong);
         Files.createDirectories(chunkDirectoryPath);
         Path chunkFilePath = chunkDirectoryPath.resolve(name + ".json");
+        //Easierworldcreator.LOGGER.info(chunkFilePath.toString());
 
 
         // Serialize and save the BlockList to a JSON file
