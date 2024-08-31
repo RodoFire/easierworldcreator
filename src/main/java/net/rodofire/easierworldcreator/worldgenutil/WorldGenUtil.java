@@ -42,23 +42,42 @@ public class WorldGenUtil {
         };
     }
 
+    @Deprecated(forRemoval = true)
+    /**
+     * @see net.rodofire.easierworldcreator.util.MathUtil
+     */
     public static int getRandomOpposite() {
         return (Random.create().nextBetween(0, 1) == 0) ? 1 : -1;
     }
 
+    @Deprecated(forRemoval = true)
+    /**
+     * @see net.rodofire.easierworldcreator.util.MathUtil
+     */
     public static boolean getRandomBoolean(float chance) {
         return Random.create().nextFloat() < chance;
     }
 
-
+    @Deprecated(forRemoval = true)
+    /**
+     * @see net.rodofire.easierworldcreator.util.MathUtil
+     */
     public static int getSign(int a) {
         return (a < 0) ? -1 : 1;
     }
 
+    @Deprecated(forRemoval = true)
+    /**
+     * @see net.rodofire.easierworldcreator.util.MathUtil
+     */
     public static int getSign(double a) {
         return (a < 0) ? -1 : 1;
     }
 
+    @Deprecated(forRemoval = true)
+    /**
+     * @see net.rodofire.easierworldcreator.util.MathUtil
+     */
     public static int getSign(float a) {
         return (a < 0) ? -1 : 1;
     }
@@ -247,7 +266,14 @@ public class WorldGenUtil {
         blockPosInChunk.add(pos);
     }
 
-    public boolean isChunkGenerated(StructureWorldAccess world, ChunkPos chunkPos) {
+    @Deprecated(forRemoval = true)
+    /**
+     * Method to verify if a chunk has been generated. This method could be useful for generating multi-chunk shapes
+     * @param world the world of the chunk
+     * @param chunkPos the pos of the chunk
+     * @return a {@link Boolean} that says if the chunk was generated
+     */
+    public static boolean isChunkGenerated(StructureWorldAccess world, ChunkPos chunkPos) {
         return world.getChunkManager().getChunk(chunkPos.x, chunkPos.z, ChunkStatus.FULL, false) != null;
     }
 }
