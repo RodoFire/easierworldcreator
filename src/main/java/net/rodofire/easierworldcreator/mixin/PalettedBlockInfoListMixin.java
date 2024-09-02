@@ -13,5 +13,4 @@ public interface PalettedBlockInfoListMixin {
     public static StructureTemplate.PalettedBlockInfoList invokeConstructor(List<StructureTemplate.StructureBlockInfo> infosy) {
         throw new AssertionError();
     }
-
 }
