@@ -2,7 +2,7 @@ package net.rodofire.easierworldcreator.shapeutil;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
-import net.minecraft.particle.BlockStateParticleEffect;
+import net.minecraft.util.WorldSavePath;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.Vec3d;
@@ -10,8 +10,10 @@ import net.minecraft.util.math.Vec3i;
 import net.minecraft.util.math.random.Random;
 import net.minecraft.world.StructureWorldAccess;
 import net.rodofire.easierworldcreator.Easierworldcreator;
-import net.rodofire.easierworldcreator.nbtutil.LoadChunkShapeInfo;
-import net.rodofire.easierworldcreator.nbtutil.SaveChunkShapeInfo;
+import net.rodofire.easierworldcreator.fileutil.FileUtil;
+import net.rodofire.easierworldcreator.fileutil.LoadChunkShapeInfo;
+import net.rodofire.easierworldcreator.fileutil.SaveChunkShapeInfo;
+import net.rodofire.easierworldcreator.util.ChunkUtil;
 import net.rodofire.easierworldcreator.util.FastMaths;
 import net.rodofire.easierworldcreator.worldgenutil.BlockPlaceUtil;
 import net.rodofire.easierworldcreator.worldgenutil.FastNoiseLite;
@@ -21,8 +23,10 @@ import org.jetbrains.annotations.NotNull;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 /**
  * class to create custom shapes
@@ -348,32 +352,68 @@ public abstract class Shape {
             ExecutorService executorService = Executors.newFixedThreadPool(THREAD_COUNT);
             if (this.placeMoment == PlaceMoment.WORLD_GEN && this.biggerThanChunk) {
 
-                if (!tryPlaceStructure(posList))
+                if (!tryPlaceStructure(posList)) {
                     Easierworldcreator.LOGGER.info("cannot place structure due to too much chunks generated around the original Pos");
+                    return;
+                }
                 Easierworldcreator.LOGGER.info("structure bigger than chunk");
-
-                featureName = "custom_feature_" + Random.create().nextLong();
+                long randomLong = Random.create().nextLong();
+                featureName = "custom_feature_" + randomLong;
 
                 ChunkPos chunk = new ChunkPos(this.getPos());
                 chunk.getStartPos();
-                Easierworldcreator.LOGGER.info("generating chunk in chunkPos : " + chunk);
+
+                List<Future<?>> creationTasks = new ArrayList<>();
 
                 for (Set<BlockPos> pos : posList) {
-                    executorService.submit(() -> {
+                    Future<?> future = executorService.submit(() -> {
                         try {
                             Set<BlockList> blockList = this.getLayers(pos);
-                            SaveChunkShapeInfo.saveDuringWorldGen(blockList, world, featureName, offset);
+                            SaveChunkShapeInfo.saveChunkWorldGen(blockList, world, "false_" + featureName, offset);
+
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
                     });
+                    creationTasks.add(future);
                 }
+
+                for (Future<?> future : creationTasks) {
+                    try {
+                        future.get();
+                    } catch (InterruptedException | ExecutionException e) {
+                        e.printStackTrace();
+                    }
+                }
+
+                List<ChunkPos> chunkPosList = new ArrayList<>();
+                for (Set<BlockPos> pos : posList) {
+                    pos.stream().findFirst().ifPresent(blockPos -> chunkPosList.add(new ChunkPos(blockPos.add(offset))));
+                }
+
+                if (!moveChunks(chunkPosList)) return;
+                Path generatedPath = Objects.requireNonNull(world.getServer()).getSavePath(WorldSavePath.GENERATED).resolve(Easierworldcreator.MOD_ID).resolve("structures").normalize();
+                Easierworldcreator.LOGGER.info("generated files, offset : " + offset.toString());
+
+
+                for (ChunkPos chunkPos : chunkPosList) {
+                    //executorService.submit(() -> {
+                    try {
+                        FileUtil.renameFile(
+                                generatedPath.resolve("chunk_" + chunkPos.x + "_" + chunkPos.z).resolve("false_" + featureName + ".json"),
+                                generatedPath.resolve("chunk_" + (chunkPos.x + offset.getX() / 16) + "_" + (chunkPos.z + offset.getZ() / 16)).resolve("[" + offset.getX() + "," + offset.getZ() + "]_" + featureName + ".json"));
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    //});
+                }
+
+
                 List<Path> path = LoadChunkShapeInfo.verifyFiles(world, this.getPos());
                 for (Path path1 : path) {
                     List<BlockList> blockLists = LoadChunkShapeInfo.loadFromJson(world, path1);
                     LoadChunkShapeInfo.placeStructure(world, blockLists);
                 }
-
             }
             //In the case our structure isn't place during world gen or it is less than a chunk large
             else {
@@ -402,43 +442,44 @@ public abstract class Shape {
      */
     public Set<BlockList> getLayers(Set<BlockPos> firstposlist) {
         Set<BlockList> blockLists = new HashSet<>();
+        switch (layersType) {
+            case SURFACE -> {
+                Set<BlockPos> poslist = firstposlist; // Use a copy here
 
-        if (this.layersType == LayersType.SURFACE) {
-            Set<BlockPos> poslist = new HashSet<>();
-            poslist = this.placeFirstSurfaceBlockLayers(firstposlist);
+                if (poslist == null) {
+                    List<BlockState> states = this.blockLayers.get(0).getBlockStates();
+                    for (BlockPos pos : firstposlist) {
+                        verifyForBlockLayer(pos, states, blockLists);
+                    }
+                    return blockLists;
+                }
 
-            if (poslist == null) {
-                List<BlockState> states = this.blockLayers.get(0).getBlockStates();
-                for (BlockPos pos : firstposlist) {
+                for (int i = 1; i < this.blockLayers.size(); ++i) {
+                    if (poslist.isEmpty()) return blockLists;
+                    List<Set<BlockPos>> pos1 = this.placeSurfaceBlockLayers(new HashSet<>(poslist), i);
+                    poslist = pos1.get(1);
+                    firstposlist = pos1.get(0);
+                    List<BlockState> states = this.blockLayers.get(i - 1).getBlockStates();
+
+                    // Create a copy for safe iteration
+                    Set<BlockPos> firstposlistCopy = new HashSet<>(firstposlist);
+                    for (BlockPos pos : firstposlistCopy) {
+                        verifyForBlockLayer(pos, states, blockLists);
+                    }
+                }
+                List<BlockState> states = this.blockLayers.get(this.blockLayers.size() - 1).getBlockStates();
+
+                // Create a copy for safe iteration
+                Set<BlockPos> poslistCopy = new HashSet<>(poslist);
+                for (BlockPos pos : poslistCopy) {
                     verifyForBlockLayer(pos, states, blockLists);
                 }
-                return blockLists;
             }
-
-            for (int i = 1; i < this.blockLayers.size(); ++i) {
-                if (poslist.isEmpty()) return blockLists;
-                List<Set<BlockPos>> pos1 = this.placeSurfaceBlockLayers(poslist, i);
-                poslist = pos1.get(1);
-                firstposlist = pos1.get(0);
-                List<BlockState> states = this.blockLayers.get(i - 1).getBlockStates();
-
-                for (BlockPos pos : firstposlist) {
-                    verifyForBlockLayer(pos, states, blockLists);
-                }
-            }
-            List<BlockState> states = this.blockLayers.get(this.blockLayers.size() - 1).getBlockStates();
-
-            for (BlockPos pos : poslist) {
-                verifyForBlockLayer(pos, states, blockLists);
-            }
-        } else if (this.layersType == LayersType.RADIAL) {
-            blockLists.addAll(this.getRadialBlocks(firstposlist));
-        } else if (this.layersType == LayersType.CYLINDRICAL) {
-            blockLists.addAll(this.getCylindricalBlocks(firstposlist));
-        } else {
-            blockLists.addAll(this.getDirectionalLayers(firstposlist));
+            case RADIAL -> blockLists.addAll(this.getRadialBlocks(firstposlist));
+            case CYLINDRICAL -> blockLists.addAll(this.getCylindricalBlocks(firstposlist));
+            case ALONG_DIRECTION -> blockLists.addAll(this.getDirectionalLayers(firstposlist));
+            default -> throw new IllegalStateException("Unexpected value: " + layersType);
         }
-
         return blockLists;
     }
 
@@ -448,35 +489,36 @@ public abstract class Shape {
      * @param firstposlist list of BlockPos of the structure
      */
     public void placeLayers(Set<BlockPos> firstposlist) {
-        if (this.layersType == LayersType.SURFACE) {
-            Set<BlockPos> poslist = new HashSet<>();
-            poslist = this.placeFirstSurfaceBlockLayers(firstposlist);
 
-            if (poslist == null) return;
+        switch (layersType) {
+            case SURFACE -> {
+                Set<BlockPos> poslist = new HashSet<>();
+                poslist = this.placeFirstSurfaceBlockLayers(firstposlist);
 
-            for (int i = 1; i < this.blockLayers.size(); ++i) {
-                if (poslist.isEmpty()) return;
-                List<Set<BlockPos>> pos1 = this.placeSurfaceBlockLayers(poslist, i);
-                poslist = pos1.get(1);
-                firstposlist = pos1.get(0);
+                if (poslist == null) return;
 
-                List<BlockState> states = this.blockLayers.get(i - 1).getBlockStates();
+                for (int i = 1; i < this.blockLayers.size(); ++i) {
+                    if (poslist.isEmpty()) return;
+                    List<Set<BlockPos>> pos1 = this.placeSurfaceBlockLayers(poslist, i);
+                    poslist = pos1.get(1);
+                    firstposlist = pos1.get(0);
 
-                for (BlockPos pos : firstposlist) {
+                    List<BlockState> states = this.blockLayers.get(i - 1).getBlockStates();
+
+                    for (BlockPos pos : firstposlist) {
+                        this.placeBlocks(states, pos);
+                    }
+                }
+                List<BlockState> states = this.blockLayers.get(this.blockLayers.size() - 1).getBlockStates();
+
+                for (BlockPos pos : poslist) {
                     this.placeBlocks(states, pos);
                 }
             }
-            List<BlockState> states = this.blockLayers.get(this.blockLayers.size() - 1).getBlockStates();
-
-            for (BlockPos pos : poslist) {
-                this.placeBlocks(states, pos);
-            }
-        } else if (this.layersType == LayersType.RADIAL) {
-            this.placeRadialBlocks(firstposlist);
-        } else if (this.layersType == LayersType.CYLINDRICAL) {
-            this.placeCylindricalBlocks(firstposlist);
-        } else {
-            this.placeDirectionalLayers(firstposlist);
+            case RADIAL -> this.placeRadialBlocks(firstposlist);
+            case CYLINDRICAL -> this.placeCylindricalBlocks(firstposlist);
+            case ALONG_DIRECTION -> this.placeDirectionalLayers(firstposlist);
+            default -> throw new IllegalStateException("Unexpected value: " + layersType);
         }
     }
 
@@ -662,23 +704,25 @@ public abstract class Shape {
 
     public Set<BlockList> getCylindricalBlocks(Set<BlockPos> posList) {
         Set<BlockList> blockLists = new HashSet<>();
+        List<Integer> layerDistance = new ArrayList<Integer>();
+        layerDistance.add(this.blockLayers.get(0).getDepth());
+
+        for (int i = 1; i < this.blockLayers.size(); i++) {
+            layerDistance.add(this.blockLayers.get(i).getDepth() + layerDistance.get(i - 1));
+        }
+
+        int layerDistanceSize = layerDistance.size();
         for (BlockPos pos : posList) {
-            //instead of a point in the world,
-            //we use the Y coordinate of the pos
-            //to get a straight line which creates a cylindrical shape instead of a circular shape
-            float distance = WorldGenUtil.getDistance(new BlockPos(this.radialCenterPos.getX(), pos.getY(), this.radialCenterPos.getZ()), pos);
-            int maxdist = this.blockLayers.get(0).getDepth();
-            int mindist = 0;
-            int a = 0;
             boolean bl = false;
-            while (!(distance < maxdist && mindist < maxdist) || bl) {
-                a++;
-                if (a >= this.blockLayers.size()) {
-                    verifyForBlockLayer(pos, this.blockLayers.get(a).getBlockStates(), blockLists);
+            float distance = WorldGenUtil.getDistance(new BlockPos(this.radialCenterPos.getX(), pos.getY(), this.radialCenterPos.getZ()), pos);
+            for (int i = 0; i < layerDistanceSize - 1; i++) {
+                if (distance < layerDistance.get(i)) {
+                    verifyForBlockLayer(pos, this.blockLayers.get(i).getBlockStates(), blockLists);
                     bl = true;
                 }
-                mindist += maxdist;
-                maxdist += this.blockLayers.get(a).getDepth();
+            }
+            if (!bl) {
+                verifyForBlockLayer(pos, this.blockLayers.get(layerDistanceSize - 1).getBlockStates(), blockLists);
             }
         }
         return blockLists;
@@ -687,21 +731,25 @@ public abstract class Shape {
     //be careful when using layers with 1 block depth, that might do some weird things
     public Set<BlockList> getRadialBlocks(Set<BlockPos> posList) {
         Set<BlockList> blockLists = new HashSet<>();
+        List<Integer> layerDistance = new ArrayList<Integer>();
+        layerDistance.add(this.blockLayers.get(0).getDepth());
+
+        for (int i = 1; i < this.blockLayers.size(); i++) {
+            layerDistance.add(this.blockLayers.get(i).getDepth() + layerDistance.get(i - 1));
+        }
+
+        int layerDistanceSize = layerDistance.size();
         for (BlockPos pos : posList) {
-            float distance = WorldGenUtil.getDistance(radialCenterPos, pos);
-            int maxdist = this.blockLayers.get(0).getDepth();
-            int mindist = 0;
-            int a = 0;
             boolean bl = false;
-            while (!(distance <= maxdist && distance >= mindist)) {
-                if (a >= this.blockLayers.size()) {
-                    verifyForBlockLayer(pos, this.blockLayers.get(a - 1).getBlockStates(), blockLists);
+            float distance = WorldGenUtil.getDistance(radialCenterPos, pos);
+            for (int i = 0; i < layerDistanceSize - 1; i++) {
+                if (distance < layerDistance.get(i)) {
+                    verifyForBlockLayer(pos, this.blockLayers.get(i).getBlockStates(), blockLists);
                     bl = true;
-                    continue;
                 }
-                mindist = maxdist;
-                maxdist += this.blockLayers.get(a).getDepth();
-                a++;
+            }
+            if (!bl) {
+                verifyForBlockLayer(pos, this.blockLayers.get(layerDistanceSize - 1).getBlockStates(), blockLists);
             }
         }
         return blockLists;
@@ -776,7 +824,9 @@ public abstract class Shape {
      */
     private boolean canPos(Set<ChunkPos> chunks) {
         for (ChunkPos chunk : chunks) {
-            if (WorldGenUtil.isChunkGenerated(getWorld(), chunk)) return false;
+            if (ChunkUtil.isChunkGenerated(chunk, world)) {
+                return false;
+            }
         }
         return true;
     }
@@ -790,10 +840,13 @@ public abstract class Shape {
      */
     private boolean tryPlaceStructure(List<Set<BlockPos>> posList) {
         int maxOffset = 3;
-        List<ChunkPos> chunkList =new ArrayList<>();
-        for(Set<BlockPos> pos : posList) {
+        List<ChunkPos> chunkList = new ArrayList<>();
+        for (Set<BlockPos> pos : posList) {
             Optional<BlockPos> pos1 = pos.stream().findFirst();
             pos1.ifPresent(blockPos -> chunkList.add(new ChunkPos(blockPos)));
+        }
+        if (chunkList.isEmpty()) {
+            return false;
         }
 
         for (int step = 0; step <= maxOffset; step++) {
@@ -805,15 +858,45 @@ public abstract class Shape {
                         BlockPos newPos = new BlockPos(xOffset * 16, 0, zOffset * 16);
                         Set<ChunkPos> coveredChunks = this.getChunkCovered(newPos, chunkList);
 
+
                         if (canPos(coveredChunks)) {
+                            List<ChunkPos> region = new ArrayList<>();
                             this.offset = newPos;
+                            Easierworldcreator.LOGGER.info("can place the structure : " + coveredChunks.toString());
                             return true;
                         }
                     }
                 }
             }
         }
+        Easierworldcreator.LOGGER.info("can't place the structure");
+        return false;
+    }
 
+    private boolean moveChunks(List<ChunkPos> chunkList) {
+        for (int step = 0; step <= 5; step++) {
+            for (int xOffset = -step; xOffset <= step; xOffset++) {
+                for (int zOffset = -step; zOffset <= step; zOffset++) {
+
+                    if (Math.abs(xOffset) + Math.abs(zOffset) == step) {
+
+                        BlockPos newPos = new BlockPos(xOffset * 16, 0, zOffset * 16);
+                        Set<ChunkPos> coveredChunks = this.getChunkCovered(newPos, chunkList);
+
+
+                        if (canPos(coveredChunks)) {
+                            List<ChunkPos> region = new ArrayList<>();
+                            for (ChunkPos chunk : coveredChunks) {
+                                ChunkUtil.protectChunk(chunk);
+                            }
+                            this.offset = newPos;
+                            Easierworldcreator.LOGGER.info("can place the structure : " + coveredChunks.toString());
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
         return false;
     }
 
@@ -824,7 +907,7 @@ public abstract class Shape {
      */
     protected Set<ChunkPos> getChunkCovered(BlockPos pos, List<ChunkPos> chunks) {
         Set<ChunkPos> newchunks = new HashSet<>();
-        for(ChunkPos chunk : chunks) {
+        for (ChunkPos chunk : chunks) {
             newchunks.add(new ChunkPos(chunk.getStartPos().add(pos)));
         }
         return newchunks;
