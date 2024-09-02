@@ -51,8 +51,8 @@ public class ChunkUtil {
      * @return a {@link Boolean} that says if the chunk was generated
      */
     public static boolean isChunkGenerated(ChunkPos chunkPos, WorldAccess world) {
-        int regionX = chunkPos.x / REGION_SIZE;
-        int regionZ = chunkPos.z / REGION_SIZE;
+        int regionX = (int) Math.floor((double) chunkPos.x / REGION_SIZE);
+        int regionZ = (int) Math.floor((double) chunkPos.z / REGION_SIZE);
         String fileName = getRegionFileName(regionX, regionZ, world);
 
         try (RandomAccessFile file = new RandomAccessFile(fileName, "r")) {
@@ -93,8 +93,8 @@ public class ChunkUtil {
     public static void addChunk(ChunkPos chunkPos, WorldAccess world) {
         setDirectory(world);
 
-        int regionX = chunkPos.x / REGION_SIZE;
-        int regionZ = chunkPos.z / REGION_SIZE;
+        int regionX = (int) Math.floor((double) chunkPos.x / REGION_SIZE);
+        int regionZ = (int) Math.floor((double) chunkPos.z / REGION_SIZE);
 
         String fileName = getRegionFileName(regionX, regionZ, world);
         File file = new File(fileName);
