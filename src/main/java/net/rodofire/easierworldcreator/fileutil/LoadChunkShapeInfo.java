@@ -122,9 +122,8 @@ public class LoadChunkShapeInfo {
             Easierworldcreator.LOGGER.error("error parsing BlockState: " + stateString.split("\\[")[0]);
             return Blocks.AIR.getDefaultState();
         }
-        ;
 
-        Block block = (Block) ((RegistryEntry) optional.get()).value();
+        Block block = (Block) ((RegistryEntry<?>) optional.get()).value();
         BlockState blockState = block.getDefaultState();
 
         if (stateString.contains("[")) {
@@ -166,7 +165,7 @@ public class LoadChunkShapeInfo {
      * @param chunk the chunk that will be converted into a {@link ChunkPos}
      * @return the list of the structure path to be placed later
      */
-    public static List<Path> verifyFiles(StructureWorldAccess world, Chunk chunk) throws IOException {
+    public static List<Path> verifyFiles(StructureWorldAccess world, Chunk chunk) {
         return verifyFiles(world, chunk.getPos());
     }
 
@@ -177,7 +176,7 @@ public class LoadChunkShapeInfo {
      * @param pos   the {@link BlockPos} that will be converted into a {@link ChunkPos}
      * @return the list of the structure path to be placed later
      */
-    public static List<Path> verifyFiles(StructureWorldAccess world, BlockPos pos) throws IOException {
+    public static List<Path> verifyFiles(StructureWorldAccess world, BlockPos pos) {
         return verifyFiles(world, new ChunkPos(pos));
     }
 
@@ -195,8 +194,8 @@ public class LoadChunkShapeInfo {
         Path directoryPath = generatedPath.resolve(Easierworldcreator.MOD_ID).resolve("structures").resolve(chunkDirPrefix);
 
         if (Files.exists(generatedPath) && Files.isDirectory(generatedPath)) {
+
             // List all directories in the generated path
-            //Files.list(generatedPath).forEach(directoryPath -> {
             if (Files.exists(directoryPath) && Files.isDirectory(directoryPath)) {
                 try {
                     Files.list(directoryPath).forEach(filePath -> {
@@ -208,7 +207,6 @@ public class LoadChunkShapeInfo {
                     e.printStackTrace();
                 }
             }
-            //});
         }
 
         return pathList;
@@ -217,8 +215,8 @@ public class LoadChunkShapeInfo {
     /**
      * method to remove the {@code Block{}} to only get the {@link String} related to the block {@link Identifier}
      *
-     * @param blockString
-     * @return
+     * @param blockString the {@link String} that needs to be separated
+     * @return the String related to the {@link Block}
      */
     public static String extractBlockName(String blockString) {
         if (blockString.startsWith("Block{") && blockString.endsWith("}")) {
