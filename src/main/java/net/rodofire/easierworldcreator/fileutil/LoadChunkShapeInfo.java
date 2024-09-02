@@ -160,27 +160,23 @@ public class LoadChunkShapeInfo {
         List<Path> pathList = new ArrayList<>();
         Path generatedPath = Objects.requireNonNull(world.getServer()).getSavePath(WorldSavePath.GENERATED).normalize();
         String chunkDirPrefix = "chunk_" + chunk.x + "_" + chunk.z;  // Prefix to match chunk directories
+        Path directoryPath = generatedPath.resolve(Easierworldcreator.MOD_ID).resolve("structures").resolve(chunkDirPrefix);
 
-        try {
-            if (Files.exists(generatedPath) && Files.isDirectory(generatedPath)) {
-                // List all directories in the generated path
-                Files.list(generatedPath).forEach(directoryPath -> {
-                    if (Files.isDirectory(directoryPath) && directoryPath.getFileName().toString().startsWith(chunkDirPrefix)) {
-                        // If the directory matches the pattern, list all files within it
-                        try {
-                            Files.list(directoryPath).forEach(filePath -> {
-                                if (filePath.toString().endsWith(".json") && !filePath.getFileName().toString().startsWith("false")) {
-                                    pathList.add(filePath);
-                                }
-                            });
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
+        if (Files.exists(generatedPath) && Files.isDirectory(generatedPath)) {
+            // List all directories in the generated path
+            //Files.list(generatedPath).forEach(directoryPath -> {
+                if (Files.exists(directoryPath) && Files.isDirectory(directoryPath)) {
+                    try {
+                        Files.list(directoryPath).forEach(filePath -> {
+                            if (filePath.toString().endsWith(".json") && !filePath.getFileName().toString().startsWith("false")) {
+                                pathList.add(filePath);
+                            }
+                        });
+                    } catch (IOException e) {
+                        e.printStackTrace();
                     }
-                });
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
+                }
+            //});
         }
 
         return pathList;
@@ -196,14 +192,5 @@ public class LoadChunkShapeInfo {
             return blockString.substring(6, blockString.length() - 1);
         }
         throw new IllegalArgumentException("Invalid block string format: " + blockString);
-    }
-
-
-    public static void removeFile(Path path) {
-        File file = new File(path.toString());
-        if (file.exists()) {
-            boolean deleted = file.delete();
-        } else {
-        }
     }
 }
