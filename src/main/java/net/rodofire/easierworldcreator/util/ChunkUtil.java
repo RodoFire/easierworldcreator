@@ -1,8 +1,17 @@
 package net.rodofire.easierworldcreator.util;
 
+import com.mojang.datafixers.util.Either;
+import net.minecraft.server.world.ChunkHolder;
+import net.minecraft.server.world.ServerChunkManager;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.WorldSavePath;
 import net.minecraft.util.math.ChunkPos;
+import net.minecraft.world.ChunkRegion;
+import net.minecraft.world.StructureWorldAccess;
 import net.minecraft.world.WorldAccess;
+import net.minecraft.world.chunk.Chunk;
+import net.minecraft.world.chunk.ChunkStatus;
+import net.rodofire.easierworldcreator.Easierworldcreator;
 
 import java.io.File;
 import java.io.IOException;
@@ -11,6 +20,8 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
 public class ChunkUtil {
     private static final int REGION_SIZE = 32;
@@ -18,9 +29,8 @@ public class ChunkUtil {
 
     private static final WorldSavePath DIRECTORY = createInstance("chunkslist");
     private static final int CHUNK_DATA_SIZE = 8;
-    static {
-        int i;
-    }
+    private static final Set<ChunkPos> protectedChunks = new HashSet<>();
+    private static final Queue<ChunkPos> chunkQueue = new LinkedList<>();
 
     private static void setDirectory(WorldAccess worldAccess) {
         Path generatedPath = Objects.requireNonNull(worldAccess.getServer()).getSavePath(DIRECTORY).normalize();
@@ -181,6 +191,86 @@ public class ChunkUtil {
             chunks.add(new ChunkPos(x, z));
         }
         return chunks;
+    }
+
+    public static boolean isProtectedChunk(ChunkPos chunkPos) {
+        return protectedChunks.contains(chunkPos);
+    }
+
+    public static void protectChunk(ChunkPos chunkPos) {
+        protectedChunks.add(chunkPos);
+    }
+
+    public static void unprotectChunk(ChunkPos chunkPos) {
+        protectedChunks.remove(chunkPos);
+        queueChunkForLater(chunkPos);
+    }
+
+    public static void queueChunkForLater(ChunkPos chunkPos) {
+        chunkQueue.add(chunkPos);
+    }
+
+    public static void processChunkQueue(StructureWorldAccess world) {
+        while (!chunkQueue.isEmpty()) {
+            ChunkPos chunkPos = chunkQueue.poll();
+
+            Chunk chunk = world.getChunk(chunkPos.x, chunkPos.z, ChunkStatus.EMPTY);
+
+            if (chunk.getStatus().isAtLeast(ChunkStatus.FULL)) {
+                continue;
+            }
+
+            world.getChunkManager().getChunk(chunkPos.x, chunkPos.z, ChunkStatus.FULL, true);
+
+            /*ChunkRegion chunkRegion = new ChunkRegion((ServerWorld) world, List.of(chunk), chunk.getStatus(), 1);
+
+            for (ChunkStatus status : ChunkStatus.createOrderedList()) {
+                if (chunk.getStatus().isAtLeast(status)) {
+                    continue;
+                }
+                ServerChunkManager serverChunkManager = ((ServerWorld) world).getChunkManager();
+                serverChunkManager.threadedAnvilChunkStorage.verifyChunkGenerator();
+
+                // Exécutez la tâche de génération pour chaque statut
+                CompletableFuture<Either<Chunk, ChunkHolder.Unloaded>> generationTask = status.runGenerationTask(
+                        Runnable::run,  // Utilisez le thread actuel, vous pouvez utiliser un Executor si besoin
+                        (ServerWorld) world,
+                        serverChunkManager.getChunkGenerator(),
+                        ((ServerWorld) world).getStructureTemplateManager(),
+                        world.getLightingProvider(),
+                        chunkToProcess -> {
+                            return chunk;
+                        },
+                        List.of(chunk)
+                );
+
+                // Assurez-vous que la tâche est terminée
+                try {
+                    Either<Chunk, ChunkHolder.Unloaded> result = generationTask.get();
+                    if (result.left().isPresent()) {
+                        chunk = result.left().get();
+                    } else {
+                        // Gérez le cas où le chunk n'a pas pu être généré
+                        Easierworldcreator.LOGGER.warn("Failed to generate chunk at " + chunkPos);
+                        break;
+                    }
+                } catch (InterruptedException | ExecutionException e) {
+                    e.printStackTrace();
+                    break;
+                }
+            }
+
+            // Marquer le chunk comme mis à jour une fois qu'il est entièrement généré
+            if (chunk.getStatus().isAtLeast(ChunkStatus.FULL)) {
+                world.getChunkManager().markForUpdate(chunk);
+            }*/
+        }
+    }
+
+    public static void resumePausedChunks(StructureWorldAccess world) {
+        Objects.requireNonNull(world.getServer()).execute(() -> {
+            ChunkUtil.processChunkQueue(world);
+        });
     }
 
 
