@@ -59,16 +59,14 @@ public class SaveChunkShapeInfo {
         List<Set<BlockList>> dividedList = divideBlocks(sortedList);
         ExecutorService executorService = Executors.newFixedThreadPool(THREAD_COUNT);
 
-        if (generatedPath != null) {
-            for (Set<BlockList> chunkBlockLists : dividedList) {
-                executorService.submit(() -> {
-                    try {
-                        saveToJson(chunkBlockLists, path, name, offset);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                });
-            }
+        for (Set<BlockList> chunkBlockLists : dividedList) {
+            executorService.submit(() -> {
+                try {
+                    saveToJson(chunkBlockLists, path, name, offset);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            });
         }
     }
 
@@ -81,7 +79,6 @@ public class SaveChunkShapeInfo {
      *
      * @param blockLists  the list to divide into chunks and then saving it into JSON files
      * @param worldAccess the world the structure will spawn in
-     * @throws IOException avoid errors
      */
     public static void saveChunkWorldGen(Set<BlockList> blockLists, StructureWorldAccess worldAccess, String name, BlockPos offset) throws IOException {
         Path generatedPath = Objects.requireNonNull(worldAccess.getServer()).getSavePath(WorldSavePath.GENERATED).normalize();
@@ -209,6 +206,11 @@ public class SaveChunkShapeInfo {
         return new ArrayList<>(chunkMap.values());
     }
 
+    /**
+     * this method allows the creation of the generated and related folders
+     * @param path the base path
+     * @return the generated Path
+     */
     public static Path createFolders(Path path) throws IOException {
         Files.createDirectories(path);
         path = path.resolve(Easierworldcreator.MOD_ID);
