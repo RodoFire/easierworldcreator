@@ -217,6 +217,7 @@ public class TorusGen extends FillableShape {
             for (int x = (-b); x <= 2 * b * this.horizontalTorus - b; x++) {
                 int xsquared = x * x;
                 for (int z = -b; z <= b; z++) {
+
                     int zsquared = z * z;
                     int angle = (int) Math.toDegrees(Math.atan2(z, x));
                     double outerRadius = getOuterRadius(angle);
@@ -226,6 +227,8 @@ public class TorusGen extends FillableShape {
                     int innerRadiusSquared = (int) (innerRadius * innerRadius);
                     int a1 = xsquared  + zsquared + outerRadiusSquared - innerRadiusSquared;
 
+                    int e = 4 * outerRadiusSquared * (xsquared + zsquared);
+
                     for (int y = -b; y <= 2 * b * this.verticalTorus - b; y++) {
                         int ysquared = y * y;
 
@@ -233,7 +236,7 @@ public class TorusGen extends FillableShape {
                         int a = a1 + ysquared;
 
 
-                        if ((a * a) - 4 * outerRadiusSquared * (xsquared + zsquared) <= 0) {
+                        if ((a * a) - e <= 0) {
                             boolean bl = true;
                             /*if (innerRadiusXSquared != 0) {
                                 float innerXSquared = x * x / innerRadiusXSquared;
@@ -266,12 +269,14 @@ public class TorusGen extends FillableShape {
                     int innerRadiusSquared = (int) (innerRadius * innerRadius);
 
                     float a1 = xsquared  + zsquared + outerRadiusSquared - innerRadiusSquared;
+
+                    float e = 4 * outerRadiusSquared * (xsquared + zsquared);
                     for (float y = -b; y <= 2 * b * this.verticalTorus - b; y += 0.5f) {
                         float ysquared = y * y;
 
                         float a = a1 + ysquared;
 
-                        if ((a * a) - 4 * outerRadiusSquared * (xsquared + ysquared) <= 0) {
+                        if ((a * a) - e <= 0) {
                             //TODO
                             //implement fully the torus interior filling
                             boolean bl = true;
