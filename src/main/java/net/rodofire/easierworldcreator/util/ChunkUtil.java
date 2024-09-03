@@ -39,7 +39,7 @@ public class ChunkUtil {
             return constructor.newInstance(relativePath);
         } catch (NoSuchMethodException | IllegalAccessException | InstantiationException |
                  InvocationTargetException e) {
-            throw new RuntimeException("Impossible d'instancier WorldSavePath", e);
+            throw new RuntimeException("Impossible to access WorldSavePath", e);
         }
     }
 
