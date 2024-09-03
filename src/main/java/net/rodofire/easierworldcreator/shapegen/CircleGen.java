@@ -64,7 +64,7 @@ public class CircleGen extends FillableShape {
      * @param radiusz         the radius of the z-axis
      */
     public CircleGen(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, PlaceMoment placeMoment, @NotNull List<BlockLayer> layers, boolean force, List<Block> blocksToForce, int xrotation, int yrotation, int secondxrotation, int radiusx, int radiusz) {
-        super(world, pos,placeMoment, layers, force, blocksToForce, xrotation, yrotation, secondxrotation);
+        super(world, pos, placeMoment, layers, force, blocksToForce, xrotation, yrotation, secondxrotation);
         this.radiusx = radiusx;
         this.radiusz = radiusz;
     }
@@ -111,6 +111,7 @@ public class CircleGen extends FillableShape {
         if (this.getCustomFill() < 0f) this.setCustomFill(0f);
 
         if (this.getXrotation() % 180 == 0 && this.getYrotation() % 180 == 0 && this.getSecondXrotation() == 0 && (this.getFillingType() == FillableShape.Type.FULL || this.getFillingType() == FillableShape.Type.EMPTY)) {
+            if (this.radiusz > 16 || this.radiusx > 16) this.biggerThanChunk = true;
             return this.generateEmptyOval(this.getPos().getX(), this.getPos().getZ(), this.getPos().getY());
         } else if (this.getFillingType() == FillableShape.Type.EMPTY) {
             return this.generateEmptyOval();
@@ -142,15 +143,15 @@ public class CircleGen extends FillableShape {
                         if (innerRadiusXSquared != 0) {
                             float innerXSquared = x * x / innerRadiusXSquared;
                             float innerZSquared = z * z / innerRadiusZSquared;
-                            if (innerXSquared + innerZSquared <= 1f) { // pas dans l'ovale intérieur
+                            if (innerXSquared + innerZSquared <= 1f) {
                                 bl = false;
                             }
                         }
                         if (bl) {
                             BlockPos pos = new BlockPos((int) (this.getPos().getX() + x), this.getPos().getY(), (int) (this.getPos().getZ() + z));
+                            if (!this.biggerThanChunk && WorldGenUtil.isPosAChunkFar(pos, this.getPos()))
+                                this.biggerThanChunk = true;
                             WorldGenUtil.modifyChunkMap(pos, chunkMap);
-
-                            //poslist.add(new BlockPos((int) (this.getPos().getX() + x), this.getPos().getY(), (int) (this.getPos().getZ() + z)));
                         }
                     }
                 }
@@ -171,17 +172,10 @@ public class CircleGen extends FillableShape {
                         }
                         if (bl) {
                             BlockPos pos = this.getCoordinatesRotation(x, 0, z, this.getPos());
+                            if (!this.biggerThanChunk && WorldGenUtil.isPosAChunkFar(pos, this.getPos()))
+                                this.biggerThanChunk = true;
                             WorldGenUtil.modifyChunkMap(pos, chunkMap);
-
-                            //poslist.add(new BlockPos((int) (this.getPos().getX() + x), this.getPos().getY(), (int) (this.getPos().getZ() + z)));
                         }
-
-
-                        /*float innerXSquared = x * x / innerRadiusXSquared;
-                        float innerZSquared = z * z / innerRadiusZSquared;
-                        if (innerXSquared + innerZSquared > 1) {
-                            poslist.add(this.getCoordinatesRotation(x, 0, z, this.getPos()));
-                        }*/
                     }
                 }
             }
@@ -199,16 +193,18 @@ public class CircleGen extends FillableShape {
             for (float u = 0; u < 360; u += (float) 45 / Math.max(this.radiusz, this.radiusx)) {
                 float x = (float) (radiusx * FastMaths.getFastCos(u));
                 float z = (float) (radiusz * FastMaths.getFastSin(u));
-
                 BlockPos pos = new BlockPos((int) (this.getPos().getX() + x), this.getPos().getY(), (int) (this.getPos().getZ() + z));
+                if (!this.biggerThanChunk && WorldGenUtil.isPosAChunkFar(pos, this.getPos()))
+                    this.biggerThanChunk = true;
                 WorldGenUtil.modifyChunkMap(pos, chunkMap);
             }
         } else {
             for (float u = 0; u < 360; u += (float) 35 / Math.max(this.radiusz, this.radiusx)) {
                 float x = (float) (radiusx * FastMaths.getFastCos(u));
                 float z = (float) (radiusz * FastMaths.getFastSin(u));
-
                 BlockPos pos = this.getCoordinatesRotation(x, 0, z, this.getPos());
+                if (!this.biggerThanChunk && WorldGenUtil.isPosAChunkFar(pos, this.getPos()))
+                    this.biggerThanChunk = true;
                 WorldGenUtil.modifyChunkMap(pos, chunkMap);
             }
         }
@@ -238,7 +234,7 @@ public class CircleGen extends FillableShape {
 
         // Région 1
         while (dx < dz) {
-            if(this.getFillingType() == Type.FULL){
+            if (this.getFillingType() == Type.FULL) {
                 placeFullOval(centerX, centerZ, y, x, z, chunkMap);
             } else {
                 addOvalBlocks(centerX, centerZ, x, y, z, chunkMap);
@@ -259,7 +255,7 @@ public class CircleGen extends FillableShape {
         // Région 2
         int decision2 = (int) (this.radiusz * this.radiusz * (x + 0.5) * (x + 0.5) + this.radiusx * this.radiusx * (z - 1) * (z - 1) - this.radiusx * this.radiusx * this.radiusz * this.radiusz);
         while (z >= 0) {
-            if(this.getFillingType() == Type.FULL){
+            if (this.getFillingType() == Type.FULL) {
                 placeFullOval(centerX, centerZ, y, x, z, chunkMap);
             } else {
                 addOvalBlocks(centerX, centerZ, x, y, z, chunkMap);
@@ -281,11 +277,12 @@ public class CircleGen extends FillableShape {
 
     /**
      * Adds block positions to the chunkMap based on the given coordinates.
-     * @param centerX The x-coordinate of the center of the oval
-     * @param centerZ The z-coordinate of the center of the oval
-     * @param x The x-coordinate in the context of the Bresenham algorithm
-     * @param y The height of the oval
-     * @param z The z-coordinate in the context of the Bresenham algorithm
+     *
+     * @param centerX  The x-coordinate of the center of the oval
+     * @param centerZ  The z-coordinate of the center of the oval
+     * @param x        The x-coordinate in the context of the Bresenham algorithm
+     * @param y        The height of the oval
+     * @param z        The z-coordinate in the context of the Bresenham algorithm
      * @param chunkMap The map of chunks with the block positions
      */
     public void addOvalBlocks(int centerX, int centerZ, int x, int y, int z, Map<ChunkPos, Set<BlockPos>> chunkMap) {
@@ -304,11 +301,12 @@ public class CircleGen extends FillableShape {
 
     /**
      * Fills in the lines between the blocks for a complete oval.
-     * @param centerX The x-coordinate of the center of the oval
-     * @param centerZ The z-coordinate of the center of the oval
-     * @param x The x-coordinate in the context of the Bresenham algorithm
-     * @param y The height of the oval
-     * @param z The z-coordinate in the context of the Bresenham algorithm
+     *
+     * @param centerX  The x-coordinate of the center of the oval
+     * @param centerZ  The z-coordinate of the center of the oval
+     * @param x        The x-coordinate in the context of the Bresenham algorithm
+     * @param y        The height of the oval
+     * @param z        The z-coordinate in the context of the Bresenham algorithm
      * @param chunkMap The map of chunks with the block positions
      */
     public void placeFullOval(int centerX, int centerZ, int x, int y, int z, Map<ChunkPos, Set<BlockPos>> chunkMap) {
@@ -324,4 +322,5 @@ public class CircleGen extends FillableShape {
             }
         }
     }
+
 }

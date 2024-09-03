@@ -173,6 +173,7 @@ public class TorusGen extends FillableShape {
 
     @Override
     public List<Set<BlockPos>> getBlockPos() {
+        //long startTimeCartesian = System.nanoTime();
         setTorusFill();
         Map<ChunkPos, Set<BlockPos>> chunkMap = new HashMap<>();
         if (this.getFillingType() == Type.EMPTY) {
@@ -180,6 +181,9 @@ public class TorusGen extends FillableShape {
         } else {
             this.generateFullTore(chunkMap);
         }
+        //long endTimeCartesian = (System.nanoTime());
+        //long durationCartesian = (endTimeCartesian - startTimeCartesian) / 1000000;
+        //System.out.println("coordinate calculation took : " + durationCartesian + " ms");
         return new ArrayList<>(chunkMap.values());
     }
 
@@ -213,20 +217,26 @@ public class TorusGen extends FillableShape {
             for (int x = (-b); x <= 2 * b * this.horizontalTorus - b; x++) {
                 int xsquared = x * x;
                 for (int z = -b; z <= b; z++) {
+
                     int zsquared = z * z;
+                    int angle = (int) Math.toDegrees(Math.atan2(z, x));
+                    double outerRadius = getOuterRadius(angle);
+                    double innerRadius = getInnerRadius(angle);
+
+                    int outerRadiusSquared = (int) (outerRadius * outerRadius);
+                    int innerRadiusSquared = (int) (innerRadius * innerRadius);
+                    int a1 = xsquared  + zsquared + outerRadiusSquared - innerRadiusSquared;
+
+                    int e = 4 * outerRadiusSquared * (xsquared + zsquared);
+
                     for (int y = -b; y <= 2 * b * this.verticalTorus - b; y++) {
                         int ysquared = y * y;
 
-                        int angle = (int) Math.toDegrees(Math.atan2(z, x));
-                        double outerRadius = getOuterRadius(angle);
-                        double innerRadius = getInnerRadius(angle);
 
-                        int outerRadiusSquared = (int) (outerRadius * outerRadius);
-                        int innerRadiusSquared = (int) (innerRadius * innerRadius);
-                        int a = xsquared + ysquared + zsquared + outerRadiusSquared - innerRadiusSquared;
+                        int a = a1 + ysquared;
 
 
-                        if ((a * a) - 4 * outerRadiusSquared * (xsquared + zsquared) <= 0) {
+                        if ((a * a) - e <= 0) {
                             boolean bl = true;
                             /*if (innerRadiusXSquared != 0) {
                                 float innerXSquared = x * x / innerRadiusXSquared;
@@ -237,6 +247,7 @@ public class TorusGen extends FillableShape {
                             }*/
                             if (bl) {
                                 BlockPos pos = new BlockPos((int) (this.getPos().getX() + x), (int) (this.getPos().getY() + y), (int) (this.getPos().getZ() + z));
+                                if(!this.biggerThanChunk && WorldGenUtil.isPosAChunkFar(pos,this.getPos())) this.biggerThanChunk = true;
                                 WorldGenUtil.modifyChunkMap(pos, chunkMap);
                             }
                         }
@@ -246,21 +257,26 @@ public class TorusGen extends FillableShape {
             }
         } else {
             for (float x = -b; x <= 2 * b * this.horizontalTorus - b; x += 0.5f) {
+                float xsquared = x * x;
                 for (float z = -b; z <= b; z += 0.5f) {
+                    float zsquared = z * z;
+
+                    int angle = (int) Math.toDegrees(Math.atan2(z, x));
+                    double outerRadius = getOuterRadius(angle);
+                    double innerRadius = getInnerRadius(angle);
+
+                    int outerRadiusSquared = (int) (outerRadius * outerRadius);
+                    int innerRadiusSquared = (int) (innerRadius * innerRadius);
+
+                    float a1 = xsquared  + zsquared + outerRadiusSquared - innerRadiusSquared;
+
+                    float e = 4 * outerRadiusSquared * (xsquared + zsquared);
                     for (float y = -b; y <= 2 * b * this.verticalTorus - b; y += 0.5f) {
-                        float xsquared = x * x;
                         float ysquared = y * y;
-                        float zsquared = z * z;
 
-                        int angle = (int) Math.toDegrees(Math.atan2(z, x));
-                        double outerRadius = getOuterRadius(angle);
-                        double innerRadius = getInnerRadius(angle);
+                        float a = a1 + ysquared;
 
-                        int outerRadiusSquared = (int) (outerRadius * outerRadius);
-                        int innerRadiusSquared = (int) (innerRadius * innerRadius);
-                        float a = xsquared + ysquared + zsquared + outerRadiusSquared - innerRadiusSquared;
-
-                        if ((a * a) - 4 * outerRadiusSquared * (xsquared + ysquared) <= 0) {
+                        if ((a * a) - e <= 0) {
                             //TODO
                             //implement fully the torus interior filling
                             boolean bl = true;
@@ -273,6 +289,7 @@ public class TorusGen extends FillableShape {
                             }*/
                             if (bl) {
                                 BlockPos pos = this.getCoordinatesRotation(x, y, z, this.getPos());
+                                if(!this.biggerThanChunk && WorldGenUtil.isPosAChunkFar(pos,this.getPos())) this.biggerThanChunk = true;
                                 WorldGenUtil.modifyChunkMap(pos, chunkMap);
                             }
                         }
@@ -300,6 +317,7 @@ public class TorusGen extends FillableShape {
                 for (int v = 0; v <= this.horizontalTorus * 360; v += 45 / maxinnerRadius) {
                     Vec3d vec = this.getEllipsoidalToreCoordinates(u, v);
                     BlockPos pos = new BlockPos((int) (getPos().getX() + vec.x), (int) (getPos().getY() + vec.y), (int) (getPos().getZ() + vec.z));
+                    if(!this.biggerThanChunk && WorldGenUtil.isPosAChunkFar(pos,this.getPos())) this.biggerThanChunk = true;
                     WorldGenUtil.modifyChunkMap(pos, chunkMap);
                 }
             }
@@ -308,6 +326,7 @@ public class TorusGen extends FillableShape {
                 for (int v = 0; v <= 360 * this.horizontalTorus; v += 45 / maxinnerRadius) {
                     Vec3d vec = this.getEllipsoidalToreCoordinates(u, v);
                     BlockPos pos = this.getCoordinatesRotation((float) vec.x, (float) vec.y, (float) vec.z, this.getPos());
+                    if(!this.biggerThanChunk && WorldGenUtil.isPosAChunkFar(pos,this.getPos())) this.biggerThanChunk = true;
                     WorldGenUtil.modifyChunkMap(pos, chunkMap);
                 }
             }
@@ -315,19 +334,27 @@ public class TorusGen extends FillableShape {
     }
 
     private void setTorusFill() {
-        if (this.torusType == TorusType.FULL) {
-            this.verticalTorus = 1f;
-            this.horizontalTorus = 1f;
-        } else if (this.torusType == TorusType.HORIZONTAL_HALF) {
-            this.horizontalTorus = 0.5f;
-            this.verticalTorus = 1f;
-        } else if (this.torusType == TorusType.VERTICAL_HALF) {
-            this.verticalTorus = 0.5f;
-            this.horizontalTorus = 1f;
-        } else if (this.torusType == TorusType.HORIZONTAL_CUSTOM) {
-            this.verticalTorus = 1f;
-        } else if (this.torusType == TorusType.VERTICAL_CUSTOM) {
-            this.horizontalTorus = 1f;
+        switch (this.torusType) {
+            case FULL:
+                this.verticalTorus = 1f;
+                this.horizontalTorus = 1f;
+                break;
+            case HORIZONTAL_HALF:
+                this.horizontalTorus = 0.5f;
+                this.verticalTorus = 1f;
+                break;
+            case VERTICAL_HALF:
+                this.verticalTorus = 0.5f;
+                this.horizontalTorus = 1f;
+                break;
+            case HORIZONTAL_CUSTOM:
+                this.verticalTorus = 1f;
+                break;
+            case VERTICAL_CUSTOM:
+                this.horizontalTorus = 1f;
+                break;
+            default:
+                throw new IllegalStateException("Unexpected value: " + this.torusType);
         }
     }
 

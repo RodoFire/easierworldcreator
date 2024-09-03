@@ -13,19 +13,37 @@ import java.util.List;
  * Useful class to verify and place the block in the world.
  */
 public class BlockPlaceUtil {
-    //method to verify that the block is not an unbreakable block or not and to verify if the block can be put or not.
+    /**
+     * method to verify that the block is not an unbreakable block or not and to verify if the block can be put or not.
+     *
+     * @param world         the world where the {@link Block} will be placed
+     * @param force         force the pos
+     * @param blocksToForce list of blocks that can still be forced
+     * @param pos           the position of the block
+     * @return
+     */
     public static boolean verifyBlock(StructureWorldAccess world, boolean force, List<Block> blocksToForce, BlockPos pos) {
         BlockState state2 = world.getBlockState(pos);
 
         if (state2.getHardness(world, pos) < 0) return false;
         if (!force) {
             if (blocksToForce == null) blocksToForce = List.of(Blocks.BEDROCK);
-            if (!state2.isAir() && blocksToForce.stream().noneMatch(state2.getBlock()::equals)) return false;
+            return state2.isAir() || blocksToForce.stream().anyMatch(state2.getBlock()::equals);
         }
         return true;
     }
 
-    //verify if it can put the block before placing it
+    /**
+     * verify if it can put the block before placing it
+     *
+     * @param world         the world where the {@link Block} will be placed
+     * @param force         force the pos
+     * @param blocksToForce list of blocks that can still be forced
+     * @param blocktoplace  list of blocks to place
+     * @param pos           the position of the block
+     * @param i             the index of the stage we're at
+     * @return boolean (true if the block was placed, else false)
+     */
     public static boolean setBlockWithOrderWithVerification(StructureWorldAccess world, boolean force, List<Block> blocksToForce, List<BlockState> blocktoplace, BlockPos pos, int i) {
         if (verifyBlock(world, force, blocksToForce, pos)) {
             placeBlockWithOrder(world, blocktoplace, pos, i);
@@ -34,7 +52,16 @@ public class BlockPlaceUtil {
         return false;
     }
 
-    //verify if it can put the block before placing it
+    /**
+     * verify if it can put the block before placing it
+     *
+     * @param world         the world where the {@link Block} will be placed
+     * @param force         force the pos
+     * @param blocksToForce list of blocks that can still be forced
+     * @param blocktoplace  list of blocks to place
+     * @param pos           the position of the block
+     * @return boolean (true if the block was placed, else false)
+     */
     public static boolean setRandomBlockWithVerification(StructureWorldAccess world, boolean force, List<Block> blocksToForce, List<BlockState> blocktoplace, BlockPos pos) {
         if (verifyBlock(world, force, blocksToForce, pos)) {
             placeRandomBlock(world, blocktoplace, pos);
@@ -43,32 +70,59 @@ public class BlockPlaceUtil {
         return false;
     }
 
-    //verify if it can put the block before placing it
-    public static boolean set2dNoiseBlockWithVerification(StructureWorldAccess world, boolean force, List<Block> blocksToForce, List<BlockState> blocktoplace, BlockPos pos, FastNoiseLite noise) {
+    /**
+     * verify if it can put the block before placing it
+     *
+     * @param world         the world where the {@link Block} will be placed
+     * @param force         force the pos
+     * @param blocksToForce list of blocks that can still be forced
+     * @param blockToPlace  list of blocks to place
+     * @param pos           the position of the block
+     * @param noise         the 2d noise that will determine if the block can be placed
+     * @return boolean (true if the block was placed, else false)
+     */
+    public static boolean set2dNoiseBlockWithVerification(StructureWorldAccess world, boolean force, List<Block> blocksToForce, List<BlockState> blockToPlace, BlockPos pos, FastNoiseLite noise) {
         if (verifyBlock(world, force, blocksToForce, pos)) {
-            placeBlockWith2DNoise(world, blocktoplace, pos, noise);
+            placeBlockWith2DNoise(world, blockToPlace, pos, noise);
             return true;
         }
         return false;
     }
 
-    //verify if it can put the block before placing it
-    public static boolean set3dNoiseBlockWithVerification(StructureWorldAccess world, boolean force, List<Block> blocksToForce, List<BlockState> blocktoplace, BlockPos pos, FastNoiseLite noise) {
+    /**
+     * verify if it can put the block before placing it
+     *
+     * @param world         the world where the {@link Block} will be placed
+     * @param force         force the pos
+     * @param blocksToForce list of blocks that can still be forced
+     * @param blockToPlace  list of blocks to place
+     * @param pos           the position of the block
+     * @param noise         the 2d noise that will determine if the block can be placed
+     * @return boolean (true if the block was placed, else false)
+     */
+    public static boolean set3dNoiseBlockWithVerification(StructureWorldAccess world, boolean force, List<Block> blocksToForce, List<BlockState> blockToPlace, BlockPos pos, FastNoiseLite noise) {
         if (verifyBlock(world, force, blocksToForce, pos)) {
-            placeBlockWith3DNoise(world, blocktoplace, pos, noise);
+            placeBlockWith3DNoise(world, blockToPlace, pos, noise);
             return true;
         }
         return false;
     }
 
-    public static void placeRandomBlock(StructureWorldAccess world, List<BlockState> blocksToPlace, BlockPos pos) {
-        int length = blocksToPlace.size() - 1;
-        world.setBlockState(pos, blocksToPlace.get(Random.create().nextBetween(0, length)), 2);
+    /**
+     * @param world        the world where the {@link Block} will be placed
+     * @param blockToPlace list of blocks to place
+     * @param pos          the position of the block
+     */
+    public static void placeRandomBlock(StructureWorldAccess world, List<BlockState> blockToPlace, BlockPos pos) {
+        int length = blockToPlace.size() - 1;
+        world.setBlockState(pos, blockToPlace.get(Random.create().nextBetween(0, length)), 2);
     }
 
-    //Place the block corresponding to the index 'i'.
-    //Generally, after that, the index 'i' will be incremented by one every time this method is called.
-    //But you can change it to place 2 same blocks then incrementing
+    /**
+     * Place the block corresponding to the index 'i'.
+     * Generally, after that, the index 'i' will be incremented by one every time this method is called.
+     * But you can change it to place 2 same blocks then incrementing
+     */
     public static void placeBlockWithOrder(StructureWorldAccess world, List<BlockState> blocksToPlace, BlockPos pos, int i) {
         world.setBlockState(pos, blocksToPlace.get(i), 2);
     }
@@ -97,7 +151,7 @@ public class BlockPlaceUtil {
     //  - false: place block at the index with the index i-1
     private static void placeBlockWithNoise(StructureWorldAccess world, List<BlockState> blocksToPlace, BlockPos pos, float a) {
         int length = blocksToPlace.size() - 1;
-        world.setBlockState(pos, blocksToPlace.get((int) ((length - 1) * a)),3);
+        world.setBlockState(pos, blocksToPlace.get((int) ((length - 1) * a)), 3);
     }
 
     //return the BlockState wanted based on randomness
