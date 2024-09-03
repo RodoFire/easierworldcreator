@@ -426,7 +426,6 @@ public abstract class Shape {
 
                 if (!moveChunks(chunkPosList)) return;
                 Path generatedPath = Objects.requireNonNull(world.getServer()).getSavePath(WorldSavePath.GENERATED).resolve(Easierworldcreator.MOD_ID).resolve("structures").normalize();
-                Easierworldcreator.LOGGER.info("generated files, offset : " + offset.toString());
 
 
                 for (ChunkPos chunkPos : chunkPosList) {
@@ -903,7 +902,6 @@ public abstract class Shape {
                         if (canPos(coveredChunks)) {
                             List<ChunkPos> region = new ArrayList<>();
                             this.offset = newPos;
-                            Easierworldcreator.LOGGER.info("can place the structure : " + coveredChunks.toString());
                             return true;
                         }
                     }
@@ -931,7 +929,6 @@ public abstract class Shape {
                                 ChunkUtil.protectChunk(chunk);
                             }
                             this.offset = newPos;
-                            Easierworldcreator.LOGGER.info("can place the structure : " + coveredChunks.toString());
                             return true;
                         }
                     }
