@@ -23,6 +23,7 @@ import net.minecraft.world.spawner.CatSpawner;
 import net.minecraft.world.spawner.PatrolSpawner;
 import net.minecraft.world.spawner.PhantomSpawner;
 import net.minecraft.world.spawner.Spawner;
+import net.rodofire.easierworldcreator.Easierworldcreator;
 import net.rodofire.easierworldcreator.fileutil.FileUtil;
 import net.rodofire.easierworldcreator.fileutil.MCAUtil;
 import net.rodofire.easierworldcreator.util.ChunkUtil;
@@ -42,6 +43,9 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Stream;
 
+/**
+ * mixin to assure compatibility for already generated worlds.
+ */
 @Mixin(MinecraftServer.class)
 public class MinecraftServerMixin {
     @Final
@@ -64,6 +68,12 @@ public class MinecraftServerMixin {
     @Shadow
     private WorldGenerationProgressListenerFactory worldGenerationProgressListenerFactory;
 
+    /**
+     * This method is injected at the beginning of {@code loadWorld()} and verify if the list of chunks generated under {@code [save name]/chunkList}.
+     * If no file are presents and that some region files exist, it gets the chunks in the region files and adds it to the {@code chunkList} folder
+     * @param ci unused parameter. It is only there to ensure that the mixin is working.
+     * @throws IOException
+     */
     @Inject(method = "loadWorld", at = @At("HEAD"))
     @SuppressWarnings("UnreachableCode")
     private void loadWorld(CallbackInfo ci) throws IOException {
