@@ -59,6 +59,8 @@ public class BlockLayer {
     }
 
     /**
+     * method used to get all the depth in a {@link BlockLayer}
+     *
      * @return the depth of the layer
      */
     public int getDepth() {
@@ -66,6 +68,8 @@ public class BlockLayer {
     }
 
     /**
+     * set a depth to the {@link BlockLayer}
+     *
      * @param depth int to change the layer depth
      */
     public void setDepth(int depth) {
@@ -73,6 +77,8 @@ public class BlockLayer {
     }
 
     /**
+     * add a depth to the {@link BlockLayer}
+     *
      * @param depth int added to the layer depth
      */
     public void addDepth(int depth) {
@@ -80,6 +86,8 @@ public class BlockLayer {
     }
 
     /**
+     * method used to get all the {@link BlockState} in a {@link BlockLayer}
+     *
      * @return the blockStates list of the layer
      */
     public List<BlockState> getBlockStates() {
@@ -87,6 +95,8 @@ public class BlockLayer {
     }
 
     /**
+     * method used to set all the {@link BlockState} in a {@link BlockLayer}
+     *
      * @param blocks change the BlockStates of a layer
      */
     public void setBlockStates(List<BlockState> blocks) {
@@ -130,6 +140,8 @@ public class BlockLayer {
     }
 
     /**
+     * method used to remove a {@link BlockState} related to the index
+     *
      * @param index remove the BlockState at the index
      */
     public void removeBlockState(int index) {
@@ -137,6 +149,8 @@ public class BlockLayer {
     }
 
     /**
+     * method used to get the size of the {@link BlockLayer}
+     *
      * @return the size of the BlockStates
      */
     public int size() {

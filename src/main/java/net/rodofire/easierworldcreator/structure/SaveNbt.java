@@ -1,14 +1,10 @@
-package net.rodofire.easierworldcreator.nbtutil;
+package net.rodofire.easierworldcreator.structure;
 
 import com.google.common.collect.Lists;
-import com.google.gson.Gson;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
 import net.minecraft.block.BlockState;
 import net.minecraft.structure.StructureTemplate;
 import net.minecraft.structure.StructureTemplateManager;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.WorldSavePath;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.EmptyBlockView;
@@ -66,32 +62,26 @@ public class SaveNbt {
 
         StructureTemplateManager structureTemplateManager = world.getServer().getStructureTemplateManager();
 
-        // Parcourir chaque ChunkPos et sauvegarder les blocs correspondants
         for (Map.Entry<ChunkPos, List<StructureTemplate.StructureBlockInfo>> entry : chunkBlockInfoMap.entrySet()) {
             ChunkPos chunkPos = entry.getKey();
             List<StructureTemplate.StructureBlockInfo> blockInfos = entry.getValue();
 
-            // Combine les listes list, list2, et list3 pour ce chunk spécifique
             List<StructureTemplate.StructureBlockInfo> combinedList = StructureTemplateMixin.invokeCombineSorted(list, list2, list3);
 
-            // Créez la liste PalettedBlockInfoList pour ce chunk
             List<StructureTemplate.PalettedBlockInfoList> blockInfoLists = new ArrayList<>();
             StructureTemplate.PalettedBlockInfoList palettedBlockInfoList = createPalettedBlockInfoList(combinedList);
             blockInfoLists.add(palettedBlockInfoList);
 
-            // Créer un nom unique pour le template basé sur la position du chunk
             Identifier templateName = new Identifier(Easierworldcreator.MOD_ID,
                     chunkPos.x + "-" + chunkPos.z + "/" + featureName);
 
             StructureTemplate structureTemplate = new StructureTemplate();
 
             try {
-                // Charger ou créer un template existant pour ce chunk
                 structureTemplate = structureTemplateManager.getTemplateOrBlank(templateName);
                 ((StructureTemplateMixin) structureTemplate).getBlockInfoLists().clear();
                 ((StructureTemplateMixin) structureTemplate).getBlockInfoLists().addAll(blockInfoLists);
 
-                // Sauvegarde du template pour ce chunk
                 structureTemplateManager.saveTemplate(templateName);
             } catch (Exception e) {
                 e.printStackTrace();  // Gestion des erreurs
@@ -153,10 +143,8 @@ public class SaveNbt {
         List<Identifier> nbtList = new ArrayList<>();
         String chunkFolderPath = new Identifier(Easierworldcreator.MOD_ID, "generated/structures/" + chunk.x + "_" + chunk.z + "/").getPath();
         try {
-            System.out.println(chunkFolderPath);
             if (Files.exists(Path.of(chunkFolderPath)) && Files.isDirectory(Path.of(chunkFolderPath))) {
                 Files.list(Paths.get(chunkFolderPath)).forEach(filePath -> {
-                    System.out.println(filePath);
                     if (filePath.toString().endsWith(".nbt")) {
                         nbtList.add(new Identifier(Easierworldcreator.MOD_ID, chunk.x + "_" + chunk.z + "/" + filePath.getFileName().toString()));
                     }

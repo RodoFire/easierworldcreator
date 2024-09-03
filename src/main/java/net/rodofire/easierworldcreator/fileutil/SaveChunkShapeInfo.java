@@ -1,4 +1,4 @@
-package net.rodofire.easierworldcreator.nbtutil;
+package net.rodofire.easierworldcreator.fileutil;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
@@ -52,23 +52,21 @@ public class SaveChunkShapeInfo {
      * @param worldAccess the world the structure will spawn in
      * @throws IOException avoid errors
      */
-    public static void saveDuringWorldGen(Set<BlockList> blockLists, StructureWorldAccess worldAccess, String name) throws IOException {
+    public static void saveDuringWorldGen(Set<BlockList> blockLists, StructureWorldAccess worldAccess, String name, BlockPos offset) throws IOException {
         Path generatedPath = Objects.requireNonNull(worldAccess.getServer()).getSavePath(WorldSavePath.GENERATED).normalize();
         Path path = createFolders(generatedPath);
         Set<BlockList> sortedList = sortBlockPos(blockLists);
         List<Set<BlockList>> dividedList = divideBlocks(sortedList);
         ExecutorService executorService = Executors.newFixedThreadPool(THREAD_COUNT);
 
-        if (generatedPath != null) {
-            for (Set<BlockList> chunkBlockLists : dividedList) {
-                executorService.submit(() -> {
-                    try {
-                        saveToJson(chunkBlockLists, path, name);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                });
-            }
+        for (Set<BlockList> chunkBlockLists : dividedList) {
+            executorService.submit(() -> {
+                try {
+                    saveToJson(chunkBlockLists, path, name, offset);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            });
         }
     }
 
@@ -81,25 +79,21 @@ public class SaveChunkShapeInfo {
      *
      * @param blockLists  the list to divide into chunks and then saving it into JSON files
      * @param worldAccess the world the structure will spawn in
-     * @throws IOException avoid errors
      */
-    public static void saveChunkWorldGen(Set<BlockList> blockLists, StructureWorldAccess worldAccess, String name) throws IOException {
+    public static void saveChunkWorldGen(Set<BlockList> blockLists, StructureWorldAccess worldAccess, String name, BlockPos offset) throws IOException {
         Path generatedPath = Objects.requireNonNull(worldAccess.getServer()).getSavePath(WorldSavePath.GENERATED).normalize();
         Path path = createFolders(generatedPath);
         Set<BlockList> sortedList = sortBlockPos(blockLists);
-        ExecutorService executorService = Executors.newFixedThreadPool(THREAD_COUNT);
+        //ExecutorService executorService = Executors.newFixedThreadPool(THREAD_COUNT);
 
-        if (generatedPath != null) {
-
-                executorService.submit(() -> {
-                    try {
-                        saveToJson(sortedList, path, name);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                });
-
+        //executorService.submit(() -> {
+        try {
+            saveToJson(sortedList, path, name, offset);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
+        //});
+
     }
 
     /**
@@ -121,13 +115,16 @@ public class SaveChunkShapeInfo {
      * @param blockLists the list of blockList that will be converted into json
      * @throws IOException avoid errors
      */
-    private static void saveToJson(Set<BlockList> blockLists, Path basePath, String name) throws IOException {
+    private static void saveToJson(Set<BlockList> blockLists, Path basePath, String name, BlockPos offset) throws IOException {
         // Determine chunk-specific file path
         // You might need to extract the chunk position information from blockLists to create the file name
         Optional<BlockList> optional = blockLists.stream().findFirst();
-        if(optional.isEmpty()) {return;}
+        if (optional.isEmpty()) {
+            return;
+        }
+
         BlockList firstBlockList = optional.get();
-        ChunkPos chunkPos = new ChunkPos(firstBlockList.getPoslist().get(0)); // extract from blockLists
+        ChunkPos chunkPos = new ChunkPos(firstBlockList.getPoslist().get(0).add(offset)); // extract from blockLists
 
         Path chunkDirectoryPath = basePath.resolve("chunk_" + chunkPos.x + "_" + chunkPos.z);
         Files.createDirectories(chunkDirectoryPath);
@@ -138,16 +135,19 @@ public class SaveChunkShapeInfo {
         Gson gson = new Gson();
         JsonArray jsonArray = new JsonArray();
 
+        JsonObject jsonObject;
+
+
         for (BlockList blockList : blockLists) {
-            JsonObject jsonObject = new JsonObject();
+            jsonObject = new JsonObject();
             jsonObject.addProperty("state", blockList.getBlockstate().toString());
 
             JsonArray positions = new JsonArray();
             for (BlockPos pos : blockList.getPoslist()) {
                 JsonObject posObject = new JsonObject();
-                posObject.addProperty("x", pos.getX());
-                posObject.addProperty("y", pos.getY());
-                posObject.addProperty("z", pos.getZ());
+                posObject.addProperty("x", pos.getX() + offset.getX());
+                posObject.addProperty("y", pos.getY() + offset.getY());
+                posObject.addProperty("z", pos.getZ() + offset.getZ());
                 positions.add(posObject);
             }
             jsonObject.add("positions", positions);
@@ -188,29 +188,28 @@ public class SaveChunkShapeInfo {
             for (BlockPos pos : blockList.getPoslist()) {
                 ChunkPos chunkPos = new ChunkPos(pos);
 
-                // Récupérer ou créer une liste pour ce chunk
                 Set<BlockList> blockListsInChunk = chunkMap.computeIfAbsent(chunkPos, k -> new HashSet<>());
 
-                // Cherche s'il existe déjà un BlockList dans ce chunk avec le même BlockState
                 Optional<BlockList> matchingBlockList = blockListsInChunk.stream()
                         .filter(bl -> bl.getBlockstate().equals(blockList.getBlockstate()))
                         .findFirst();
 
                 if (matchingBlockList.isPresent()) {
-                    // Si trouvé, ajoutez le BlockPos à ce BlockList
                     matchingBlockList.get().addBlockPos(pos);
                 } else {
-                    // Sinon, créez un nouveau BlockList pour ce BlockPos
                     BlockList newBlockList = new BlockList(List.of(pos), blockList.getBlockstate(), blockList.getTag());
                     blockListsInChunk.add(newBlockList);
                 }
             }
         }
-
-        // Convertir le Map en une List de List
         return new ArrayList<>(chunkMap.values());
     }
 
+    /**
+     * this method allows the creation of the generated and related folders
+     * @param path the base path
+     * @return the generated Path
+     */
     public static Path createFolders(Path path) throws IOException {
         Files.createDirectories(path);
         path = path.resolve(Easierworldcreator.MOD_ID);

@@ -357,6 +357,7 @@ public class SpiralGen extends Shape {
                 int z = (int) (radiusz * FastMaths.getFastSin(a * i + offset));
                 int y = (int) (i / f);
                 BlockPos pos1 = new BlockPos(pos.getX() + x, pos.getY() + y, pos.getZ() + z);
+                if(!this.biggerThanChunk && WorldGenUtil.isPosAChunkFar(pos1,this.getPos())) this.biggerThanChunk = true;
                 WorldGenUtil.modifyChunkMap(pos1, chunkMap);
             }
         } else {
@@ -368,6 +369,7 @@ public class SpiralGen extends Shape {
                 float z = (float) (radiusz * FastMaths.getFastSin(a * i + offset));
                 float y = (float) (i / f);
                 BlockPos pos2 = this.getCoordinatesRotation(x, y, z, pos);
+                if(!this.biggerThanChunk && WorldGenUtil.isPosAChunkFar(pos2,this.getPos())) this.biggerThanChunk = true;
                 WorldGenUtil.modifyChunkMap(pos2, chunkMap);
             }
         }
@@ -390,7 +392,7 @@ public class SpiralGen extends Shape {
             double x = outlineRadiusx * FastMaths.getFastCos(i);
             double z = outlineRadiusz * FastMaths.getFastSin(i);
             BlockPos pos = WorldGenUtil.getCoordinatesRotation((float) x, (float) 0, (float) z, 1, 0, cosy, siny, 1, 0, this.getPos());
-
+            if(!this.biggerThanChunk && WorldGenUtil.isPosAChunkFar(pos,this.getPos())) this.biggerThanChunk = true;
             this.generateElipsoidSpiral(pos, chunkMap);
         }
     }
@@ -441,6 +443,7 @@ public class SpiralGen extends Shape {
                     if (bl) {
                         int y = (int) ((int) (i / f) + distance * FastMaths.getFastSin(helicoidAngle));
                         BlockPos pos = new BlockPos((int) (this.getPos().getX() + x), this.getPos().getY() + y, (int) (this.getPos().getZ() + z));
+                        if(!this.biggerThanChunk && WorldGenUtil.isPosAChunkFar(pos,this.getPos())) this.biggerThanChunk = true;
                         WorldGenUtil.modifyChunkMap(pos, chunkMap);
                     }
                 }
@@ -480,6 +483,7 @@ public class SpiralGen extends Shape {
                     if (bl) {
                         int y = (int) ((int) (i / f) + distance * FastMaths.getFastSin(helicoidAngle));
                         BlockPos pos = this.getCoordinatesRotation(x, y, z, this.getPos());
+                        if(!this.biggerThanChunk && WorldGenUtil.isPosAChunkFar(pos,this.getPos())) this.biggerThanChunk = true;
                         WorldGenUtil.modifyChunkMap(pos, chunkMap);
                     }
                 }

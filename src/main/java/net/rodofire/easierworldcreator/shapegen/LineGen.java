@@ -41,6 +41,7 @@ public class LineGen extends Shape {
         Direction direction;
         Map<ChunkPos, Set<BlockPos>> chunkMap = new HashMap<>();
         //faster coordinates generation
+        if(!this.biggerThanChunk && WorldGenUtil.isPosAChunkFar(this.secondPos,this.getPos())) this.biggerThanChunk = true;
         if ((direction = WorldGenUtil.getDirection(this.getPos(), secondPos)) != null) {
             this.generateAxisLine(direction, chunkMap);
         } else {
