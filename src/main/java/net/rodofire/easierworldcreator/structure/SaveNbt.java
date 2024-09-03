@@ -62,32 +62,26 @@ public class SaveNbt {
 
         StructureTemplateManager structureTemplateManager = world.getServer().getStructureTemplateManager();
 
-        // Parcourir chaque ChunkPos et sauvegarder les blocs correspondants
         for (Map.Entry<ChunkPos, List<StructureTemplate.StructureBlockInfo>> entry : chunkBlockInfoMap.entrySet()) {
             ChunkPos chunkPos = entry.getKey();
             List<StructureTemplate.StructureBlockInfo> blockInfos = entry.getValue();
 
-            // Combine les listes list, list2, et list3 pour ce chunk spécifique
             List<StructureTemplate.StructureBlockInfo> combinedList = StructureTemplateMixin.invokeCombineSorted(list, list2, list3);
 
-            // Créez la liste PalettedBlockInfoList pour ce chunk
             List<StructureTemplate.PalettedBlockInfoList> blockInfoLists = new ArrayList<>();
             StructureTemplate.PalettedBlockInfoList palettedBlockInfoList = createPalettedBlockInfoList(combinedList);
             blockInfoLists.add(palettedBlockInfoList);
 
-            // Créer un nom unique pour le template basé sur la position du chunk
             Identifier templateName = new Identifier(Easierworldcreator.MOD_ID,
                     chunkPos.x + "-" + chunkPos.z + "/" + featureName);
 
             StructureTemplate structureTemplate = new StructureTemplate();
 
             try {
-                // Charger ou créer un template existant pour ce chunk
                 structureTemplate = structureTemplateManager.getTemplateOrBlank(templateName);
                 ((StructureTemplateMixin) structureTemplate).getBlockInfoLists().clear();
                 ((StructureTemplateMixin) structureTemplate).getBlockInfoLists().addAll(blockInfoLists);
 
-                // Sauvegarde du template pour ce chunk
                 structureTemplateManager.saveTemplate(templateName);
             } catch (Exception e) {
                 e.printStackTrace();  // Gestion des erreurs

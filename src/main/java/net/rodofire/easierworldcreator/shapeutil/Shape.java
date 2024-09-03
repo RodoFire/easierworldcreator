@@ -29,7 +29,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 /**
- * class to create custom shapes
+ * Class to create custom shapes
  * <p> - Since 2.1.0, the shape doesn't return a {@link List<BlockPos>} but it returns instead a {@code List<Set<BlockPos>>}
  * <p> - Before 2.1.0, the BlockPos list was a simple list.
  * <p> - Starting from 2.1.0, the shapes returns a list of {@link ChunkPos} that has a set of {@link BlockPos}
@@ -39,7 +39,7 @@ import java.util.concurrent.Future;
  */
 public abstract class Shape {
     @NotNull
-    private StructureWorldAccess world;
+    private final StructureWorldAccess world;
     @NotNull
     private BlockPos pos;
     private BlockPos offset = new BlockPos(0, 0, 0);
@@ -147,23 +147,49 @@ public abstract class Shape {
         this.radialCenterVec3d = this.getPos().toCenterPos();
     }
 
+    /**
+     * used to get the layerType initialized
+     *
+     * @return the layer type of the shape
+     */
     public LayersType getLayersType() {
         return layersType;
     }
 
+    /**
+     * used to change the layerType
+     *
+     * @param layersType the layer type that will replace the actual one
+     */
     public void setLayersType(LayersType layersType) {
         this.layersType = layersType;
     }
 
     /*---------- Layers Related ----------*/
+
+    /**
+     * method to change the direction of the orthogonal vector used when {@code layerType = ALONG_DIRECTION}
+     *
+     * @param vect the vector that will be set
+     */
     public void setLayerDirection(Vec3d vect) {
         this.directionalLayerDirection = vect.normalize();
     }
 
+    /**
+     * used to get the boolean force, to know if it is possible to force the pos of a block
+     *
+     * @return the boolean force
+     */
     public boolean getForce() {
         return force;
     }
 
+    /**
+     * used to set the boolean force used when placing block
+     *
+     * @param force the boolean that will be set
+     */
     public void setForce(boolean force) {
         this.force = force;
     }
@@ -328,11 +354,19 @@ public abstract class Shape {
         return placeMoment;
     }
 
+    /**
+     * allow you to set and change the place moment
+     *
+     * @param placeMoment the changed parameter
+     */
     public void setPlaceMoment(PlaceMoment placeMoment) {
         this.placeMoment = placeMoment;
     }
 
-    //Method to place the structure. Every change done after the method will not be taken in count
+    /**
+     * This method allows you to place the structure in the world.
+     * Any changes done after this moment will not be taken in count except if you place another shape later
+     */
     public void place() throws IOException {
         place(this.getBlockPos());
     }
@@ -341,7 +375,6 @@ public abstract class Shape {
      * This method is the method to place the related Blocks
      *
      * @param posList the {@link List} of {@link Set} of {@link BlockPos} calculated before, that will be placed
-     * @throws IOException
      */
     public void place(List<Set<BlockPos>> posList) throws IOException {
         Easierworldcreator.LOGGER.info("placing structure");
@@ -393,7 +426,6 @@ public abstract class Shape {
 
                 if (!moveChunks(chunkPosList)) return;
                 Path generatedPath = Objects.requireNonNull(world.getServer()).getSavePath(WorldSavePath.GENERATED).resolve(Easierworldcreator.MOD_ID).resolve("structures").normalize();
-                Easierworldcreator.LOGGER.info("generated files, offset : " + offset.toString());
 
 
                 for (ChunkPos chunkPos : chunkPosList) {
@@ -429,10 +461,18 @@ public abstract class Shape {
         }
     }
 
-    //returns a list of blockPos for every shape
+    /**
+     * method to get the coordinates that will be placed later
+     *
+     * @return a list of blockPos for every shape
+     */
     public abstract List<Set<BlockPos>> getBlockPos();
 
-    //returns a list of Vec3d for every shape
+    /**
+     * method to get the Vec3d that will be placed later
+     *
+     * @return a list of Vec3d for every shape
+     */
     public abstract List<Vec3d> getVec3d();
 
     /**
@@ -862,7 +902,6 @@ public abstract class Shape {
                         if (canPos(coveredChunks)) {
                             List<ChunkPos> region = new ArrayList<>();
                             this.offset = newPos;
-                            Easierworldcreator.LOGGER.info("can place the structure : " + coveredChunks.toString());
                             return true;
                         }
                     }
@@ -890,7 +929,6 @@ public abstract class Shape {
                                 ChunkUtil.protectChunk(chunk);
                             }
                             this.offset = newPos;
-                            Easierworldcreator.LOGGER.info("can place the structure : " + coveredChunks.toString());
                             return true;
                         }
                     }

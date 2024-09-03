@@ -1,17 +1,11 @@
 package net.rodofire.easierworldcreator.util;
 
-import com.mojang.datafixers.util.Either;
-import net.minecraft.server.world.ChunkHolder;
-import net.minecraft.server.world.ServerChunkManager;
-import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.WorldSavePath;
 import net.minecraft.util.math.ChunkPos;
-import net.minecraft.world.ChunkRegion;
 import net.minecraft.world.StructureWorldAccess;
 import net.minecraft.world.WorldAccess;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.ChunkStatus;
-import net.rodofire.easierworldcreator.Easierworldcreator;
 
 import java.io.File;
 import java.io.IOException;
@@ -20,14 +14,12 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Path;
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 
 public class ChunkUtil {
     private static final int REGION_SIZE = 32;
     private WorldAccess worldAccess;
 
-    private static final WorldSavePath DIRECTORY = createInstance("chunkslist");
+    public static final WorldSavePath DIRECTORY = createInstance("chunkslist");
     private static final int CHUNK_DATA_SIZE = 8;
     private static final Set<ChunkPos> protectedChunks = new HashSet<>();
     private static final Queue<ChunkPos> chunkQueue = new LinkedList<>();
@@ -47,19 +39,20 @@ public class ChunkUtil {
             return constructor.newInstance(relativePath);
         } catch (NoSuchMethodException | IllegalAccessException | InstantiationException |
                  InvocationTargetException e) {
-            throw new RuntimeException("Impossible d'instancier WorldSavePath", e);
+            throw new RuntimeException("Impossible to access WorldSavePath", e);
         }
     }
 
     /**
      * Method to verify if a chunk has been generated. This method could be useful for generating multi-chunk shapes
-     * @param world the world of the chunk
+     *
+     * @param world    the world of the chunk
      * @param chunkPos the pos of the chunk
      * @return a {@link Boolean} that says if the chunk was generated
      */
     public static boolean isChunkGenerated(ChunkPos chunkPos, WorldAccess world) {
-        int regionX = chunkPos.x / REGION_SIZE;
-        int regionZ = chunkPos.z / REGION_SIZE;
+        int regionX = (int) Math.floor((double) chunkPos.x / REGION_SIZE);
+        int regionZ = (int) Math.floor((double) chunkPos.z / REGION_SIZE);
         String fileName = getRegionFileName(regionX, regionZ, world);
 
         try (RandomAccessFile file = new RandomAccessFile(fileName, "r")) {
@@ -100,8 +93,8 @@ public class ChunkUtil {
     public static void addChunk(ChunkPos chunkPos, WorldAccess world) {
         setDirectory(world);
 
-        int regionX = chunkPos.x / REGION_SIZE;
-        int regionZ = chunkPos.z / REGION_SIZE;
+        int regionX = (int) Math.floor((double) chunkPos.x / REGION_SIZE);
+        int regionZ = (int) Math.floor((double) chunkPos.z / REGION_SIZE);
 
         String fileName = getRegionFileName(regionX, regionZ, world);
         File file = new File(fileName);
@@ -135,14 +128,14 @@ public class ChunkUtil {
         }
     }
 
-    public static void writeChunks(Set<ChunkPos> chunks, WorldAccess world) {
+    public static void writeChunks(List<ChunkPos> chunks, WorldAccess world) {
         setDirectory(world);
 
         Map<String, List<ChunkPos>> regionMap = new HashMap<>();
 
         for (ChunkPos chunkPos : chunks) {
-            int regionX = (int) ((float) chunkPos.x / (float) REGION_SIZE);
-            int regionZ = (int) ((float) chunkPos.z / (float) REGION_SIZE);
+            int regionX = (int) Math.floor((double) chunkPos.x / REGION_SIZE);
+            int regionZ = (int) Math.floor((double) chunkPos.z / REGION_SIZE);
 
             String fileName = getRegionFileName(regionX, regionZ, world);
             regionMap.computeIfAbsent(fileName, k -> new ArrayList<>()).add(chunkPos);

@@ -129,7 +129,6 @@ public class SaveChunkShapeInfo {
         Path chunkDirectoryPath = basePath.resolve("chunk_" + chunkPos.x + "_" + chunkPos.z);
         Files.createDirectories(chunkDirectoryPath);
         Path chunkFilePath = chunkDirectoryPath.resolve(name + ".json");
-        Easierworldcreator.LOGGER.info(chunkFilePath.toString());
 
 
         // Serialize and save the BlockList to a JSON file

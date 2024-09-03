@@ -77,4 +77,8 @@ public class FileUtil {
             boolean deleted = file.delete();
         }
     }
+
+    public static Path getWorldSavePathDirectory(StructureWorldAccess world, WorldSavePath savePath) {
+        return Objects.requireNonNull(world.getServer()).getSavePath(savePath).normalize();
+    }
 }
