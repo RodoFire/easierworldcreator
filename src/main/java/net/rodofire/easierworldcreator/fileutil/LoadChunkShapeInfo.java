@@ -22,6 +22,7 @@ import net.minecraft.world.chunk.Chunk;
 import net.rodofire.easierworldcreator.Easierworldcreator;
 import net.rodofire.easierworldcreator.shapeutil.BlockList;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -44,6 +45,9 @@ public class LoadChunkShapeInfo {
      * @return a {@link List} used later to place the BlockStates
      */
     public static List<BlockList> loadFromJson(StructureWorldAccess world, Path chunkFilePath) throws IOException {
+        File file = new File(chunkFilePath.toString());
+        if(!file.exists()) return List.of();
+
         String jsonContent = Files.readString(chunkFilePath);
 
         Gson gson = new Gson();
