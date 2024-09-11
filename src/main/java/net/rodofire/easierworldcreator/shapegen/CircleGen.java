@@ -68,7 +68,16 @@ public class CircleGen extends FillableShape {
         this.radiusx = radiusx;
         this.radiusz = radiusz;
     }
+    public CircleGen(@NotNull StructureWorldAccess world, @NotNull BlockPos pos,PlaceMoment placeMoment, int radius ) {
+        super(world, pos, placeMoment);
+        this.radiusx = radius;
+        this.radiusz = radius;
+    }
 
+    @Deprecated(forRemoval = true)
+    /**
+     * will be removed and replaced by a more consistent way of placing placemoment
+     */
     public CircleGen(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, int radius, PlaceMoment placeMoment) {
         super(world, pos, placeMoment);
         this.radiusx = radius;
