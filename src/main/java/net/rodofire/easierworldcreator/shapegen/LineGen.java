@@ -30,7 +30,15 @@ public class LineGen extends Shape {
         super(world, pos, placeMoment, layers, force, blocksToForce, xrotation, yrotation, secondxrotation);
         this.secondPos = secondPos;
     }
+    public LineGen(@NotNull StructureWorldAccess world, @NotNull BlockPos pos,PlaceMoment placeMoment, BlockPos secondPos ) {
+        super(world, pos, placeMoment);
+        this.secondPos = secondPos;
+    }
 
+    @Deprecated(forRemoval = true)
+    /**
+     * will be removed and replaced by a more consistent way of placing placemoment
+     */
     public LineGen(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, BlockPos secondPos, PlaceMoment placeMoment) {
         super(world, pos, placeMoment);
         this.secondPos = secondPos;

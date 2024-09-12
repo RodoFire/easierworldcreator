@@ -31,7 +31,6 @@ public class MCAUtil {
             stream.forEach(filePath -> {
                 if (filePath.toString().endsWith(".mca")) {
                     files.add(filePath);
-                    Easierworldcreator.LOGGER.info(filePath.toString());
                 }
             });
         } catch (Exception e) {
