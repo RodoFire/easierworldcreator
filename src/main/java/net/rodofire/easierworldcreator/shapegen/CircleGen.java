@@ -39,7 +39,7 @@ import java.util.*;
 /**
  * Class to generate Circle related shapes
  * <p>
- * Since 2.1.0, the shape doesn't return a {@link List<BlockPos>} but it returns instead a {@link List<Set <BlockPos>>}
+ * Since 2.1.0, the shape doesn't return a {@link List<BlockPos>} but it returns instead a {@code List<Set<BlockPos>>}
  * Before 2.1.0, the BlockPos list was a simple list.
  * Starting from 2.1.0, the shapes returns a list of {@link ChunkPos} that has a set of {@link BlockPos}
  * The change from {@link List} to {@link Set} was done to avoid duplicates BlockPos wich resulted in unnecessary calculations.
@@ -68,7 +68,16 @@ public class CircleGen extends FillableShape {
         this.radiusx = radiusx;
         this.radiusz = radiusz;
     }
+    public CircleGen(@NotNull StructureWorldAccess world, @NotNull BlockPos pos,PlaceMoment placeMoment, int radius ) {
+        super(world, pos, placeMoment);
+        this.radiusx = radius;
+        this.radiusz = radius;
+    }
 
+    @Deprecated(forRemoval = true)
+    /**
+     * will be removed and replaced by a more consistent way of placing placemoment
+     */
     public CircleGen(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, int radius, PlaceMoment placeMoment) {
         super(world, pos, placeMoment);
         this.radiusx = radius;
@@ -124,6 +133,10 @@ public class CircleGen extends FillableShape {
         return null;
     }
 
+    /**
+     * method to create a full oval/ with custom filling
+     * @return {@code List<Set<BlockPos>>} : set of BlockPos divided into a list of chunks
+     */
     public List<Set<BlockPos>> generateFullOval() {
         Map<ChunkPos, Set<BlockPos>> chunkMap = new HashMap<>();
 
@@ -184,6 +197,10 @@ public class CircleGen extends FillableShape {
         return new ArrayList<>(chunkMap.values());
     }
 
+    /**
+     * method to create an empty oval with rotations
+     * @return {@code List<Set<BlockPos>>} : set of BlockPos divided into a list of chunks
+     */
     public List<Set<BlockPos>> generateEmptyOval() {
         Map<ChunkPos, Set<BlockPos>> chunkMap = new HashMap<>();
 
@@ -214,7 +231,8 @@ public class CircleGen extends FillableShape {
     /*---------- Algorithm based on Bressen Algorithms for circle ----------*/
 
     /**
-     * this class is used when no rotation is present. This allow fast coordinates generation but don't work with rotations
+     * This class is used when no rotation is present.
+     * This allows fast coordinates generation but doesn't work with rotations
      *
      * @param centerX the x coordinate of the center of the circle
      * @param centerZ the z coordinate of the center of the circle

@@ -23,7 +23,6 @@ import net.minecraft.world.spawner.CatSpawner;
 import net.minecraft.world.spawner.PatrolSpawner;
 import net.minecraft.world.spawner.PhantomSpawner;
 import net.minecraft.world.spawner.Spawner;
-import net.rodofire.easierworldcreator.Easierworldcreator;
 import net.rodofire.easierworldcreator.fileutil.FileUtil;
 import net.rodofire.easierworldcreator.fileutil.MCAUtil;
 import net.rodofire.easierworldcreator.util.ChunkUtil;
@@ -72,7 +71,6 @@ public class MinecraftServerMixin {
      * This method is injected at the beginning of {@code loadWorld()} and verify if the list of chunks generated under {@code [save name]/chunkList}.
      * If no file are presents and that some region files exist, it gets the chunks in the region files and adds it to the {@code chunkList} folder
      * @param ci unused parameter. It is only there to ensure that the mixin is working.
-     * @throws IOException
      */
     @Inject(method = "loadWorld", at = @At("HEAD"))
     @SuppressWarnings("UnreachableCode")
@@ -94,18 +92,19 @@ public class MinecraftServerMixin {
             );
             AtomicBoolean bl2 = new AtomicBoolean(true);
             AtomicBoolean bl2b = new AtomicBoolean(true);
+
             Path path = FileUtil.getWorldSavePathDirectory(serverWorld, ChunkUtil.DIRECTORY);
             File file = new File(path.toString());
+
             if (!file.exists()) {
                 Files.createDirectories(path);
                 bl2b.set(false);
-            } else {
-                bl2b.set(true);
             }
+
             if (bl2b.get()) {
                 try (Stream<Path> stream = Files.list(path)) {
                     stream.forEach(filePath -> {
-                        if (filePath.toString().endsWith(".bin") && filePath.toString().startsWith("region")) {
+                        if (filePath.toString().endsWith(".bin") && filePath.getFileName().toString().startsWith("region")) {
                             bl2.set(false);
                         }
                     });
