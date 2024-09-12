@@ -515,8 +515,10 @@ public abstract class Shape {
                     verifyForBlockLayer(pos, states, blockLists);
                 }
             }
-            case RADIAL -> blockLists.addAll(this.getRadialBlocks(firstposlist));
-            case CYLINDRICAL -> blockLists.addAll(this.getCylindricalBlocks(firstposlist));
+            case INNER_RADIAL -> blockLists.addAll(this.getInnerRadialBlocks(firstposlist));
+            case OUTER_RADIAL -> blockLists.addAll(this.getOuterRadialBlocks(firstposlist));
+            case INNER_CYLINDRICAL -> blockLists.addAll(this.getInnerCylindricalBlocks(firstposlist));
+            case OUTER_CYLINDRICAL -> blockLists.addAll(this.getOuterCylindricalBlocks(firstposlist));
             case ALONG_DIRECTION -> blockLists.addAll(this.getDirectionalLayers(firstposlist));
             default -> throw new IllegalStateException("Unexpected value: " + layersType);
         }
@@ -555,8 +557,10 @@ public abstract class Shape {
                     this.placeBlocks(states, pos);
                 }
             }
-            case RADIAL -> this.placeRadialBlocks(firstposlist);
-            case CYLINDRICAL -> this.placeCylindricalBlocks(firstposlist);
+            case INNER_RADIAL -> this.placeInnerRadialBlocks(firstposlist);
+            case OUTER_RADIAL -> this.placeOuterRadialBlocks(firstposlist);
+            case INNER_CYLINDRICAL -> this.placeInnerCylindricalBlocks(firstposlist);
+            case OUTER_CYLINDRICAL -> this.placeOuterCylindricalBlocks(firstposlist);
             case ALONG_DIRECTION -> this.placeDirectionalLayers(firstposlist);
             default -> throw new IllegalStateException("Unexpected value: " + layersType);
         }
@@ -619,30 +623,61 @@ public abstract class Shape {
         return List.of(poslist, newposlist);
     }
 
-    public void placeCylindricalBlocks(Set<BlockPos> posList) {
+    public void placeInnerCylindricalBlocks(Set<BlockPos> posList) {
+        List<Integer> layerDistance = new ArrayList<Integer>();
+        layerDistance.add(this.blockLayers.get(0).getDepth());
+
+        for (int i = 1; i < this.blockLayers.size(); i++) {
+            layerDistance.add(this.blockLayers.get(i).getDepth() + layerDistance.get(i - 1));
+        }
+
+        int layerDistanceSize = layerDistance.size();
         for (BlockPos pos : posList) {
-            //instead of a point in the world,
-            //we use the Y coordinate of the pos
-            //to get a straight line which creates a cylindrical shape instead of a circular shape
-            float distance = WorldGenUtil.getDistance(new BlockPos(this.radialCenterPos.getX(), pos.getY(), this.radialCenterPos.getZ()), pos);
-            int maxdist = this.blockLayers.get(0).getDepth();
-            int mindist = 0;
-            int a = 0;
             boolean bl = false;
-            while (!(distance < maxdist && mindist < maxdist) || bl) {
-                a++;
-                if (a >= this.blockLayers.size()) {
-                    BlockPlaceUtil.setRandomBlockWithVerification(world, force, blocksToForce, blockLayers.get(this.blockLayers.size() - 1).getBlockStates(), pos);
+            float distance = WorldGenUtil.getDistance(new BlockPos(this.radialCenterPos.getX(), pos.getY(), this.radialCenterPos.getZ()), pos);
+            for (int i = 0; i < layerDistanceSize - 1; i++) {
+                if (distance < layerDistance.get(i)) {
+                    placeBlocksWithVerification(i, pos);
                     bl = true;
                 }
-                mindist += maxdist;
-                maxdist += this.blockLayers.get(a).getDepth();
+            }
+            if (!bl) {
+                placeBlocksWithVerification(layerDistanceSize - 1, pos);
+            }
+        }
+    }
+
+    public void placeOuterCylindricalBlocks(Set<BlockPos> posList) {
+        List<Integer> layerDistance = new ArrayList<Integer>();
+        layerDistance.add(this.blockLayers.get(0).getDepth());
+
+        float maxDistance = 0;
+        for (BlockPos pos : posList) {
+            float distance = WorldGenUtil.getDistance(new BlockPos(this.radialCenterPos.getX(), pos.getY(), this.radialCenterPos.getZ()), pos);
+            maxDistance = Math.max(distance, maxDistance);
+        }
+        for (int i = 1; i < this.blockLayers.size(); i++) {
+            layerDistance.add(this.blockLayers.get(i).getDepth() + layerDistance.get(i - 1));
+        }
+
+        int layerDistanceSize = layerDistance.size();
+        for (BlockPos pos : posList) {
+            boolean bl = false;
+            float distance = WorldGenUtil.getDistance(new BlockPos(this.radialCenterPos.getX(), pos.getY(), this.radialCenterPos.getZ()), pos);
+            for (int i = 0; i < layerDistanceSize - 1; i++) {
+                if (distance > maxDistance - layerDistance.get(i)) {
+                    placeBlocksWithVerification(i, pos);
+                    bl = true;
+                }
+            }
+            if (!bl) {
+                placeBlocksWithVerification(layerDistanceSize-1, pos);
             }
         }
     }
 
     //be careful when using layers with 1 block depth, that might do some weird things
-    public void placeRadialBlocks(Set<BlockPos> posList) {
+    public void placeInnerRadialBlocks(Set<BlockPos> posList) {
         for (BlockPos pos : posList) {
             float distance = WorldGenUtil.getDistance(radialCenterPos, pos);
             int maxdist = this.blockLayers.get(0).getDepth();
@@ -658,6 +693,35 @@ public abstract class Shape {
                 mindist = maxdist;
                 maxdist += this.blockLayers.get(a).getDepth();
                 a++;
+            }
+        }
+    }
+
+    public void placeOuterRadialBlocks(Set<BlockPos> posList) {
+        List<Integer> layerDistance = new ArrayList<Integer>();
+        layerDistance.add(this.blockLayers.get(0).getDepth());
+
+        float maxDistance = 0;
+        for (BlockPos pos : posList) {
+            float distance = WorldGenUtil.getDistance(this.radialCenterPos, pos);
+            maxDistance = Math.max(distance, maxDistance);
+        }
+        for (int i = 1; i < this.blockLayers.size(); i++) {
+            layerDistance.add(this.blockLayers.get(i).getDepth() + layerDistance.get(i - 1));
+        }
+
+        int layerDistanceSize = layerDistance.size();
+        for (BlockPos pos : posList) {
+            boolean bl = false;
+            float distance = WorldGenUtil.getDistance(radialCenterPos, pos);
+            for (int i = 0; i < layerDistanceSize - 1; i++) {
+                if (distance > maxDistance - layerDistance.get(i)) {
+                    placeBlocksWithVerification(i, pos);
+                    bl = true;
+                }
+            }
+            if (!bl) {
+                placeBlocksWithVerification(layerDistanceSize-1, pos);
             }
         }
     }
@@ -742,7 +806,7 @@ public abstract class Shape {
         return newposlist;
     }
 
-    public Set<BlockList> getCylindricalBlocks(Set<BlockPos> posList) {
+    public Set<BlockList> getInnerCylindricalBlocks(Set<BlockPos> posList) {
         Set<BlockList> blockLists = new HashSet<>();
         List<Integer> layerDistance = new ArrayList<Integer>();
         layerDistance.add(this.blockLayers.get(0).getDepth());
@@ -768,8 +832,42 @@ public abstract class Shape {
         return blockLists;
     }
 
+    public Set<BlockList> getOuterCylindricalBlocks(Set<BlockPos> posList) {
+        Set<BlockList> blockLists = new HashSet<>();
+        List<Integer> layerDistance = new ArrayList<Integer>();
+
+        //get the max distance of the list
+        float maxDistance = 0;
+        for (BlockPos pos : posList) {
+            float distance = WorldGenUtil.getDistance(new BlockPos(this.radialCenterPos.getX(), pos.getY(), this.radialCenterPos.getZ()), pos);
+            maxDistance = Math.max(distance, maxDistance);
+        }
+
+        layerDistance.add(this.blockLayers.get(0).getDepth());
+
+        for (int i = 1; i < this.blockLayers.size(); i++) {
+            layerDistance.add(this.blockLayers.get(i).getDepth() + layerDistance.get(i - 1));
+        }
+
+        int layerDistanceSize = layerDistance.size();
+        for (BlockPos pos : posList) {
+            boolean bl = false;
+            float distance = WorldGenUtil.getDistance(new BlockPos(this.radialCenterPos.getX(), pos.getY(), this.radialCenterPos.getZ()), pos);
+            for (int i = 0; i < layerDistanceSize - 1; i++) {
+                if (distance > maxDistance - layerDistance.get(i)) {
+                    verifyForBlockLayer(pos, this.blockLayers.get(i).getBlockStates(), blockLists);
+                    bl = true;
+                }
+            }
+            if (!bl) {
+                verifyForBlockLayer(pos, this.blockLayers.get(layerDistanceSize - 1).getBlockStates(), blockLists);
+            }
+        }
+        return blockLists;
+    }
+
     //be careful when using layers with 1 block depth, that might do some weird things
-    public Set<BlockList> getRadialBlocks(Set<BlockPos> posList) {
+    public Set<BlockList> getInnerRadialBlocks(Set<BlockPos> posList) {
         Set<BlockList> blockLists = new HashSet<>();
         List<Integer> layerDistance = new ArrayList<Integer>();
         layerDistance.add(this.blockLayers.get(0).getDepth());
@@ -784,6 +882,37 @@ public abstract class Shape {
             float distance = WorldGenUtil.getDistance(radialCenterPos, pos);
             for (int i = 0; i < layerDistanceSize - 1; i++) {
                 if (distance < layerDistance.get(i)) {
+                    verifyForBlockLayer(pos, this.blockLayers.get(i).getBlockStates(), blockLists);
+                    bl = true;
+                }
+            }
+            if (!bl) {
+                verifyForBlockLayer(pos, this.blockLayers.get(layerDistanceSize - 1).getBlockStates(), blockLists);
+            }
+        }
+        return blockLists;
+    }
+
+    public Set<BlockList> getOuterRadialBlocks(Set<BlockPos> posList) {
+        Set<BlockList> blockLists = new HashSet<>();
+        List<Integer> layerDistance = new ArrayList<Integer>();
+        layerDistance.add(this.blockLayers.get(0).getDepth());
+
+        float maxDistance = 0;
+        for (BlockPos pos : posList) {
+            float distance = WorldGenUtil.getDistance(this.radialCenterPos, pos);
+            maxDistance = Math.max(distance, maxDistance);
+        }
+        for (int i = 1; i < this.blockLayers.size(); i++) {
+            layerDistance.add(this.blockLayers.get(i).getDepth() + layerDistance.get(i - 1));
+        }
+
+        int layerDistanceSize = layerDistance.size();
+        for (BlockPos pos : posList) {
+            boolean bl = false;
+            float distance = WorldGenUtil.getDistance(radialCenterPos, pos);
+            for (int i = 0; i < layerDistanceSize - 1; i++) {
+                if (distance > maxDistance - layerDistance.get(i)) {
                     verifyForBlockLayer(pos, this.blockLayers.get(i).getBlockStates(), blockLists);
                     bl = true;
                 }
@@ -1123,10 +1252,14 @@ public abstract class Shape {
          * and until it reaches the depth of the layer
          */
         SURFACE,
-        //place the blocks in a sphere shape
-        RADIAL,
-        //place the blocks in a cylindrical shape
-        CYLINDRICAL,
+        //place the blocks in a sphere shape, first layer being placed at the center
+        INNER_RADIAL,
+        //place the blocks in a sphere shape, last layer being placed at the center
+        OUTER_RADIAL,
+        //place the blocks in a cylindrical shape, first layer being placed at the center
+        INNER_CYLINDRICAL,
+        //place the blocks in a cylindrical shape, last layer being placed near the center
+        OUTER_CYLINDRICAL,
         //place the blocks on a plan
         //the plan is defined by the vector "directionalLayerDirection"
         ALONG_DIRECTION
