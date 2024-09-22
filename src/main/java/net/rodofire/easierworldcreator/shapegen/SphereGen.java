@@ -68,7 +68,8 @@ public class SphereGen extends FillableShape {
     private int radiusz;
 
 
-    private boolean halfSphere = false;
+    private SphereType halfSphere = SphereType.DEFAULT;
+
     private Direction direction = Direction.UP;
 
 
@@ -87,7 +88,7 @@ public class SphereGen extends FillableShape {
      * @param xrotation the rotation along the x-axis
      * @param yrotation the rotation along the y-axis
      */
-    public SphereGen(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, int radiusx, List<BlockLayer> layers, int radiusy, int radiusz, int xrotation, int yrotation, int seconxrotation, boolean force, List<Block> blockToForce, boolean halfSphere, Direction direction, PlaceMoment placeMoment) {
+    public SphereGen(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, int radiusx, List<BlockLayer> layers, int radiusy, int radiusz, int xrotation, int yrotation, int seconxrotation, boolean force, List<Block> blockToForce, SphereType halfSphere, Direction direction, PlaceMoment placeMoment) {
         super(world, pos, placeMoment, layers, force, blockToForce, xrotation, yrotation, seconxrotation);
         this.radiusx = radiusx;
         this.radiusy = radiusy;
@@ -109,6 +110,21 @@ public class SphereGen extends FillableShape {
         this.radiusx = radius;
         this.radiusy = radius;
         this.radiusz = radius;
+    }
+    public Direction getHalfSphereDirection() {
+        return direction;
+    }
+
+    public void setHalfSphereDirection(Direction direction) {
+        this.direction = direction;
+    }
+
+    public SphereType isHalfSphere() {
+        return halfSphere;
+    }
+
+    public void setHalfSphere(SphereType halfSphere) {
+        this.halfSphere = halfSphere;
     }
 
 
@@ -155,13 +171,13 @@ public class SphereGen extends FillableShape {
 
         //verify if the rotations == 0 to avoid some unnecessary calculations
         if (this.getFillingType() == Type.EMPTY) {
-            if (halfSphere) {
+            if (this.halfSphere == SphereType.DEFAULT) {
                 this.generateHalfEmptyElipsoid(chunkMap);
             } else {
                 this.generateEmptyEllipsoid(chunkMap);
             }
         } else {
-            if (halfSphere) {
+            if (this.halfSphere == SphereType.DEFAULT) {
                 this.generateHalfFullElipsoid(chunkMap);
             } else {
                 this.generateFullEllipsoid(chunkMap);
@@ -340,6 +356,11 @@ public class SphereGen extends FillableShape {
             }
         }
         this.getGenTime(this.startTime, false);
+    }
+
+    public enum SphereType {
+        HALF,
+        DEFAULT
     }
 
 
