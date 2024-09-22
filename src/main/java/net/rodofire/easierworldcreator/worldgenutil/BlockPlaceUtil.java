@@ -127,64 +127,106 @@ public class BlockPlaceUtil {
         world.setBlockState(pos, blocksToPlace.get(i), 2);
     }
 
-    //assign the 2d noise value to 'a'
-    //then call the method to get the block depending on the noise
+    /**
+     * assign the 2d noise value to 'a'
+     * then call the method to get the block depending on the noise
+     *
+     * @param world         the world of the block
+     * @param blocksToPlace the blockstates list that would be chosen from
+     * @param pos           the pos of the block to test
+     * @param noise         the noise
+     */
     public static void placeBlockWith2DNoise(StructureWorldAccess world, List<BlockState> blocksToPlace, BlockPos pos, FastNoiseLite noise) {
         float a = noise.GetNoise(pos.getX(), pos.getZ());
         placeBlockWithNoise(world, blocksToPlace, pos, a);
     }
 
 
-    //assign the 3d noise value to 'a'
-    //then call the method to get the block depending on the noise
+    /**
+     * assign the 3d noise value to 'a'
+     * then call the method to get the block depending on the noise
+     **/
+
     public static void placeBlockWith3DNoise(StructureWorldAccess world, List<BlockState> blocksToPlace, BlockPos pos, FastNoiseLite noise) {
         float a = noise.GetNoise(pos.getX(), pos.getY(), pos.getZ());
         placeBlockWithNoise(world, blocksToPlace, pos, a);
     }
 
-    //method to place a block depending on the noise and the blocks inside the list
-    //you get the float a that correspond to the value of the noise.
-    //the method will compare a with every index of the list and will place the block when e become smaller than the index
-    //does this:
-    //a > i ?
-    //  - true: a > i+1 ? ...
-    //  - false: place block at the index with the index i-1
+    /**
+     * method to place a block depending on the noise and the blocks inside the list
+     * you get the float a that correspond to the value of the noise.
+     * <p>the method will compare a with every index of the list and will place the block when e becomes smaller than the index
+     * <p>does this: a > i ?
+     * <p>- true: a > i+1 ? ...
+     * <p>- false: place block at the index with the index i-1
+     **/
     private static void placeBlockWithNoise(StructureWorldAccess world, List<BlockState> blocksToPlace, BlockPos pos, float a) {
         int length = blocksToPlace.size() - 1;
-        world.setBlockState(pos, blocksToPlace.get((int) ((length - 1) * a)), 3);
+        BlockState state = blocksToPlace.get((int) ((length - 1) * (a / 2 + 0.5)));
+        world.setBlockState(pos, state, 3);
     }
 
-    //return the BlockState wanted based on randomness
-    //this method doesn't place the block
-    //It is notabely used during the shape gen during world gen
+    /**
+     * return the BlockState wanted based on randomness
+     * this method doesn't place the block
+     * It is notabely used during the shape gen during world gen
+     *
+     * @param blocksToPlace the blockstates list that would be chosen from
+     * @return the block related to the noise
+     */
     public static BlockState getRandomBlock(List<BlockState> blocksToPlace) {
         return blocksToPlace.get(Random.create().nextBetween(0, blocksToPlace.size() - 1));
     }
 
-    //return the BlockState wanted based on order
-    //this method doesn't place the block
-    //It is notabely used during the shape gen during world gen
+    /**
+     * return the BlockState wanted based on order
+     * this method doesn't place the block
+     * It is notabely used during the shape gen during world gen
+     *
+     * @param blocksToPlace the blockstates list that would be chosen from
+     * @param i the index to choose from
+     * @return the block related to the noise
+     */
     public static BlockState getBlockWithOrder(List<BlockState> blocksToPlace, int i) {
         return blocksToPlace.get(i);
     }
 
-    //return the BlockState wanted based on 2d noise
-    //this method doesn't place the block
-    //It is notabely used during the shape gen during world gen
+    /**
+     *
+     * return the BlockState wanted based on 2d noise
+     * this method doesn't place the block
+     * It is notabely used during the shape gen during world gen
+     * @param blocksToPlace the blockstates list that would be chosen from
+     * @param pos           the pos of the block to test
+     * @param noise         the noise
+     * @return the block related to the noise
+     */
     public static BlockState getBlockWith2DNoise(List<BlockState> blocksToPlace, BlockPos pos, FastNoiseLite noise) {
         double a = noise.GetNoise(pos.getX(), pos.getZ());
         return getBlockStateWithNoise(blocksToPlace, a);
     }
 
-    //return the BlockState wanted based on 3d noise
-    //this method doesn't place the block
-    //It is notabely used during the shape gen during world gen
+    /**
+     * return the BlockState wanted based on 3d noise
+     * this method doesn't place the block
+     * It is notabely used during the shape gen during world gen
+     * @param blocksToPlace the blockstates list that would be chosen from
+     * @param pos           the pos of the block to test
+     * @param noise         the noise
+     * @return the block related to the noise
+     */
     public static BlockState getBlockWith3DNoise(List<BlockState> blocksToPlace, BlockPos pos, FastNoiseLite noise) {
         double a = noise.GetNoise(pos.getX(), pos.getY(), pos.getZ());
         return getBlockStateWithNoise(blocksToPlace, a);
     }
 
-    //simplify the choose of block
+    /**
+     * simplify the choose of block
+     *
+     * @param blocksToPlace the list of blockStates to place
+     * @param a             the value of the noise
+     * @return the block related to the noise
+     */
     private static BlockState getBlockStateWithNoise(List<BlockState> blocksToPlace, double a) {
         int length = blocksToPlace.size() - 1;
         return blocksToPlace.get((int) ((length - 1) * a));
