@@ -107,7 +107,7 @@ public abstract class Shape {
         this.pos = pos;
         this.placeMoment = placeMoment;
         this.force = force;
-        this.blocksToForce = blocksToForce;
+        this.blocksToForce = new ArrayList<>(){{addAll(blocksToForce);}};
         this.blockLayers = layers;
         this.radialCenterPos = this.getPos();
         this.radialCenterVec3d = this.getPos().toCenterPos();
