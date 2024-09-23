@@ -2,6 +2,7 @@ package net.rodofire.easierworldcreator.shapeutil;
 
 import net.minecraft.block.BlockState;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -25,7 +26,8 @@ public class BlockLayer {
      * @param depth  depth of the BlockStates
      */
     public BlockLayer(List<BlockState> states, int depth) {
-        this.blocks = states;
+        this.blocks = new ArrayList<>();
+        this.blocks.addAll(states);
         this.depth = depth;
     }
 
@@ -35,7 +37,8 @@ public class BlockLayer {
      * @param states list of BlockStates
      */
     public BlockLayer(List<BlockState> states) {
-        this.blocks = states;
+        this.blocks = new ArrayList<>();
+        this.blocks.addAll(states);
     }
 
     /**
@@ -45,7 +48,8 @@ public class BlockLayer {
      * @param depth list of BlockStates
      */
     public BlockLayer(BlockState state, int depth) {
-        this.blocks = List.of(state);
+        this.blocks = new ArrayList<BlockState>();
+        this.blocks.add(state);
         this.depth = depth;
     }
 
@@ -55,7 +59,8 @@ public class BlockLayer {
      * @param state if the layer is only composed of one BlockState, you don't necessary need to create a list (created automatically)
      */
     public BlockLayer(BlockState state) {
-        this.blocks = List.of(state);
+        this.blocks = new ArrayList<>();
+        this.blocks.add(state);
     }
 
     /**
