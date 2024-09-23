@@ -148,7 +148,7 @@ public class BlockPlaceUtil {
      **/
 
     public static void placeBlockWith3DNoise(StructureWorldAccess world, List<BlockState> blocksToPlace, BlockPos pos, FastNoiseLite noise) {
-        float a = noise.GetNoise(pos.getX(), pos.getY(), pos.getZ());
+        float a = noise.GetNoise(pos);
         placeBlockWithNoise(world, blocksToPlace, pos, a);
     }
 
@@ -216,7 +216,7 @@ public class BlockPlaceUtil {
      * @return the block related to the noise
      */
     public static BlockState getBlockWith3DNoise(List<BlockState> blocksToPlace, BlockPos pos, FastNoiseLite noise) {
-        double a = noise.GetNoise(pos.getX(), pos.getY(), pos.getZ());
+        double a = noise.GetNoise(pos);
         return getBlockStateWithNoise(blocksToPlace, a);
     }
 
