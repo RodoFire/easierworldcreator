@@ -97,6 +97,19 @@ public class SphereGen extends FillableShape {
         this.direction = direction;
     }
 
+    /**
+     * init the shape generation
+     *
+     * @param world  the world the shape will be generated
+     * @param pos    the pos of the structure center
+     * @param radius the radius of the sphere
+     */
+    public SphereGen(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, PlaceMoment placeMoment, int radius) {
+        super(world, pos, placeMoment);
+        this.radiusx = radius;
+        this.radiusy = radius;
+        this.radiusz = radius;
+    }
 
     /**
      * init the shape generation
@@ -105,12 +118,17 @@ public class SphereGen extends FillableShape {
      * @param pos    the pos of the structure center
      * @param radius the radius of the sphere
      */
+    @Deprecated(forRemoval = true)
+    /**
+     * will be removed and replaced by a more consistent way of placing placemoment
+     */
     public SphereGen(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, int radius, PlaceMoment placeMoment) {
         super(world, pos, placeMoment);
         this.radiusx = radius;
         this.radiusy = radius;
         this.radiusz = radius;
     }
+
     public Direction getHalfSphereDirection() {
         return direction;
     }
@@ -156,7 +174,7 @@ public class SphereGen extends FillableShape {
 
     @Override
     public List<Set<BlockPos>> getBlockPos() {
-        return this.getCircleCoordinates();
+        return this.getSphereCoordinates();
     }
 
     @Override
@@ -165,19 +183,18 @@ public class SphereGen extends FillableShape {
     }
 
     //calculate and return the coordinates
-    public List<Set<BlockPos>> getCircleCoordinates() {
-        this.startTime = System.nanoTime();
+    public List<Set<BlockPos>> getSphereCoordinates() {
         Map<ChunkPos, Set<BlockPos>> chunkMap = new HashMap<>();
 
         //verify if the rotations == 0 to avoid some unnecessary calculations
         if (this.getFillingType() == Type.EMPTY) {
-            if (this.halfSphere == SphereType.DEFAULT) {
+            if (this.halfSphere == SphereType.HALF) {
                 this.generateHalfEmptyElipsoid(chunkMap);
             } else {
                 this.generateEmptyEllipsoid(chunkMap);
             }
         } else {
-            if (this.halfSphere == SphereType.DEFAULT) {
+            if (this.halfSphere == SphereType.HALF) {
                 this.generateHalfFullElipsoid(chunkMap);
             } else {
                 this.generateFullEllipsoid(chunkMap);
@@ -189,9 +206,9 @@ public class SphereGen extends FillableShape {
 
     public void generateHalfEmptyElipsoid(Map<ChunkPos, Set<BlockPos>> chunkMap) {
         if (direction == Direction.UP) {
-            generateEmptyEllipsoid(180, 180, 0, 90, chunkMap);
+            generateEmptyEllipsoid(-180, 180, 0, 90, chunkMap);
         } else if (direction == Direction.DOWN) {
-            generateEmptyEllipsoid(180, 180, -90, 0, chunkMap);
+            generateEmptyEllipsoid(-180, 180, -90, 0, chunkMap);
         } else if (direction == Direction.WEST) {
             generateEmptyEllipsoid(0, 180, -90, 90, chunkMap);
         } else if (direction == Direction.EAST) {
@@ -223,9 +240,11 @@ public class SphereGen extends FillableShape {
                     int x = (int) (xcostheta * cosphi);
                     int y = (int) (radiusy * FastMaths.getFastSin(phi));
                     int z = (int) (zsinkheta * cosphi);
-                    BlockPos pos = mutable.set(this.getPos(), x, y, z);
-                    if(!this.biggerThanChunk && WorldGenUtil.isPosAChunkFar(pos,this.getPos())) this.biggerThanChunk = true;
+                    BlockPos pos = new BlockPos(this.getPos().getX() + x, this.getPos().getY() + y, this.getPos().getZ() + z);
+                    if (!this.biggerThanChunk && WorldGenUtil.isPosAChunkFar(pos, this.getPos()))
+                        this.biggerThanChunk = true;
                     WorldGenUtil.modifyChunkMap(pos, chunkMap);
+                    System.out.println(x + " " + y + " " + z);
                 }
             }
         } else {
@@ -236,16 +255,17 @@ public class SphereGen extends FillableShape {
 
                 for (double phi = minheight; phi <= maxheight; phi += (double) 45 / maxlarge1) {
                     double cosphi = FastMaths.getFastCos(phi);
+
                     float x = (float) (xcostheta * cosphi);
                     float y = (float) (radiusy * FastMaths.getFastSin(phi));
                     float z = (float) (zsinkheta * cosphi);
-                    BlockPos pos = this.getCoordinatesRotation(x, 0, z, this.getPos());
-                    if(!this.biggerThanChunk && WorldGenUtil.isPosAChunkFar(pos,this.getPos())) this.biggerThanChunk = true;
+                    BlockPos pos = this.getCoordinatesRotation(x, y, z, this.getPos());
+                    if (!this.biggerThanChunk && WorldGenUtil.isPosAChunkFar(pos, this.getPos()))
+                        this.biggerThanChunk = true;
                     WorldGenUtil.modifyChunkMap(pos, chunkMap);
                 }
             }
         }
-        this.getGenTime(this.startTime, false);
     }
 
 
@@ -253,16 +273,16 @@ public class SphereGen extends FillableShape {
         if (direction == Direction.UP) {
             this.generateFullEllipsoid(-radiusx, radiusx, 0, radiusy, -radiusz, radiusz, chunkMap);
         }
-        if (direction == Direction.DOWN) {
+        else if (direction == Direction.DOWN) {
             this.generateFullEllipsoid(-radiusx, radiusx, -radiusy, 0, -radiusz, radiusz, chunkMap);
         }
-        if (direction == Direction.WEST) {
+        else if (direction == Direction.WEST) {
             this.generateFullEllipsoid(0, radiusx, -radiusy, radiusy, -radiusz, radiusz, chunkMap);
         }
-        if (direction == Direction.EAST) {
+        else if (direction == Direction.EAST) {
             this.generateFullEllipsoid(-radiusx, 0, -radiusy, radiusy, -radiusz, radiusz, chunkMap);
         }
-        if (direction == Direction.NORTH) {
+        else if (direction == Direction.NORTH) {
             this.generateFullEllipsoid(-radiusx, radiusx, -radiusy, radiusy, -radiusz, 0, chunkMap);
         } else {
             this.generateFullEllipsoid(-radiusx, radiusx, -radiusy, radiusy, 0, radiusz, chunkMap);
@@ -286,42 +306,44 @@ public class SphereGen extends FillableShape {
      * @param maxz the end of the circle on the z axis
      */
     public void generateFullEllipsoid(int minx, int maxx, int miny, int maxy, int minz, int maxz, Map<ChunkPos, Set<BlockPos>> chunkMap) {
-        BlockPos.Mutable mutable = new BlockPos.Mutable();
         this.setFill();
         int largexsquared = radiusx * radiusx;
         int largeysquared = radiusy * radiusy;
         int largezsquared = radiusz * radiusz;
 
-        float innerRadiusXSquared = (1 - this.getCustomFill()) * (1 - this.getCustomFill()) * radiusx * radiusx;
-        float innerRadiusYSquared = (1 - this.getCustomFill()) * (1 - this.getCustomFill()) * radiusy * radiusy;
-        float innerRadiusZSquared = (1 - this.getCustomFill()) * (1 - this.getCustomFill()) * radiusz * radiusz;
+        float innerRadiusXSquared = (1 - this.getCustomFill()) * (1 - this.getCustomFill()) * largexsquared;
+        float innerRadiusYSquared = (1 - this.getCustomFill()) * (1 - this.getCustomFill()) * largeysquared;
+        float innerRadiusZSquared = (1 - this.getCustomFill()) * (1 - this.getCustomFill()) * largezsquared;
 
 
         if (radiusx > 32 || radiusy > 32 || radiusz > 32) {
             Easierworldcreator.LOGGER.warn("generating huge sphere (diameter > 64)");
         }
-        List<BlockPos> poslist = new ArrayList<BlockPos>();
         if (this.getXrotation() % 180 == 0 && this.getYrotation() % 180 == 0 && this.getSecondXrotation() % 180 == 0) {
             for (float x = minx; x <= maxx; x++) {
-                float xs = x * x / largexsquared;
+                float xx = x * x;
+                float xs = xx / largexsquared;
 
                 for (float y = miny; y <= maxy; y++) {
-                    float ys = y * y / largeysquared + xs;
+                    float yy = y * y;
+                    float ys = yy / largeysquared + xs;
 
                     for (float z = minz; z <= maxz; z++) {
-                        if (ys + (z * z) / (largezsquared) <= 1) {
+                        float zz = z * z;
+                        if (ys + (zz) / (largezsquared) <= 1) {
                             boolean bl = true;
                             if (innerRadiusXSquared != 0) {
-                                float innerXSquared = x * x / innerRadiusXSquared;
-                                float innerYSquared = y * y / innerRadiusYSquared;
-                                float innerZSquared = z * z / innerRadiusZSquared;
+                                float innerXSquared = xx / innerRadiusXSquared;
+                                float innerYSquared = yy / innerRadiusYSquared;
+                                float innerZSquared = zz / innerRadiusZSquared;
                                 if (innerXSquared + innerZSquared + innerYSquared <= 1f) { // pas dans l'ovale intérieur
                                     bl = false;
                                 }
                             }
                             if (bl) {
-                                BlockPos pos = new BlockPos((int) (this.getPos().getX() + x), this.getPos().getY(), (int) (this.getPos().getZ() + z));
-                                if(!this.biggerThanChunk && WorldGenUtil.isPosAChunkFar(pos,this.getPos())) this.biggerThanChunk = true;
+                                BlockPos pos = new BlockPos((int) (this.getPos().getX() + x), (int) (this.getPos().getY() + y), (int) (this.getPos().getZ() + z));
+                                if (!this.biggerThanChunk && WorldGenUtil.isPosAChunkFar(pos, this.getPos()))
+                                    this.biggerThanChunk = true;
                                 WorldGenUtil.modifyChunkMap(pos, chunkMap);
                             }
                         }
@@ -330,24 +352,29 @@ public class SphereGen extends FillableShape {
             }
         } else {
             for (float x = minx; x <= maxx; x += 0.5f) {
-                float xs = x * x / largexsquared;
+                float xx = x * x;
+                float xs = xx / largexsquared;
 
                 for (float y = miny; y <= maxy; y += 0.5f) {
-                    float ys = y * y / largeysquared + xs;
+                    float yy = y * y;
+                    float ys = yy / largeysquared + xs;
 
                     for (float z = minz; z <= maxz; z += 0.5f) {
-                        if (ys + (z * z) / (largezsquared) <= 1) {
+                        float zz = z * z;
+                        if (ys + (zz) / (largezsquared) <= 1) {
                             boolean bl = true;
                             if (innerRadiusXSquared != 0) {
-                                float innerXSquared = x * x / innerRadiusXSquared;
-                                float innerZSquared = z * z / innerRadiusZSquared;
-                                if (innerXSquared + innerZSquared <= 1f) { // pas dans l'ovale intérieur
+                                float innerXSquared = xx / innerRadiusXSquared;
+                                float innerYSquared = yy / innerRadiusYSquared;
+                                float innerZSquared = zz / innerRadiusZSquared;
+                                if (innerXSquared + innerZSquared + innerYSquared <= 1f) { // pas dans l'ovale intérieur
                                     bl = false;
                                 }
                             }
                             if (bl) {
-                                BlockPos pos = this.getCoordinatesRotation(x, 0, z, this.getPos());
-                                if(!this.biggerThanChunk && WorldGenUtil.isPosAChunkFar(pos,this.getPos())) this.biggerThanChunk = true;
+                                BlockPos pos = this.getCoordinatesRotation(x, y, z, this.getPos());
+                                if (!this.biggerThanChunk && WorldGenUtil.isPosAChunkFar(pos, this.getPos()))
+                                    this.biggerThanChunk = true;
                                 WorldGenUtil.modifyChunkMap(pos, chunkMap);
                             }
                         }
@@ -355,7 +382,6 @@ public class SphereGen extends FillableShape {
                 }
             }
         }
-        this.getGenTime(this.startTime, false);
     }
 
     public enum SphereType {
