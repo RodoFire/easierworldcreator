@@ -229,6 +229,6 @@ public class BlockPlaceUtil {
      */
     private static BlockState getBlockStateWithNoise(List<BlockState> blocksToPlace, double a) {
         int length = blocksToPlace.size() - 1;
-        return blocksToPlace.get((int) ((length - 1) * a));
+        return blocksToPlace.get((int) ((length - 1) * (a / 2 + 0.5)));
     }
 }
