@@ -370,7 +370,12 @@ public abstract class Shape {
      * Any changes done after this moment will not be taken in count except if you place another shape later
      */
     public void place() throws IOException {
-        place(this.getBlockPos());
+        long start = System.nanoTime();
+        List<Set<BlockPos>> posList = this.getBlockPos();
+        long end = System.nanoTime();
+        long diff = end - start;
+        Easierworldcreator.LOGGER.info("Shape coordinate calculations took : " + ((double) (diff / 1000)) / 1000 + "ms");
+        place(posList);
     }
 
     /**
@@ -451,8 +456,8 @@ public abstract class Shape {
             }
             //In the case our structure isn't place during world gen or it is less than a chunk large
             else {
+                Easierworldcreator.LOGGER.info("structure smaller than chunk");
                 for (Set<BlockPos> pos : posList) {
-                    Easierworldcreator.LOGGER.info("structure smaller than chunk");
                     //executorService.submit(() -> {
                     this.placeLayers(pos);
                     //});
@@ -673,7 +678,7 @@ public abstract class Shape {
                 }
             }
             if (!bl) {
-                placeBlocksWithVerification(layerDistanceSize-1, pos);
+                placeBlocksWithVerification(layerDistanceSize - 1, pos);
             }
         }
     }
@@ -723,7 +728,7 @@ public abstract class Shape {
                 }
             }
             if (!bl) {
-                placeBlocksWithVerification(layerDistanceSize-1, pos);
+                placeBlocksWithVerification(layerDistanceSize - 1, pos);
             }
         }
     }
@@ -1110,16 +1115,6 @@ public abstract class Shape {
             newposlist.add(this.getCoordinatesRotation(pos, centerPos));
         }
         return newposlist;
-    }
-
-    public void getGenTime(long startTime, boolean place) {
-        long endTime = (System.nanoTime());
-        long duration = (endTime - startTime) / 1000000;
-        if (place) {
-            Easierworldcreator.LOGGER.info("structure placing took : {} ms", duration);
-        } else {
-            Easierworldcreator.LOGGER.info("structure coordinates calculations took : {} ms", duration);
-        }
     }
 
     //place blocks without verification
