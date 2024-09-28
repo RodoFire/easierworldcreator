@@ -173,7 +173,6 @@ public class TorusGen extends FillableShape {
 
     @Override
     public List<Set<BlockPos>> getBlockPos() {
-        //long startTimeCartesian = System.nanoTime();
         setTorusFill();
         Map<ChunkPos, Set<BlockPos>> chunkMap = new HashMap<>();
         if (this.getFillingType() == Type.EMPTY) {
@@ -181,9 +180,6 @@ public class TorusGen extends FillableShape {
         } else {
             this.generateFullTore(chunkMap);
         }
-        //long endTimeCartesian = (System.nanoTime());
-        //long durationCartesian = (endTimeCartesian - startTimeCartesian) / 1000000;
-        //System.out.println("coordinate calculation took : " + durationCartesian + " ms");
         return new ArrayList<>(chunkMap.values());
     }
 
