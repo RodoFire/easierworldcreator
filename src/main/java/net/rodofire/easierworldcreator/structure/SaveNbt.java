@@ -139,6 +139,11 @@ public class SaveNbt {
         return loadNBTFiles(chunk.getPos());
     }
 
+    /**
+     * gives you a list of "path" of nbt files related to a chunkpos
+     * @param chunk the chunk of the nbt
+     * @return the list of "path"
+     */
     public static List<Identifier> loadNBTFiles(ChunkPos chunk) {
         List<Identifier> nbtList = new ArrayList<>();
         String chunkFolderPath = new Identifier(Easierworldcreator.MOD_ID, "generated/structures/" + chunk.x + "_" + chunk.z + "/").getPath();

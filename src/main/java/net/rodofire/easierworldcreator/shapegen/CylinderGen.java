@@ -184,7 +184,6 @@ public class CylinderGen extends FillableShape {
 
     public List<Set<BlockPos>> generateCylinder() {
 
-        long startTimeCartesian = System.nanoTime();
         Map<ChunkPos, Set<BlockPos>> chunkMap = new HashMap<>();
         this.setFill();
 
@@ -198,7 +197,6 @@ public class CylinderGen extends FillableShape {
         } else {
             this.generateFullCylinder(chunkMap);
         }
-        this.getGenTime(startTimeCartesian, false);
 
         return new ArrayList<>(chunkMap.values());
     }
