@@ -55,6 +55,8 @@ package net.rodofire.easierworldcreator.worldgenutil;
 // /*FNLfloat*/ float
 // /*FNLfloat*/ double
 
+import net.minecraft.util.math.BlockPos;
+
 public class FastNoiseLite
 {
     public enum NoiseType
@@ -302,6 +304,15 @@ public class FastNoiseLite
     /// </remarks>
     public void SetDomainWarpAmp(float domainWarpAmp) { mDomainWarpAmp = domainWarpAmp; }
 
+    /**
+     * addition for simpler use
+     * This is only used to return the value for a 3d noise.
+     * @param pos the pos of the noise.
+     * @return the value of the noise.
+     */
+    public float GetNoise(BlockPos pos){
+        return GetNoise(pos.getX(), pos.getY(), pos.getZ());
+    }
 
     /// <summary>
     /// 2D noise at given position using current settings
