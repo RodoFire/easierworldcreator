@@ -189,7 +189,7 @@ public class CylinderGen extends FillableShape {
 
         //Rotating a shape requires more blocks.
         //This verification is there to avoid some unnecessary calculations when the rotations don't have any impact on the number of blocks
-        if (this.getFillingType() == FillableShape.Type.EMPTY) {
+        if (this.getFillingType() == Type.EMPTY) {
 
             this.generateEmptyCylinder(chunkMap);
             this.setPos(this.getPos().up());
@@ -219,18 +219,20 @@ public class CylinderGen extends FillableShape {
                 float xsquared = x2 / radiusxsquared;
 
                 for (float z = -this.radiusz; z <= this.radiusz; z += 1f) {
-
-                    for (float y = 0; y <= this.height; y += 1f) {
-                        if (xsquared + (z * z) / radiuszsquared <= 1) {
-                            boolean bl = true;
-                            if (innerRadiusXSquared != 0) {
-                                float innerXSquared = x2 / innerRadiusXSquared;
-                                float innerZSquared = z * z / innerRadiusZSquared;
-                                if (innerXSquared + innerZSquared <= 1f) { // pas dans l'ovale intérieur
-                                    bl = false;
-                                }
+                    float z2 = z * z;
+                    float zsquared = z2 / radiuszsquared;
+                    if (xsquared + zsquared <= 1) {
+                        boolean bl = true;
+                        if (innerRadiusXSquared != 0) {
+                            float innerXSquared = x2 / innerRadiusXSquared;
+                            float innerZSquared = z2 / innerRadiusZSquared;
+                            if (innerXSquared + innerZSquared <= 1f) { // pas dans l'ovale intérieur
+                                bl = false;
                             }
-                            if (bl) {
+                        }
+                        if (bl) {
+                            for (float y = 0; y <= this.height; y += 1f) {
+
                                 BlockPos pos = new BlockPos((int) (this.getPos().getX() + x), this.getPos().getY(), (int) (this.getPos().getZ() + z));
                                 if (!this.biggerThanChunk && WorldGenUtil.isPosAChunkFar(pos, this.getPos()))
                                     this.biggerThanChunk = true;
@@ -241,24 +243,29 @@ public class CylinderGen extends FillableShape {
                 }
             }
         } else {
-            for (float y = 0; y <= this.height; y += 0.5f) {
-                for (float x = -this.radiusx; x <= this.radiusx; x += 0.5f) {
-                    float xsquared = x * x / radiusxsquared;
-                    for (float z = -this.radiusz; z <= this.radiusz; z += 0.5f) {
-                        if (xsquared + (z * z) / radiuszsquared <= 1) {
-                            boolean bl = true;
-                            if (innerRadiusXSquared != 0) {
-                                float innerXSquared = x * x / innerRadiusXSquared;
-                                float innerZSquared = z * z / innerRadiusZSquared;
-                                if (innerXSquared + innerZSquared <= 1f) { // pas dans l'ovale intérieur
-                                    bl = false;
-                                }
-                            }
-                            if (bl) {
+
+            for (float x = -this.radiusx; x <= this.radiusx; x += 0.5f) {
+                float x2 = x * x;
+                float xsquared = x * x / radiusxsquared;
+                for (float z = -this.radiusz; z <= this.radiusz; z += 0.5f) {
+                    float z2 = z * z;
+                    boolean bl = true;
+                    if (innerRadiusXSquared != 0) {
+                        float innerXSquared = x2 / innerRadiusXSquared;
+                        float innerZSquared = z2 / innerRadiusZSquared;
+                        if (innerXSquared + innerZSquared <= 1f) { // pas dans l'ovale intérieur
+                            bl = false;
+                        }
+                    }
+                    if (bl) {
+                        for (float y = 0; y <= this.height; y += 0.5f) {
+                            if (xsquared + (z * z) / radiuszsquared <= 1) {
+
                                 BlockPos pos = this.getCoordinatesRotation(x, y, z, this.getPos());
                                 if (!this.biggerThanChunk && WorldGenUtil.isPosAChunkFar(pos, this.getPos()))
                                     this.biggerThanChunk = true;
                                 WorldGenUtil.modifyChunkMap(pos, chunkMap);
+
                             }
                         }
                     }
