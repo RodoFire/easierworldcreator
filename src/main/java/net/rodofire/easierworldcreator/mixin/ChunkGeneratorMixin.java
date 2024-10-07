@@ -36,7 +36,7 @@ public abstract class ChunkGeneratorMixin {
      * @param ci                unused parameters that need to be there in order for the mixin to work
      * @throws IOException
      */
-    @Inject(method = "generateFeatures", at = @At(value = "INVOKE", target = "Lit/unimi/dsi/fastutil/ints/IntArraySet;<init>()V"))
+    @Inject(method = "generateFeatures", at = @At(value = "INVOKE", target = "Ljava/util/Set;iterator()Ljava/util/Iterator;"))
     private void onGenerateFeatures(StructureWorldAccess world, Chunk chunk, StructureAccessor structureAccessor, CallbackInfo ci) throws IOException {
         List<Path> pathlist = LoadChunkShapeInfo.verifyFiles(world, chunk);
         if (!pathlist.isEmpty()) {

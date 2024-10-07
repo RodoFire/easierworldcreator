@@ -6,6 +6,7 @@ import net.minecraft.world.StructureWorldAccess;
 import net.minecraft.world.WorldAccess;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.ChunkStatus;
+import net.rodofire.easierworldcreator.Easierworldcreator;
 
 import java.io.File;
 import java.io.IOException;
@@ -56,7 +57,7 @@ public class ChunkUtil {
         String fileName = getRegionFileName(regionX, regionZ, world);
 
         try (RandomAccessFile file = new RandomAccessFile(fileName, "r")) {
-            return findChunkInFile(file, chunkPos);
+            return findChunkInsertPosition(file, chunkPos) == -1;
         } catch (IOException e) {
             return false;
         }
@@ -66,27 +67,30 @@ public class ChunkUtil {
         return Objects.requireNonNull(worldAccess.getServer()).getSavePath(DIRECTORY).normalize().toString() + File.separator + "region_" + regionX + "_" + regionZ + ".bin";
     }
 
-    public static boolean findChunkInFile(RandomAccessFile file, ChunkPos chunkPos) throws IOException {
+    private static long findChunkInsertPosition(RandomAccessFile raf, ChunkPos chunkPos) throws IOException {
         long low = 0;
-        long high = (file.length() / CHUNK_DATA_SIZE) - 1;
+        long high = raf.length() / CHUNK_DATA_SIZE - 1;
 
         while (low <= high) {
             long mid = (low + high) / 2;
-            long pointer = mid * CHUNK_DATA_SIZE;
-            file.seek(pointer);
+            long midPos = mid * CHUNK_DATA_SIZE;
 
-            int x = file.readInt();
-            int z = file.readInt();
+            raf.seek(midPos);
+            int midX = raf.readInt();
+            int midZ = raf.readInt();
 
-            if (x == chunkPos.x && z == chunkPos.z) {
-                return true;
-            } else if (x < chunkPos.x || (x == chunkPos.x && z < chunkPos.z)) {
-                low = mid + 1;
-            } else {
+            if (chunkPos.x == midX && chunkPos.z == midZ) {
+                return -1;
+            }
+
+            if (chunkPos.x < midX || (chunkPos.x == midX && chunkPos.z < midZ)) {
                 high = mid - 1;
+            } else {
+                low = mid + 1;
             }
         }
-        return false;
+
+        return low * 8;
     }
 
 
@@ -101,11 +105,12 @@ public class ChunkUtil {
 
         if (file.exists()) {
             try (RandomAccessFile raf = new RandomAccessFile(file, "rw")) {
-                if (findChunkInFile(raf, chunkPos)) {
+                long a = findChunkInsertPosition(raf, chunkPos);
+                if (a == -1) {
                     return;
                 }
 
-                List<ChunkPos> chunks = readChunksFromFile(raf);
+                /*List<ChunkPos> chunks = readChunksFromFile(raf);
                 chunks.add(chunkPos);
                 chunks.sort(Comparator.comparingInt((ChunkPos c) -> c.x).thenComparingInt(c -> c.z));
 
@@ -113,7 +118,14 @@ public class ChunkUtil {
                 for (ChunkPos pos : chunks) {
                     raf.writeInt(pos.x);
                     raf.writeInt(pos.z);
-                }
+                }*/
+                long start = System.nanoTime();
+                raf.seek(a);
+                raf.writeInt(chunkPos.x);
+                raf.writeInt(chunkPos.z);
+                long end = System.nanoTime();
+                long diff = end - start;
+                Easierworldcreator.LOGGER.info("Shape coordinate calculations took : " + ((double) (diff / 1000)) / 1000 + "ms");
 
             } catch (IOException e) {
                 e.printStackTrace();
