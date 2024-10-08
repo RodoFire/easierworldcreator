@@ -48,17 +48,4 @@ public abstract class ChunkGeneratorMixin {
         }
         FileUtil.removeGeneratedChunkDirectory(chunk, world);
     }
-
-    /**
-     * when the features are finished to be generated, the chunkPos will be added to the list of generated chunk under {@code [save name]/chunkList}
-     *
-     * @param world             the world of the chunk
-     * @param chunk             the chunk generated
-     * @param structureAccessor unused parameters that need to be there in order for the mixin to work
-     * @param ci                unused parameters that need to be there in order for the mixin to work
-     */
-    @Inject(method = "generateFeatures", at = @At("TAIL"), remap = false)
-    private void addGeneratedChunk(StructureWorldAccess world, Chunk chunk, StructureAccessor structureAccessor, CallbackInfo ci) {
-        ChunkUtil.addChunk(chunk.getPos(), world);
-    }
 }
