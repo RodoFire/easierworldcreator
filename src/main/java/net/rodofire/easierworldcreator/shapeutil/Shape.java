@@ -1000,7 +1000,7 @@ public abstract class Shape {
      */
     private boolean canPos(Set<ChunkPos> chunks) {
         for (ChunkPos chunk : chunks) {
-            if (ChunkUtil.isChunkGenerated(chunk, world)) {
+            if (ChunkUtil.isChunkGenerated(world, chunk)) {
                 return false;
             }
         }
@@ -1015,7 +1015,8 @@ public abstract class Shape {
      * @return {@link Boolean} that determines if the shape can be placed
      */
     private boolean tryPlaceStructure(List<Set<BlockPos>> posList) {
-        int maxOffset = 3;
+        int maxOffset = 5;
+        System.out.println("chunka:" + ChunkUtil.isChunkGenerated(world, new ChunkPos(50,50)));
         List<ChunkPos> chunkList = new ArrayList<>();
         for (Set<BlockPos> pos : posList) {
             Optional<BlockPos> pos1 = pos.stream().findFirst();
@@ -1061,9 +1062,9 @@ public abstract class Shape {
 
                         if (canPos(coveredChunks)) {
                             List<ChunkPos> region = new ArrayList<>();
-                            for (ChunkPos chunk : coveredChunks) {
+                            /*for (ChunkPos chunk : coveredChunks) {
                                 ChunkUtil.protectChunk(chunk);
-                            }
+                            }*/
                             this.offset = newPos;
                             return true;
                         }
