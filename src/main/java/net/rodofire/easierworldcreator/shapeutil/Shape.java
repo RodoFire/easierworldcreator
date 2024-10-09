@@ -1016,7 +1016,6 @@ public abstract class Shape {
      */
     private boolean tryPlaceStructure(List<Set<BlockPos>> posList) {
         int maxOffset = 5;
-        System.out.println("chunka:" + ChunkUtil.isChunkGenerated(world, new ChunkPos(50,50)));
         List<ChunkPos> chunkList = new ArrayList<>();
         for (Set<BlockPos> pos : posList) {
             Optional<BlockPos> pos1 = pos.stream().findFirst();
@@ -1062,9 +1061,6 @@ public abstract class Shape {
 
                         if (canPos(coveredChunks)) {
                             List<ChunkPos> region = new ArrayList<>();
-                            /*for (ChunkPos chunk : coveredChunks) {
-                                ChunkUtil.protectChunk(chunk);
-                            }*/
                             this.offset = newPos;
                             return true;
                         }
