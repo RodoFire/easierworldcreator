@@ -1,3 +1,11 @@
+<div class="center">
+  <center>
+    <a href="https://github.com/McMellonTeam/easierworldcreator/wiki">
+      <img src="https://imgur.com/sUH3JFO.png" alt="documentation link" width="190">
+    </a>
+  </center>
+</div>
+
 ## What is this mod about?
 Create your world gen features easily with this library. It allow you to generate simple shapes that combined together can create some beautiful features. 
 
