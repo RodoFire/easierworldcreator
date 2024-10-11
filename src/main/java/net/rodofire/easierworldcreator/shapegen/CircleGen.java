@@ -68,7 +68,8 @@ public class CircleGen extends FillableShape {
         this.radiusx = radiusx;
         this.radiusz = radiusz;
     }
-    public CircleGen(@NotNull StructureWorldAccess world, @NotNull BlockPos pos,PlaceMoment placeMoment, int radius ) {
+
+    public CircleGen(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, PlaceMoment placeMoment, int radius) {
         super(world, pos, placeMoment);
         this.radiusx = radius;
         this.radiusz = radius;
@@ -119,10 +120,10 @@ public class CircleGen extends FillableShape {
         if (this.getCustomFill() > 1f) this.setCustomFill(1f);
         if (this.getCustomFill() < 0f) this.setCustomFill(0f);
 
-        if (this.getXrotation() % 180 == 0 && this.getYrotation() % 180 == 0 && this.getSecondXrotation() == 0 && (this.getFillingType() == FillableShape.Type.FULL || this.getFillingType() == FillableShape.Type.EMPTY)) {
+        /*if (this.getXrotation() % 180 == 0 && this.getYrotation() % 180 == 0 && this.getSecondXrotation() == 0 && (this.getFillingType() == FillableShape.Type.EMPTY)) {
             if (this.radiusz > 16 || this.radiusx > 16) this.biggerThanChunk = true;
             return this.generateEmptyOval(this.getPos().getX(), this.getPos().getZ(), this.getPos().getY());
-        } else if (this.getFillingType() == FillableShape.Type.EMPTY) {
+        } else*/ if (this.getFillingType() == FillableShape.Type.EMPTY) {
             return this.generateEmptyOval();
         }
         return this.generateFullOval();
@@ -135,6 +136,7 @@ public class CircleGen extends FillableShape {
 
     /**
      * method to create a full oval/ with custom filling
+     *
      * @return {@code List<Set<BlockPos>>} : set of BlockPos divided into a list of chunks
      */
     public List<Set<BlockPos>> generateFullOval() {
@@ -149,13 +151,16 @@ public class CircleGen extends FillableShape {
         //This verification is there to avoid some unnecessary calculations when the rotations don't have any impact on the number of blocks
         if (this.getXrotation() % 180 == 0 && this.getYrotation() % 180 == 0 && this.getSecondXrotation() % 180 == 0) {
             for (float x = -this.radiusx; x <= this.radiusx; x += 1) {
+                float x2 = x * x;
                 float xsquared = x * x / radiusxsquared;
                 for (float z = -this.radiusz; z <= this.radiusz; z += 1) {
-                    if (xsquared + (z * z) / radiuszsquared <= 1) {
+                    float z2 = z * z;
+
+                    if (xsquared + (z2) / radiuszsquared <= 1) {
                         boolean bl = true;
                         if (innerRadiusXSquared != 0) {
-                            float innerXSquared = x * x / innerRadiusXSquared;
-                            float innerZSquared = z * z / innerRadiusZSquared;
+                            float innerXSquared = x2 / innerRadiusXSquared;
+                            float innerZSquared = z2 / innerRadiusZSquared;
                             if (innerXSquared + innerZSquared <= 1f) {
                                 bl = false;
                             }
@@ -171,14 +176,16 @@ public class CircleGen extends FillableShape {
             }
         } else {
             for (float x = -this.radiusx; x <= this.radiusx; x += 0.5f) {
-                float xsquared = x * x / radiusxsquared;
+                float x2 = x * x;
+                float xsquared = x2 / radiusxsquared;
 
                 for (float z = -this.radiusz; z <= this.radiusz; z += 0.5f) {
-                    if (xsquared + (z * z) / radiuszsquared <= 1) {
+                    float z2 = z * z;
+                    if (xsquared + (z2) / radiuszsquared <= 1) {
                         boolean bl = true;
                         if (innerRadiusXSquared != 0) {
-                            float innerXSquared = x * x / innerRadiusXSquared;
-                            float innerZSquared = z * z / innerRadiusZSquared;
+                            float innerXSquared = x2 / innerRadiusXSquared;
+                            float innerZSquared = z2 / innerRadiusZSquared;
                             if (innerXSquared + innerZSquared <= 1f) { // pas dans l'ovale intérieur
                                 bl = false;
                             }
@@ -199,6 +206,7 @@ public class CircleGen extends FillableShape {
 
     /**
      * method to create an empty oval with rotations
+     *
      * @return {@code List<Set<BlockPos>>} : set of BlockPos divided into a list of chunks
      */
     public List<Set<BlockPos>> generateEmptyOval() {
@@ -229,7 +237,7 @@ public class CircleGen extends FillableShape {
     }
 
     /*---------- Algorithm based on Bressen Algorithms for circle ----------*/
-
+    //TODO fix method
     /**
      * This class is used when no rotation is present.
      * This allows fast coordinates generation but doesn't work with rotations
