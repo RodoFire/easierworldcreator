@@ -385,6 +385,11 @@ public abstract class Shape {
      */
     public void place(List<Set<BlockPos>> posList) throws IOException {
         Easierworldcreator.LOGGER.info("placing structure");
+        if(this.layerPlace == LayerPlace.NOISE2D || this.layerPlace == LayerPlace.NOISE3D) {
+            for (BlockLayer layers : this.blockLayers) {
+                layers.addBlockState(layers.getBlockStates().getLast());
+            }
+        }
         if (this.placeType == PlaceType.BLOCKS) {
 
             //verify if the shape is larger than a chunk
@@ -685,21 +690,26 @@ public abstract class Shape {
 
     //be careful when using layers with 1 block depth, that might do some weird things
     public void placeInnerRadialBlocks(Set<BlockPos> posList) {
+        Set<BlockList> blockLists = new HashSet<>();
+        List<Integer> layerDistance = new ArrayList<Integer>();
+        layerDistance.add(this.blockLayers.get(0).getDepth());
+
+        for (int i = 1; i < this.blockLayers.size(); i++) {
+            layerDistance.add(this.blockLayers.get(i).getDepth() + layerDistance.get(i - 1));
+        }
+
+        int layerDistanceSize = layerDistance.size();
         for (BlockPos pos : posList) {
-            float distance = WorldGenUtil.getDistance(radialCenterPos, pos);
-            int maxdist = this.blockLayers.get(0).getDepth();
-            int mindist = 0;
-            int a = 0;
             boolean bl = false;
-            while (!(distance <= maxdist && distance >= mindist)) {
-                if (a >= this.blockLayers.size()) {
-                    placeBlocks(a--, pos);
+            float distance = WorldGenUtil.getDistance(new BlockPos(this.radialCenterPos.getX(), pos.getY(), this.radialCenterPos.getZ()), pos);
+            for (int i = 0; i < layerDistanceSize - 1; i++) {
+                if (distance < layerDistance.get(i)) {
+                    placeBlocksWithVerification(this.blockLayers.get(i).getBlockStates(), pos);
                     bl = true;
-                    continue;
                 }
-                mindist = maxdist;
-                maxdist += this.blockLayers.get(a).getDepth();
-                a++;
+            }
+            if (!bl) {
+                placeBlocksWithVerification(this.blockLayers.get(layerDistanceSize-1).getBlockStates(), pos);
             }
         }
     }
