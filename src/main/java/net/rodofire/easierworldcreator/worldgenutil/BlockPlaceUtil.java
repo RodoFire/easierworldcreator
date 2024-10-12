@@ -162,7 +162,7 @@ public class BlockPlaceUtil {
      **/
     private static void placeBlockWithNoise(StructureWorldAccess world, List<BlockState> blocksToPlace, BlockPos pos, float a) {
         int length = blocksToPlace.size() - 1;
-        BlockState state = blocksToPlace.get((int) ((length - 1) * (a / 2 + 0.5)));
+        BlockState state = blocksToPlace.get((int) ((length ) * (a / 2 + 0.5)));
         world.setBlockState(pos, state, 3);
     }
 
@@ -229,6 +229,6 @@ public class BlockPlaceUtil {
      */
     private static BlockState getBlockStateWithNoise(List<BlockState> blocksToPlace, double a) {
         int length = blocksToPlace.size() - 1;
-        return blocksToPlace.get((int) ((length - 1) * (a / 2 + 0.5)));
+        return blocksToPlace.get((int) ((length) * (a / 2 + 0.5)));
     }
 }
