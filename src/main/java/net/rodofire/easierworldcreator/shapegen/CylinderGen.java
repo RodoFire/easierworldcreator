@@ -226,14 +226,14 @@ public class CylinderGen extends FillableShape {
                         if (innerRadiusXSquared != 0) {
                             float innerXSquared = x2 / innerRadiusXSquared;
                             float innerZSquared = z2 / innerRadiusZSquared;
-                            if (innerXSquared + innerZSquared <= 1f) { // pas dans l'ovale intérieur
+                            if (innerXSquared + innerZSquared <= 1f) {
                                 bl = false;
                             }
                         }
                         if (bl) {
                             for (float y = 0; y <= this.height; y += 1f) {
 
-                                BlockPos pos = new BlockPos((int) (this.getPos().getX() + x), this.getPos().getY(), (int) (this.getPos().getZ() + z));
+                                BlockPos pos = new BlockPos((int) (this.getPos().getX() + x), (int) (this.getPos().getY() + y), (int) (this.getPos().getZ() + z));
                                 if (!this.biggerThanChunk && WorldGenUtil.isPosAChunkFar(pos, this.getPos()))
                                     this.biggerThanChunk = true;
                                 WorldGenUtil.modifyChunkMap(pos, chunkMap);
