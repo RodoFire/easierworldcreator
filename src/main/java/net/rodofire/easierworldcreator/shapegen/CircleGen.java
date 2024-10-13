@@ -9,6 +9,7 @@ import net.rodofire.easierworldcreator.shapeutil.BlockLayer;
 import net.rodofire.easierworldcreator.shapeutil.FillableShape;
 import net.rodofire.easierworldcreator.shapeutil.Shape;
 import net.rodofire.easierworldcreator.util.FastMaths;
+import net.rodofire.easierworldcreator.worldgenutil.FastNoiseLite;
 import net.rodofire.easierworldcreator.worldgenutil.WorldGenUtil;
 import org.jetbrains.annotations.NotNull;
 
@@ -52,34 +53,35 @@ public class CircleGen extends FillableShape {
 
 
     /**
+     * init the Circle Shape
+     *
      * @param world           the world the spiral will spawn in
      * @param pos             the center of the spiral
-     * @param layers          a list of layers that will be used for the structure
+     * @param placeMoment     define the moment where the shape will be placed
      * @param force           boolean to force the pos of the blocks
      * @param blocksToForce   a list of blocks that the blocks of the spiral can still force if force = false
+     * @param layerPlace      how the {@code @BlockStates} inside of a {@link BlockLayer} will be placed
+     * @param layersType      how the Layers will be placed
      * @param xrotation       first rotation around the x-axis
      * @param yrotation       second rotation around the y-axis
      * @param secondxrotation last rotation around the x-axis
+     * @param featureName     the name of the feature
      * @param radiusx         the radius of the x-axis
      * @param radiusz         the radius of the z-axis
      */
-    public CircleGen(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, PlaceMoment placeMoment, @NotNull List<BlockLayer> layers, boolean force, List<Block> blocksToForce, int xrotation, int yrotation, int secondxrotation, int radiusx, int radiusz) {
-        super(world, pos, placeMoment, layers, force, blocksToForce, xrotation, yrotation, secondxrotation);
+    public CircleGen(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, PlaceMoment placeMoment, boolean force, List<Block> blocksToForce, LayerPlace layerPlace, LayersType layersType, int xrotation, int yrotation, int secondxrotation, String featureName, int radiusx, int radiusz) {
+        super(world, pos, placeMoment, force, blocksToForce, layerPlace, layersType, xrotation, yrotation, secondxrotation, featureName);
         this.radiusx = radiusx;
         this.radiusz = radiusz;
     }
 
-    public CircleGen(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, PlaceMoment placeMoment, int radius) {
-        super(world, pos, placeMoment);
-        this.radiusx = radius;
-        this.radiusz = radius;
-    }
-
-    @Deprecated(forRemoval = true)
     /**
-     * will be removed and replaced by a more consistent way of placing placemoment
+     * @param world       the world the spiral will spawn in
+     * @param pos         the center of the spiral
+     * @param placeMoment define the moment where the shape will be placed
+     * @param radius      the radius of the x-axis
      */
-    public CircleGen(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, int radius, PlaceMoment placeMoment) {
+    public CircleGen(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, PlaceMoment placeMoment, int radius) {
         super(world, pos, placeMoment);
         this.radiusx = radius;
         this.radiusz = radius;
@@ -123,7 +125,8 @@ public class CircleGen extends FillableShape {
         /*if (this.getXrotation() % 180 == 0 && this.getYrotation() % 180 == 0 && this.getSecondXrotation() == 0 && (this.getFillingType() == FillableShape.Type.EMPTY)) {
             if (this.radiusz > 16 || this.radiusx > 16) this.biggerThanChunk = true;
             return this.generateEmptyOval(this.getPos().getX(), this.getPos().getZ(), this.getPos().getY());
-        } else*/ if (this.getFillingType() == FillableShape.Type.EMPTY) {
+        } else*/
+        if (this.getFillingType() == FillableShape.Type.EMPTY) {
             return this.generateEmptyOval();
         }
         return this.generateFullOval();
@@ -238,6 +241,7 @@ public class CircleGen extends FillableShape {
 
     /*---------- Algorithm based on Bressen Algorithms for circle ----------*/
     //TODO fix method
+
     /**
      * This class is used when no rotation is present.
      * This allows fast coordinates generation but doesn't work with rotations

@@ -8,6 +8,7 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.StructureWorldAccess;
 import net.rodofire.easierworldcreator.shapeutil.BlockLayer;
 import net.rodofire.easierworldcreator.shapeutil.Shape;
+import net.rodofire.easierworldcreator.worldgenutil.FastNoiseLite;
 import net.rodofire.easierworldcreator.worldgenutil.WorldGenUtil;
 import org.jetbrains.annotations.NotNull;
 
@@ -26,20 +27,36 @@ import java.util.*;
 public class LineGen extends Shape {
     private BlockPos secondPos;
 
-    public LineGen(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, List<BlockLayer> layers, boolean force, List<Block> blocksToForce, int xrotation, int yrotation, int secondxrotation, BlockPos secondPos, PlaceMoment placeMoment) {
-        super(world, pos, placeMoment, layers, force, blocksToForce, xrotation, yrotation, secondxrotation);
-        this.secondPos = secondPos;
-    }
-    public LineGen(@NotNull StructureWorldAccess world, @NotNull BlockPos pos,PlaceMoment placeMoment, BlockPos secondPos ) {
-        super(world, pos, placeMoment);
+    /**
+     * init the Line Shape
+     *
+     * @param world           the world the spiral will spawn in
+     * @param pos             the center of the spiral
+     * @param placeMoment     define the moment where the shape will be placed
+     * @param force           boolean to force the pos of the blocks
+     * @param blocksToForce   a list of blocks that the blocks of the spiral can still force if force = false
+     * @param layerPlace      how the {@code @BlockStates} inside of a {@link BlockLayer} will be placed
+     * @param layersType      how the Layers will be placed
+     * @param xrotation       first rotation around the x-axis
+     * @param yrotation       second rotation around the y-axis
+     * @param secondxrotation last rotation around the x-axis
+     * @param featureName     the name of the feature
+     * @param secondPos       the second pos on wich the line has to go
+     */
+    public LineGen(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, @NotNull PlaceMoment placeMoment, boolean force, List<Block> blocksToForce, LayerPlace layerPlace, LayersType layersType, int xrotation, int yrotation, int secondxrotation, String featureName, BlockPos secondPos) {
+        super(world, pos, placeMoment, force, blocksToForce, layerPlace, layersType, xrotation, yrotation, secondxrotation, featureName);
         this.secondPos = secondPos;
     }
 
-    @Deprecated(forRemoval = true)
     /**
-     * will be removed and replaced by a more consistent way of placing placemoment
+     * init the Line Shape
+     *
+     * @param world       the world the spiral will spawn in
+     * @param pos         the center of the spiral
+     * @param placeMoment define the moment where the shape will be placed
+     * @param secondPos   the second pos on wich the line has to go
      */
-    public LineGen(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, BlockPos secondPos, PlaceMoment placeMoment) {
+    public LineGen(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, @NotNull PlaceMoment placeMoment, BlockPos secondPos) {
         super(world, pos, placeMoment);
         this.secondPos = secondPos;
     }
@@ -49,7 +66,8 @@ public class LineGen extends Shape {
         Direction direction;
         Map<ChunkPos, Set<BlockPos>> chunkMap = new HashMap<>();
         //faster coordinates generation
-        if(!this.biggerThanChunk && WorldGenUtil.isPosAChunkFar(this.secondPos,this.getPos())) this.biggerThanChunk = true;
+        if (!this.biggerThanChunk && WorldGenUtil.isPosAChunkFar(this.secondPos, this.getPos()))
+            this.biggerThanChunk = true;
         if ((direction = WorldGenUtil.getDirection(this.getPos(), secondPos)) != null) {
             this.generateAxisLine(direction, chunkMap);
         } else {
@@ -65,7 +83,8 @@ public class LineGen extends Shape {
 
     /**
      * this method genarate the coordinates
-     * @param dir the direction of the line
+     *
+     * @param dir      the direction of the line
      * @param chunkMap the map used to get the coordinates
      */
     public void generateAxisLine(Direction dir, Map<ChunkPos, Set<BlockPos>> chunkMap) {

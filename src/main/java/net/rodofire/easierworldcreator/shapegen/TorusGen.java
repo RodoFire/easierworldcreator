@@ -9,6 +9,7 @@ import net.rodofire.easierworldcreator.shapeutil.BlockLayer;
 import net.rodofire.easierworldcreator.shapeutil.FillableShape;
 import net.rodofire.easierworldcreator.shapeutil.Shape;
 import net.rodofire.easierworldcreator.util.FastMaths;
+import net.rodofire.easierworldcreator.worldgenutil.FastNoiseLite;
 import net.rodofire.easierworldcreator.worldgenutil.WorldGenUtil;
 import org.jetbrains.annotations.NotNull;
 
@@ -97,7 +98,15 @@ public class TorusGen extends FillableShape {
     //float that determines how much of the structure is filled along x-axis
     private float horizontalTorus = 1f;
 
-
+    /**
+     * init the Torus Shape
+     *
+     * @param world       the world the spiral will spawn in
+     * @param pos         the center of the spiral
+     * @param placeMoment define the moment where the shape will be placed
+     * @param innerRadius the radius of the inner circle
+     * @param outerRadius the radius of the outer circle
+     */
     public TorusGen(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, PlaceMoment placeMoment, int innerRadius, int outerRadius) {
         super(world, pos, placeMoment);
         this.innerRadiusx = innerRadius;
@@ -106,12 +115,31 @@ public class TorusGen extends FillableShape {
         this.outerRadiusz = outerRadius;
     }
 
-    public TorusGen(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, PlaceMoment placeMoment, List<BlockLayer> layers, boolean force, List<Block> blocksToForce, int xrotation, int yrotation, int secondxrotation, int innerRadius, int outerRadius) {
-        super(world, pos, placeMoment, layers, force, blocksToForce, xrotation, yrotation, secondxrotation);
-        this.innerRadiusx = innerRadius;
-        this.outerRadiusx = outerRadius;
-        this.innerRadiusz = innerRadius;
-        this.outerRadiusz = outerRadius;
+    /**
+     * init the Torus Shape
+     *
+     * @param world           the world the spiral will spawn in
+     * @param pos             the center of the spiral
+     * @param placeMoment     define the moment where the shape will be placed
+     * @param force           boolean to force the pos of the blocks
+     * @param blocksToForce   a list of blocks that the blocks of the spiral can still force if force = false
+     * @param layerPlace      how the {@code @BlockStates} inside of a {@link BlockLayer} will be placed
+     * @param layersType      how the Layers will be placed
+     * @param xrotation       first rotation around the x-axis
+     * @param yrotation       second rotation around the y-axis
+     * @param secondxrotation last rotation around the x-axis
+     * @param featureName     the name of the feature
+     * @param innerRadiusx    the radius of the inner circle on the x-axis
+     * @param outerRadiusx    the radius of the outer circle on the x-axis
+     * @param innerRadiusz    the radius of the inner circle on the z-axis
+     * @param outerRadiusz    the radius of the outer circle on the zaxis
+     */
+    public TorusGen(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, PlaceMoment placeMoment, boolean force, List<Block> blocksToForce, LayerPlace layerPlace, LayersType layersType, int xrotation, int yrotation, int secondxrotation, String featureName, int innerRadiusx, int outerRadiusx, int innerRadiusz, int outerRadiusz) {
+        super(world, pos, placeMoment, force, blocksToForce, layerPlace, layersType, xrotation, yrotation, secondxrotation, featureName);
+        this.innerRadiusx = innerRadiusx;
+        this.outerRadiusx = outerRadiusx;
+        this.innerRadiusz = innerRadiusz;
+        this.outerRadiusz = outerRadiusz;
     }
 
     public int getInnerRadiusx() {
@@ -221,7 +249,7 @@ public class TorusGen extends FillableShape {
 
                     int outerRadiusSquared = (int) (outerRadius * outerRadius);
                     int innerRadiusSquared = (int) (innerRadius * innerRadius);
-                    int a1 = xsquared  + zsquared + outerRadiusSquared - innerRadiusSquared;
+                    int a1 = xsquared + zsquared + outerRadiusSquared - innerRadiusSquared;
 
                     int e = 4 * outerRadiusSquared * (xsquared + zsquared);
 
@@ -243,7 +271,8 @@ public class TorusGen extends FillableShape {
                             }*/
                             if (bl) {
                                 BlockPos pos = new BlockPos((int) (this.getPos().getX() + x), (int) (this.getPos().getY() + y), (int) (this.getPos().getZ() + z));
-                                if(!this.biggerThanChunk && WorldGenUtil.isPosAChunkFar(pos,this.getPos())) this.biggerThanChunk = true;
+                                if (!this.biggerThanChunk && WorldGenUtil.isPosAChunkFar(pos, this.getPos()))
+                                    this.biggerThanChunk = true;
                                 WorldGenUtil.modifyChunkMap(pos, chunkMap);
                             }
                         }
@@ -264,7 +293,7 @@ public class TorusGen extends FillableShape {
                     int outerRadiusSquared = (int) (outerRadius * outerRadius);
                     int innerRadiusSquared = (int) (innerRadius * innerRadius);
 
-                    float a1 = xsquared  + zsquared + outerRadiusSquared - innerRadiusSquared;
+                    float a1 = xsquared + zsquared + outerRadiusSquared - innerRadiusSquared;
 
                     float e = 4 * outerRadiusSquared * (xsquared + zsquared);
                     for (float y = -b; y <= 2 * b * this.verticalTorus - b; y += 0.5f) {
@@ -285,7 +314,8 @@ public class TorusGen extends FillableShape {
                             }*/
                             if (bl) {
                                 BlockPos pos = this.getCoordinatesRotation(x, y, z, this.getPos());
-                                if(!this.biggerThanChunk && WorldGenUtil.isPosAChunkFar(pos,this.getPos())) this.biggerThanChunk = true;
+                                if (!this.biggerThanChunk && WorldGenUtil.isPosAChunkFar(pos, this.getPos()))
+                                    this.biggerThanChunk = true;
                                 WorldGenUtil.modifyChunkMap(pos, chunkMap);
                             }
                         }
@@ -313,7 +343,8 @@ public class TorusGen extends FillableShape {
                 for (int v = 0; v <= this.horizontalTorus * 360; v += 45 / maxinnerRadius) {
                     Vec3d vec = this.getEllipsoidalToreCoordinates(u, v);
                     BlockPos pos = new BlockPos((int) (getPos().getX() + vec.x), (int) (getPos().getY() + vec.y), (int) (getPos().getZ() + vec.z));
-                    if(!this.biggerThanChunk && WorldGenUtil.isPosAChunkFar(pos,this.getPos())) this.biggerThanChunk = true;
+                    if (!this.biggerThanChunk && WorldGenUtil.isPosAChunkFar(pos, this.getPos()))
+                        this.biggerThanChunk = true;
                     WorldGenUtil.modifyChunkMap(pos, chunkMap);
                 }
             }
@@ -322,7 +353,8 @@ public class TorusGen extends FillableShape {
                 for (int v = 0; v <= 360 * this.horizontalTorus; v += 45 / maxinnerRadius) {
                     Vec3d vec = this.getEllipsoidalToreCoordinates(u, v);
                     BlockPos pos = this.getCoordinatesRotation((float) vec.x, (float) vec.y, (float) vec.z, this.getPos());
-                    if(!this.biggerThanChunk && WorldGenUtil.isPosAChunkFar(pos,this.getPos())) this.biggerThanChunk = true;
+                    if (!this.biggerThanChunk && WorldGenUtil.isPosAChunkFar(pos, this.getPos()))
+                        this.biggerThanChunk = true;
                     WorldGenUtil.modifyChunkMap(pos, chunkMap);
                 }
             }

@@ -9,6 +9,7 @@ import net.minecraft.world.StructureWorldAccess;
 import net.rodofire.easierworldcreator.shapeutil.BlockLayer;
 import net.rodofire.easierworldcreator.shapeutil.Shape;
 import net.rodofire.easierworldcreator.util.FastMaths;
+import net.rodofire.easierworldcreator.worldgenutil.FastNoiseLite;
 import net.rodofire.easierworldcreator.worldgenutil.WorldGenUtil;
 import org.jetbrains.annotations.NotNull;
 
@@ -156,21 +157,26 @@ public class SpiralGen extends Shape {
     private Pair<Integer, Integer> helicoidAngle = new Pair<>(0, 0);
 
     /**
+     * init the Spiral Shape
+     *
      * @param world           the world the spiral will spawn in
      * @param pos             the center of the spiral
-     * @param layers          a list of layers that will be used for the structure
+     * @param placeMoment     define the moment where the shape will be placed
      * @param force           boolean to force the pos of the blocks
-     * @param blocksToForce   a list of blocks that the blocks of the spiral can still force if {@code force = false}
+     * @param blocksToForce   a list of blocks that the blocks of the spiral can still force if force = false
+     * @param layerPlace      how the {@code @BlockStates} inside of a {@link BlockLayer} will be placed
+     * @param layersType      how the Layers will be placed
      * @param xrotation       first rotation around the x-axis
      * @param yrotation       second rotation around the y-axis
      * @param secondxrotation last rotation around the x-axis
-     * @param radiusx         the radius of the x-axis
-     * @param radiusz         the radius of the z-axis
+     * @param featureName     the name of the feature
+     * @param radiusx         the radius on the x-axis. The first value corresponding to the radius at the base of the spiral, the second, corresponding to the radius at the top of the spiral
+     * @param radiusz         the radius on the z-axis. The first value corresponding to the radius at the base of the spiral, the second, corresponding to the radius at the top of the spiral
      * @param height          the height of the spiral
-     * @param turnNumber      the number of turns that the structure will do before reaching the top
+     * @param turnNumber      the number of turn that the spiral will do (ex: 1 -> 1 turn, 3.5 -> 3.5 turn)
      */
-    public SpiralGen(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, PlaceMoment placeMoment, List<BlockLayer> layers, boolean force, List<Block> blocksToForce, int xrotation, int yrotation, int secondxrotation, Pair<Integer, Integer> radiusx, Pair<Integer, Integer> radiusz, int height, float turnNumber) {
-        super(world, pos, placeMoment, layers, force, blocksToForce, xrotation, yrotation, secondxrotation);
+    public SpiralGen(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, PlaceMoment placeMoment, boolean force, List<Block> blocksToForce, LayerPlace layerPlace, LayersType layersType, int xrotation, int yrotation, int secondxrotation, String featureName, Pair<Integer, Integer> radiusx, Pair<Integer, Integer> radiusz, int height, float turnNumber) {
+        super(world, pos, placeMoment, force, blocksToForce, layerPlace, layersType, xrotation, yrotation, secondxrotation, featureName);
         this.radiusx = radiusx;
         this.radiusz = radiusz;
         this.height = height;
@@ -178,10 +184,11 @@ public class SpiralGen extends Shape {
     }
 
     /**
-     * @param world  the world the spiral will spawn in
-     * @param pos    the center of the spiral
-     * @param radius the radius of the spiral
-     * @param height the height of the spiral
+     * @param world       the world the spiral will spawn in
+     * @param pos         the center of the spiral
+     * @param placeMoment define the moment where the shape will be placed
+     * @param radius      the radius of the spiral
+     * @param height      the height of the spiral
      */
     public SpiralGen(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, PlaceMoment placeMoment, int radius, int height) {
         super(world, pos, placeMoment);
@@ -357,7 +364,8 @@ public class SpiralGen extends Shape {
                 int z = (int) (radiusz * FastMaths.getFastSin(a * i + offset));
                 int y = (int) (i / f);
                 BlockPos pos1 = new BlockPos(pos.getX() + x, pos.getY() + y, pos.getZ() + z);
-                if(!this.biggerThanChunk && WorldGenUtil.isPosAChunkFar(pos1,this.getPos())) this.biggerThanChunk = true;
+                if (!this.biggerThanChunk && WorldGenUtil.isPosAChunkFar(pos1, this.getPos()))
+                    this.biggerThanChunk = true;
                 WorldGenUtil.modifyChunkMap(pos1, chunkMap);
             }
         } else {
@@ -369,7 +377,8 @@ public class SpiralGen extends Shape {
                 float z = (float) (radiusz * FastMaths.getFastSin(a * i + offset));
                 float y = (float) (i / f);
                 BlockPos pos2 = this.getCoordinatesRotation(x, y, z, pos);
-                if(!this.biggerThanChunk && WorldGenUtil.isPosAChunkFar(pos2,this.getPos())) this.biggerThanChunk = true;
+                if (!this.biggerThanChunk && WorldGenUtil.isPosAChunkFar(pos2, this.getPos()))
+                    this.biggerThanChunk = true;
                 WorldGenUtil.modifyChunkMap(pos2, chunkMap);
             }
         }
@@ -392,7 +401,7 @@ public class SpiralGen extends Shape {
             double x = outlineRadiusx * FastMaths.getFastCos(i);
             double z = outlineRadiusz * FastMaths.getFastSin(i);
             BlockPos pos = WorldGenUtil.getCoordinatesRotation((float) x, (float) 0, (float) z, 1, 0, cosy, siny, 1, 0, this.getPos());
-            if(!this.biggerThanChunk && WorldGenUtil.isPosAChunkFar(pos,this.getPos())) this.biggerThanChunk = true;
+            if (!this.biggerThanChunk && WorldGenUtil.isPosAChunkFar(pos, this.getPos())) this.biggerThanChunk = true;
             this.generateElipsoidSpiral(pos, chunkMap);
         }
     }
@@ -443,7 +452,8 @@ public class SpiralGen extends Shape {
                     if (bl) {
                         int y = (int) ((int) (i / f) + distance * FastMaths.getFastSin(helicoidAngle));
                         BlockPos pos = new BlockPos((int) (this.getPos().getX() + x), this.getPos().getY() + y, (int) (this.getPos().getZ() + z));
-                        if(!this.biggerThanChunk && WorldGenUtil.isPosAChunkFar(pos,this.getPos())) this.biggerThanChunk = true;
+                        if (!this.biggerThanChunk && WorldGenUtil.isPosAChunkFar(pos, this.getPos()))
+                            this.biggerThanChunk = true;
                         WorldGenUtil.modifyChunkMap(pos, chunkMap);
                     }
                 }
@@ -483,7 +493,8 @@ public class SpiralGen extends Shape {
                     if (bl) {
                         int y = (int) ((int) (i / f) + distance * FastMaths.getFastSin(helicoidAngle));
                         BlockPos pos = this.getCoordinatesRotation(x, y, z, this.getPos());
-                        if(!this.biggerThanChunk && WorldGenUtil.isPosAChunkFar(pos,this.getPos())) this.biggerThanChunk = true;
+                        if (!this.biggerThanChunk && WorldGenUtil.isPosAChunkFar(pos, this.getPos()))
+                            this.biggerThanChunk = true;
                         WorldGenUtil.modifyChunkMap(pos, chunkMap);
                     }
                 }

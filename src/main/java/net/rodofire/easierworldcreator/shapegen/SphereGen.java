@@ -11,6 +11,7 @@ import net.rodofire.easierworldcreator.shapeutil.BlockLayer;
 import net.rodofire.easierworldcreator.shapeutil.FillableShape;
 import net.rodofire.easierworldcreator.shapeutil.Shape;
 import net.rodofire.easierworldcreator.util.FastMaths;
+import net.rodofire.easierworldcreator.worldgenutil.FastNoiseLite;
 import net.rodofire.easierworldcreator.worldgenutil.WorldGenUtil;
 import org.jetbrains.annotations.NotNull;
 
@@ -78,51 +79,41 @@ public class SphereGen extends FillableShape {
 
 
     /**
-     * init the shape generation
+     * init the Sphere Shape
      *
-     * @param world     the world the shape will be generated
-     * @param pos       the pos of the structure center
-     * @param radiusx   the radius along the x-axis
-     * @param radiusy   the radius along the y-axis
-     * @param radiusz   the radius along the z axis
-     * @param xrotation the rotation along the x-axis
-     * @param yrotation the rotation along the y-axis
+     * @param world           the world the spiral will spawn in
+     * @param pos             the center of the spiral
+     * @param placeMoment     define the moment where the shape will be placed
+     * @param force           boolean to force the pos of the blocks
+     * @param blocksToForce   a list of blocks that the blocks of the spiral can still force if force = false
+     * @param layerPlace      how the {@code @BlockStates} inside of a {@link BlockLayer} will be placed
+     * @param layersType      how the Layers will be placed
+     * @param xrotation       first rotation around the x-axis
+     * @param yrotation       second rotation around the y-axis
+     * @param secondxrotation last rotation around the x-axis
+     * @param featureName     the name of the feature
+     * @param radiusx         the radius on the x-axis
+     * @param radiusy         the radius on the y-axis
+     * @param radiusz         the radius on the z-axis
+     * @param halfSphere      determines if the sphere is half or not
      */
-    public SphereGen(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, int radiusx, List<BlockLayer> layers, int radiusy, int radiusz, int xrotation, int yrotation, int seconxrotation, boolean force, List<Block> blockToForce, SphereType halfSphere, Direction direction, PlaceMoment placeMoment) {
-        super(world, pos, placeMoment, layers, force, blockToForce, xrotation, yrotation, seconxrotation);
+    public SphereGen(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, PlaceMoment placeMoment, boolean force, List<Block> blocksToForce, LayerPlace layerPlace, LayersType layersType, int xrotation, int yrotation, int secondxrotation, String featureName, int radiusx, int radiusy, int radiusz, SphereType halfSphere) {
+        super(world, pos, placeMoment, force, blocksToForce, layerPlace, layersType, xrotation, yrotation, secondxrotation, featureName);
         this.radiusx = radiusx;
         this.radiusy = radiusy;
         this.radiusz = radiusz;
         this.halfSphere = halfSphere;
-        this.direction = direction;
     }
 
     /**
      * init the shape generation
      *
-     * @param world  the world the shape will be generated
-     * @param pos    the pos of the structure center
-     * @param radius the radius of the sphere
+     * @param world       the world the shape will be generated
+     * @param pos         the pos of the structure center
+     * @param placeMoment define the moment where the shape will be placed
+     * @param radius      the radius of the sphere
      */
     public SphereGen(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, PlaceMoment placeMoment, int radius) {
-        super(world, pos, placeMoment);
-        this.radiusx = radius;
-        this.radiusy = radius;
-        this.radiusz = radius;
-    }
-
-    /**
-     * init the shape generation
-     *
-     * @param world  the world the shape will be generated
-     * @param pos    the pos of the structure center
-     * @param radius the radius of the sphere
-     */
-    @Deprecated(forRemoval = true)
-    /**
-     * will be removed and replaced by a more consistent way of placing placemoment
-     */
-    public SphereGen(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, int radius, PlaceMoment placeMoment) {
         super(world, pos, placeMoment);
         this.radiusx = radius;
         this.radiusy = radius;
@@ -272,17 +263,13 @@ public class SphereGen extends FillableShape {
     public void generateHalfFullElipsoid(Map<ChunkPos, Set<BlockPos>> chunkMap) {
         if (direction == Direction.UP) {
             this.generateFullEllipsoid(-radiusx, radiusx, 0, radiusy, -radiusz, radiusz, chunkMap);
-        }
-        else if (direction == Direction.DOWN) {
+        } else if (direction == Direction.DOWN) {
             this.generateFullEllipsoid(-radiusx, radiusx, -radiusy, 0, -radiusz, radiusz, chunkMap);
-        }
-        else if (direction == Direction.WEST) {
+        } else if (direction == Direction.WEST) {
             this.generateFullEllipsoid(0, radiusx, -radiusy, radiusy, -radiusz, radiusz, chunkMap);
-        }
-        else if (direction == Direction.EAST) {
+        } else if (direction == Direction.EAST) {
             this.generateFullEllipsoid(-radiusx, 0, -radiusy, radiusy, -radiusz, radiusz, chunkMap);
-        }
-        else if (direction == Direction.NORTH) {
+        } else if (direction == Direction.NORTH) {
             this.generateFullEllipsoid(-radiusx, radiusx, -radiusy, radiusy, -radiusz, 0, chunkMap);
         } else {
             this.generateFullEllipsoid(-radiusx, radiusx, -radiusy, radiusy, 0, radiusz, chunkMap);

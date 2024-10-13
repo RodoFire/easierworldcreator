@@ -1,5 +1,6 @@
 package net.rodofire.easierworldcreator.shapegen;
 
+import net.minecraft.block.Block;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.Vec3d;
@@ -132,18 +133,37 @@ public class CylinderGen extends FillableShape {
     private int radiusz;
     private int height;
 
-    public CylinderGen(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, PlaceMoment placeMoment, int radius, int height) {
-        super(world, pos, placeMoment);
-        this.radiusx = radius;
-        this.radiusz = radius;
+    /**
+     * @param world           the world the spiral will spawn in
+     * @param pos             the center of the spiral
+     * @param placeMoment     define the moment where the shape will be placed
+     * @param force           boolean to force the pos of the blocks
+     * @param blocksToForce   a list of blocks that the blocks of the spiral can still force if force = false
+     * @param layerPlace      how the {@code @BlockStates} inside of a {@code BlockLayer} will be placed
+     * @param layersType      how the Layers will be placed
+     * @param xrotation       first rotation around the x-axis
+     * @param yrotation       second rotation around the y-axis
+     * @param secondxrotation last rotation around the x-axis
+     * @param featureName     the name of the feature
+     * @param radiusx         the radius of the cylinder on the x-axis
+     * @param radiusz         the radius of the cylinder on the z-axis
+     * @param height          the height of the cylinder
+     */
+    public CylinderGen(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, PlaceMoment placeMoment, boolean force, List<Block> blocksToForce, LayerPlace layerPlace, LayersType layersType, int xrotation, int yrotation, int secondxrotation, String featureName, int radiusx, int radiusz, int height) {
+        super(world, pos, placeMoment, force, blocksToForce, layerPlace, layersType, xrotation, yrotation, secondxrotation, featureName);
+        this.radiusx = radiusx;
+        this.radiusz = radiusz;
         this.height = height;
     }
 
-    @Deprecated(forRemoval = true)
     /**
-     * will be removed and replaced by a more consistent way of placing placemoment
+     * @param world       the world the spiral will spawn in
+     * @param pos         the center of the spiral
+     * @param placeMoment define the moment where the shape will be placed
+     * @param radius      the radius of the cylinder
+     * @param height      the height of the cylinder
      */
-    public CylinderGen(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, int radius, int height, PlaceMoment placeMoment) {
+    public CylinderGen(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, PlaceMoment placeMoment, int radius, int height) {
         super(world, pos, placeMoment);
         this.radiusx = radius;
         this.radiusz = radius;
