@@ -76,10 +76,22 @@ public abstract class Shape extends ShapeRotation {
      * Any changes done after this moment will not be taken in count except if you place another shape later
      */
     public void place() throws IOException {
+        if(this.getBlockLayers().isEmpty()) {
+            Easierworldcreator.LOGGER.warn("shape not placed, no BlockLayer present");
+            return;
+        }
         long start = System.nanoTime();
         List<Set<BlockPos>> posList = this.getBlockPos();
         long end = System.nanoTime();
         long diff = end - start;
+        Easierworldcreator.LOGGER.info("Shape coordinate calculations took : " + ((double) (diff / 1000)) / 1000 + "ms");
+        start = System.nanoTime();
+        for(Set<BlockPos> pos : posList){
+            this.getLayers(pos);
+        }
+
+        end = System.nanoTime();
+        diff = end - start;
         Easierworldcreator.LOGGER.info("Shape coordinate calculations took : " + ((double) (diff / 1000)) / 1000 + "ms");
         place(posList);
     }
