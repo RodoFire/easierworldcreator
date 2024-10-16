@@ -1,9 +1,12 @@
 package net.rodofire.easierworldcreator.shapeutil;
 
+import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Represents a layer in a structure.
@@ -15,9 +18,64 @@ import java.util.List;
  * The depth should never be less than 0.
  * There is no benefit to having a depth equal to 0.
  */
+@SuppressWarnings("unused")
 public class BlockLayer {
-    private List<BlockState> blocks;
+    private List<BlockState> blockStates;
     private int depth = 1;
+    private Set<Block> blocksToForce;
+    private boolean force;
+
+    /**
+     * init the BlockLayer
+     *
+     * @param states        list of BlockStates
+     * @param depth         depth of the BlockStates
+     * @param blocksToForce list of blocks that can be forced by any blockStates of this posList
+     */
+    public BlockLayer(List<BlockState> states, int depth, Set<Block> blocksToForce) {
+        this.blockStates = new ArrayList<>();
+        this.blockStates.addAll(states);
+        this.depth = depth;
+        this.blocksToForce = new HashSet<>(blocksToForce);
+    }
+
+    /**
+     * init the BlockLayer
+     *
+     * @param states list of BlockStates
+     * @param force  set if any block can be replaced by any blockState in this BlockList
+     */
+    public BlockLayer(List<BlockState> states, boolean force) {
+        this.blockStates = new ArrayList<>();
+        this.blockStates.addAll(states);
+        this.force = force;
+    }
+
+    /**
+     * init the BlockLayer
+     *
+     * @param state         if the layer is only composed of one BlockState, you don't necessary need to create a list (created automatically)
+     * @param depth         list of BlockStates
+     * @param blocksToForce list of blocks that can be forced by any blockStates of this posList
+     */
+    public BlockLayer(BlockState state, int depth, Set<Block> blocksToForce) {
+        this.blockStates = new ArrayList<>();
+        this.blockStates.add(state);
+        this.depth = depth;
+        this.blocksToForce = new HashSet<>(blocksToForce);
+    }
+
+    /**
+     * init the BlockLayer
+     *
+     * @param state if the layer is only composed of one BlockState, you don't necessary need to create a list (created automatically)
+     * @param force set if any block can be replaced by any blockState in this BlockList
+     */
+    public BlockLayer(BlockState state, boolean force) {
+        this.blockStates = new ArrayList<>();
+        this.blockStates.add(state);
+        this.force = force;
+    }
 
     /**
      * init the BlockLayer
@@ -26,8 +84,8 @@ public class BlockLayer {
      * @param depth  depth of the BlockStates
      */
     public BlockLayer(List<BlockState> states, int depth) {
-        this.blocks = new ArrayList<>();
-        this.blocks.addAll(states);
+        this.blockStates = new ArrayList<>();
+        this.blockStates.addAll(states);
         this.depth = depth;
     }
 
@@ -37,8 +95,8 @@ public class BlockLayer {
      * @param states list of BlockStates
      */
     public BlockLayer(List<BlockState> states) {
-        this.blocks = new ArrayList<>();
-        this.blocks.addAll(states);
+        this.blockStates = new ArrayList<>();
+        this.blockStates.addAll(states);
     }
 
     /**
@@ -48,8 +106,8 @@ public class BlockLayer {
      * @param depth list of BlockStates
      */
     public BlockLayer(BlockState state, int depth) {
-        this.blocks = new ArrayList<BlockState>();
-        this.blocks.add(state);
+        this.blockStates = new ArrayList<>();
+        this.blockStates.add(state);
         this.depth = depth;
     }
 
@@ -59,8 +117,8 @@ public class BlockLayer {
      * @param state if the layer is only composed of one BlockState, you don't necessary need to create a list (created automatically)
      */
     public BlockLayer(BlockState state) {
-        this.blocks = new ArrayList<>();
-        this.blocks.add(state);
+        this.blockStates = new ArrayList<>();
+        this.blockStates.add(state);
     }
 
     /**
@@ -96,7 +154,7 @@ public class BlockLayer {
      * @return the blockStates list of the layer
      */
     public List<BlockState> getBlockStates() {
-        return blocks;
+        return blockStates;
     }
 
     /**
@@ -105,7 +163,7 @@ public class BlockLayer {
      * @param blocks change the BlockStates of a layer
      */
     public void setBlockStates(List<BlockState> blocks) {
-        this.blocks = blocks;
+        this.blockStates = blocks;
     }
 
     /**
@@ -114,7 +172,7 @@ public class BlockLayer {
      * @param state BlockState to be added
      */
     public void addBlockState(BlockState state) {
-        this.blocks.add(state);
+        this.blockStates.add(state);
     }
 
     /**
@@ -123,7 +181,7 @@ public class BlockLayer {
      * @param states List of BlockState to be added
      */
     public void addBlockStates(List<BlockState> states) {
-        this.blocks.addAll(states);
+        this.blockStates.addAll(states);
     }
 
     /**
@@ -132,7 +190,7 @@ public class BlockLayer {
      * @param state list of BlockStates that will be removed
      */
     public void removeBlockState(List<BlockState> state) {
-        this.blocks.removeAll(state);
+        this.blockStates.removeAll(state);
     }
 
     /**
@@ -141,7 +199,7 @@ public class BlockLayer {
      * @param state BlockState that will be removed
      */
     public void removeBlockState(BlockState state) {
-        this.blocks.remove(state);
+        this.blockStates.remove(state);
     }
 
     /**
@@ -150,7 +208,7 @@ public class BlockLayer {
      * @param index remove the BlockState at the index
      */
     public void removeBlockState(int index) {
-        this.blocks.remove(index);
+        this.blockStates.remove(index);
     }
 
     /**
@@ -159,13 +217,86 @@ public class BlockLayer {
      * @return the size of the BlockStates
      */
     public int size() {
-        return blocks.size();
+        return blockStates.size();
+    }
+
+
+    /**
+     * gives you the Set of every blocks that can be forced
+     *
+     * @return the set of the blocks that can be forced
+     */
+    public Set<Block> getBlocksToForce() {
+        return blocksToForce;
+    }
+
+    /**
+     * sets all the blocks that can be forced in the case force == false
+     *
+     * @param blocksToForce the set of blocks that can be forced
+     */
+    public void setBlocksToForce(Set<Block> blocksToForce) {
+        this.blocksToForce = new HashSet<>(blocksToForce);
+    }
+
+    /**
+     * add a block to the set
+     *
+     * @param block the block added
+     */
+    public void addBlocksToForce(Block block) {
+        blocksToForce.add(block);
+    }
+
+    /**
+     * add a set of blocks to the set
+     *
+     * @param blocksToForce the set that will be added
+     */
+    public void addBlocksToForce(Set<Block> blocksToForce) {
+        this.blocksToForce.addAll(blocksToForce);
+    }
+
+    /**
+     * remove a block to the set
+     *
+     * @param block the block removed
+     */
+    public void removeBlocksToForce(Block block) {
+        blocksToForce.remove(block);
+    }
+
+    /**
+     * remove a set of blocks to the set
+     *
+     * @param blocksToForce the set that will be removed
+     */
+    public void removeBlocksToForce(Set<Block> blocksToForce) {
+        this.blocksToForce.removeAll(blocksToForce);
+    }
+
+    /**
+     * get if any block can be replaced by any BlockState of this blockList
+     *
+     * @return the boolean related to it
+     */
+    public boolean isForce() {
+        return force;
+    }
+
+    /**
+     * sets if any block can be replaced by any BlockState of this blockList
+     *
+     * @param force the boolean used
+     */
+    public void setForce(boolean force) {
+        this.force = force;
     }
 
     @Override
     public String toString() {
         return "BlockLayer{" +
-                "blocks=" + blocks +
+                "blocks=" + blockStates +
                 ", depth=" + depth +
                 '}';
     }
