@@ -28,13 +28,14 @@ public abstract class ShapeLayer extends ShapePlaceType {
 
     /**
      * init the ShapeLayer
-     * @param world           the world the spiral will spawn in
-     * @param pos             the center of the spiral
-     * @param placeMoment     define the moment where the shape will be placed
-     * @param force           boolean to force the pos of the blocks
-     * @param blocksToForce   a list of blocks that the blocks of the spiral can still force if force = false
-     * @param layerPlace      how the {@code @BlockStates} inside of a {@link BlockLayer} will be placed
-     * @param layersType      how the Layers will be placed
+     *
+     * @param world         the world the spiral will spawn in
+     * @param pos           the center of the spiral
+     * @param placeMoment   define the moment where the shape will be placed
+     * @param force         boolean to force the pos of the blocks
+     * @param blocksToForce a list of blocks that the blocks of the spiral can still force if force = false
+     * @param layerPlace    how the {@code @BlockStates} inside of a {@link BlockLayer} will be placed
+     * @param layersType    how the Layers will be placed
      */
     public ShapeLayer(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, @NotNull PlaceMoment placeMoment, boolean force, List<Block> blocksToForce, LayerPlace layerPlace, LayersType layersType) {
         super(world, pos, placeMoment, force, blocksToForce, layerPlace);
@@ -128,6 +129,13 @@ public abstract class ShapeLayer extends ShapePlaceType {
      */
     public Set<BlockList> getLayers(Set<BlockPos> firstposlist) {
         Set<BlockList> blockLists = new HashSet<>();
+        if (this.getBlockLayers().size() == 1) {
+            List<BlockState> states = this.getBlockLayers().get(0).getBlockStates();
+            for (BlockPos pos : firstposlist) {
+                verifyForBlockLayer(pos, states, blockLists);
+            }
+            return blockLists;
+        }
         switch (layersType) {
             case SURFACE -> {
                 Set<BlockPos> poslist = firstposlist; // Use a copy here
@@ -177,7 +185,13 @@ public abstract class ShapeLayer extends ShapePlaceType {
      * @param firstposlist list of BlockPos of the structure
      */
     public void placeLayers(Set<BlockPos> firstposlist) {
-
+        if (this.getBlockLayers().size() == 1) {
+            List<BlockState> states = this.getBlockLayers().get(0).getBlockStates();
+            for (BlockPos pos : firstposlist) {
+                placeBlocksWithVerification(states, pos);
+            }
+            return;
+        }
         switch (layersType) {
             case SURFACE -> {
                 Set<BlockPos> poslist = new HashSet<>();
