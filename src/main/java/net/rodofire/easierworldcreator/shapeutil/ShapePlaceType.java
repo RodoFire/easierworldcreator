@@ -20,18 +20,26 @@ public abstract class ShapePlaceType extends ShapeBase {
 
     /**
      * init the ShapePlaceType
-     * @param world           the world the spiral will spawn in
-     * @param pos             the center of the spiral
-     * @param placeMoment     define the moment where the shape will be placed
-     * @param force           boolean to force the pos of the blocks
-     * @param blocksToForce   a list of blocks that the blocks of the spiral can still force if force = false
-     * @param layerPlace      how the {@code @BlockStates} inside of a {@link BlockLayer} will be placed
+     *
+     * @param world         the world the spiral will spawn in
+     * @param pos           the center of the spiral
+     * @param placeMoment   define the moment where the shape will be placed
+     * @param force         boolean to force the pos of the blocks
+     * @param blocksToForce a list of blocks that the blocks of the spiral can still force if force = false
+     * @param layerPlace    how the {@code @BlockStates} inside of a {@link BlockLayer} will be placed
      */
     public ShapePlaceType(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, @NotNull PlaceMoment placeMoment, boolean force, List<Block> blocksToForce, LayerPlace layerPlace) {
         super(world, pos, placeMoment, force, blocksToForce);
         this.layerPlace = layerPlace;
     }
 
+    /**
+     * init the ShapePlaceType
+     *
+     * @param world       the world of the shape
+     * @param pos         the pos of the shape (usually the center of the structure)
+     * @param placeMoment define the moment where the shape will be placed
+     */
     public ShapePlaceType(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, @NotNull PlaceMoment placeMoment) {
         super(world, pos, placeMoment);
     }
@@ -65,8 +73,12 @@ public abstract class ShapePlaceType extends ShapeBase {
     }
 
 
-
-    //place blocks without verification
+    /**
+     * place blocks without verification
+     *
+     * @param index the index of the the {@link  BlockLayer}
+     * @param pos   the pos of the block
+     */
     public void placeBlocks(int index, BlockPos pos) {
         switch (this.layerPlace) {
             case RANDOM:
@@ -85,7 +97,12 @@ public abstract class ShapePlaceType extends ShapeBase {
         }
     }
 
-    //Place blocks without verification. Used for precomputed List<BlockStates> instead of searching it on the BlockLayer
+    /**
+     * Place blocks without verification. Used for precomputed List<BlockStates> instead of searching it on the BlockLayer
+     *
+     * @param states states the states that will be choosed
+     * @param pos    the pos of the block
+     */
     public void placeBlocks(List<BlockState> states, BlockPos pos) {
         switch (this.layerPlace) {
             case RANDOM:
@@ -150,7 +167,13 @@ public abstract class ShapePlaceType extends ShapeBase {
 
     }
 
-    //Used to get the blocksState notably used during this.getWorld() gen, this doesn't place anything
+    /**
+     * Used to get the blocksState notably used during this.getWorld() gen, this doesn't place anything
+     *
+     * @param index the index of the the {@link  BlockLayer}
+     * @param pos   the pos of the block
+     * @return the BlockState related to the pos
+     */
     public BlockState getBlockToPlace(int index, BlockPos pos) {
         switch (this.layerPlace) {
             case RANDOM:
@@ -166,8 +189,14 @@ public abstract class ShapePlaceType extends ShapeBase {
         }
     }
 
-    //Used to get the blocksState notably used during this.getWorld() gen, this doesn't place anything
-    //Used for precomputed BlockState list
+    /**
+     * Used to get the blocksState notably used during this.getWorld() gen, this doesn't place anything
+     * Used for precomputed BlockState list
+     *
+     * @param states the states that will be choosed
+     * @param pos    the pos of the block
+     * @return the BlockState related to the pos
+     **/
     public BlockState getBlockToPlace(List<BlockState> states, BlockPos pos) {
         switch (this.layerPlace) {
             case RANDOM:
@@ -191,10 +220,14 @@ public abstract class ShapePlaceType extends ShapeBase {
      * set the type of objects that will be placed
      */
     public enum PlaceType {
-        //place blocks
+        /**
+         * place blocks
+         */
         BLOCKS,
-        //place particles
-        //particles are not implemented for the moment
+        /**
+         * place particles
+         * are not implemented for the moment
+         */
         PARTICLE
     }
 
@@ -202,13 +235,21 @@ public abstract class ShapePlaceType extends ShapeBase {
      * set how the blocks/particles will be chosen inside a layer
      */
     public enum LayerPlace {
-        //will choose random Block/Particle in the layer
+        /**
+         * will choose random Block/Particle in the layer
+         */
         RANDOM,
-        //will place the first Block/particle in the layer, then the second, then the third, in the order
+        /**
+         * will place the first Block/particle in the layer, then the second, then the third, in the order
+         */
         ORDER,
-        //will place the Block/Particle according to a 2d noise
+        /**
+         * will place the Block/Particle according to a 2d noise
+         */
         NOISE2D,
-        //will place the Block/Particle according to a 3d noise
+        /**
+         * will place the Block/Particle according to a 3d noise
+         */
         NOISE3D
     }
 }

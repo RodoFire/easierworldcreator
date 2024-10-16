@@ -30,17 +30,6 @@ public abstract class FillableShape extends Shape {
     /**
      * init the ShapeFilling
      *
-     * @param world       the world of the shape
-     * @param pos         the pos of the shape (usually the center of the structure)
-     * @param placeMoment define the moment where the shape will be placed
-     */
-    public FillableShape(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, PlaceMoment placeMoment) {
-        super(world, pos, placeMoment);
-    }
-
-    /**
-     * init the ShapeFilling
-     *
      * @param world           the world the spiral will spawn in
      * @param pos             the center of the spiral
      * @param placeMoment     define the moment where the shape will be placed
@@ -55,6 +44,17 @@ public abstract class FillableShape extends Shape {
      */
     public FillableShape(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, PlaceMoment placeMoment, boolean force, List<Block> blocksToForce, LayerPlace layerPlace, LayersType layersType, int xrotation, int yrotation, int secondxrotation, String featureName) {
         super(world, pos, placeMoment, force, blocksToForce, layerPlace, layersType, xrotation, yrotation, secondxrotation, featureName);
+    }
+
+    /**
+     * init the ShapeFilling
+     *
+     * @param world       the world of the shape
+     * @param pos         the pos of the shape (usually the center of the structure)
+     * @param placeMoment define the moment where the shape will be placed
+     */
+    public FillableShape(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, PlaceMoment placeMoment) {
+        super(world, pos, placeMoment);
     }
 
     /**

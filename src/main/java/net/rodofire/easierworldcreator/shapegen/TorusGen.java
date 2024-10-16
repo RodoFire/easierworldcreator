@@ -101,23 +101,6 @@ public class TorusGen extends FillableShape {
     /**
      * init the Torus Shape
      *
-     * @param world       the world the spiral will spawn in
-     * @param pos         the center of the spiral
-     * @param placeMoment define the moment where the shape will be placed
-     * @param innerRadius the radius of the inner circle
-     * @param outerRadius the radius of the outer circle
-     */
-    public TorusGen(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, PlaceMoment placeMoment, int innerRadius, int outerRadius) {
-        super(world, pos, placeMoment);
-        this.innerRadiusx = innerRadius;
-        this.outerRadiusx = outerRadius;
-        this.innerRadiusz = innerRadius;
-        this.outerRadiusz = outerRadius;
-    }
-
-    /**
-     * init the Torus Shape
-     *
      * @param world           the world the spiral will spawn in
      * @param pos             the center of the spiral
      * @param placeMoment     define the moment where the shape will be placed
@@ -140,6 +123,23 @@ public class TorusGen extends FillableShape {
         this.outerRadiusx = outerRadiusx;
         this.innerRadiusz = innerRadiusz;
         this.outerRadiusz = outerRadiusz;
+    }
+
+    /**
+     * init the Torus Shape
+     *
+     * @param world       the world the spiral will spawn in
+     * @param pos         the center of the spiral
+     * @param placeMoment define the moment where the shape will be placed
+     * @param innerRadius the radius of the inner circle
+     * @param outerRadius the radius of the outer circle
+     */
+    public TorusGen(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, PlaceMoment placeMoment, int innerRadius, int outerRadius) {
+        super(world, pos, placeMoment);
+        this.innerRadiusx = innerRadius;
+        this.outerRadiusx = outerRadius;
+        this.innerRadiusz = innerRadius;
+        this.outerRadiusz = outerRadius;
     }
 
     public int getInnerRadiusx() {

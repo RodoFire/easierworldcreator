@@ -41,6 +41,13 @@ public abstract class ShapeLayer extends ShapePlaceType {
         this.layersType = layersType;
     }
 
+    /**
+     * init the ShapeLayer
+     *
+     * @param world       the world of the shape
+     * @param pos         the pos of the shape (usually the center of the structure)
+     * @param placeMoment define the moment where the shape will be placed
+     */
     public ShapeLayer(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, @NotNull PlaceMoment placeMoment) {
         super(world, pos, placeMoment);
     }

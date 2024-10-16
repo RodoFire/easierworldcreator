@@ -6,11 +6,16 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.StructureWorldAccess;
 import net.rodofire.easierworldcreator.shapeutil.BlockLayer;
 import net.rodofire.easierworldcreator.shapeutil.Shape;
+import net.rodofire.easierworldcreator.shapeutil.BlockList;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 import java.util.Set;
 
+
+/**
+ * In the case you have a custom {@link BlockPos} list, or a custom {@link BlockList}, you can init the shape with this class. However don't use the {@code place()} method, use the {@code place(List<Set<BlockPos>>} or use {@code placeWBlockList(List<Set<BlockList>>)}to avoid potential problems.
+ */
 public class DefaultShapeGen extends Shape {
 
     /**

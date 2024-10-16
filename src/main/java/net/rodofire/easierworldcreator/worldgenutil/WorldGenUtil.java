@@ -250,12 +250,10 @@ public class WorldGenUtil {
      * @param posList
      * @return
      */
-    public static List<List<BlockPos>> divideBlockPosIntoChunk(List<BlockPos> posList){
-        Map<ChunkPos, List<BlockPos>> chunkMap = new HashMap<>();
+    public static List<Set<BlockPos>> divideBlockPosIntoChunk(List<BlockPos> posList){
+        Map<ChunkPos, Set<BlockPos>> chunkMap = new HashMap<>();
         for (BlockPos pos : posList){
-            ChunkPos chunkPos = new ChunkPos(pos);
-            List<BlockPos> blockPosInChunk = chunkMap.computeIfAbsent(chunkPos, k -> new ArrayList<>());
-            blockPosInChunk.add(pos);
+            modifyChunkMap(pos, chunkMap);
         }
         return new ArrayList<>(chunkMap.values());
     }
@@ -264,16 +262,5 @@ public class WorldGenUtil {
         ChunkPos chunkPos = new ChunkPos(pos);
         Set<BlockPos> blockPosInChunk = chunkMap.computeIfAbsent(chunkPos, k -> new HashSet<>());
         blockPosInChunk.add(pos);
-    }
-
-    @Deprecated(forRemoval = true)
-    /**
-     * Method to verify if a chunk has been generated. This method could be useful for generating multi-chunk shapes
-     * @param world the world of the chunk
-     * @param chunkPos the pos of the chunk
-     * @return a {@link Boolean} that says if the chunk was generated
-     */
-    public static boolean isChunkGenerated(StructureWorldAccess world, ChunkPos chunkPos) {
-        return world.getChunkManager().getChunk(chunkPos.x, chunkPos.z, ChunkStatus.FULL, false) != null;
     }
 }
