@@ -1,6 +1,5 @@
 package net.rodofire.easierworldcreator.shapegen;
 
-import net.minecraft.block.Block;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.Vec3d;
@@ -9,7 +8,6 @@ import net.rodofire.easierworldcreator.shapeutil.BlockLayer;
 import net.rodofire.easierworldcreator.shapeutil.FillableShape;
 import net.rodofire.easierworldcreator.shapeutil.Shape;
 import net.rodofire.easierworldcreator.util.FastMaths;
-import net.rodofire.easierworldcreator.worldgenutil.FastNoiseLite;
 import net.rodofire.easierworldcreator.worldgenutil.WorldGenUtil;
 import org.jetbrains.annotations.NotNull;
 
@@ -81,15 +79,16 @@ import java.util.*;
  * <p>Since 2.1.0, the shape doesn't return a {@link List<BlockPos>} but it returns instead a {@code List<Set<BlockPos>>}
  * <p>Before 2.1.0, the BlockPos list was a simple list.
  * <p>Starting from 2.1.0, the shapes returns a list of {@link ChunkPos} that has a set of {@link BlockPos}
- * <p>The change from {@link List} to {@link Set} was done to avoid duplicates BlockPos wich resulted in unnecessary calculations.
+ * <p>The change from {@link List} to {@link Set} was done to avoid duplicates BlockPos which resulted in unnecessary calculations.
  * <p>this allow easy multithreading for the Block assignment done in the {@link Shape} which result in better performance;
  * </p>
  */
+@SuppressWarnings("unused")
 public class TorusGen extends FillableShape {
-    private int innerRadiusx;
-    private int outerRadiusx;
-    private int innerRadiusz;
-    private int outerRadiusz;
+    private int innerRadiusX;
+    private int outerRadiusX;
+    private int innerRadiusZ;
+    private int outerRadiusZ;
 
     //set the shape of the torus
     private TorusType torusType = TorusType.FULL;
@@ -104,25 +103,23 @@ public class TorusGen extends FillableShape {
      * @param world           the world the spiral will spawn in
      * @param pos             the center of the spiral
      * @param placeMoment     define the moment where the shape will be placed
-     * @param force           boolean to force the pos of the blocks
-     * @param blocksToForce   a list of blocks that the blocks of the spiral can still force if force = false
      * @param layerPlace      how the {@code @BlockStates} inside of a {@link BlockLayer} will be placed
      * @param layersType      how the Layers will be placed
-     * @param xrotation       first rotation around the x-axis
-     * @param yrotation       second rotation around the y-axis
-     * @param secondxrotation last rotation around the x-axis
+     * @param xRotation       first rotation around the x-axis
+     * @param yRotation       second rotation around the y-axis
+     * @param secondXRotation last rotation around the x-axis
      * @param featureName     the name of the feature
-     * @param innerRadiusx    the radius of the inner circle on the x-axis
-     * @param outerRadiusx    the radius of the outer circle on the x-axis
-     * @param innerRadiusz    the radius of the inner circle on the z-axis
-     * @param outerRadiusz    the radius of the outer circle on the zaxis
+     * @param innerRadiusX    the radius of the inner circle on the x-axis
+     * @param outerRadiusX    the radius of the outer circle on the x-axis
+     * @param innerRadiusZ    the radius of the inner circle on the z-axis
+     * @param outerRadiusZ    the radius of the outer circle on the z-axis
      */
-    public TorusGen(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, PlaceMoment placeMoment, boolean force, List<Block> blocksToForce, LayerPlace layerPlace, LayersType layersType, int xrotation, int yrotation, int secondxrotation, String featureName, int innerRadiusx, int outerRadiusx, int innerRadiusz, int outerRadiusz) {
-        super(world, pos, placeMoment, force, blocksToForce, layerPlace, layersType, xrotation, yrotation, secondxrotation, featureName);
-        this.innerRadiusx = innerRadiusx;
-        this.outerRadiusx = outerRadiusx;
-        this.innerRadiusz = innerRadiusz;
-        this.outerRadiusz = outerRadiusz;
+    public TorusGen(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, PlaceMoment placeMoment, LayerPlace layerPlace, LayersType layersType, int xRotation, int yRotation, int secondXRotation, String featureName, int innerRadiusX, int outerRadiusX, int innerRadiusZ, int outerRadiusZ) {
+        super(world, pos, placeMoment, layerPlace, layersType, xRotation, yRotation, secondXRotation, featureName);
+        this.innerRadiusX = innerRadiusX;
+        this.outerRadiusX = outerRadiusX;
+        this.innerRadiusZ = innerRadiusZ;
+        this.outerRadiusZ = outerRadiusZ;
     }
 
     /**
@@ -136,42 +133,42 @@ public class TorusGen extends FillableShape {
      */
     public TorusGen(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, PlaceMoment placeMoment, int innerRadius, int outerRadius) {
         super(world, pos, placeMoment);
-        this.innerRadiusx = innerRadius;
-        this.outerRadiusx = outerRadius;
-        this.innerRadiusz = innerRadius;
-        this.outerRadiusz = outerRadius;
+        this.innerRadiusX = innerRadius;
+        this.outerRadiusX = outerRadius;
+        this.innerRadiusZ = innerRadius;
+        this.outerRadiusZ = outerRadius;
     }
 
-    public int getInnerRadiusx() {
-        return innerRadiusx;
+    public int getInnerRadiusX() {
+        return innerRadiusX;
     }
 
-    public void setInnerRadiusx(int innerRadiusx) {
-        this.innerRadiusx = innerRadiusx;
+    public void setInnerRadiusX(int innerRadiusX) {
+        this.innerRadiusX = innerRadiusX;
     }
 
-    public int getOuterRadiusx() {
-        return outerRadiusx;
+    public int getOuterRadiusX() {
+        return outerRadiusX;
     }
 
-    public void setOuterRadiusx(int outerRadiusx) {
-        this.outerRadiusx = outerRadiusx;
+    public void setOuterRadiusX(int outerRadiusX) {
+        this.outerRadiusX = outerRadiusX;
     }
 
-    public int getInnerRadiusz() {
-        return innerRadiusz;
+    public int getInnerRadiusZ() {
+        return innerRadiusZ;
     }
 
-    public void setInnerRadiusz(int innerRadiusz) {
-        this.innerRadiusz = innerRadiusz;
+    public void setInnerRadiusZ(int innerRadiusZ) {
+        this.innerRadiusZ = innerRadiusZ;
     }
 
-    public int getOuterRadiusz() {
-        return outerRadiusz;
+    public int getOuterRadiusZ() {
+        return outerRadiusZ;
     }
 
-    public void setOuterRadiusz(int outerRadiusz) {
-        this.outerRadiusz = outerRadiusz;
+    public void setOuterRadiusZ(int outerRadiusZ) {
+        this.outerRadiusZ = outerRadiusZ;
     }
 
 
@@ -188,7 +185,7 @@ public class TorusGen extends FillableShape {
     }
 
     public void setVerticalTorus(float verticalTorus) {
-        verticalTorus = verticalTorus;
+        this.verticalTorus = verticalTorus;
     }
 
     public float getHorizontalTorus() {
@@ -196,7 +193,7 @@ public class TorusGen extends FillableShape {
     }
 
     public void setHorizontalTorus(float horizontalTorus) {
-        horizontalTorus = horizontalTorus;
+        this.horizontalTorus = horizontalTorus;
     }
 
     @Override
@@ -226,38 +223,38 @@ public class TorusGen extends FillableShape {
         List<BlockPos> poslist = new ArrayList<>();
 
         //TODO fix
-        //float innerRadiusXSquared = (1 - this.getCustomFill()) * (1 - this.getCustomFill()) * radiusx * radiusx;
-        //float innerRadiusZSquared = (1 - this.getCustomFill()) * (1 - this.getCustomFill()) * radiusz * radiusz;
+        //float innerRadiusXSquared = (1 - this.getCustomFill()) * (1 - this.getCustomFill()) * radiusX * radiusX;
+        //float innerRadiusZSquared = (1 - this.getCustomFill()) * (1 - this.getCustomFill()) * radiusZ * radiusZ;
 
 
-        int mainnerRadiusx = Math.max(innerRadiusx, innerRadiusz);
-        int maouterRadiusx = Math.max(outerRadiusx, outerRadiusz);
+        int maxInnerRadiusX = Math.max(innerRadiusX, innerRadiusZ);
+        int maxOuterRadiusX = Math.max(outerRadiusX, outerRadiusZ);
 
-        int b = maouterRadiusx + mainnerRadiusx;
+        int b = maxOuterRadiusX + maxInnerRadiusX;
 
         if ((verticalTorus == 1f && horizontalTorus == 1f && this.getXrotation() % 180 == 0 && this.getYrotation() % 180 == 0 && this.getSecondXrotation() % 180 == 0)
                 || (verticalTorus == 1f && this.getYrotation() % 180 == 0) || (horizontalTorus == 1f && this.getXrotation() % 180 == 0 && this.getSecondXrotation() % 180 == 0)) {
 
             for (int x = (-b); x <= 2 * b * this.horizontalTorus - b; x++) {
-                int xsquared = x * x;
+                int xSquared = x * x;
                 for (int z = -b; z <= b; z++) {
 
-                    int zsquared = z * z;
+                    int zSquared = z * z;
                     int angle = (int) Math.toDegrees(Math.atan2(z, x));
                     double outerRadius = getOuterRadius(angle);
                     double innerRadius = getInnerRadius(angle);
 
                     int outerRadiusSquared = (int) (outerRadius * outerRadius);
                     int innerRadiusSquared = (int) (innerRadius * innerRadius);
-                    int a1 = xsquared + zsquared + outerRadiusSquared - innerRadiusSquared;
+                    int a1 = xSquared + zSquared + outerRadiusSquared - innerRadiusSquared;
 
-                    int e = 4 * outerRadiusSquared * (xsquared + zsquared);
+                    int e = 4 * outerRadiusSquared * (xSquared + zSquared);
 
                     for (int y = -b; y <= 2 * b * this.verticalTorus - b; y++) {
-                        int ysquared = y * y;
+                        int ySquared = y * y;
 
 
-                        int a = a1 + ysquared;
+                        int a = a1 + ySquared;
 
 
                         if ((a * a) - e <= 0) {
@@ -265,12 +262,12 @@ public class TorusGen extends FillableShape {
                             /*if (innerRadiusXSquared != 0) {
                                 float innerXSquared = x * x / innerRadiusXSquared;
                                 float innerZSquared = z * z / innerRadiusZSquared;
-                                if (innerXSquared + innerZSquared <= 1f) { // pas dans l'ovale intérieur
+                                if (innerXSquared + innerZSquared <= 1f) {
                                     bl = false;
                                 }
                             }*/
                             if (bl) {
-                                BlockPos pos = new BlockPos((int) (this.getPos().getX() + x), (int) (this.getPos().getY() + y), (int) (this.getPos().getZ() + z));
+                                BlockPos pos = new BlockPos(this.getPos().getX() + x, this.getPos().getY() + y, this.getPos().getZ() + z);
                                 if (!this.biggerThanChunk && WorldGenUtil.isPosAChunkFar(pos, this.getPos()))
                                     this.biggerThanChunk = true;
                                 WorldGenUtil.modifyChunkMap(pos, chunkMap);
@@ -282,9 +279,9 @@ public class TorusGen extends FillableShape {
             }
         } else {
             for (float x = -b; x <= 2 * b * this.horizontalTorus - b; x += 0.5f) {
-                float xsquared = x * x;
+                float xSquared = x * x;
                 for (float z = -b; z <= b; z += 0.5f) {
-                    float zsquared = z * z;
+                    float zSquared = z * z;
 
                     int angle = (int) Math.toDegrees(Math.atan2(z, x));
                     double outerRadius = getOuterRadius(angle);
@@ -293,13 +290,13 @@ public class TorusGen extends FillableShape {
                     int outerRadiusSquared = (int) (outerRadius * outerRadius);
                     int innerRadiusSquared = (int) (innerRadius * innerRadius);
 
-                    float a1 = xsquared + zsquared + outerRadiusSquared - innerRadiusSquared;
+                    float a1 = xSquared + zSquared + outerRadiusSquared - innerRadiusSquared;
 
-                    float e = 4 * outerRadiusSquared * (xsquared + zsquared);
+                    float e = 4 * outerRadiusSquared * (xSquared + zSquared);
                     for (float y = -b; y <= 2 * b * this.verticalTorus - b; y += 0.5f) {
-                        float ysquared = y * y;
+                        float ySquared = y * y;
 
-                        float a = a1 + ysquared;
+                        float a = a1 + ySquared;
 
                         if ((a * a) - e <= 0) {
                             //TODO
@@ -308,7 +305,7 @@ public class TorusGen extends FillableShape {
                             /*if (innerRadiusXSquared != 0) {
                                 float innerXSquared = x * x / innerRadiusXSquared;
                                 float innerZSquared = z * z / innerRadiusZSquared;
-                                if (innerXSquared + innerZSquared <= 1f) { // pas dans l'ovale intérieur
+                                if (innerXSquared + innerZSquared <= 1f) {
                                     bl = false;
                                 }
                             }*/
@@ -335,12 +332,12 @@ public class TorusGen extends FillableShape {
         BlockPos.Mutable mutable = new BlockPos.Mutable();
         List<BlockPos> poslist = new ArrayList<>();
 
-        int maxouterRadius = Math.max(outerRadiusx, outerRadiusz);
-        int maxinnerRadius = Math.max(innerRadiusx, innerRadiusz);
+        int maxOuterRadius = Math.max(outerRadiusX, outerRadiusZ);
+        int maxInnerRadius = Math.max(innerRadiusX, innerRadiusZ);
         //many if statement to avoid doing multiple if in the loops
         if (this.getXrotation() % 180 == 0 && this.getYrotation() == 0 && this.getSecondXrotation() % 180 == 0) {
-            for (int u = 0; u <= this.verticalTorus * 360; u += 40 / maxouterRadius) {
-                for (int v = 0; v <= this.horizontalTorus * 360; v += 45 / maxinnerRadius) {
+            for (int u = 0; u <= this.verticalTorus * 360; u += 40 / maxOuterRadius) {
+                for (int v = 0; v <= this.horizontalTorus * 360; v += 45 / maxInnerRadius) {
                     Vec3d vec = this.getEllipsoidalToreCoordinates(u, v);
                     BlockPos pos = new BlockPos((int) (getPos().getX() + vec.x), (int) (getPos().getY() + vec.y), (int) (getPos().getZ() + vec.z));
                     if (!this.biggerThanChunk && WorldGenUtil.isPosAChunkFar(pos, this.getPos()))
@@ -349,8 +346,8 @@ public class TorusGen extends FillableShape {
                 }
             }
         } else {
-            for (int u = 0; u <= 360 * this.verticalTorus; u += 40 / maxouterRadius) {
-                for (int v = 0; v <= 360 * this.horizontalTorus; v += 45 / maxinnerRadius) {
+            for (int u = 0; u <= 360 * this.verticalTorus; u += 40 / maxOuterRadius) {
+                for (int v = 0; v <= 360 * this.horizontalTorus; v += 45 / maxInnerRadius) {
                     Vec3d vec = this.getEllipsoidalToreCoordinates(u, v);
                     BlockPos pos = this.getCoordinatesRotation((float) vec.x, (float) vec.y, (float) vec.z, this.getPos());
                     if (!this.biggerThanChunk && WorldGenUtil.isPosAChunkFar(pos, this.getPos()))
@@ -398,8 +395,8 @@ public class TorusGen extends FillableShape {
     public Vec3d getEllipsoidalToreCoordinates(int u, int v) {
 
         // Interpolating the radii based on the angle
-        double R = outerRadiusx + (outerRadiusz - outerRadiusx) * Math.abs(FastMaths.getFastSin(u));
-        double r = innerRadiusx + (innerRadiusz - innerRadiusx) * Math.abs(FastMaths.getFastSin(u));
+        double R = outerRadiusX + (outerRadiusZ - outerRadiusX) * Math.abs(FastMaths.getFastSin(u));
+        double r = innerRadiusX + (innerRadiusZ - innerRadiusX) * Math.abs(FastMaths.getFastSin(u));
 
         double a = R + r * FastMaths.getFastCos(v);
         double x = (a * FastMaths.getFastCos(u));
@@ -410,12 +407,12 @@ public class TorusGen extends FillableShape {
     }
 
     public double getInnerRadius(int angle) {
-        return innerRadiusx + (innerRadiusz - innerRadiusx) * Math.abs(FastMaths.getFastSin(angle));
+        return innerRadiusX + (innerRadiusZ - innerRadiusX) * Math.abs(FastMaths.getFastSin(angle));
 
     }
 
     public double getOuterRadius(int angle) {
-        return outerRadiusx + (outerRadiusz - outerRadiusx) * Math.abs(FastMaths.getFastSin(angle));
+        return outerRadiusX + (outerRadiusZ - outerRadiusX) * Math.abs(FastMaths.getFastSin(angle));
     }
 
     /**
