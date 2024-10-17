@@ -1,6 +1,5 @@
 package net.rodofire.easierworldcreator.shapegen;
 
-import net.minecraft.block.Block;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.Vec3d;
@@ -9,7 +8,6 @@ import net.rodofire.easierworldcreator.shapeutil.BlockLayer;
 import net.rodofire.easierworldcreator.shapeutil.FillableShape;
 import net.rodofire.easierworldcreator.shapeutil.Shape;
 import net.rodofire.easierworldcreator.util.FastMaths;
-import net.rodofire.easierworldcreator.worldgenutil.FastNoiseLite;
 import net.rodofire.easierworldcreator.worldgenutil.WorldGenUtil;
 import org.jetbrains.annotations.NotNull;
 
@@ -43,13 +41,14 @@ import java.util.*;
  * Since 2.1.0, the shape doesn't return a {@link List<BlockPos>} but it returns instead a {@code List<Set<BlockPos>>}
  * Before 2.1.0, the BlockPos list was a simple list.
  * Starting from 2.1.0, the shapes returns a list of {@link ChunkPos} that has a set of {@link BlockPos}
- * The change from {@link List} to {@link Set} was done to avoid duplicates BlockPos wich resulted in unnecessary calculations.
+ * The change from {@link List} to {@link Set} was done to avoid duplicates BlockPos which resulted in unnecessary calculations.
  * this allow easy multithreading for the Block assignment done in the {@link Shape} which result in better performance;
  * </p>
  */
+@SuppressWarnings("unused")
 public class CircleGen extends FillableShape {
-    private int radiusx;
-    private int radiusz;
+    private int radiusX;
+    private int radiusZ;
 
 
     /**
@@ -58,21 +57,19 @@ public class CircleGen extends FillableShape {
      * @param world           the world the spiral will spawn in
      * @param pos             the center of the spiral
      * @param placeMoment     define the moment where the shape will be placed
-     * @param force           boolean to force the pos of the blocks
-     * @param blocksToForce   a list of blocks that the blocks of the spiral can still force if force = false
      * @param layerPlace      how the {@code @BlockStates} inside of a {@link BlockLayer} will be placed
      * @param layersType      how the Layers will be placed
-     * @param xrotation       first rotation around the x-axis
-     * @param yrotation       second rotation around the y-axis
-     * @param secondxrotation last rotation around the x-axis
+     * @param xRotation       first rotation around the x-axis
+     * @param yRotation       second rotation around the y-axis
+     * @param secondXRotation last rotation around the x-axis
      * @param featureName     the name of the feature
-     * @param radiusx         the radius of the x-axis
-     * @param radiusz         the radius of the z-axis
+     * @param radiusX         the radius of the x-axis
+     * @param radiusZ         the radius of the z-axis
      */
-    public CircleGen(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, PlaceMoment placeMoment, boolean force, List<Block> blocksToForce, LayerPlace layerPlace, LayersType layersType, int xrotation, int yrotation, int secondxrotation, String featureName, int radiusx, int radiusz) {
-        super(world, pos, placeMoment, force, blocksToForce, layerPlace, layersType, xrotation, yrotation, secondxrotation, featureName);
-        this.radiusx = radiusx;
-        this.radiusz = radiusz;
+    public CircleGen(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, PlaceMoment placeMoment, LayerPlace layerPlace, LayersType layersType, int xRotation, int yRotation, int secondXRotation, String featureName, int radiusX, int radiusZ) {
+        super(world, pos, placeMoment, layerPlace, layersType, xRotation, yRotation, secondXRotation, featureName);
+        this.radiusX = radiusX;
+        this.radiusZ = radiusZ;
     }
 
     /**
@@ -83,34 +80,34 @@ public class CircleGen extends FillableShape {
      */
     public CircleGen(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, PlaceMoment placeMoment, int radius) {
         super(world, pos, placeMoment);
-        this.radiusx = radius;
-        this.radiusz = radius;
+        this.radiusX = radius;
+        this.radiusZ = radius;
     }
 
 
     /*---------- Radius Related ----------*/
-    public int getRadiusx() {
-        return radiusx;
+    public int getRadiusX() {
+        return radiusX;
     }
 
-    public void setRadiusx(int radiusx) {
-        this.radiusx = radiusx;
+    public void setRadiusX(int radiusX) {
+        this.radiusX = radiusX;
     }
 
-    public int getRadiusz() {
-        return radiusz;
+    public int getRadiusZ() {
+        return radiusZ;
     }
 
-    public void setRadiusz(int radiusz) {
-        this.radiusz = radiusz;
+    public void setRadiusZ(int radiusZ) {
+        this.radiusZ = radiusZ;
     }
 
-    public void addRadiusx(int radiusx) {
-        this.radiusx += radiusx;
+    public void addRadiusX(int radiusX) {
+        this.radiusX += radiusX;
     }
 
-    public void addRadiusy(int radiusy) {
-        this.radiusz += radiusy;
+    public void addRadiusY(int radiusY) {
+        this.radiusZ += radiusY;
     }
 
     /*---------- Place Structure ----------*/
@@ -122,10 +119,6 @@ public class CircleGen extends FillableShape {
         if (this.getCustomFill() > 1f) this.setCustomFill(1f);
         if (this.getCustomFill() < 0f) this.setCustomFill(0f);
 
-        /*if (this.getXrotation() % 180 == 0 && this.getYrotation() % 180 == 0 && this.getSecondXrotation() == 0 && (this.getFillingType() == FillableShape.Type.EMPTY)) {
-            if (this.radiusz > 16 || this.radiusx > 16) this.biggerThanChunk = true;
-            return this.generateEmptyOval(this.getPos().getX(), this.getPos().getZ(), this.getPos().getY());
-        } else*/
         if (this.getFillingType() == FillableShape.Type.EMPTY) {
             return this.generateEmptyOval();
         }
@@ -145,21 +138,21 @@ public class CircleGen extends FillableShape {
     public List<Set<BlockPos>> generateFullOval() {
         Map<ChunkPos, Set<BlockPos>> chunkMap = new HashMap<>();
 
-        int radiusxsquared = radiusx * radiusx;
-        int radiuszsquared = radiusz * radiusz;
-        float innerRadiusXSquared = (1 - this.getCustomFill()) * (1 - this.getCustomFill()) * radiusx * radiusx;
-        float innerRadiusZSquared = (1 - this.getCustomFill()) * (1 - this.getCustomFill()) * radiusz * radiusz;
+        int radiusXSquared = radiusX * radiusX;
+        int radiusZSquared = radiusZ * radiusZ;
+        float innerRadiusXSquared = (1 - this.getCustomFill()) * (1 - this.getCustomFill()) * radiusX * radiusX;
+        float innerRadiusZSquared = (1 - this.getCustomFill()) * (1 - this.getCustomFill()) * radiusZ * radiusZ;
 
         //Rotating a shape requires more blocks.
         //This verification is there to avoid some unnecessary calculations when the rotations don't have any impact on the number of blocks
         if (this.getXrotation() % 180 == 0 && this.getYrotation() % 180 == 0 && this.getSecondXrotation() % 180 == 0) {
-            for (float x = -this.radiusx; x <= this.radiusx; x += 1) {
+            for (float x = -this.radiusX; x <= this.radiusX; x += 1) {
                 float x2 = x * x;
-                float xsquared = x * x / radiusxsquared;
-                for (float z = -this.radiusz; z <= this.radiusz; z += 1) {
+                float xSquared = x * x / radiusXSquared;
+                for (float z = -this.radiusZ; z <= this.radiusZ; z += 1) {
                     float z2 = z * z;
 
-                    if (xsquared + (z2) / radiuszsquared <= 1) {
+                    if (xSquared + (z2) / radiusZSquared <= 1) {
                         boolean bl = true;
                         if (innerRadiusXSquared != 0) {
                             float innerXSquared = x2 / innerRadiusXSquared;
@@ -178,18 +171,18 @@ public class CircleGen extends FillableShape {
                 }
             }
         } else {
-            for (float x = -this.radiusx; x <= this.radiusx; x += 0.5f) {
+            for (float x = -this.radiusX; x <= this.radiusX; x += 0.5f) {
                 float x2 = x * x;
-                float xsquared = x2 / radiusxsquared;
+                float xSquared = x2 / radiusXSquared;
 
-                for (float z = -this.radiusz; z <= this.radiusz; z += 0.5f) {
+                for (float z = -this.radiusZ; z <= this.radiusZ; z += 0.5f) {
                     float z2 = z * z;
-                    if (xsquared + (z2) / radiuszsquared <= 1) {
+                    if (xSquared + (z2) / radiusZSquared <= 1) {
                         boolean bl = true;
                         if (innerRadiusXSquared != 0) {
                             float innerXSquared = x2 / innerRadiusXSquared;
                             float innerZSquared = z2 / innerRadiusZSquared;
-                            if (innerXSquared + innerZSquared <= 1f) { // pas dans l'ovale intérieur
+                            if (innerXSquared + innerZSquared <= 1f) {
                                 bl = false;
                             }
                         }
@@ -218,18 +211,18 @@ public class CircleGen extends FillableShape {
         //Rotating a shape requires more blocks.
         //This verification is there to avoid some unnecessary calculations when the rotations don't have any impact on the number of blocks
         if (this.getXrotation() % 180 == 0 && this.getYrotation() % 180 == 0 && this.getSecondXrotation() == 0) {
-            for (float u = 0; u < 360; u += (float) 45 / Math.max(this.radiusz, this.radiusx)) {
-                float x = (float) (radiusx * FastMaths.getFastCos(u));
-                float z = (float) (radiusz * FastMaths.getFastSin(u));
+            for (float u = 0; u < 360; u += (float) 45 / Math.max(this.radiusZ, this.radiusX)) {
+                float x = (float) (radiusX * FastMaths.getFastCos(u));
+                float z = (float) (radiusZ * FastMaths.getFastSin(u));
                 BlockPos pos = new BlockPos((int) (this.getPos().getX() + x), this.getPos().getY(), (int) (this.getPos().getZ() + z));
                 if (!this.biggerThanChunk && WorldGenUtil.isPosAChunkFar(pos, this.getPos()))
                     this.biggerThanChunk = true;
                 WorldGenUtil.modifyChunkMap(pos, chunkMap);
             }
         } else {
-            for (float u = 0; u < 360; u += (float) 35 / Math.max(this.radiusz, this.radiusx)) {
-                float x = (float) (radiusx * FastMaths.getFastCos(u));
-                float z = (float) (radiusz * FastMaths.getFastSin(u));
+            for (float u = 0; u < 360; u += (float) 35 / Math.max(this.radiusZ, this.radiusX)) {
+                float x = (float) (radiusX * FastMaths.getFastCos(u));
+                float z = (float) (radiusZ * FastMaths.getFastSin(u));
                 BlockPos pos = this.getCoordinatesRotation(x, 0, z, this.getPos());
                 if (!this.biggerThanChunk && WorldGenUtil.isPosAChunkFar(pos, this.getPos()))
                     this.biggerThanChunk = true;
@@ -239,7 +232,7 @@ public class CircleGen extends FillableShape {
         return new ArrayList<>(chunkMap.values());
     }
 
-    /*---------- Algorithm based on Bressen Algorithms for circle ----------*/
+    /*---------- Algorithm based on Bressan Algorithms for circle ----------*/
     //TODO fix method
 
     /**
@@ -249,14 +242,14 @@ public class CircleGen extends FillableShape {
      * @param centerX the x coordinate of the center of the circle
      * @param centerZ the z coordinate of the center of the circle
      * @param y       the height of the circle
-     * @return
+     * @return a list of chunk represented by a set of BlockPos
      */
     public List<Set<BlockPos>> generateEmptyOval(int centerX, int centerZ, int y) {
         int x = 0;
-        int z = this.radiusz;
-        int twoASquare = 2 * this.radiusx * this.radiusx;
-        int twoBSquare = 2 * this.radiusz * this.radiusz;
-        int decision1 = (int) (this.radiusz * this.radiusz - this.radiusx * this.radiusx * this.radiusz + 0.25 * this.radiusx * this.radiusx);
+        int z = this.radiusZ;
+        int twoASquare = 2 * this.radiusX * this.radiusX;
+        int twoBSquare = 2 * this.radiusZ * this.radiusZ;
+        int decision1 = (int) (this.radiusZ * this.radiusZ - this.radiusX * this.radiusX * this.radiusZ + 0.25 * this.radiusX * this.radiusX);
         int dx = twoBSquare * x;
         int dz = twoASquare * z;
 
@@ -265,41 +258,39 @@ public class CircleGen extends FillableShape {
         // Région 1
         while (dx < dz) {
             if (this.getFillingType() == Type.FULL) {
-                placeFullOval(centerX, centerZ, y, x, z, chunkMap);
+                placeFullOval(centerX, centerZ, x, y, z, chunkMap);
             } else {
                 addOvalBlocks(centerX, centerZ, x, y, z, chunkMap);
             }
+            x++;
             if (decision1 < 0) {
-                x++;
                 dx = dx + twoBSquare;
-                decision1 = decision1 + dx + this.radiusz * this.radiusz;
+                decision1 = decision1 + dx + this.radiusZ * this.radiusZ;
             } else {
-                x++;
                 z--;
                 dx = dx + twoBSquare;
                 dz = dz - twoASquare;
-                decision1 = decision1 + dx - dz + this.radiusz * this.radiusz;
+                decision1 = decision1 + dx - dz + this.radiusZ * this.radiusZ;
             }
         }
 
         // Région 2
-        int decision2 = (int) (this.radiusz * this.radiusz * (x + 0.5) * (x + 0.5) + this.radiusx * this.radiusx * (z - 1) * (z - 1) - this.radiusx * this.radiusx * this.radiusz * this.radiusz);
+        int decision2 = (int) (this.radiusZ * this.radiusZ * (x + 0.5) * (x + 0.5) + this.radiusX * this.radiusX * (z - 1) * (z - 1) - this.radiusX * this.radiusX * this.radiusZ * this.radiusZ);
         while (z >= 0) {
             if (this.getFillingType() == Type.FULL) {
                 placeFullOval(centerX, centerZ, y, x, z, chunkMap);
             } else {
                 addOvalBlocks(centerX, centerZ, x, y, z, chunkMap);
             }
+            z--;
             if (decision2 > 0) {
-                z--;
                 dz = dz - twoASquare;
-                decision2 = decision2 + this.radiusx * this.radiusx - dz;
+                decision2 = decision2 + this.radiusX * this.radiusX - dz;
             } else {
-                z--;
                 x++;
                 dx = dx + twoBSquare;
                 dz = dz - twoASquare;
-                decision2 = decision2 + dx - dz + this.radiusx * this.radiusx;
+                decision2 = decision2 + dx - dz + this.radiusX * this.radiusX;
             }
         }
         return new ArrayList<>(chunkMap.values());

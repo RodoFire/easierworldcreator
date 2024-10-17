@@ -1,6 +1,5 @@
 package net.rodofire.easierworldcreator.shapegen;
 
-import net.minecraft.block.Block;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.Vec3d;
@@ -124,35 +123,34 @@ Transparent frame
  * <p> - Since 2.1.0, the shape doesn't return a {@link List<BlockPos>} but it returns instead a {@code List<Set<BlockPos>>}
  * <p> - Before 2.1.0, the BlockPos list was a simple list.
  * <p> - Starting from 2.1.0, the shapes returns a list of {@link ChunkPos} that has a set of {@link BlockPos}
- * <p>The change from {@link List} to {@link Set} was done to avoid duplicates BlockPos wich resulted in unnecessary calculations.
+ * <p>The change from {@link List} to {@link Set} was done to avoid duplicates BlockPos which resulted in unnecessary calculations.
  * <p>this allow easy multithreading for the Block assignment done in the {@link Shape} which result in better performance;
  * </p>
  */
+@SuppressWarnings("unused")
 public class CylinderGen extends FillableShape {
-    private int radiusx;
-    private int radiusz;
+    private int radiusX;
+    private int radiusZ;
     private int height;
 
     /**
      * @param world           the world the spiral will spawn in
      * @param pos             the center of the spiral
      * @param placeMoment     define the moment where the shape will be placed
-     * @param force           boolean to force the pos of the blocks
-     * @param blocksToForce   a list of blocks that the blocks of the spiral can still force if force = false
      * @param layerPlace      how the {@code @BlockStates} inside of a {@code BlockLayer} will be placed
      * @param layersType      how the Layers will be placed
-     * @param xrotation       first rotation around the x-axis
-     * @param yrotation       second rotation around the y-axis
-     * @param secondxrotation last rotation around the x-axis
+     * @param xRotation       first rotation around the x-axis
+     * @param yRotation       second rotation around the y-axis
+     * @param secondXRotation last rotation around the x-axis
      * @param featureName     the name of the feature
-     * @param radiusx         the radius of the cylinder on the x-axis
-     * @param radiusz         the radius of the cylinder on the z-axis
+     * @param radiusX         the radius of the cylinder on the x-axis
+     * @param radiusZ         the radius of the cylinder on the z-axis
      * @param height          the height of the cylinder
      */
-    public CylinderGen(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, PlaceMoment placeMoment, boolean force, List<Block> blocksToForce, LayerPlace layerPlace, LayersType layersType, int xrotation, int yrotation, int secondxrotation, String featureName, int radiusx, int radiusz, int height) {
-        super(world, pos, placeMoment, force, blocksToForce, layerPlace, layersType, xrotation, yrotation, secondxrotation, featureName);
-        this.radiusx = radiusx;
-        this.radiusz = radiusz;
+    public CylinderGen(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, PlaceMoment placeMoment, LayerPlace layerPlace, LayersType layersType, int xRotation, int yRotation, int secondXRotation, String featureName, int radiusX, int radiusZ, int height) {
+        super(world, pos, placeMoment, layerPlace, layersType, xRotation, yRotation, secondXRotation, featureName);
+        this.radiusX = radiusX;
+        this.radiusZ = radiusZ;
         this.height = height;
     }
 
@@ -165,8 +163,8 @@ public class CylinderGen extends FillableShape {
      */
     public CylinderGen(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, PlaceMoment placeMoment, int radius, int height) {
         super(world, pos, placeMoment);
-        this.radiusx = radius;
-        this.radiusz = radius;
+        this.radiusX = radius;
+        this.radiusZ = radius;
         this.height = height;
     }
 
@@ -182,19 +180,19 @@ public class CylinderGen extends FillableShape {
 
     /*---------- Radius Related ---------*/
     public void setRadiusX(int radius) {
-        this.radiusx = radius;
+        this.radiusX = radius;
     }
 
     public int getRadiusX() {
-        return radiusx;
+        return radiusX;
     }
 
     public void setRadiusZ(int radius) {
-        this.radiusz = radius;
+        this.radiusZ = radius;
     }
 
     public int getRadiusZ() {
-        return radiusz;
+        return radiusZ;
     }
 
     @Override
@@ -225,23 +223,23 @@ public class CylinderGen extends FillableShape {
      * this generates a full cylinder
      */
     public void generateFullCylinder(Map<ChunkPos, Set<BlockPos>> chunkMap) {
-        int radiusxsquared = radiusx * radiusx;
-        int radiuszsquared = radiusz * radiusz;
-        float innerRadiusXSquared = (1 - this.getCustomFill()) * (1 - this.getCustomFill()) * radiusx * radiusx;
-        float innerRadiusZSquared = (1 - this.getCustomFill()) * (1 - this.getCustomFill()) * radiusz * radiusz;
+        int radiusXSquared = radiusX * radiusX;
+        int radiusZSquared = radiusZ * radiusZ;
+        float innerRadiusXSquared = (1 - this.getCustomFill()) * (1 - this.getCustomFill()) * radiusX * radiusX;
+        float innerRadiusZSquared = (1 - this.getCustomFill()) * (1 - this.getCustomFill()) * radiusZ * radiusZ;
 
         //Rotating a shape requires more blocks.
         //This verification is there to avoid some unnecessary calculations when the rotations don't have any impact on the number of blocks
         if (this.getXrotation() % 180 == 0 && this.getYrotation() % 180 == 0 && this.getSecondXrotation() % 180 == 0) {
 
-            for (float x = -this.radiusx; x <= this.radiusx; x += 1f) {
+            for (float x = -this.radiusX; x <= this.radiusX; x += 1f) {
                 float x2 = x * x;
-                float xsquared = x2 / radiusxsquared;
+                float xSquared = x2 / radiusXSquared;
 
-                for (float z = -this.radiusz; z <= this.radiusz; z += 1f) {
+                for (float z = -this.radiusZ; z <= this.radiusZ; z += 1f) {
                     float z2 = z * z;
-                    float zsquared = z2 / radiuszsquared;
-                    if (xsquared + zsquared <= 1) {
+                    float zSquared = z2 / radiusZSquared;
+                    if (xSquared + zSquared <= 1) {
                         boolean bl = true;
                         if (innerRadiusXSquared != 0) {
                             float innerXSquared = x2 / innerRadiusXSquared;
@@ -264,22 +262,22 @@ public class CylinderGen extends FillableShape {
             }
         } else {
 
-            for (float x = -this.radiusx; x <= this.radiusx; x += 0.5f) {
+            for (float x = -this.radiusX; x <= this.radiusX; x += 0.5f) {
                 float x2 = x * x;
-                float xsquared = x * x / radiusxsquared;
-                for (float z = -this.radiusz; z <= this.radiusz; z += 0.5f) {
+                float xSquared = x * x / radiusXSquared;
+                for (float z = -this.radiusZ; z <= this.radiusZ; z += 0.5f) {
                     float z2 = z * z;
                     boolean bl = true;
                     if (innerRadiusXSquared != 0) {
                         float innerXSquared = x2 / innerRadiusXSquared;
                         float innerZSquared = z2 / innerRadiusZSquared;
-                        if (innerXSquared + innerZSquared <= 1f) { // pas dans l'ovale intérieur
+                        if (innerXSquared + innerZSquared <= 1f) {
                             bl = false;
                         }
                     }
                     if (bl) {
                         for (float y = 0; y <= this.height; y += 0.5f) {
-                            if (xsquared + (z * z) / radiuszsquared <= 1) {
+                            if (xSquared + (z * z) / radiusZSquared <= 1) {
 
                                 BlockPos pos = this.getCoordinatesRotation(x, y, z, this.getPos());
                                 if (!this.biggerThanChunk && WorldGenUtil.isPosAChunkFar(pos, this.getPos()))
@@ -301,9 +299,9 @@ public class CylinderGen extends FillableShape {
         //Rotating a shape requires more blocks.
         //This verification is there to avoid some unnecessary calculations when the rotations don't have any impact on the number of blocks
         if (this.getXrotation() % 180 == 0 && this.getYrotation() % 180 == 0 && this.getSecondXrotation() == 0) {
-            for (float u = 0; u < 360; u += (float) 45 / Math.max(this.radiusz, this.radiusx)) {
-                float x = (float) (radiusx * FastMaths.getFastCos(u));
-                float z = (float) (radiusz * FastMaths.getFastSin(u));
+            for (float u = 0; u < 360; u += (float) 45 / Math.max(this.radiusZ, this.radiusX)) {
+                float x = (float) (radiusX * FastMaths.getFastCos(u));
+                float z = (float) (radiusZ * FastMaths.getFastSin(u));
                 for (float y = 0; y <= this.height; y += 1f) {
                     BlockPos pos = new BlockPos((int) (this.getPos().getX() + x), this.getPos().getY(), (int) (this.getPos().getZ() + z));
                     if (!this.biggerThanChunk && WorldGenUtil.isPosAChunkFar(pos, this.getPos()))
@@ -312,9 +310,9 @@ public class CylinderGen extends FillableShape {
                 }
             }
         } else {
-            for (float u = 0; u < 360; u += (float) 35 / Math.max(this.radiusz, this.radiusx)) {
-                float x = (float) (radiusx * FastMaths.getFastCos(u));
-                float z = (float) (radiusz * FastMaths.getFastSin(u));
+            for (float u = 0; u < 360; u += (float) 35 / Math.max(this.radiusZ, this.radiusX)) {
+                float x = (float) (radiusX * FastMaths.getFastCos(u));
+                float z = (float) (radiusZ * FastMaths.getFastSin(u));
                 for (float y = 0; y <= this.height; y += 0.5f) {
                     BlockPos pos = this.getCoordinatesRotation(x, 0, z, this.getPos());
                     if (!this.biggerThanChunk && WorldGenUtil.isPosAChunkFar(pos, this.getPos()))

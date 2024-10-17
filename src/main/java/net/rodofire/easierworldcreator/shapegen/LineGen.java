@@ -1,6 +1,5 @@
 package net.rodofire.easierworldcreator.shapegen;
 
-import net.minecraft.block.Block;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.Direction;
@@ -8,7 +7,6 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.StructureWorldAccess;
 import net.rodofire.easierworldcreator.shapeutil.BlockLayer;
 import net.rodofire.easierworldcreator.shapeutil.Shape;
-import net.rodofire.easierworldcreator.worldgenutil.FastNoiseLite;
 import net.rodofire.easierworldcreator.worldgenutil.WorldGenUtil;
 import org.jetbrains.annotations.NotNull;
 
@@ -17,13 +15,14 @@ import java.util.*;
 /**
  * Class to generate Line related shapes
  * <p>
- * Since 2.1.0, the shape doesn't return a {@link List<BlockPos>} but it returns instead a {@link List< Set  <BlockPos>>}
+ * Since 2.1.0, the shape doesn't return a {@link List<BlockPos>} but it returns instead a {@code List<Set<BlockPos>>}
  * Before 2.1.0, the BlockPos list was a simple list.
  * Starting from 2.1.0, the shapes returns a list of {@link ChunkPos} that has a set of {@link BlockPos}
- * The change from {@link List} to {@link Set} was done to avoid duplicates BlockPos wich resulted in unnecessary calculations.
+ * The change from {@link List} to {@link Set} was done to avoid duplicates BlockPos which resulted in unnecessary calculations.
  * this allow easy multithreading for the Block assignment done in the {@link Shape} which result in better performance;
  * </p>
  */
+@SuppressWarnings("unused")
 public class LineGen extends Shape {
     private BlockPos secondPos;
 
@@ -33,18 +32,16 @@ public class LineGen extends Shape {
      * @param world           the world the spiral will spawn in
      * @param pos             the center of the spiral
      * @param placeMoment     define the moment where the shape will be placed
-     * @param force           boolean to force the pos of the blocks
-     * @param blocksToForce   a list of blocks that the blocks of the spiral can still force if force = false
      * @param layerPlace      how the {@code @BlockStates} inside of a {@link BlockLayer} will be placed
      * @param layersType      how the Layers will be placed
-     * @param xrotation       first rotation around the x-axis
-     * @param yrotation       second rotation around the y-axis
-     * @param secondxrotation last rotation around the x-axis
+     * @param xRotation       first rotation around the x-axis
+     * @param yRotation       second rotation around the y-axis
+     * @param secondXRotation last rotation around the x-axis
      * @param featureName     the name of the feature
-     * @param secondPos       the second pos on wich the line has to go
+     * @param secondPos       the second pos on which the line has to go
      */
-    public LineGen(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, @NotNull PlaceMoment placeMoment, boolean force, List<Block> blocksToForce, LayerPlace layerPlace, LayersType layersType, int xrotation, int yrotation, int secondxrotation, String featureName, BlockPos secondPos) {
-        super(world, pos, placeMoment, force, blocksToForce, layerPlace, layersType, xrotation, yrotation, secondxrotation, featureName);
+    public LineGen(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, @NotNull PlaceMoment placeMoment, LayerPlace layerPlace, LayersType layersType, int xRotation, int yRotation, int secondXRotation, String featureName, BlockPos secondPos) {
+        super(world, pos, placeMoment, layerPlace, layersType, xRotation, yRotation, secondXRotation, featureName);
         this.secondPos = secondPos;
     }
 
@@ -54,7 +51,7 @@ public class LineGen extends Shape {
      * @param world       the world the spiral will spawn in
      * @param pos         the center of the spiral
      * @param placeMoment define the moment where the shape will be placed
-     * @param secondPos   the second pos on wich the line has to go
+     * @param secondPos   the second pos on which the line has to go
      */
     public LineGen(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, @NotNull PlaceMoment placeMoment, BlockPos secondPos) {
         super(world, pos, placeMoment);
@@ -82,7 +79,7 @@ public class LineGen extends Shape {
     }
 
     /**
-     * this method genarate the coordinates
+     * this method generates the coordinates
      *
      * @param dir      the direction of the line
      * @param chunkMap the map used to get the coordinates
