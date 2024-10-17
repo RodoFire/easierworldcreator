@@ -232,8 +232,8 @@ public class TorusGen extends FillableShape {
 
         int b = maxOuterRadiusX + maxInnerRadiusX;
 
-        if ((verticalTorus == 1f && horizontalTorus == 1f && this.getXrotation() % 180 == 0 && this.getYrotation() % 180 == 0 && this.getSecondXrotation() % 180 == 0)
-                || (verticalTorus == 1f && this.getYrotation() % 180 == 0) || (horizontalTorus == 1f && this.getXrotation() % 180 == 0 && this.getSecondXrotation() % 180 == 0)) {
+        if ((verticalTorus == 1f && horizontalTorus == 1f && this.getXRotation() % 180 == 0 && this.getYRotation() % 180 == 0 && this.getSecondXRotation() % 180 == 0)
+                || (verticalTorus == 1f && this.getYRotation() % 180 == 0) || (horizontalTorus == 1f && this.getXRotation() % 180 == 0 && this.getSecondXRotation() % 180 == 0)) {
 
             for (int x = (-b); x <= 2 * b * this.horizontalTorus - b; x++) {
                 int xSquared = x * x;
@@ -335,7 +335,7 @@ public class TorusGen extends FillableShape {
         int maxOuterRadius = Math.max(outerRadiusX, outerRadiusZ);
         int maxInnerRadius = Math.max(innerRadiusX, innerRadiusZ);
         //many if statement to avoid doing multiple if in the loops
-        if (this.getXrotation() % 180 == 0 && this.getYrotation() == 0 && this.getSecondXrotation() % 180 == 0) {
+        if (this.getXRotation() % 180 == 0 && this.getYRotation() == 0 && this.getSecondXRotation() % 180 == 0) {
             for (int u = 0; u <= this.verticalTorus * 360; u += 40 / maxOuterRadius) {
                 for (int v = 0; v <= this.horizontalTorus * 360; v += 45 / maxInnerRadius) {
                     Vec3d vec = this.getEllipsoidalToreCoordinates(u, v);

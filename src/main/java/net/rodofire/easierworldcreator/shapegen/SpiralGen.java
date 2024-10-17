@@ -326,7 +326,7 @@ public class SpiralGen extends Shape {
             this.generateLargeOutlineSpiral(chunkMap);
         } else if (this.spiralType == SpiralType.DOUBLE_HELICOID || this.spiralType == SpiralType.HALF_DOUBLE_HELICOID || this.spiralType == SpiralType.CUSTOM_DOUBLE_HELICOID) {
             this.generateHelicoid(chunkMap);
-            this.setOffset(180);
+            this.offset = 180;
             this.generateHelicoid(chunkMap);
 
         } else {
@@ -352,7 +352,7 @@ public class SpiralGen extends Shape {
         int maxLarge = Math.max(Math.max(radiusX.getLeft(), radiusX.getRight()), Math.max(radiusZ.getLeft(), radiusZ.getRight()));
         double f = (this.turnNumber * maxLarge);
         double a = (double) 360 / (height * maxLarge);
-        if (this.getXrotation() % 180 == 0 && this.getYrotation() % 180 == 0 && this.getSecondXrotation() == 0) {
+        if (this.getXRotation() % 180 == 0 && this.getYRotation() % 180 == 0 && this.getSecondXRotation() == 0) {
             for (double i = 0; i < maxLarge * this.turnNumber * height; i++) {
                 float percentage = (float) i / (maxLarge * this.turnNumber * height);
                 float radiusX = this.getXRadius(percentage);
@@ -414,7 +414,7 @@ public class SpiralGen extends Shape {
         double a = (double) 360 / (height * maxLarge);
 
 
-        if (this.getXrotation() % 180 == 0 && this.getYrotation() % 180 == 0 && this.getSecondXrotation() == 0 && this.helicoidAngle.getLeft() < 45 && this.helicoidAngle.getLeft() > -45 && this.helicoidAngle.getRight() < 45 && this.helicoidAngle.getRight() > -45) {
+        if (this.getXRotation() % 180 == 0 && this.getYRotation() % 180 == 0 && this.getSecondXRotation() == 0 && this.helicoidAngle.getLeft() < 45 && this.helicoidAngle.getLeft() > -45 && this.helicoidAngle.getRight() < 45 && this.helicoidAngle.getRight() > -45) {
             for (double i = 0; i < maxLarge * this.turnNumber * height; i++) {
 
                 float percentage = (float) i / (maxLarge * this.turnNumber * height);

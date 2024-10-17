@@ -51,12 +51,13 @@ package net.rodofire.easierworldcreator.worldgenutil;
 // https://github.com/Auburn/FastNoiseLite
 
 // To switch between using floats or doubles for input position,
-// perform a file-wide replace on the following strings (including /*FNLfloat*/)
+// perform a file-wide replacement on the following strings (including /*FNLfloat*/)
 // /*FNLfloat*/ float
 // /*FNLfloat*/ double
 
 import net.minecraft.util.math.BlockPos;
 
+@SuppressWarnings("all")
 public class FastNoiseLite
 {
     public enum NoiseType
@@ -341,17 +342,12 @@ public class FastNoiseLite
                 break;
         }
 
-        switch (mFractalType)
-        {
-            default:
-                return GenNoiseSingle(mSeed, x, y);
-            case FBm:
-                return GenFractalFBm(x, y);
-            case Ridged:
-                return GenFractalRidged(x, y);
-            case PingPong:
-                return GenFractalPingPong(x, y);
-        }
+        return switch (mFractalType) {
+            case FBm -> GenFractalFBm(x, y);
+            case Ridged -> GenFractalRidged(x, y);
+            case PingPong -> GenFractalPingPong(x, y);
+            default -> GenNoiseSingle(mSeed, x, y);
+        };
     }
 
     /// <summary>
@@ -401,17 +397,12 @@ public class FastNoiseLite
                 break;
         }
 
-        switch (mFractalType)
-        {
-            default:
-                return GenNoiseSingle(mSeed, x, y, z);
-            case FBm:
-                return GenFractalFBm(x, y, z);
-            case Ridged:
-                return GenFractalRidged(x, y, z);
-            case PingPong:
-                return GenFractalPingPong(x, y, z);
-        }
+        return switch (mFractalType) {
+            case FBm -> GenFractalFBm(x, y, z);
+            case Ridged -> GenFractalRidged(x, y, z);
+            case PingPong -> GenFractalPingPong(x, y, z);
+            default -> GenNoiseSingle(mSeed, x, y, z);
+        };
     }
 
 
@@ -427,14 +418,14 @@ public class FastNoiseLite
     {
         switch (mFractalType)
         {
-            default:
-                DomainWarpSingle(coord);
-                break;
             case DomainWarpProgressive:
                 DomainWarpFractalProgressive(coord);
                 break;
             case DomainWarpIndependent:
                 DomainWarpFractalIndependent(coord);
+                break;
+            default:
+                DomainWarpSingle(coord);
                 break;
         }
     }
@@ -451,14 +442,14 @@ public class FastNoiseLite
     {
         switch (mFractalType)
         {
-            default:
-                DomainWarpSingle(coord);
-                break;
             case DomainWarpProgressive:
                 DomainWarpFractalProgressive(coord);
                 break;
             case DomainWarpIndependent:
                 DomainWarpFractalIndependent(coord);
+                break;
+            default:
+                DomainWarpSingle(coord);
                 break;
         }
     }
@@ -701,44 +692,28 @@ public class FastNoiseLite
 
     private float GenNoiseSingle(int seed, /*FNLfloat*/ float x, /*FNLfloat*/ float y)
     {
-        switch (mNoiseType)
-        {
-            case OpenSimplex2:
-                return SingleSimplex(seed, x, y);
-            case OpenSimplex2S:
-                return SingleOpenSimplex2S(seed, x, y);
-            case Cellular:
-                return SingleCellular(seed, x, y);
-            case Perlin:
-                return SinglePerlin(seed, x, y);
-            case ValueCubic:
-                return SingleValueCubic(seed, x, y);
-            case Value:
-                return SingleValue(seed, x, y);
-            default:
-                return 0;
-        }
+        return switch (mNoiseType) {
+            case OpenSimplex2 -> SingleSimplex(seed, x, y);
+            case OpenSimplex2S -> SingleOpenSimplex2S(seed, x, y);
+            case Cellular -> SingleCellular(seed, x, y);
+            case Perlin -> SinglePerlin(seed, x, y);
+            case ValueCubic -> SingleValueCubic(seed, x, y);
+            case Value -> SingleValue(seed, x, y);
+            default -> 0;
+        };
     }
 
     private float GenNoiseSingle(int seed, /*FNLfloat*/ float x, /*FNLfloat*/ float y, /*FNLfloat*/ float z)
     {
-        switch (mNoiseType)
-        {
-            case OpenSimplex2:
-                return SingleOpenSimplex2(seed, x, y, z);
-            case OpenSimplex2S:
-                return SingleOpenSimplex2S(seed, x, y, z);
-            case Cellular:
-                return SingleCellular(seed, x, y, z);
-            case Perlin:
-                return SinglePerlin(seed, x, y, z);
-            case ValueCubic:
-                return SingleValueCubic(seed, x, y, z);
-            case Value:
-                return SingleValue(seed, x, y, z);
-            default:
-                return 0;
-        }
+        return switch (mNoiseType) {
+            case OpenSimplex2 -> SingleOpenSimplex2(seed, x, y, z);
+            case OpenSimplex2S -> SingleOpenSimplex2S(seed, x, y, z);
+            case Cellular -> SingleCellular(seed, x, y, z);
+            case Perlin -> SinglePerlin(seed, x, y, z);
+            case ValueCubic -> SingleValueCubic(seed, x, y, z);
+            case Value -> SingleValue(seed, x, y, z);
+            default -> 0;
+        };
     }
 
 
@@ -2621,4 +2596,3 @@ public class FastNoiseLite
         }
     }
 }
-

@@ -5,12 +5,12 @@ import net.minecraft.block.BlockState;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.StructureWorldAccess;
-import net.rodofire.easierworldcreator.worldgenutil.FastNoiseLite;
 import net.rodofire.easierworldcreator.worldgenutil.WorldGenUtil;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 
+@SuppressWarnings("unused")
 public abstract class ShapeLayer extends ShapePlaceType {
     //enums to define how the structure is defined
     private Shape.LayersType layersType = Shape.LayersType.SURFACE;
@@ -22,7 +22,7 @@ public abstract class ShapeLayer extends ShapePlaceType {
     //Center of the structure if PlaceType == Block
     private BlockPos radialCenterPos = this.getPos();
 
-    //Center of the structure if PlaceType == Pearticle
+    //Center of the structure if PlaceType == Particle
     private Vec3d radialCenterVec3d;
 
 
@@ -32,13 +32,11 @@ public abstract class ShapeLayer extends ShapePlaceType {
      * @param world         the world the spiral will spawn in
      * @param pos           the center of the spiral
      * @param placeMoment   define the moment where the shape will be placed
-     * @param force         boolean to force the pos of the blocks
-     * @param blocksToForce a list of blocks that the blocks of the spiral can still force if force = false
      * @param layerPlace    how the {@code @BlockStates} inside of a {@link BlockLayer} will be placed
      * @param layersType    how the Layers will be placed
      */
-    public ShapeLayer(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, @NotNull PlaceMoment placeMoment, boolean force, List<Block> blocksToForce, LayerPlace layerPlace, LayersType layersType) {
-        super(world, pos, placeMoment, force, blocksToForce, layerPlace);
+    public ShapeLayer(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, @NotNull PlaceMoment placeMoment, LayerPlace layerPlace, LayersType layersType) {
+        super(world, pos, placeMoment,  layerPlace);
         this.layersType = layersType;
     }
 
@@ -59,10 +57,10 @@ public abstract class ShapeLayer extends ShapePlaceType {
     /**
      * method to change the direction of the orthogonal vector used when {@code layerType = ALONG_DIRECTION}
      *
-     * @param vect the vector that will be set
+     * @param vector the vector that will be set
      */
-    public void setLayerDirection(Vec3d vect) {
-        this.directionalLayerDirection = vect.normalize();
+    public void setLayerDirection(Vec3d vector) {
+        this.directionalLayerDirection = vector.normalize();
     }
 
     /**
@@ -110,11 +108,9 @@ public abstract class ShapeLayer extends ShapePlaceType {
 
     private void verifyForBlockLayer(BlockPos pos, List<BlockState> states, Set<BlockList> blockLists) {
         BlockState state = getBlockToPlace(states, pos);
-        Iterator<BlockList> iterator = blockLists.iterator();
 
-        while (iterator.hasNext()) {
-            BlockList blockList = iterator.next();
-            if (blockList.getBlockstate().equals(state)) {
+        for (BlockList blockList : blockLists) {
+            if (blockList.getBlockState().equals(state)) {
                 blockList.addBlockPos(pos);
                 return;
             }
@@ -125,55 +121,55 @@ public abstract class ShapeLayer extends ShapePlaceType {
     /**
      * place the layers of the structure starting from the first layer to the second to the third
      *
-     * @param firstposlist list of BlockPos of the structure
+     * @param firstPosList list of the BlockPos that compose the structure
      */
-    public Set<BlockList> getLayers(Set<BlockPos> firstposlist) {
+    public Set<BlockList> getLayers(Set<BlockPos> firstPosList) {
         Set<BlockList> blockLists = new HashSet<>();
         if (this.getBlockLayers().size() == 1) {
             List<BlockState> states = this.getBlockLayers().get(0).getBlockStates();
-            for (BlockPos pos : firstposlist) {
+            for (BlockPos pos : firstPosList) {
                 verifyForBlockLayer(pos, states, blockLists);
             }
             return blockLists;
         }
         switch (layersType) {
             case SURFACE -> {
-                Set<BlockPos> poslist = firstposlist; // Use a copy here
+                Set<BlockPos> posList = firstPosList; // Use a copy here
 
-                if (poslist == null) {
+                if (posList != null) {
                     List<BlockState> states = this.getBlockLayers().get(0).getBlockStates();
-                    for (BlockPos pos : firstposlist) {
+                    for (BlockPos pos : firstPosList) {
                         verifyForBlockLayer(pos, states, blockLists);
                     }
                     return blockLists;
                 }
 
                 for (int i = 1; i < this.getBlockLayers().size(); ++i) {
-                    if (poslist.isEmpty()) return blockLists;
-                    List<Set<BlockPos>> pos1 = this.placeSurfaceBlockLayer(new HashSet<>(poslist), i);
-                    poslist = pos1.get(1);
-                    firstposlist = pos1.get(0);
+                    if (posList.isEmpty()) return blockLists;
+                    List<Set<BlockPos>> pos1 = this.placeSurfaceBlockLayer(new HashSet<>(posList), i);
+                    posList = pos1.get(1);
+                    firstPosList = pos1.get(0);
                     List<BlockState> states = this.getBlockLayers().get(i - 1).getBlockStates();
 
                     // Create a copy for safe iteration
-                    Set<BlockPos> firstposlistCopy = new HashSet<>(firstposlist);
-                    for (BlockPos pos : firstposlistCopy) {
+                    Set<BlockPos> firstPosListCopy = new HashSet<>(firstPosList);
+                    for (BlockPos pos : firstPosListCopy) {
                         verifyForBlockLayer(pos, states, blockLists);
                     }
                 }
                 List<BlockState> states = this.getBlockLayers().get(this.getBlockLayers().size() - 1).getBlockStates();
 
                 // Create a copy for safe iteration
-                Set<BlockPos> poslistCopy = new HashSet<>(poslist);
-                for (BlockPos pos : poslistCopy) {
+                Set<BlockPos> posListCopy = new HashSet<>(posList);
+                for (BlockPos pos : posListCopy) {
                     verifyForBlockLayer(pos, states, blockLists);
                 }
             }
-            case INNER_RADIAL -> blockLists.addAll(this.getInnerRadialBlocks(firstposlist));
-            case OUTER_RADIAL -> blockLists.addAll(this.getOuterRadialBlocks(firstposlist));
-            case INNER_CYLINDRICAL -> blockLists.addAll(this.getInnerCylindricalBlocks(firstposlist));
-            case OUTER_CYLINDRICAL -> blockLists.addAll(this.getOuterCylindricalBlocks(firstposlist));
-            case ALONG_DIRECTION -> blockLists.addAll(this.getDirectionalLayers(firstposlist));
+            case INNER_RADIAL -> blockLists.addAll(this.getInnerRadialBlocks(firstPosList));
+            case OUTER_RADIAL -> blockLists.addAll(this.getOuterRadialBlocks(firstPosList));
+            case INNER_CYLINDRICAL -> blockLists.addAll(this.getInnerCylindricalBlocks(firstPosList));
+            case OUTER_CYLINDRICAL -> blockLists.addAll(this.getOuterCylindricalBlocks(firstPosList));
+            case ALONG_DIRECTION -> blockLists.addAll(this.getDirectionalLayers(firstPosList));
             default -> throw new IllegalStateException("Unexpected value: " + layersType);
         }
         return blockLists;
@@ -182,46 +178,46 @@ public abstract class ShapeLayer extends ShapePlaceType {
     /**
      * place the layers of the structure depending on the {@link Shape.LayersType}
      *
-     * @param firstposlist list of BlockPos of the structure
+     * @param firstPosList list of the BlockPos that compose the structure
      */
-    public void placeLayers(Set<BlockPos> firstposlist) {
+    public void placeLayers(Set<BlockPos> firstPosList) {
         if (this.getBlockLayers().size() == 1) {
             List<BlockState> states = this.getBlockLayers().get(0).getBlockStates();
-            for (BlockPos pos : firstposlist) {
+            for (BlockPos pos : firstPosList) {
                 placeBlocksWithVerification(states, pos);
             }
             return;
         }
         switch (layersType) {
             case SURFACE -> {
-                Set<BlockPos> poslist = new HashSet<>();
-                poslist = this.placeFirstSurfaceBlockLayers(firstposlist);
+                Set<BlockPos> posList;
+                posList = this.placeFirstSurfaceBlockLayers(firstPosList);
 
-                if (poslist == null) return;
+                if (posList == null) return;
 
                 for (int i = 1; i < this.getBlockLayers().size(); ++i) {
-                    if (poslist.isEmpty()) return;
-                    List<Set<BlockPos>> pos1 = this.placeSurfaceBlockLayer(poslist, i);
-                    poslist = pos1.get(1);
-                    firstposlist = pos1.get(0);
+                    if (posList.isEmpty()) return;
+                    List<Set<BlockPos>> pos1 = this.placeSurfaceBlockLayer(posList, i);
+                    posList = pos1.get(1);
+                    firstPosList = pos1.get(0);
 
                     List<BlockState> states = this.getBlockLayers().get(i - 1).getBlockStates();
 
-                    for (BlockPos pos : firstposlist) {
+                    for (BlockPos pos : firstPosList) {
                         this.placeBlocks(states, pos);
                     }
                 }
                 List<BlockState> states = this.getBlockLayers().get(this.getBlockLayers().size() - 1).getBlockStates();
 
-                for (BlockPos pos : poslist) {
+                for (BlockPos pos : posList) {
                     this.placeBlocks(states, pos);
                 }
             }
-            case INNER_RADIAL -> this.placeInnerRadialBlocks(firstposlist);
-            case OUTER_RADIAL -> this.placeOuterRadialBlocks(firstposlist);
-            case INNER_CYLINDRICAL -> this.placeInnerCylindricalBlocks(firstposlist);
-            case OUTER_CYLINDRICAL -> this.placeOuterCylindricalBlocks(firstposlist);
-            case ALONG_DIRECTION -> this.placeDirectionalLayers(firstposlist);
+            case INNER_RADIAL -> this.placeInnerRadialBlocks(firstPosList);
+            case OUTER_RADIAL -> this.placeOuterRadialBlocks(firstPosList);
+            case INNER_CYLINDRICAL -> this.placeInnerCylindricalBlocks(firstPosList);
+            case OUTER_CYLINDRICAL -> this.placeOuterCylindricalBlocks(firstPosList);
+            case ALONG_DIRECTION -> this.placeDirectionalLayers(firstPosList);
             default -> throw new IllegalStateException("Unexpected value: " + layersType);
         }
     }
@@ -229,18 +225,17 @@ public abstract class ShapeLayer extends ShapePlaceType {
     /**
      * This method returns a temporary blockPos list of the first layer after verification. The first layer will the be placed in {@link #placeSurfaceBlockLayer(Set, int)}
      *
-     * @param firstposlist the list of BlockPos to verify at first
-     * @return the list of verified BlockPos
+     * @param firstPosList the list of BlockPos to verify at first
+     * @return the set of verified BlockPos
      */
-    public Set<BlockPos> placeFirstSurfaceBlockLayers(Set<BlockPos> firstposlist) {
-        Set<BlockPos> newposlist = new HashSet<>();
-        for (BlockPos pos : firstposlist) {
-            this.setBlocksToForce(WorldGenUtil.addBlockStateListtoBlockList(this.getBlocksToForce(), this.getBlockLayers().get(0).getBlockStates()));
+    public Set<BlockPos> placeFirstSurfaceBlockLayers(Set<BlockPos> firstPosList) {
+        Set<BlockPos> newPosList = new HashSet<>();
+        for (BlockPos pos : firstPosList) {
             if (verifyBlocks(pos)) {
-                newposlist.add(pos);
+                newPosList.add(pos);
             }
         }
-        return newposlist;
+        return newPosList;
     }
 
     /**
@@ -253,21 +248,21 @@ public abstract class ShapeLayer extends ShapePlaceType {
      * and remove the {@link BlockPos} from the existing list.
      * <p>  -If not, it does nothing.
      *
-     * @param poslist    the list of {@link BlockPos} of the precedent Layer
+     * @param posList    the list of {@link BlockPos} of the precedent Layer
      * @param layerIndex the index to get the depth
      * @return two {@link List}.
      * One corresponding to the final {@code List<BlockPos>} of the previous layer.
      * The other one, the rest of the {@code List<BlockPos>} of the structure that will be used by the next iteration.
      */
-    public List<Set<BlockPos>> placeSurfaceBlockLayer(Set<BlockPos> poslist, int layerIndex) {
-        Set<BlockPos> newposlist = new HashSet<>();
+    public List<Set<BlockPos>> placeSurfaceBlockLayer(Set<BlockPos> posList, int layerIndex) {
+        Set<BlockPos> newPosList = new HashSet<>();
 
         // Precompute the depth of the previous layer if it exists
         int previousLayerDepth = this.getBlockLayers().get(layerIndex - 1).getDepth();
 
-        // Convert poslist to a set for faster lookups
-        Set<BlockPos> posSet = new HashSet<>(poslist);
-        Iterator<BlockPos> iterator = poslist.iterator();
+        // Convert posList to a set for faster lookups
+        Set<BlockPos> posSet = new HashSet<>(posList);
+        Iterator<BlockPos> iterator = posList.iterator();
 
         while (iterator.hasNext()) {
             BlockPos pos = iterator.next();
@@ -277,13 +272,13 @@ public abstract class ShapeLayer extends ShapePlaceType {
             }
             iterator.remove();
             //placeBlocks(layerIndex, pos);
-            newposlist.add(pos);
+            newPosList.add(pos);
         }
-        return List.of(poslist, newposlist);
+        return List.of(posList, newPosList);
     }
 
     public void placeInnerCylindricalBlocks(Set<BlockPos> posList) {
-        List<Integer> layerDistance = new ArrayList<Integer>();
+        List<Integer> layerDistance = new ArrayList<>();
         layerDistance.add(this.getBlockLayers().get(0).getDepth());
 
         for (int i = 1; i < this.getBlockLayers().size(); i++) {
@@ -307,7 +302,7 @@ public abstract class ShapeLayer extends ShapePlaceType {
     }
 
     public void placeOuterCylindricalBlocks(Set<BlockPos> posList) {
-        List<Integer> layerDistance = new ArrayList<Integer>();
+        List<Integer> layerDistance = new ArrayList<>();
         layerDistance.add(this.getBlockLayers().get(0).getDepth());
 
         float maxDistance = 0;
@@ -338,7 +333,7 @@ public abstract class ShapeLayer extends ShapePlaceType {
     //be careful when using layers with 1 block depth, that might do some weird things
     public void placeInnerRadialBlocks(Set<BlockPos> posList) {
         Set<BlockList> blockLists = new HashSet<>();
-        List<Integer> layerDistance = new ArrayList<Integer>();
+        List<Integer> layerDistance = new ArrayList<>();
         layerDistance.add(this.getBlockLayers().get(0).getDepth());
 
         for (int i = 1; i < this.getBlockLayers().size(); i++) {
@@ -362,7 +357,7 @@ public abstract class ShapeLayer extends ShapePlaceType {
     }
 
     public void placeOuterRadialBlocks(Set<BlockPos> posList) {
-        List<Integer> layerDistance = new ArrayList<Integer>();
+        List<Integer> layerDistance = new ArrayList<>();
         layerDistance.add(this.getBlockLayers().get(0).getDepth());
 
         float maxDistance = 0;
@@ -403,11 +398,11 @@ public abstract class ShapeLayer extends ShapePlaceType {
      * <p> Then for every {@link Block}, it calculates the distance between the actual {@link Block} and the first one of the sorted list.
      * It will then place the Block corresponding to the actual depth, determined distance / first distance
      *
-     * @param firstposlist the list of the BlockPos
+     * @param firstPosList the list of the BlockPos
      */
-    private void placeDirectionalLayers(Set<BlockPos> firstposlist) {
+    private void placeDirectionalLayers(Set<BlockPos> firstPosList) {
         Vec3d direction = this.directionalLayerDirection.normalize();
-        List<BlockPos> poslist = new ArrayList<>(firstposlist);
+        List<BlockPos> poslist = new ArrayList<>(firstPosList);
 
         // Sort positions according to the directional vector
         poslist.sort(Comparator.comparingDouble(pos -> -pos.getX() * direction.x - pos.getY() * direction.y - pos.getZ() * direction.z));
@@ -426,7 +421,7 @@ public abstract class ShapeLayer extends ShapePlaceType {
             if (u != size) {
                 b = WorldGenUtil.getDistanceFromPointToPlane(direction, firstPoint.toCenterPos(), pos.toCenterPos());
                 if (g == 0 && b > 2.0E-4) {
-                    g = (float) (b);
+                    g = b;
                     h = (float) ((a) * g + 0.00002);
                 }
 
@@ -455,7 +450,7 @@ public abstract class ShapeLayer extends ShapePlaceType {
 
     public Set<BlockList> getInnerCylindricalBlocks(Set<BlockPos> posList) {
         Set<BlockList> blockLists = new HashSet<>();
-        List<Integer> layerDistance = new ArrayList<Integer>();
+        List<Integer> layerDistance = new ArrayList<>();
         layerDistance.add(this.getBlockLayers().get(0).getDepth());
 
         for (int i = 1; i < this.getBlockLayers().size(); i++) {
@@ -481,7 +476,7 @@ public abstract class ShapeLayer extends ShapePlaceType {
 
     public Set<BlockList> getOuterCylindricalBlocks(Set<BlockPos> posList) {
         Set<BlockList> blockLists = new HashSet<>();
-        List<Integer> layerDistance = new ArrayList<Integer>();
+        List<Integer> layerDistance = new ArrayList<>();
 
         //get the max distance of the list
         float maxDistance = 0;
@@ -516,7 +511,7 @@ public abstract class ShapeLayer extends ShapePlaceType {
     //be careful when using layers with 1 block depth, that might do some weird things
     public Set<BlockList> getInnerRadialBlocks(Set<BlockPos> posList) {
         Set<BlockList> blockLists = new HashSet<>();
-        List<Integer> layerDistance = new ArrayList<Integer>();
+        List<Integer> layerDistance = new ArrayList<>();
         layerDistance.add(this.getBlockLayers().get(0).getDepth());
 
         for (int i = 1; i < this.getBlockLayers().size(); i++) {
@@ -542,7 +537,7 @@ public abstract class ShapeLayer extends ShapePlaceType {
 
     public Set<BlockList> getOuterRadialBlocks(Set<BlockPos> posList) {
         Set<BlockList> blockLists = new HashSet<>();
-        List<Integer> layerDistance = new ArrayList<Integer>();
+        List<Integer> layerDistance = new ArrayList<>();
         layerDistance.add(this.getBlockLayers().get(0).getDepth());
 
         float maxDistance = 0;
@@ -574,9 +569,9 @@ public abstract class ShapeLayer extends ShapePlaceType {
 
     //TODO
     //known bug where the first layers is a little wider than what it is supposed to be
-    private Set<BlockList> getDirectionalLayers(Set<BlockPos> firstposlist) {
+    private Set<BlockList> getDirectionalLayers(Set<BlockPos> firstPosList) {
         Vec3d direction = this.directionalLayerDirection.normalize();
-        List<BlockPos> poslist = new ArrayList<>(firstposlist);
+        List<BlockPos> poslist = new ArrayList<>(firstPosList);
         Set<BlockList> blockLists = new HashSet<>();
 
         // Sort positions according to the directional vector
@@ -621,18 +616,18 @@ public abstract class ShapeLayer extends ShapePlaceType {
      */
     public enum LayersType {
         /**
-         * for a natural aspect
+         * for a natural aspect,
          * Put the first BlockStates on top of the structure for a coordinate x and z,
          * and until it reaches the depth of the layer
          */
         SURFACE,
         //place the blocks in a sphere shape, first layer being placed at the center
         INNER_RADIAL,
-        //place the blocks in a sphere shape, last layer being placed at the center
+        //place the blocks in a sphere shape, the last layer being placed at the center
         OUTER_RADIAL,
-        //place the blocks in a cylindrical shape, first layer being placed at the center
+        //place the blocks in a cylindrical shape, the first layer being placed at the center
         INNER_CYLINDRICAL,
-        //place the blocks in a cylindrical shape, last layer being placed near the center
+        //place the blocks in a cylindrical shape, the last layer being placed near the center
         OUTER_CYLINDRICAL,
         //place the blocks on a plan
         //the plan is defined by the vector "directionalLayerDirection"

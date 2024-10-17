@@ -1,17 +1,14 @@
 package net.rodofire.easierworldcreator.shapeutil;
 
-import net.minecraft.block.Block;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.StructureWorldAccess;
-import net.rodofire.easierworldcreator.worldgenutil.FastNoiseLite;
 import org.jetbrains.annotations.NotNull;
-
-import java.util.List;
 
 /**
  * class to change the filling of the structure
  * since that all structure may not need or can't have a custom filling like the line generation, it is not implemented in the ShapeGen class
  */
+@SuppressWarnings("unused")
 public abstract class FillableShape extends Shape {
     /**
      * if ==0, there will be no circle
@@ -33,17 +30,15 @@ public abstract class FillableShape extends Shape {
      * @param world           the world the spiral will spawn in
      * @param pos             the center of the spiral
      * @param placeMoment     define the moment where the shape will be placed
-     * @param force           boolean to force the pos of the blocks
-     * @param blocksToForce   a list of blocks that the blocks of the spiral can still force if force = false
      * @param layerPlace      how the {@code BlockStates} inside of a {@link BlockLayer} will be placed
      * @param layersType      how the Layers will be placed
-     * @param xrotation       first rotation around the x-axis
-     * @param yrotation       second rotation around the y-axis
-     * @param secondxrotation last rotation around the x-axis
+     * @param xRotation       first rotation around the x-axis
+     * @param yRotation       second rotation around the y-axis
+     * @param secondXRotation last rotation around the x-axis
      * @param featureName     the name of the feature
      */
-    public FillableShape(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, PlaceMoment placeMoment, boolean force, List<Block> blocksToForce, LayerPlace layerPlace, LayersType layersType, int xrotation, int yrotation, int secondxrotation, String featureName) {
-        super(world, pos, placeMoment, force, blocksToForce, layerPlace, layersType, xrotation, yrotation, secondxrotation, featureName);
+    public FillableShape(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, PlaceMoment placeMoment, LayerPlace layerPlace, LayersType layersType, int xRotation, int yRotation, int secondXRotation, String featureName) {
+        super(world, pos, placeMoment, layerPlace, layersType, xRotation, yRotation, secondXRotation, featureName);
     }
 
     /**
@@ -74,7 +69,7 @@ public abstract class FillableShape extends Shape {
          */
         FULL,
         /**
-         * Set custom filling type. It must be associated with a customfill float.
+         * Set custom filling type. It must be associated with a customFill float.
          */
         CUSTOM
     }
@@ -93,7 +88,7 @@ public abstract class FillableShape extends Shape {
     /**
      * method to change the filling Type
      *
-     * @param fillingType change the fillingtype
+     * @param fillingType change the fillingType
      */
     public void setFillingType(FillableShape.Type fillingType) {
         this.fillingType = fillingType;
@@ -122,13 +117,13 @@ public abstract class FillableShape extends Shape {
      * set the filling value depending on the filling type
      */
     protected void setFill() {
-        if (this.getFillingType() == FillableShape.Type.HALF) {
-            this.setCustomFill(0.5f);
+        if (this.fillingType == FillableShape.Type.HALF) {
+            this.customFill = 0.5f;
         }
-        if (this.getFillingType() == Type.FULL) {
-            this.setCustomFill(1.0f);
+        if (this.fillingType == FillableShape.Type.FULL) {
+            this.customFill = 1.0f;
         }
-        if (this.getCustomFill() > 1f) this.setCustomFill(1f);
-        if (this.getCustomFill() < 0f) this.setCustomFill(0f);
+        if (this.getCustomFill() > 1f) this.customFill = 1f;
+        if (this.getCustomFill() < 0f) this.customFill = 0f;
     }
 }

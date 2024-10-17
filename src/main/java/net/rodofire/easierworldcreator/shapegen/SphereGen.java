@@ -217,7 +217,7 @@ public class SphereGen extends FillableShape {
 
         BlockPos.Mutable mutable = new BlockPos.Mutable();
         List<BlockPos> poslist = new ArrayList<>();
-        if (this.getXrotation() % 180 == 0 && this.getYrotation() % 180 == 0 && this.getSecondXrotation() % 180 == 0) {
+        if (this.getXRotation() % 180 == 0 && this.getYRotation() % 180 == 0 && this.getSecondXRotation() % 180 == 0) {
             for (double theta = minLarge; theta <= maxLarge; theta += (double) 45 / maxLarge1) {
 
                 double xCosTheta = radiusX * FastMaths.getFastCos(theta);
@@ -304,7 +304,7 @@ public class SphereGen extends FillableShape {
         if (radiusX > 32 || radiusY > 32 || radiusZ > 32) {
             Easierworldcreator.LOGGER.warn("generating huge sphere (diameter > 64)");
         }
-        if (this.getXrotation() % 180 == 0 && this.getYrotation() % 180 == 0 && this.getSecondXrotation() % 180 == 0) {
+        if (this.getXRotation() % 180 == 0 && this.getYRotation() % 180 == 0 && this.getSecondXRotation() % 180 == 0) {
             for (float x = minX; x <= maxX; x++) {
                 float xx = x * x;
                 float xs = xx / largeXSquared;

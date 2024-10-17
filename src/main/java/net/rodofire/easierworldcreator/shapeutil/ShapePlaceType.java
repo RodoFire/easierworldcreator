@@ -9,7 +9,9 @@ import net.rodofire.easierworldcreator.worldgenutil.FastNoiseLite;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
+import java.util.Set;
 
+@SuppressWarnings("unused")
 public abstract class ShapePlaceType extends ShapeBase {
     private PlaceType placeType = PlaceType.BLOCKS;
     private LayerPlace layerPlace = LayerPlace.RANDOM;
@@ -24,12 +26,10 @@ public abstract class ShapePlaceType extends ShapeBase {
      * @param world         the world the spiral will spawn in
      * @param pos           the center of the spiral
      * @param placeMoment   define the moment where the shape will be placed
-     * @param force         boolean to force the pos of the blocks
-     * @param blocksToForce a list of blocks that the blocks of the spiral can still force if force = false
      * @param layerPlace    how the {@code @BlockStates} inside of a {@link BlockLayer} will be placed
      */
-    public ShapePlaceType(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, @NotNull PlaceMoment placeMoment, boolean force, List<Block> blocksToForce, LayerPlace layerPlace) {
-        super(world, pos, placeMoment, force, blocksToForce);
+    public ShapePlaceType(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, @NotNull PlaceMoment placeMoment, LayerPlace layerPlace) {
+        super(world, pos, placeMoment);
         this.layerPlace = layerPlace;
     }
 
@@ -100,7 +100,7 @@ public abstract class ShapePlaceType extends ShapeBase {
     /**
      * Place blocks without verification. Used for precomputed List<BlockStates> instead of searching it on the BlockLayer
      *
-     * @param states states the states that will be choosed
+     * @param states states the states that will be chosen
      * @param pos    the pos of the block
      */
     public void placeBlocks(List<BlockState> states, BlockPos pos) {
@@ -129,41 +129,57 @@ public abstract class ShapePlaceType extends ShapeBase {
      * @return boolean if the block was placed
      */
     public boolean placeBlocksWithVerification(int index, BlockPos pos) {
+        BlockLayer blockLayer = this.getBlockLayers().get(index);
         switch (this.layerPlace) {
             case RANDOM:
-                return BlockPlaceUtil.setRandomBlockWithVerification(this.getWorld(), this.getForce(), this.getBlocksToForce(), this.getBlockLayers().get(index).getBlockStates(), pos);
+                return BlockPlaceUtil.setRandomBlockWithVerification(this.getWorld(), blockLayer.isForce(), blockLayer.getBlocksToForce(), blockLayer.getBlockStates(), pos);
             case NOISE2D:
-                return BlockPlaceUtil.set2dNoiseBlockWithVerification(this.getWorld(), this.getForce(), this.getBlocksToForce(), this.getBlockLayers().get(index).getBlockStates(), pos, this.noise);
+                return BlockPlaceUtil.set2dNoiseBlockWithVerification(this.getWorld(), blockLayer.isForce(), blockLayer.getBlocksToForce(), this.getBlockLayers().get(index).getBlockStates(), pos, this.noise);
             case NOISE3D:
-                return BlockPlaceUtil.set3dNoiseBlockWithVerification(this.getWorld(), this.getForce(), this.getBlocksToForce(), this.getBlockLayers().get(index).getBlockStates(), pos, this.noise);
+                return BlockPlaceUtil.set3dNoiseBlockWithVerification(this.getWorld(), blockLayer.isForce(), blockLayer.getBlocksToForce(), this.getBlockLayers().get(index).getBlockStates(), pos, this.noise);
             default:
-                boolean bl = BlockPlaceUtil.setBlockWithOrderWithVerification(this.getWorld(), this.getForce(), this.getBlocksToForce(), this.getBlockLayers().get(index).getBlockStates(), pos, this.placedBlocks);
+                boolean bl = BlockPlaceUtil.setBlockWithOrderWithVerification(this.getWorld(), blockLayer.isForce(), blockLayer.getBlocksToForce(), this.getBlockLayers().get(index).getBlockStates(), pos, this.placedBlocks);
                 this.placedBlocks = (this.placedBlocks + 1) % (this.getBlockLayers().size() - 1);
                 return bl;
         }
     }
 
     /**
-     * place a block in the this.getWorld() at the pos if it is able to
+     * place a block in the this.getWorld() at the pos if it is able to.
      * precomputed list for little performance improvement
      *
-     * @param states the states that will be choosed
+     * @param states        the states that will be chosen
+     * @param pos           the pos of the block
+     * @param force         determine if the block can be posed on top of any block
+     * @param blocksToForce set of blocks that determine the blocks that can be still forced
+     * @return boolean if the block was placed
+     */
+    public boolean placeBlocksWithVerification(List<BlockState> states, BlockPos pos, boolean force, Set<Block> blocksToForce) {
+        switch (this.layerPlace) {
+            case RANDOM:
+                return BlockPlaceUtil.setRandomBlockWithVerification(this.getWorld(), force, blocksToForce, states, pos);
+            case NOISE2D:
+                return BlockPlaceUtil.set2dNoiseBlockWithVerification(this.getWorld(), force, blocksToForce, states, pos, this.noise);
+            case NOISE3D:
+                return BlockPlaceUtil.set3dNoiseBlockWithVerification(this.getWorld(), force, blocksToForce, states, pos, this.noise);
+            default:
+                boolean bl = BlockPlaceUtil.setBlockWithOrderWithVerification(this.getWorld(), force, blocksToForce, states, pos, this.placedBlocks);
+                this.placedBlocks = (this.placedBlocks + 1) % (this.getBlockLayers().size() - 1);
+                return bl;
+        }
+
+    }
+
+    /**
+     * place a block in the this.getWorld() at the pos if it is able to.
+     * precomputed list for little performance improvement
+     *
+     * @param states the states that will be chosen
      * @param pos    the pos of the block
      * @return boolean if the block was placed
      */
     public boolean placeBlocksWithVerification(List<BlockState> states, BlockPos pos) {
-        switch (this.layerPlace) {
-            case RANDOM:
-                return BlockPlaceUtil.setRandomBlockWithVerification(this.getWorld(), this.getForce(), this.getBlocksToForce(), states, pos);
-            case NOISE2D:
-                return BlockPlaceUtil.set2dNoiseBlockWithVerification(this.getWorld(), this.getForce(), this.getBlocksToForce(), states, pos, this.noise);
-            case NOISE3D:
-                return BlockPlaceUtil.set3dNoiseBlockWithVerification(this.getWorld(), this.getForce(), this.getBlocksToForce(), states, pos, this.noise);
-            default:
-                boolean bl = BlockPlaceUtil.setBlockWithOrderWithVerification(this.getWorld(), this.getForce(), this.getBlocksToForce(), states, pos, this.placedBlocks);
-                this.placedBlocks = (this.placedBlocks + 1) % (this.getBlockLayers().size() - 1);
-                return bl;
-        }
+        return this.placeBlocksWithVerification(states, pos, false, Set.of());
 
     }
 
@@ -190,10 +206,10 @@ public abstract class ShapePlaceType extends ShapeBase {
     }
 
     /**
-     * Used to get the blocksState notably used during this.getWorld() gen, this doesn't place anything
-     * Used for precomputed BlockState list
+     * Used to get the blocksState notably used during this.getWorld() gen, this doesn't place anything.
+     * Used for a precomputed BlockState list
      *
-     * @param states the states that will be choosed
+     * @param states the states that will be chosen
      * @param pos    the pos of the block
      * @return the BlockState related to the pos
      **/
@@ -213,7 +229,7 @@ public abstract class ShapePlaceType extends ShapeBase {
     }
 
     public boolean verifyBlocks(BlockPos pos) {
-        return BlockPlaceUtil.verifyBlock(this.getWorld(), this.getForce(), getBlocksToForce(), pos);
+        return BlockPlaceUtil.verifyBlock(this.getWorld(), false, Set.of(), pos);
     }
 
     /**

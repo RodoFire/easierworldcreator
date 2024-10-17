@@ -230,7 +230,7 @@ public class CylinderGen extends FillableShape {
 
         //Rotating a shape requires more blocks.
         //This verification is there to avoid some unnecessary calculations when the rotations don't have any impact on the number of blocks
-        if (this.getXrotation() % 180 == 0 && this.getYrotation() % 180 == 0 && this.getSecondXrotation() % 180 == 0) {
+        if (this.getXRotation() % 180 == 0 && this.getYRotation() % 180 == 0 && this.getSecondXRotation() % 180 == 0) {
 
             for (float x = -this.radiusX; x <= this.radiusX; x += 1f) {
                 float x2 = x * x;
@@ -298,7 +298,7 @@ public class CylinderGen extends FillableShape {
     public void generateEmptyCylinder(Map<ChunkPos, Set<BlockPos>> chunkMap) {
         //Rotating a shape requires more blocks.
         //This verification is there to avoid some unnecessary calculations when the rotations don't have any impact on the number of blocks
-        if (this.getXrotation() % 180 == 0 && this.getYrotation() % 180 == 0 && this.getSecondXrotation() == 0) {
+        if (this.getXRotation() % 180 == 0 && this.getYRotation() % 180 == 0 && this.getSecondXRotation() == 0) {
             for (float u = 0; u < 360; u += (float) 45 / Math.max(this.radiusZ, this.radiusX)) {
                 float x = (float) (radiusX * FastMaths.getFastCos(u));
                 float z = (float) (radiusZ * FastMaths.getFastSin(u));
