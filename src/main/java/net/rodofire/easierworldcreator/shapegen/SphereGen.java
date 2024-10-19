@@ -218,13 +218,13 @@ public class SphereGen extends FillableShape {
         BlockPos.Mutable mutable = new BlockPos.Mutable();
         List<BlockPos> poslist = new ArrayList<>();
         if (this.getXRotation() % 180 == 0 && this.getYRotation() % 180 == 0 && this.getSecondXRotation() % 180 == 0) {
-            for (double theta = minLarge; theta <= maxLarge; theta += (double) 45 / maxLarge1) {
+            for (float theta = minLarge; theta <= maxLarge; theta += (float) 45 / maxLarge1) {
 
                 double xCosTheta = radiusX * FastMaths.getFastCos(theta);
                 double zSinTheta = radiusZ * FastMaths.getFastSin(theta);
 
 
-                for (double phi = minHeight; phi <= maxHeight; phi += (double) 45 / maxLarge1) {
+                for (float phi = minHeight; phi <= maxHeight; phi += (float) 45 / maxLarge1) {
                     double cosPhi = FastMaths.getFastCos(phi);
                     int x = (int) (xCosTheta * cosPhi);
                     int y = (int) (radiusY * FastMaths.getFastSin(phi));
@@ -237,17 +237,17 @@ public class SphereGen extends FillableShape {
                 }
             }
         } else {
-            for (double theta = minLarge; theta <= maxLarge; theta += (double) 45 / maxLarge1) {
+            for (float theta = minLarge; theta <= maxLarge; theta += (float) 45 / maxLarge1) {
 
-                double xCosTheta = radiusX * FastMaths.getFastCos(theta);
-                double zSinTheta = radiusZ * FastMaths.getFastSin(theta);
+                float xCosTheta = radiusX * FastMaths.getFastCos(theta);
+                float zSinTheta = radiusZ * FastMaths.getFastSin(theta);
 
-                for (double phi = minHeight; phi <= maxHeight; phi += (double) 45 / maxLarge1) {
-                    double cosPhi = FastMaths.getFastCos(phi);
+                for (float phi = minHeight; phi <= maxHeight; phi += (float) 45 / maxLarge1) {
+                    float cosPhi = FastMaths.getFastCos(phi);
 
-                    float x = (float) (xCosTheta * cosPhi);
-                    float y = (float) (radiusY * FastMaths.getFastSin(phi));
-                    float z = (float) (zSinTheta * cosPhi);
+                    float x = xCosTheta * cosPhi;
+                    float y = (radiusY * FastMaths.getFastSin(phi));
+                    float z = zSinTheta * cosPhi;
                     BlockPos pos = this.getCoordinatesRotation(x, y, z, this.getPos());
                     if (!this.biggerThanChunk && WorldGenUtil.isPosAChunkFar(pos, this.getPos()))
                         this.biggerThanChunk = true;

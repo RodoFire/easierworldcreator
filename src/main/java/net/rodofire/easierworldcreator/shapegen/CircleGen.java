@@ -215,8 +215,8 @@ public class CircleGen extends FillableShape {
         //This verification is there to avoid some unnecessary calculations when the rotations don't have any impact on the number of blocks
         if (this.getXRotation() % 180 == 0 && this.getYRotation() % 180 == 0 && this.getSecondXRotation() == 0) {
             for (float u = 0; u < 360; u += (float) 45 / Math.max(this.radiusZ, this.radiusX)) {
-                float x = (float) (radiusX * FastMaths.getFastCos(u));
-                float z = (float) (radiusZ * FastMaths.getFastSin(u));
+                float x = radiusX * FastMaths.getFastCos(u);
+                float z = radiusZ * FastMaths.getFastSin(u);
                 BlockPos pos = new BlockPos((int) (this.getPos().getX() + x), this.getPos().getY(), (int) (this.getPos().getZ() + z));
                 if (!this.biggerThanChunk && WorldGenUtil.isPosAChunkFar(pos, this.getPos()))
                     this.biggerThanChunk = true;
@@ -224,8 +224,8 @@ public class CircleGen extends FillableShape {
             }
         } else {
             for (float u = 0; u < 360; u += (float) 35 / Math.max(this.radiusZ, this.radiusX)) {
-                float x = (float) (radiusX * FastMaths.getFastCos(u));
-                float z = (float) (radiusZ * FastMaths.getFastSin(u));
+                float x = radiusX * FastMaths.getFastCos(u);
+                float z = radiusZ * FastMaths.getFastSin(u);
                 BlockPos pos = this.getCoordinatesRotation(x, 0, z, this.getPos());
                 if (!this.biggerThanChunk && WorldGenUtil.isPosAChunkFar(pos, this.getPos()))
                     this.biggerThanChunk = true;

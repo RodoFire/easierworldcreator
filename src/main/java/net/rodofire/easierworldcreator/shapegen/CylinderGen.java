@@ -122,7 +122,7 @@ Transparent frame
  * the methods in this class basically stack multiple circles to generate a cylinder
  * <p> - Since 2.1.0, the shape doesn't return a {@link List<BlockPos>} but it returns instead a {@code List<Set<BlockPos>>}
  * <p> - Before 2.1.0, the BlockPos list was a simple list.
- * <p> - Starting from 2.1.0, the shapes returns a list of {@link ChunkPos} that has a set of {@link BlockPos}
+ * <p> - Starting from 2.1.0, the shapes return a list of {@link ChunkPos} that has a set of {@link BlockPos}
  * <p>The change from {@link List} to {@link Set} was done to avoid duplicates BlockPos which resulted in unnecessary calculations.
  * <p>this allow easy multithreading for the Block assignment done in the {@link Shape} which result in better performance;
  * </p>
@@ -300,8 +300,8 @@ public class CylinderGen extends FillableShape {
         //This verification is there to avoid some unnecessary calculations when the rotations don't have any impact on the number of blocks
         if (this.getXRotation() % 180 == 0 && this.getYRotation() % 180 == 0 && this.getSecondXRotation() == 0) {
             for (float u = 0; u < 360; u += (float) 45 / Math.max(this.radiusZ, this.radiusX)) {
-                float x = (float) (radiusX * FastMaths.getFastCos(u));
-                float z = (float) (radiusZ * FastMaths.getFastSin(u));
+                float x = radiusX * FastMaths.getFastCos(u);
+                float z = radiusZ * FastMaths.getFastSin(u);
                 for (float y = 0; y <= this.height; y += 1f) {
                     BlockPos pos = new BlockPos((int) (this.getPos().getX() + x), this.getPos().getY(), (int) (this.getPos().getZ() + z));
                     if (!this.biggerThanChunk && WorldGenUtil.isPosAChunkFar(pos, this.getPos()))
@@ -311,8 +311,8 @@ public class CylinderGen extends FillableShape {
             }
         } else {
             for (float u = 0; u < 360; u += (float) 35 / Math.max(this.radiusZ, this.radiusX)) {
-                float x = (float) (radiusX * FastMaths.getFastCos(u));
-                float z = (float) (radiusZ * FastMaths.getFastSin(u));
+                float x = radiusX * FastMaths.getFastCos(u);
+                float z = radiusZ * FastMaths.getFastSin(u);
                 for (float y = 0; y <= this.height; y += 0.5f) {
                     BlockPos pos = this.getCoordinatesRotation(x, 0, z, this.getPos());
                     if (!this.biggerThanChunk && WorldGenUtil.isPosAChunkFar(pos, this.getPos()))

@@ -124,7 +124,7 @@ import java.util.*;
  * Class to generate Spiral related shapes
  * <p>Since 2.1.0, the shape doesn't return a {@code List<BlockPos>} but it returns instead a {@code List<Set<BlockPos>>}
  * <p>Before 2.1.0, the BlockPos list was a simple list.
- * <p>Starting from 2.1.0, the shapes returns a list of {@link ChunkPos} that has a set of {@link BlockPos}
+ * <p>Starting from 2.1.0, the shapes return a list of {@link ChunkPos} that has a set of {@link BlockPos}
  * <p>The change from {@link List} to {@link Set} was done to avoid duplicates BlockPos which resulted in unnecessary calculations.
  * <p>this allow easy multithreading for the Block assignment done in the {@link Shape} which result in better performance;
  */
@@ -357,8 +357,8 @@ public class SpiralGen extends Shape {
                 float percentage = (float) i / (maxLarge * this.turnNumber * height);
                 float radiusX = this.getXRadius(percentage);
                 float radiusZ = this.getZRadius(percentage);
-                int x = (int) (radiusX * FastMaths.getFastCos(a * i + offset));
-                int z = (int) (radiusZ * FastMaths.getFastSin(a * i + offset));
+                int x = (int) (radiusX * FastMaths.getFastCos((float) (a * i + offset)));
+                int z = (int) (radiusZ * FastMaths.getFastSin((float) (a * i + offset)));
                 int y = (int) (i / f);
                 BlockPos pos1 = new BlockPos(pos.getX() + x, pos.getY() + y, pos.getZ() + z);
                 if (!this.biggerThanChunk && WorldGenUtil.isPosAChunkFar(pos1, this.getPos()))
@@ -370,8 +370,8 @@ public class SpiralGen extends Shape {
                 float percentage = (float) i / (maxLarge * this.turnNumber * height);
                 float radiusX = this.getXRadius(percentage);
                 float radiusZ = this.getZRadius(percentage);
-                float x = (float) (radiusX * FastMaths.getFastCos(a * i + offset));
-                float z = (float) (radiusZ * FastMaths.getFastSin(a * i + offset));
+                float x = radiusX * FastMaths.getFastCos((float) (a * i + offset));
+                float z = radiusZ * FastMaths.getFastSin((float) (a * i + offset));
                 float y = (float) (i / f);
                 BlockPos pos2 = this.getCoordinatesRotation(x, y, z, pos);
                 if (!this.biggerThanChunk && WorldGenUtil.isPosAChunkFar(pos2, this.getPos()))
@@ -432,8 +432,8 @@ public class SpiralGen extends Shape {
 
                 for (double j = 0; j <= maxLarge; j++) {
 
-                    int x = (int) (gainX * j * FastMaths.getFastCos(a * i + offset));
-                    int z = (int) (gainZ * j * FastMaths.getFastSin(a * i + offset));
+                    int x = (int) (gainX * j * FastMaths.getFastCos((float) (a * i + offset)));
+                    int z = (int) (gainZ * j * FastMaths.getFastSin((float) (a * i + offset)));
                     double distance = FastMaths.getLength(x, z);
 
 
@@ -472,8 +472,8 @@ public class SpiralGen extends Shape {
 
                 for (double j = 0; j <= maxLarge; j++) {
 
-                    int x = (int) (gainX * j * FastMaths.getFastCos(a * i + offset));
-                    int z = (int) (gainZ * j * FastMaths.getFastSin(a * i + offset));
+                    int x = (int) (gainX * j * FastMaths.getFastCos((float) (a * i + offset)));
+                    int z = (int) (gainZ * j * FastMaths.getFastSin((float) (a * i + offset)));
 
                     double distance = FastMaths.getLength(x, z);
 

@@ -78,7 +78,7 @@ import java.util.*;
  * Class to generate Torus related shapes
  * <p>Since 2.1.0, the shape doesn't return a {@link List<BlockPos>} but it returns instead a {@code List<Set<BlockPos>>}
  * <p>Before 2.1.0, the BlockPos list was a simple list.
- * <p>Starting from 2.1.0, the shapes returns a list of {@link ChunkPos} that has a set of {@link BlockPos}
+ * <p>Starting from 2.1.0, the shapes return a list of {@link ChunkPos} that has a set of {@link BlockPos}
  * <p>The change from {@link List} to {@link Set} was done to avoid duplicates BlockPos which resulted in unnecessary calculations.
  * <p>this allow easy multithreading for the Block assignment done in the {@link Shape} which result in better performance;
  * </p>
@@ -92,9 +92,9 @@ public class TorusGen extends FillableShape {
 
     //set the shape of the torus
     private TorusType torusType = TorusType.FULL;
-    //float that determines how much of the structure is filled along y-axis
+    //float that determines how much of the structure is filled along the y-axis
     private float verticalTorus = 1f;
-    //float that determines how much of the structure is filled along x-axis
+    //float that determines how much of the structure is filled along the x-axis
     private float horizontalTorus = 1f;
 
     /**
@@ -215,7 +215,7 @@ public class TorusGen extends FillableShape {
 
 
     /**
-     * generates a full tore / tore with custom filling
+     * generates a full torus / tore with custom filling
      * the shape with the torus might be different from the empty one if you're using custom torus filling
      */
     public void generateFullTore(Map<ChunkPos, Set<BlockPos>> chunkMap) {

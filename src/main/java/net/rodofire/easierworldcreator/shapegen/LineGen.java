@@ -58,6 +58,14 @@ public class LineGen extends Shape {
         this.secondPos = secondPos;
     }
 
+    public BlockPos getSecondPos() {
+        return secondPos;
+    }
+
+    public void setSecondPos(BlockPos secondPos) {
+        this.secondPos = secondPos;
+    }
+
     @Override
     public List<Set<BlockPos>> getBlockPos() {
         Direction direction;

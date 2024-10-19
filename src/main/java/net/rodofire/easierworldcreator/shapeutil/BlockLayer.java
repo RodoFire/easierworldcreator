@@ -222,7 +222,7 @@ public class BlockLayer {
 
 
     /**
-     * gives you the Set of every blocks that can be forced
+     * gives you the Set of every block that can be forced
      *
      * @return the set of the blocks that can be forced
      */
