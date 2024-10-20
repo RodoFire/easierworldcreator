@@ -34,14 +34,14 @@ public class LineGen extends Shape {
      * @param placeMoment     define the moment where the shape will be placed
      * @param layerPlace      how the {@code @BlockStates} inside of a {@link BlockLayer} will be placed
      * @param layersType      how the Layers will be placed
-     * @param xRotation       first rotation around the x-axis
-     * @param yRotation       second rotation around the y-axis
-     * @param secondXRotation last rotation around the x-axis
+     * @param yRotation       first rotation around the y-axis
+     * @param zRotation       second rotation around the z-axis
+     * @param secondYRotation last rotation around the y-axis
      * @param featureName     the name of the feature
      * @param secondPos       the second pos on which the line has to go
      */
-    public LineGen(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, @NotNull PlaceMoment placeMoment, LayerPlace layerPlace, LayersType layersType, int xRotation, int yRotation, int secondXRotation, String featureName, BlockPos secondPos) {
-        super(world, pos, placeMoment, layerPlace, layersType, xRotation, yRotation, secondXRotation, featureName);
+    public LineGen(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, @NotNull PlaceMoment placeMoment, LayerPlace layerPlace, LayersType layersType, int yRotation, int zRotation, int secondYRotation, String featureName, BlockPos secondPos) {
+        super(world, pos, placeMoment, layerPlace, layersType, yRotation, zRotation, secondYRotation, featureName);
         this.secondPos = secondPos;
     }
 

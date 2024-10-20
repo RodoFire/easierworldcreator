@@ -44,13 +44,13 @@ public abstract class Shape extends ShapeRotation {
      * @param placeMoment     define the moment where the shape will be placed
      * @param layerPlace      how the {@code @BlockStates} inside of a {@link BlockLayer} will be placed
      * @param layersType      how the Layers will be placed
-     * @param xRotation       first rotation around the x-axis
-     * @param yRotation       second rotation around the y-axis
-     * @param secondXRotation last rotation around the x-axis
+     * @param yRotation       first rotation around the y-axis
+     * @param zRotation       second rotation around the z-axis
+     * @param secondYRotation last rotation around the y-axis
      * @param featureName     the name of the feature
      */
-    public Shape(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, @NotNull PlaceMoment placeMoment, LayerPlace layerPlace, LayersType layersType, int xRotation, int yRotation, int secondXRotation, String featureName) {
-        super(world, pos, placeMoment, layerPlace, layersType, xRotation, yRotation, secondXRotation);
+    public Shape(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, @NotNull PlaceMoment placeMoment, LayerPlace layerPlace, LayersType layersType, int yRotation, int zRotation, int secondYRotation, String featureName) {
+        super(world, pos, placeMoment, layerPlace, layersType, yRotation, zRotation, secondYRotation);
         this.featureName = featureName;
     }
 
@@ -79,14 +79,6 @@ public abstract class Shape extends ShapeRotation {
         List<Set<BlockPos>> posList = this.getBlockPos();
         long end = System.nanoTime();
         long diff = end - start;
-        Easierworldcreator.LOGGER.info("Shape coordinate calculations took : {}ms", ((double) (diff / 1000)) / 1000);
-        start = System.nanoTime();
-        for (Set<BlockPos> pos : posList) {
-            this.getLayers(pos);
-        }
-
-        end = System.nanoTime();
-        diff = end - start;
         Easierworldcreator.LOGGER.info("Shape coordinate calculations took : {}ms", ((double) (diff / 1000)) / 1000);
         place(posList);
     }

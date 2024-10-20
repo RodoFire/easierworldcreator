@@ -163,17 +163,17 @@ public class SpiralGen extends Shape {
      * @param placeMoment     define the moment where the shape will be placed
      * @param layerPlace      how the {@code @BlockStates} inside of a {@link BlockLayer} will be placed
      * @param layersType      how the Layers will be placed
-     * @param xRotation       first rotation around the x-axis
-     * @param yRotation       second rotation around the y-axis
-     * @param secondXRotation last rotation around the x-axis
+     * @param yRotation       first rotation around the y-axis
+     * @param zRotation       second rotation around the z-axis
+     * @param secondYRotation last rotation around the y-axis
      * @param featureName     the name of the feature
      * @param radiusX         the radius on the x-axis. The first value corresponding to the radius at the base of the spiral, the second, corresponding to the radius at the top of the spiral
      * @param radiusZ         the radius on the z-axis. The first value corresponding to the radius at the base of the spiral, the second, corresponding to the radius at the top of the spiral
      * @param height          the height of the spiral
      * @param turnNumber      the number of turn that the spiral will do (ex: 1 -> 1 turn, 3.5 -> 3.5 turn)
      */
-    public SpiralGen(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, PlaceMoment placeMoment, LayerPlace layerPlace, LayersType layersType, int xRotation, int yRotation, int secondXRotation, String featureName, Pair<Integer, Integer> radiusX, Pair<Integer, Integer> radiusZ, int height, float turnNumber) {
-        super(world, pos, placeMoment, layerPlace, layersType, xRotation, yRotation, secondXRotation, featureName);
+    public SpiralGen(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, PlaceMoment placeMoment, LayerPlace layerPlace, LayersType layersType, int yRotation, int zRotation, int secondYRotation, String featureName, Pair<Integer, Integer> radiusX, Pair<Integer, Integer> radiusZ, int height, float turnNumber) {
+        super(world, pos, placeMoment, layerPlace, layersType, yRotation, zRotation, secondYRotation, featureName);
         this.radiusX = radiusX;
         this.radiusZ = radiusZ;
         this.height = height;
@@ -352,7 +352,7 @@ public class SpiralGen extends Shape {
         int maxLarge = Math.max(Math.max(radiusX.getLeft(), radiusX.getRight()), Math.max(radiusZ.getLeft(), radiusZ.getRight()));
         double f = (this.turnNumber * maxLarge);
         double a = (double) 360 / (height * maxLarge);
-        if (this.getXRotation() % 180 == 0 && this.getYRotation() % 180 == 0 && this.getSecondXRotation() == 0) {
+        if (this.getYRotation() % 180 == 0 && this.getZRotation() % 180 == 0 && this.getSecondYRotation() == 0) {
             for (double i = 0; i < maxLarge * this.turnNumber * height; i++) {
                 float percentage = (float) i / (maxLarge * this.turnNumber * height);
                 float radiusX = this.getXRadius(percentage);
@@ -414,7 +414,7 @@ public class SpiralGen extends Shape {
         double a = (double) 360 / (height * maxLarge);
 
 
-        if (this.getXRotation() % 180 == 0 && this.getYRotation() % 180 == 0 && this.getSecondXRotation() == 0 && this.helicoidAngle.getLeft() < 45 && this.helicoidAngle.getLeft() > -45 && this.helicoidAngle.getRight() < 45 && this.helicoidAngle.getRight() > -45) {
+        if (this.getYRotation() % 180 == 0 && this.getZRotation() % 180 == 0 && this.getSecondYRotation() == 0 && this.helicoidAngle.getLeft() < 45 && this.helicoidAngle.getLeft() > -45 && this.helicoidAngle.getRight() < 45 && this.helicoidAngle.getRight() > -45) {
             for (double i = 0; i < maxLarge * this.turnNumber * height; i++) {
 
                 float percentage = (float) i / (maxLarge * this.turnNumber * height);

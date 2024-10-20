@@ -59,18 +59,18 @@ public class CircleGen extends FillableShape {
      * @param placeMoment     define the moment where the shape will be placed
      * @param layerPlace      how the {@code @BlockStates} inside of a {@link BlockLayer} will be placed
      * @param layersType      how the Layers will be placed
-     * @param xRotation       first rotation around the x-axis
-     * @param yRotation       second rotation around the y-axis
-     * @param secondXRotation last rotation around the x-axis
+     * @param yRotation       first rotation around the y-axis
+     * @param zRotation       second rotation around the z-axis
+     * @param secondYRotation last rotation around the y-axis
      * @param featureName     the name of the feature
      * @param radiusX         the radius of the x-axis
      * @param radiusZ         the radius of the z-axis
      */
     public CircleGen(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, PlaceMoment placeMoment,
                      LayerPlace layerPlace, LayersType layersType,
-                     int xRotation, int yRotation, int secondXRotation, String featureName,
+                     int yRotation, int zRotation, int secondYRotation, String featureName,
                      int radiusX, int radiusZ) {
-        super(world, pos, placeMoment, layerPlace, layersType, xRotation, yRotation, secondXRotation, featureName);
+        super(world, pos, placeMoment, layerPlace, layersType, yRotation, zRotation, secondYRotation, featureName);
         this.radiusX = radiusX;
         this.radiusZ = radiusZ;
     }
@@ -148,7 +148,7 @@ public class CircleGen extends FillableShape {
 
         //Rotating a shape requires more blocks.
         //This verification is there to avoid some unnecessary calculations when the rotations don't have any impact on the number of blocks
-        if (this.getXRotation() % 180 == 0 && this.getYRotation() % 180 == 0 && this.getSecondXRotation() % 180 == 0) {
+        if (this.getYRotation() % 180 == 0 && this.getZRotation() % 180 == 0 && this.getSecondYRotation() % 180 == 0) {
             for (float x = -this.radiusX; x <= this.radiusX; x += 1) {
                 float x2 = x * x;
                 float xSquared = x * x / radiusXSquared;
@@ -213,7 +213,7 @@ public class CircleGen extends FillableShape {
 
         //Rotating a shape requires more blocks.
         //This verification is there to avoid some unnecessary calculations when the rotations don't have any impact on the number of blocks
-        if (this.getXRotation() % 180 == 0 && this.getYRotation() % 180 == 0 && this.getSecondXRotation() == 0) {
+        if (this.getYRotation() % 180 == 0 && this.getZRotation() % 180 == 0 && this.getSecondYRotation() == 0) {
             for (float u = 0; u < 360; u += (float) 45 / Math.max(this.radiusZ, this.radiusX)) {
                 float x = radiusX * FastMaths.getFastCos(u);
                 float z = radiusZ * FastMaths.getFastSin(u);

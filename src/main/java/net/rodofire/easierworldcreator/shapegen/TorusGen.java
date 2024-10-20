@@ -105,17 +105,17 @@ public class TorusGen extends FillableShape {
      * @param placeMoment     define the moment where the shape will be placed
      * @param layerPlace      how the {@code @BlockStates} inside of a {@link BlockLayer} will be placed
      * @param layersType      how the Layers will be placed
-     * @param xRotation       first rotation around the x-axis
-     * @param yRotation       second rotation around the y-axis
-     * @param secondXRotation last rotation around the x-axis
+     * @param yRotation       first rotation around the y-axis
+     * @param zRotation       second rotation around the z-axis
+     * @param secondYRotation last rotation around the y-axis
      * @param featureName     the name of the feature
      * @param innerRadiusX    the radius of the inner circle on the x-axis
      * @param outerRadiusX    the radius of the outer circle on the x-axis
      * @param innerRadiusZ    the radius of the inner circle on the z-axis
      * @param outerRadiusZ    the radius of the outer circle on the z-axis
      */
-    public TorusGen(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, PlaceMoment placeMoment, LayerPlace layerPlace, LayersType layersType, int xRotation, int yRotation, int secondXRotation, String featureName, int innerRadiusX, int outerRadiusX, int innerRadiusZ, int outerRadiusZ) {
-        super(world, pos, placeMoment, layerPlace, layersType, xRotation, yRotation, secondXRotation, featureName);
+    public TorusGen(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, PlaceMoment placeMoment, LayerPlace layerPlace, LayersType layersType, int yRotation, int zRotation, int secondYRotation, String featureName, int innerRadiusX, int outerRadiusX, int innerRadiusZ, int outerRadiusZ) {
+        super(world, pos, placeMoment, layerPlace, layersType, yRotation, zRotation, secondYRotation, featureName);
         this.innerRadiusX = innerRadiusX;
         this.outerRadiusX = outerRadiusX;
         this.innerRadiusZ = innerRadiusZ;
@@ -232,8 +232,8 @@ public class TorusGen extends FillableShape {
 
         int b = maxOuterRadiusX + maxInnerRadiusX;
 
-        if ((verticalTorus == 1f && horizontalTorus == 1f && this.getXRotation() % 180 == 0 && this.getYRotation() % 180 == 0 && this.getSecondXRotation() % 180 == 0)
-                || (verticalTorus == 1f && this.getYRotation() % 180 == 0) || (horizontalTorus == 1f && this.getXRotation() % 180 == 0 && this.getSecondXRotation() % 180 == 0)) {
+        if ((verticalTorus == 1f && horizontalTorus == 1f && this.getYRotation() % 180 == 0 && this.getZRotation() % 180 == 0 && this.getSecondYRotation() % 180 == 0)
+                || (verticalTorus == 1f && this.getYRotation() % 180 == 0) || (horizontalTorus == 1f && this.getYRotation() % 180 == 0 && this.getSecondYRotation() % 180 == 0)) {
 
             for (int x = (-b); x <= 2 * b * this.horizontalTorus - b; x++) {
                 int xSquared = x * x;
@@ -335,7 +335,7 @@ public class TorusGen extends FillableShape {
         int maxOuterRadius = Math.max(outerRadiusX, outerRadiusZ);
         int maxInnerRadius = Math.max(innerRadiusX, innerRadiusZ);
         //many if statement to avoid doing multiple if in the loops
-        if (this.getXRotation() % 180 == 0 && this.getYRotation() == 0 && this.getSecondXRotation() % 180 == 0) {
+        if (this.getYRotation() % 180 == 0 && this.getZRotation() == 0 && this.getSecondYRotation() % 180 == 0) {
             for (int u = 0; u <= this.verticalTorus * 360; u += 40 / maxOuterRadius) {
                 for (int v = 0; v <= this.horizontalTorus * 360; v += 45 / maxInnerRadius) {
                     Vec3d vec = this.getEllipsoidalToreCoordinates(u, v);

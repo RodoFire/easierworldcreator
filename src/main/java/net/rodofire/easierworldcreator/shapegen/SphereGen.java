@@ -85,17 +85,17 @@ public class SphereGen extends FillableShape {
      * @param placeMoment     define the moment where the shape will be placed
      * @param layerPlace      how the {@code @BlockStates} inside of a {@link BlockLayer} will be placed
      * @param layersType      how the Layers will be placed
-     * @param xRotation       first rotation around the x-axis
-     * @param yRotation       second rotation around the y-axis
-     * @param secondXRotation last rotation around the x-axis
+     * @param yRotation       first rotation around the y-axis
+     * @param zRotation       second rotation around the z-axis
+     * @param secondYRotation last rotation around the y-axis
      * @param featureName     the name of the feature
      * @param radiusX         the radius on the x-axis
      * @param radiusY         the radius on the y-axis
      * @param radiusZ         the radius on the z-axis
      * @param halfSphere      determines if the sphere is half or not
      */
-    public SphereGen(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, PlaceMoment placeMoment, LayerPlace layerPlace, LayersType layersType, int xRotation, int yRotation, int secondXRotation, String featureName, int radiusX, int radiusY, int radiusZ, SphereType halfSphere) {
-        super(world, pos, placeMoment, layerPlace, layersType, xRotation, yRotation, secondXRotation, featureName);
+    public SphereGen(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, PlaceMoment placeMoment, LayerPlace layerPlace, LayersType layersType, int yRotation, int zRotation, int secondYRotation, String featureName, int radiusX, int radiusY, int radiusZ, SphereType halfSphere) {
+        super(world, pos, placeMoment, layerPlace, layersType, yRotation, zRotation, secondYRotation, featureName);
         this.radiusX = radiusX;
         this.radiusY = radiusY;
         this.radiusZ = radiusZ;
@@ -217,7 +217,7 @@ public class SphereGen extends FillableShape {
 
         BlockPos.Mutable mutable = new BlockPos.Mutable();
         List<BlockPos> poslist = new ArrayList<>();
-        if (this.getXRotation() % 180 == 0 && this.getYRotation() % 180 == 0 && this.getSecondXRotation() % 180 == 0) {
+        if (this.getYRotation() % 180 == 0 && this.getZRotation() % 180 == 0 && this.getSecondYRotation() % 180 == 0) {
             for (float theta = minLarge; theta <= maxLarge; theta += (float) 45 / maxLarge1) {
 
                 double xCosTheta = radiusX * FastMaths.getFastCos(theta);
@@ -304,7 +304,7 @@ public class SphereGen extends FillableShape {
         if (radiusX > 32 || radiusY > 32 || radiusZ > 32) {
             Easierworldcreator.LOGGER.warn("generating huge sphere (diameter > 64)");
         }
-        if (this.getXRotation() % 180 == 0 && this.getYRotation() % 180 == 0 && this.getSecondXRotation() % 180 == 0) {
+        if (this.getYRotation() % 180 == 0 && this.getZRotation() % 180 == 0 && this.getSecondYRotation() % 180 == 0) {
             for (float x = minX; x <= maxX; x++) {
                 float xx = x * x;
                 float xs = xx / largeXSquared;
