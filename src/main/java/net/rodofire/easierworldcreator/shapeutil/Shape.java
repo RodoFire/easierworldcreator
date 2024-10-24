@@ -147,7 +147,8 @@ public abstract class Shape extends ShapeRotation {
 
                 if (!moveChunks(chunkPosList, 5)) return;
                 Path generatedPath = Objects.requireNonNull(getWorld().getServer()).getSavePath(WorldSavePath.GENERATED).resolve(Easierworldcreator.MOD_ID).resolve("structures").normalize();
-
+                //tell the garbage collector that it can free the list of pos
+                posList = null;
 
                 for (ChunkPos chunkPos : chunkPosList) {
                     //executorService.submit(() -> {
@@ -303,7 +304,7 @@ public abstract class Shape extends ShapeRotation {
             return false;
         }
 
-        if(moveChunks(chunkList, maxOffset)) return true;
+        if (moveChunks(chunkList, maxOffset)) return true;
 
         Easierworldcreator.LOGGER.info("can't place the structure");
         return false;

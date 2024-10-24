@@ -138,6 +138,8 @@ public class SaveChunkShapeInfo {
 
         JsonObject jsonObject;
 
+        int offsetX = offset.getX();
+        int offsetZ = offset.getZ();
 
         for (BlockList blockList : blockLists) {
             jsonObject = new JsonObject();
@@ -146,9 +148,9 @@ public class SaveChunkShapeInfo {
             JsonArray positions = new JsonArray();
             for (BlockPos pos : blockList.getPosList()) {
                 JsonObject posObject = new JsonObject();
-                posObject.addProperty("x", pos.getX() + offset.getX());
+                posObject.addProperty("x", pos.getX() + offsetX);
                 posObject.addProperty("y", pos.getY());
-                posObject.addProperty("z", pos.getZ() + offset.getZ());
+                posObject.addProperty("z", pos.getZ() + offsetZ);
                 positions.add(posObject);
             }
             jsonObject.add("positions", positions);
