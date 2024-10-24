@@ -7,6 +7,7 @@ import net.minecraft.block.Blocks;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.StructureBlockBlockEntity;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.structure.StructurePlacementData;
 import net.minecraft.structure.StructureTemplate;
 import net.minecraft.structure.StructureTemplateManager;
@@ -28,51 +29,48 @@ import net.rodofire.easierworldcreator.worldgenutil.BlockPlaceUtil;
 
 import java.util.*;
 
+@SuppressWarnings("unused")
 public class StructureUtil {
     /**
      * This method is used to get every block in a structure.
      *
-     * @param world
-     * @param templateName
-     * @return
+     * @param world the world the structure is being used
+     * @param templateName the identifier of the structure
+     * @return the List of blockList that compose the structure
      */
     public static List<BlockList> convertNbtToBlockList(StructureWorldAccess world, Identifier templateName) {
-        // Liste des BlockList à retourner
         List<BlockList> blockLists = new ArrayList<>();
 
-        // Récupérer le StructureTemplateManager
-        StructureTemplateManager structureTemplateManager = world.getServer().getStructureTemplateManager();
+        MinecraftServer server = world.getServer();
+        if(server == null) {
+            return blockLists;
+        }
+        StructureTemplateManager structureTemplateManager = server.getStructureTemplateManager();
         if (structureTemplateManager == null) {
             return null;
         }
 
-        // Charger le template depuis le fichier NBT
         Optional<StructureTemplate> optionalTemplate = structureTemplateManager.getTemplate(templateName);
 
         if (optionalTemplate.isPresent()) {
             StructureTemplate structureTemplate = optionalTemplate.get();
 
-            // Map pour regrouper les blocs par BlockState
             Map<Pair<BlockState, NbtCompound>, List<BlockPos>> blockStateToPositionsMap = new HashMap<>();
 
             List<StructureTemplate.PalettedBlockInfoList> blockInfoLists = ((StructureTemplateMixin) structureTemplate).getBlockInfoLists();
 
-            // Parcourir les informations des blocs dans le template
             for (StructureTemplate.PalettedBlockInfoList palettedList : blockInfoLists) {
                 for (StructureTemplate.StructureBlockInfo blockInfo : palettedList.getAll()) {
                     BlockState blockState = blockInfo.state();
                     BlockPos blockPos = blockInfo.pos();
                     NbtCompound tag = blockInfo.nbt();
 
-                    // Créer une paire pour gérer les blocs avec le même BlockState mais des NBT différents
                     Pair<BlockState, NbtCompound> stateAndTagPair = new Pair<>(blockState, tag);
 
-                    // Ajouter la position du bloc à la liste correspondante dans la map
                     blockStateToPositionsMap.computeIfAbsent(stateAndTagPair, k -> new ArrayList<>()).add(blockPos);
                 }
             }
 
-            // Convertir la map en une liste de BlockList
             for (Map.Entry<Pair<BlockState, NbtCompound>, List<BlockPos>> entry : blockStateToPositionsMap.entrySet()) {
                 BlockState blockState = entry.getKey().getFirst();
                 NbtCompound tag = entry.getKey().getSecond();
@@ -81,20 +79,20 @@ public class StructureUtil {
                 blockLists.add(new BlockList(positions, blockState, tag));
             }
         } else {
-            Easierworldcreator.LOGGER.error("cannot get structure template, wrong Identifier : " + templateName);
+            Easierworldcreator.LOGGER.error("cannot get structure template, wrong Identifier : {}", templateName);
         }
         return blockLists;
     }
 
 
-    public static void place(StructureWorldAccess world, List<BlockList> blockLists, BlockPos block, boolean force, List<Block> blockToForce, List<Block> blockToSkip, float integrity) {
+    public static void place(StructureWorldAccess world, List<BlockList> blockLists, BlockPos block, boolean force, Set<Block> blockToForce, List<Block> blockToSkip, float integrity) {
         if (integrity < 0) integrity = 0;
         if (integrity > 1) integrity = 1;
         for (BlockList blockList : blockLists) {
-            BlockState blockState = blockList.getBlockstate();
+            BlockState blockState = blockList.getBlockState();
             if (blockState.isOf(Blocks.JIGSAW) || blockToSkip.contains(blockState.getBlock())) continue;
             NbtCompound tag = blockList.getTag();
-            for (BlockPos pos : blockList.getPoslist()) {
+            for (BlockPos pos : blockList.getPosList()) {
                 if (integrity <= 1f) {
                     if (Random.create().nextFloat() > integrity) {
                         continue;
@@ -139,7 +137,12 @@ public class StructureUtil {
      * @param ignoreEntities ignore entities of the structure
      */
     public static void place(StructureWorldAccess world, Identifier templateName, float integrity, BlockPos pos, BlockPos offset, BlockMirror mirror, BlockRotation rotation, boolean ignoreEntities) {
-        StructureTemplateManager structureTemplateManager = world.getServer().getStructureTemplateManager();
+        MinecraftServer server = world.getServer();
+        if(server == null) {
+            Easierworldcreator.LOGGER.error("cannot get structure template, MinecraftServer is null. Structure template: {}", templateName);
+            return;
+        }
+        StructureTemplateManager structureTemplateManager = server.getStructureTemplateManager();
         if (structureTemplateManager == null) return;
 
         Optional<StructureTemplate> optional;
@@ -149,7 +152,7 @@ public class StructureUtil {
             return;
         }
 
-        //if the structure exist, we initialize the structure placement
+        //if the structure exists, we initialize the structure placement
         if (optional.isPresent()) {
             StructurePlacementData structurePlacementData = new StructurePlacementData()
                     .setMirror(mirror)

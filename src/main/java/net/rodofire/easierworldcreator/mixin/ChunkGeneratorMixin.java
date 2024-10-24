@@ -7,7 +7,6 @@ import net.minecraft.world.gen.chunk.ChunkGenerator;
 import net.rodofire.easierworldcreator.fileutil.FileUtil;
 import net.rodofire.easierworldcreator.fileutil.LoadChunkShapeInfo;
 import net.rodofire.easierworldcreator.shapeutil.BlockList;
-import net.rodofire.easierworldcreator.util.ChunkUtil;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;

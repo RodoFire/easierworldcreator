@@ -1,6 +1,5 @@
 package net.rodofire.easierworldcreator.shapegen;
 
-import net.minecraft.block.Block;
 import net.minecraft.util.Pair;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
@@ -125,15 +124,16 @@ import java.util.*;
  * Class to generate Spiral related shapes
  * <p>Since 2.1.0, the shape doesn't return a {@code List<BlockPos>} but it returns instead a {@code List<Set<BlockPos>>}
  * <p>Before 2.1.0, the BlockPos list was a simple list.
- * <p>Starting from 2.1.0, the shapes returns a list of {@link ChunkPos} that has a set of {@link BlockPos}
- * <p>The change from {@link List} to {@link Set} was done to avoid duplicates BlockPos wich resulted in unnecessary calculations.
+ * <p>Starting from 2.1.0, the shapes return a list of {@link ChunkPos} that has a set of {@link BlockPos}
+ * <p>The change from {@link List} to {@link Set} was done to avoid duplicates BlockPos which resulted in unnecessary calculations.
  * <p>this allow easy multithreading for the Block assignment done in the {@link Shape} which result in better performance;
  */
+@SuppressWarnings("unused")
 public class SpiralGen extends Shape {
     //radius on the x-axis
-    private Pair<Integer, Integer> radiusx = new Pair<>(0, 0);
+    private Pair<Integer, Integer> radiusX;
     //radius on the z-axis
-    private Pair<Integer, Integer> radiusz = new Pair<>(0, 0);
+    private Pair<Integer, Integer> radiusZ;
     //height of the spiral
     private int height;
     //offset of the spiral in degrees, set to 0 by default, but you can change it
@@ -144,9 +144,9 @@ public class SpiralGen extends Shape {
     private SpiralType spiralType = SpiralType.DEFAULT;
     private float spiralFilling = 1f;
     //set the radius of the outline on the x-axis
-    private int outlineRadiusx = 1;
+    private int outlineRadiusX = 1;
     //set the radius of the outline on the z-axis
-    private int outlineRadiusz = 1;
+    private int outlineRadiusZ = 1;
 
     /**
      * The angle of the side.
@@ -156,54 +156,58 @@ public class SpiralGen extends Shape {
     private Pair<Integer, Integer> helicoidAngle = new Pair<>(0, 0);
 
     /**
+     * init the Spiral Shape
+     *
      * @param world           the world the spiral will spawn in
      * @param pos             the center of the spiral
-     * @param layers          a list of layers that will be used for the structure
-     * @param force           boolean to force the pos of the blocks
-     * @param blocksToForce   a list of blocks that the blocks of the spiral can still force if {@code force = false}
-     * @param xrotation       first rotation around the x-axis
-     * @param yrotation       second rotation around the y-axis
-     * @param secondxrotation last rotation around the x-axis
-     * @param radiusx         the radius of the x-axis
-     * @param radiusz         the radius of the z-axis
+     * @param placeMoment     define the moment where the shape will be placed
+     * @param layerPlace      how the {@code @BlockStates} inside of a {@link BlockLayer} will be placed
+     * @param layersType      how the Layers will be placed
+     * @param yRotation       first rotation around the y-axis
+     * @param zRotation       second rotation around the z-axis
+     * @param secondYRotation last rotation around the y-axis
+     * @param featureName     the name of the feature
+     * @param radiusX         the radius on the x-axis. The first value corresponding to the radius at the base of the spiral, the second, corresponding to the radius at the top of the spiral
+     * @param radiusZ         the radius on the z-axis. The first value corresponding to the radius at the base of the spiral, the second, corresponding to the radius at the top of the spiral
      * @param height          the height of the spiral
-     * @param turnNumber      the number of turns that the structure will do before reaching the top
+     * @param turnNumber      the number of turn that the spiral will do (ex: 1 -> 1 turn, 3.5 -> 3.5 turn)
      */
-    public SpiralGen(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, PlaceMoment placeMoment, List<BlockLayer> layers, boolean force, List<Block> blocksToForce, int xrotation, int yrotation, int secondxrotation, Pair<Integer, Integer> radiusx, Pair<Integer, Integer> radiusz, int height, float turnNumber) {
-        super(world, pos, placeMoment, layers, force, blocksToForce, xrotation, yrotation, secondxrotation);
-        this.radiusx = radiusx;
-        this.radiusz = radiusz;
+    public SpiralGen(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, PlaceMoment placeMoment, LayerPlace layerPlace, LayersType layersType, int yRotation, int zRotation, int secondYRotation, String featureName, Pair<Integer, Integer> radiusX, Pair<Integer, Integer> radiusZ, int height, float turnNumber) {
+        super(world, pos, placeMoment, layerPlace, layersType, yRotation, zRotation, secondYRotation, featureName);
+        this.radiusX = radiusX;
+        this.radiusZ = radiusZ;
         this.height = height;
         this.turnNumber = turnNumber;
     }
 
     /**
-     * @param world  the world the spiral will spawn in
-     * @param pos    the center of the spiral
-     * @param radius the radius of the spiral
-     * @param height the height of the spiral
+     * @param world       the world the spiral will spawn in
+     * @param pos         the center of the spiral
+     * @param placeMoment define the moment where the shape will be placed
+     * @param radius      the radius of the spiral
+     * @param height      the height of the spiral
      */
     public SpiralGen(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, PlaceMoment placeMoment, int radius, int height) {
         super(world, pos, placeMoment);
-        this.radiusx = new Pair<>(radius, radius);
-        this.radiusz = new Pair<>(radius, radius);
+        this.radiusX = new Pair<>(radius, radius);
+        this.radiusZ = new Pair<>(radius, radius);
         this.height = height;
     }
 
-    public int getOutlineRadiusz() {
-        return outlineRadiusz;
+    public int getOutlineRadiusZ() {
+        return outlineRadiusZ;
     }
 
-    public void setOutlineRadiusz(int outlineRadiusz) {
-        this.outlineRadiusz = outlineRadiusz;
+    public void setOutlineRadiusZ(int outlineRadiusZ) {
+        this.outlineRadiusZ = outlineRadiusZ;
     }
 
-    public int getOutlineRadiusx() {
-        return outlineRadiusx;
+    public int getOutlineRadiusX() {
+        return outlineRadiusX;
     }
 
-    public void setOutlineRadiusx(int outlineRadiusx) {
-        this.outlineRadiusx = outlineRadiusx;
+    public void setOutlineRadiusX(int outlineRadiusX) {
+        this.outlineRadiusX = outlineRadiusX;
     }
 
     public float getSpiralFilling() {
@@ -230,52 +234,52 @@ public class SpiralGen extends Shape {
         this.height = height;
     }
 
-    public Pair<Integer, Integer> getRadiusz() {
-        return radiusz;
+    public Pair<Integer, Integer> getRadiusZ() {
+        return radiusZ;
     }
 
     public int getStartRadiusZ() {
-        return radiusz.getLeft();
+        return radiusZ.getLeft();
     }
 
     public int getStartRadiusX() {
-        return radiusx.getLeft();
+        return radiusX.getLeft();
     }
 
     public int getEndRadiusZ() {
-        return radiusz.getRight();
+        return radiusZ.getRight();
     }
 
     public int getEndRadiusX() {
-        return radiusx.getRight();
+        return radiusX.getRight();
     }
 
-    public void setRadiusz(Pair<Integer, Integer> radiusz) {
-        this.radiusz = radiusz;
+    public void setRadiusZ(Pair<Integer, Integer> radiusZ) {
+        this.radiusZ = radiusZ;
     }
 
-    public Pair<Integer, Integer> getRadiusx() {
-        return radiusx;
+    public Pair<Integer, Integer> getRadiusX() {
+        return radiusX;
     }
 
-    public void setRadiusx(Pair<Integer, Integer> radiusx) {
-        this.radiusx = radiusx;
+    public void setRadiusX(Pair<Integer, Integer> radiusX) {
+        this.radiusX = radiusX;
     }
 
     public void setEndRadiusX(int endRadiusX) {
-        this.radiusx = new Pair<>(radiusx.getLeft(), endRadiusX);
+        this.radiusX = new Pair<>(radiusX.getLeft(), endRadiusX);
     }
 
     public void setEndRadiusZ(int endRadiusZ) {
-        this.radiusz = new Pair<>(radiusz.getLeft(), endRadiusZ);
+        this.radiusZ = new Pair<>(radiusZ.getLeft(), endRadiusZ);
     }
 
     public void setStartRadiusX(int startRadiusX) {
-        this.radiusx = new Pair<>(startRadiusX, radiusx.getRight());
+        this.radiusX = new Pair<>(startRadiusX, radiusX.getRight());
     }
 
     public void setStartRadiusZ(int startRadiusZ) {
-        this.radiusz = new Pair<>(startRadiusZ, radiusz.getRight());
+        this.radiusZ = new Pair<>(startRadiusZ, radiusZ.getRight());
     }
 
     public float getTurnNumber() {
@@ -315,14 +319,14 @@ public class SpiralGen extends Shape {
         Map<ChunkPos, Set<BlockPos>> chunkMap = new HashMap<>();
 
         if (this.spiralType == SpiralType.DEFAULT) {
-            this.generateElipsoidSpiral(this.getPos(), chunkMap);
-        } else if (this.spiralType == SpiralType.HELICOID || this.spiralType == SpiralType.HALF_HELICOID || this.spiralType == SpiralType.CUSTOM_HELICOOID) {
+            this.generateEllipsoidSpiral(this.getPos(), chunkMap);
+        } else if (this.spiralType == SpiralType.HELICOID || this.spiralType == SpiralType.HALF_HELICOID || this.spiralType == SpiralType.CUSTOM_HELICOID) {
             this.generateHelicoid(chunkMap);
         } else if (this.spiralType == SpiralType.LARGE_OUTLINE) {
             this.generateLargeOutlineSpiral(chunkMap);
         } else if (this.spiralType == SpiralType.DOUBLE_HELICOID || this.spiralType == SpiralType.HALF_DOUBLE_HELICOID || this.spiralType == SpiralType.CUSTOM_DOUBLE_HELICOID) {
             this.generateHelicoid(chunkMap);
-            this.setOffset(180);
+            this.offset = 180;
             this.generateHelicoid(chunkMap);
 
         } else {
@@ -341,35 +345,37 @@ public class SpiralGen extends Shape {
      *
      * @param pos the center of the spiral. This can be changed to match certain needing like when generating a large outline
      */
-    public void generateElipsoidSpiral(BlockPos pos, Map<ChunkPos, Set<BlockPos>> chunkMap) {
+    public void generateEllipsoidSpiral(BlockPos pos, Map<ChunkPos, Set<BlockPos>> chunkMap) {
         /*if (this.turnNumber <= 0) {
             Easierworldcreator.LOGGER.error("param turn can't be <= 0");
         }*/
-        int maxlarge = Math.max(Math.max(radiusx.getLeft(), radiusx.getRight()), Math.max(radiusz.getLeft(), radiusz.getRight()));
-        double f = (this.turnNumber * maxlarge);
-        double a = (double) 360 / (height * maxlarge);
-        if (this.getXrotation() % 180 == 0 && this.getYrotation() % 180 == 0 && this.getSecondXrotation() == 0) {
-            for (double i = 0; i < maxlarge * this.turnNumber * height; i++) {
-                float percentage = (float) i / (maxlarge * this.turnNumber * height);
-                float radiusx = this.getXradius(percentage);
-                float radiusz = this.getZradius(percentage);
-                int x = (int) (radiusx * FastMaths.getFastCos(a * i + offset));
-                int z = (int) (radiusz * FastMaths.getFastSin(a * i + offset));
+        int maxLarge = Math.max(Math.max(radiusX.getLeft(), radiusX.getRight()), Math.max(radiusZ.getLeft(), radiusZ.getRight()));
+        double f = (this.turnNumber * maxLarge);
+        double a = (double) 360 / (height * maxLarge);
+        if (this.getYRotation() % 180 == 0 && this.getZRotation() % 180 == 0 && this.getSecondYRotation() == 0) {
+            for (double i = 0; i < maxLarge * this.turnNumber * height; i++) {
+                float percentage = (float) i / (maxLarge * this.turnNumber * height);
+                float radiusX = this.getXRadius(percentage);
+                float radiusZ = this.getZRadius(percentage);
+                int x = (int) (radiusX * FastMaths.getFastCos((float) (a * i + offset)));
+                int z = (int) (radiusZ * FastMaths.getFastSin((float) (a * i + offset)));
                 int y = (int) (i / f);
                 BlockPos pos1 = new BlockPos(pos.getX() + x, pos.getY() + y, pos.getZ() + z);
-                if(!this.biggerThanChunk && WorldGenUtil.isPosAChunkFar(pos1,this.getPos())) this.biggerThanChunk = true;
+                if (!this.biggerThanChunk && WorldGenUtil.isPosAChunkFar(pos1, this.getPos()))
+                    this.biggerThanChunk = true;
                 WorldGenUtil.modifyChunkMap(pos1, chunkMap);
             }
         } else {
-            for (double i = 0; i < maxlarge * this.turnNumber * height; i += 0.5) {
-                float percentage = (float) i / (maxlarge * this.turnNumber * height);
-                float radiusx = this.getXradius(percentage);
-                float radiusz = this.getZradius(percentage);
-                float x = (float) (radiusx * FastMaths.getFastCos(a * i + offset));
-                float z = (float) (radiusz * FastMaths.getFastSin(a * i + offset));
+            for (double i = 0; i < maxLarge * this.turnNumber * height; i += 0.5) {
+                float percentage = (float) i / (maxLarge * this.turnNumber * height);
+                float radiusX = this.getXRadius(percentage);
+                float radiusZ = this.getZRadius(percentage);
+                float x = radiusX * FastMaths.getFastCos((float) (a * i + offset));
+                float z = radiusZ * FastMaths.getFastSin((float) (a * i + offset));
                 float y = (float) (i / f);
                 BlockPos pos2 = this.getCoordinatesRotation(x, y, z, pos);
-                if(!this.biggerThanChunk && WorldGenUtil.isPosAChunkFar(pos2,this.getPos())) this.biggerThanChunk = true;
+                if (!this.biggerThanChunk && WorldGenUtil.isPosAChunkFar(pos2, this.getPos()))
+                    this.biggerThanChunk = true;
                 WorldGenUtil.modifyChunkMap(pos2, chunkMap);
             }
         }
@@ -377,58 +383,57 @@ public class SpiralGen extends Shape {
 
 
     /**
-     * this allow the generation of a large outline spiral.
+     * this allows the generation of a large outline spiral.
      */
     public void generateLargeOutlineSpiral(Map<ChunkPos, Set<BlockPos>> chunkMap) {
         float angle = (float) Math.atan(height / turnNumber);
-        int degangle = (int) Math.toDegrees(angle);
-        Vec3d vec = new Vec3d(FastMaths.getFastCos(degangle), FastMaths.getFastSin(degangle), 0).normalize();
-        double cosy = FastMaths.getFastCos(degangle);
-        double siny = FastMaths.getFastSin(degangle);
+        int degAngle = (int) Math.toDegrees(angle);
+        Vec3d vec = new Vec3d(FastMaths.getFastCos(degAngle), FastMaths.getFastSin(degAngle), 0).normalize();
+        double cosY = FastMaths.getFastCos(degAngle);
+        double sinY = FastMaths.getFastSin(degAngle);
 
-        int maxlarge = Math.max(outlineRadiusx, outlineRadiusz);
-        // Générer les points du cercle
-        for (int i = 0; i < 360; i += 45 / maxlarge) { // Ajuster l'angle selon la densité souhaitée
-            double x = outlineRadiusx * FastMaths.getFastCos(i);
-            double z = outlineRadiusz * FastMaths.getFastSin(i);
-            BlockPos pos = WorldGenUtil.getCoordinatesRotation((float) x, (float) 0, (float) z, 1, 0, cosy, siny, 1, 0, this.getPos());
-            if(!this.biggerThanChunk && WorldGenUtil.isPosAChunkFar(pos,this.getPos())) this.biggerThanChunk = true;
-            this.generateElipsoidSpiral(pos, chunkMap);
+        int maxLarge = Math.max(outlineRadiusX, outlineRadiusZ);
+        for (int i = 0; i < 360; i += 45 / maxLarge) {
+            double x = outlineRadiusX * FastMaths.getFastCos(i);
+            double z = outlineRadiusZ * FastMaths.getFastSin(i);
+            BlockPos pos = WorldGenUtil.getCoordinatesRotation((float) x, (float) 0, (float) z, 1, 0, cosY, sinY, 1, 0, this.getPos());
+            if (!this.biggerThanChunk && WorldGenUtil.isPosAChunkFar(pos, this.getPos())) this.biggerThanChunk = true;
+            this.generateEllipsoidSpiral(pos, chunkMap);
         }
     }
 
     /**
-     * generates an helicoid if the {@link SpiralType} is set to {@code HELICOID} or {@code DOUBLE_HELICOID} with their variants
+     * generates a helicoid if the {@link SpiralType} is set to {@code HELICOID} or {@code DOUBLE_HELICOID} with their variants
      */
     public void generateHelicoid(Map<ChunkPos, Set<BlockPos>> chunkMap) {
         /*if (this.turnNumber <= 0) {
             Easierworldcreator.LOGGER.error("param turn can't be <= 0");
         }*/
-        int maxlarge = Math.max(Math.max(radiusx.getLeft(), radiusx.getRight()), Math.max(radiusz.getLeft(), radiusz.getRight()));
-        double f = (this.turnNumber * maxlarge);
-        double a = (double) 360 / (height * maxlarge);
+        int maxLarge = Math.max(Math.max(radiusX.getLeft(), radiusX.getRight()), Math.max(radiusZ.getLeft(), radiusZ.getRight()));
+        double f = (this.turnNumber * maxLarge);
+        double a = (double) 360 / (height * maxLarge);
 
 
-        if (this.getXrotation() % 180 == 0 && this.getYrotation() % 180 == 0 && this.getSecondXrotation() == 0 && this.helicoidAngle.getLeft() < 45 && this.helicoidAngle.getLeft() > -45 && this.helicoidAngle.getRight() < 45 && this.helicoidAngle.getRight() > -45) {
-            for (double i = 0; i < maxlarge * this.turnNumber * height; i++) {
+        if (this.getYRotation() % 180 == 0 && this.getZRotation() % 180 == 0 && this.getSecondYRotation() == 0 && this.helicoidAngle.getLeft() < 45 && this.helicoidAngle.getLeft() > -45 && this.helicoidAngle.getRight() < 45 && this.helicoidAngle.getRight() > -45) {
+            for (double i = 0; i < maxLarge * this.turnNumber * height; i++) {
 
-                float percentage = (float) i / (maxlarge * this.turnNumber * height);
-                float radiusx = this.getXradius(percentage);
-                float radiusz = this.getZradius(percentage);
-                float gainx = (float) (radiusx / maxlarge);
-                float gainz = (float) (radiusz / maxlarge);
+                float percentage = (float) i / (maxLarge * this.turnNumber * height);
+                float radiusX = this.getXRadius(percentage);
+                float radiusZ = this.getZRadius(percentage);
+                float gainX = radiusX / maxLarge;
+                float gainZ = radiusZ / maxLarge;
 
-                float innerRadiusX = (1 - this.spiralFilling) * radiusx;
-                float innerRadiusZ = (1 - this.spiralFilling) * radiusz;
+                float innerRadiusX = (1 - this.spiralFilling) * radiusX;
+                float innerRadiusZ = (1 - this.spiralFilling) * radiusZ;
                 float innerRadiusXSquared = innerRadiusX * innerRadiusX;
                 float innerRadiusZSquared = innerRadiusZ * innerRadiusZ;
 
                 int helicoidAngle = getAngle(percentage);
 
-                for (double j = 0; j <= maxlarge; j++) {
+                for (double j = 0; j <= maxLarge; j++) {
 
-                    int x = (int) (gainx * j * FastMaths.getFastCos(a * i + offset));
-                    int z = (int) (gainz * j * FastMaths.getFastSin(a * i + offset));
+                    int x = (int) (gainX * j * FastMaths.getFastCos((float) (a * i + offset)));
+                    int z = (int) (gainZ * j * FastMaths.getFastSin((float) (a * i + offset)));
                     double distance = FastMaths.getLength(x, z);
 
 
@@ -436,38 +441,39 @@ public class SpiralGen extends Shape {
                     if (innerRadiusXSquared != 0) {
                         float innerXSquared = x * x / innerRadiusXSquared;
                         float innerZSquared = z * z / innerRadiusZSquared;
-                        if (innerXSquared + innerZSquared <= 1f) { // pas dans l'ovale intérieur
+                        if (innerXSquared + innerZSquared <= 1f) {
                             bl = false;
                         }
                     }
                     if (bl) {
                         int y = (int) ((int) (i / f) + distance * FastMaths.getFastSin(helicoidAngle));
-                        BlockPos pos = new BlockPos((int) (this.getPos().getX() + x), this.getPos().getY() + y, (int) (this.getPos().getZ() + z));
-                        if(!this.biggerThanChunk && WorldGenUtil.isPosAChunkFar(pos,this.getPos())) this.biggerThanChunk = true;
+                        BlockPos pos = new BlockPos(this.getPos().getX() + x, this.getPos().getY() + y, this.getPos().getZ() + z);
+                        if (!this.biggerThanChunk && WorldGenUtil.isPosAChunkFar(pos, this.getPos()))
+                            this.biggerThanChunk = true;
                         WorldGenUtil.modifyChunkMap(pos, chunkMap);
                     }
                 }
             }
         } else {
-            for (double i = 0; i < maxlarge * this.turnNumber * height; i += 0.25) {
+            for (double i = 0; i < maxLarge * this.turnNumber * height; i += 0.25) {
 
-                float percentage = (float) i / (maxlarge * this.turnNumber * height);
-                float radiusx = this.getXradius(percentage);
-                float radiusz = this.getZradius(percentage);
-                float gainx = (float) (radiusx / maxlarge);
-                float gainz = (float) (radiusz / maxlarge);
+                float percentage = (float) i / (maxLarge * this.turnNumber * height);
+                float radiusX = this.getXRadius(percentage);
+                float radiusZ = this.getZRadius(percentage);
+                float gainX = radiusX / maxLarge;
+                float gainZ = radiusZ / maxLarge;
 
-                float innerRadiusX = (1 - this.spiralFilling) * radiusx;
-                float innerRadiusZ = (1 - this.spiralFilling) * radiusz;
+                float innerRadiusX = (1 - this.spiralFilling) * radiusX;
+                float innerRadiusZ = (1 - this.spiralFilling) * radiusZ;
                 float innerRadiusXSquared = innerRadiusX * innerRadiusX;
                 float innerRadiusZSquared = innerRadiusZ * innerRadiusZ;
 
                 int helicoidAngle = getAngle(percentage);
 
-                for (double j = 0; j <= maxlarge; j++) {
+                for (double j = 0; j <= maxLarge; j++) {
 
-                    int x = (int) (gainx * j * FastMaths.getFastCos(a * i + offset));
-                    int z = (int) (gainz * j * FastMaths.getFastSin(a * i + offset));
+                    int x = (int) (gainX * j * FastMaths.getFastCos((float) (a * i + offset)));
+                    int z = (int) (gainZ * j * FastMaths.getFastSin((float) (a * i + offset)));
 
                     double distance = FastMaths.getLength(x, z);
 
@@ -476,14 +482,15 @@ public class SpiralGen extends Shape {
                     if (innerRadiusXSquared != 0) {
                         float innerXSquared = x * x / innerRadiusXSquared;
                         float innerZSquared = z * z / innerRadiusZSquared;
-                        if (innerXSquared + innerZSquared <= 1f) { // pas dans l'ovale intérieur
+                        if (innerXSquared + innerZSquared <= 1f) {
                             bl = false;
                         }
                     }
                     if (bl) {
                         int y = (int) ((int) (i / f) + distance * FastMaths.getFastSin(helicoidAngle));
                         BlockPos pos = this.getCoordinatesRotation(x, y, z, this.getPos());
-                        if(!this.biggerThanChunk && WorldGenUtil.isPosAChunkFar(pos,this.getPos())) this.biggerThanChunk = true;
+                        if (!this.biggerThanChunk && WorldGenUtil.isPosAChunkFar(pos, this.getPos()))
+                            this.biggerThanChunk = true;
                         WorldGenUtil.modifyChunkMap(pos, chunkMap);
                     }
                 }
@@ -513,8 +520,8 @@ public class SpiralGen extends Shape {
         HELICOID,
         //helicoid shape, blocks are posed between the center of the axis and the outline
         HALF_HELICOID,
-        CUSTOM_HELICOOID,
-        //helicoid shape,this generates 2 helicoidswith an opposite direction
+        CUSTOM_HELICOID,
+        //helicoid shape,this generates 2 helicoid with an opposite direction
         DOUBLE_HELICOID,
         HALF_DOUBLE_HELICOID,
         CUSTOM_DOUBLE_HELICOID,
@@ -522,27 +529,27 @@ public class SpiralGen extends Shape {
     }
 
     /**
-     * this method returns the {@code xradius} depending of the height we are at
+     * this method returns the {@code xRadius} depending on the height we are at
      *
      * @param percentage the percentage of the height we are at
      * @return the x radius of the spiral
      */
-    public float getXradius(float percentage) {
-        return (int) (radiusx.getLeft() * (1 - percentage) + radiusz.getRight() * percentage);
+    public float getXRadius(float percentage) {
+        return (int) (radiusX.getLeft() * (1 - percentage) + radiusZ.getRight() * percentage);
     }
 
     /**
-     * this method returns the {@code zradius} depending of the height we are at
+     * this method returns the {@code zRadius} depending on the height we are at
      *
      * @param percentage the percentage of the height we are at
      * @return the x radius of the spiral
      */
-    public float getZradius(float percentage) {
-        return (int) (radiusz.getLeft() * (1 - percentage) + radiusz.getRight() * percentage);
+    public float getZRadius(float percentage) {
+        return (int) (radiusZ.getLeft() * (1 - percentage) + radiusZ.getRight() * percentage);
     }
 
     /**
-     * this method returns the {@code helicoidAngle} depending of the height we are at
+     * this method returns the {@code helicoïdAngle} depending on the height we are at
      *
      * @param percentage the percentage of the height we are at
      * @return the angle of the spiral
