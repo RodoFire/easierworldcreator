@@ -7,6 +7,8 @@ import net.minecraft.world.StructureWorldAccess;
 import net.rodofire.easierworldcreator.shapegen.CircleGen;
 
 import java.util.List;
+import java.util.Set;
+
 /*
 
 
@@ -30,12 +32,13 @@ import java.util.List;
                                           ::............::
                                               .::::::.
  */
-@Deprecated(forRemoval = false)
 /**
  * switch to new generation :
  * @see CircleGen
  * this class will not be updated anymore and won't receive any support
  */
+@Deprecated
+@SuppressWarnings("unused")
 public class GenCircles {
     //Validate
     public static void generateCircle(StructureWorldAccess world, int radius, BlockState state, BlockPos pos) {
@@ -59,7 +62,7 @@ public class GenCircles {
         generateOval(world, radius, radius, x, z, y, force, true, null, List.of(state));
     }
 
-    public static void generateFullCircle(StructureWorldAccess world, int radius, BlockPos pos, boolean force, List<Block> stateToForce, List<BlockState> stateToPlace) {
+    public static void generateFullCircle(StructureWorldAccess world, int radius, BlockPos pos, boolean force, Set<Block> stateToForce, List<BlockState> stateToPlace) {
         int x = pos.getX();
         int y = pos.getY();
         int z = pos.getZ();
@@ -88,51 +91,51 @@ public class GenCircles {
     }
 
 
-    public static void generateElipsoid(StructureWorldAccess world, int radiusx, int radiusz, BlockState state, BlockPos pos) {
+    public static void generateEllipsoid(StructureWorldAccess world, int radiusX, int radiusZ, BlockState state, BlockPos pos) {
         int x = pos.getX();
         int y = pos.getY();
         int z = pos.getZ();
-        generateOval(world, radiusx, radiusz, x, z, y, false, false, null, List.of(state));
+        generateOval(world, radiusX, radiusZ, x, z, y, false, false, null, List.of(state));
     }
 
-    public static void generateFullElipsoid(StructureWorldAccess world, int radiusx, int radiusz, BlockState state, BlockPos pos) {
+    public static void generateFullEllipsoid(StructureWorldAccess world, int radiusX, int radiusZ, BlockState state, BlockPos pos) {
         int x = pos.getX();
         int y = pos.getY();
         int z = pos.getZ();
-        generateOval(world, radiusx, radiusz, x, z, y, false, true, null, List.of(state));
+        generateOval(world, radiusX, radiusZ, x, z, y, false, true, null, List.of(state));
     }
 
-    public static void generateFullElipsoid(StructureWorldAccess world, int radiusx, int radiusz, BlockState state, BlockPos pos, boolean force) {
+    public static void generateFullEllipsoid(StructureWorldAccess world, int radiusX, int radiusZ, BlockState state, BlockPos pos, boolean force) {
         int x = pos.getX();
         int y = pos.getY();
         int z = pos.getZ();
-        generateOval(world, radiusx, radiusz, x, z, y, force, true, null, List.of(state));
+        generateOval(world, radiusX, radiusZ, x, z, y, force, true, null, List.of(state));
     }
 
-    public static void generateElipsoid(StructureWorldAccess world, int radiusx, int radiusz, List<BlockState> state, BlockPos pos) {
+    public static void generateEllipsoid(StructureWorldAccess world, int radiusX, int radiusZ, List<BlockState> state, BlockPos pos) {
         int x = pos.getX();
         int y = pos.getY();
         int z = pos.getZ();
-        generateOval(world, radiusx, radiusz, x, z, y, false, false, null, state);
+        generateOval(world, radiusX, radiusZ, x, z, y, false, false, null, state);
     }
 
-    public static void generateFullElipsoid(StructureWorldAccess world, int radiusx, int radiusz, List<BlockState> state, BlockPos pos) {
+    public static void generateFullEllipsoid(StructureWorldAccess world, int radiusX, int radiusZ, List<BlockState> state, BlockPos pos) {
         int x = pos.getX();
         int y = pos.getY();
         int z = pos.getZ();
-        generateOval(world, radiusx, radiusz, x, z, y, false, true, null, state);
+        generateOval(world, radiusX, radiusZ, x, z, y, false, true, null, state);
     }
 
-    public static void generateFullElipsoid(StructureWorldAccess world, int radiusx, int radiusz, List<BlockState> state, BlockPos pos, boolean force) {
+    public static void generateFullEllipsoid(StructureWorldAccess world, int radiusX, int radiusZ, List<BlockState> state, BlockPos pos, boolean force) {
         int x = pos.getX();
         int y = pos.getY();
         int z = pos.getZ();
-        generateOval(world, radiusx, radiusz, x, z, y, force, true, null, state);
+        generateOval(world, radiusX, radiusZ, x, z, y, force, true, null, state);
     }
 
 
     /*---------- Algorithm based on Bressen Algorithms for circle ----------*/
-    public static void generateOval(StructureWorldAccess world, int radiusX, int radiusZ, int centerX, int centerZ, int y, boolean force, boolean full, List<Block> blockToForce, List<BlockState> blockToPlace) {
+    public static void generateOval(StructureWorldAccess world, int radiusX, int radiusZ, int centerX, int centerZ, int y, boolean force, boolean full, Set<Block> blockToForce, List<BlockState> blockToPlace) {
         int x = 0;
         int z = radiusZ;
         int twoASquare = 2 * radiusX * radiusX;
@@ -148,12 +151,11 @@ public class GenCircles {
             } else {
                 placeFullOval(world, centerX, centerZ, x, y, z, force, blockToForce, blockToPlace);
             }
+            x++;
             if (decision1 < 0) {
-                x++;
                 dx = dx + twoBSquare;
                 decision1 = decision1 + dx + radiusZ * radiusZ;
             } else {
-                x++;
                 z--;
                 dx = dx + twoBSquare;
                 dz = dz - twoASquare;
@@ -169,12 +171,11 @@ public class GenCircles {
             } else {
                 placeFullOval(world, centerX, centerZ, x, y, z, force, blockToForce, blockToPlace);
             }
+            z--;
             if (decision2 > 0) {
-                z--;
                 dz = dz - twoASquare;
                 decision2 = decision2 + radiusX * radiusX - dz;
             } else {
-                z--;
                 x++;
                 dx = dx + twoBSquare;
                 dz = dz - twoASquare;
@@ -183,7 +184,7 @@ public class GenCircles {
         }
     }
 
-    public static void placeOvalBlocks(StructureWorldAccess world, int centerX, int centerZ, int x, int y, int z, boolean force, List<Block> blocksToForce, List<BlockState> blockToPlace) {
+    public static void placeOvalBlocks(StructureWorldAccess world, int centerX, int centerZ, int x, int y, int z, boolean force, Set<Block> blocksToForce, List<BlockState> blockToPlace) {
         BlockPos.Mutable pos = new BlockPos.Mutable();
         int length = blockToPlace.size() - 1;
         BlockPlaceUtil.setRandomBlockWithVerification(world, force, blocksToForce, blockToPlace, pos.set(centerX + x, 0, centerZ + z));
@@ -194,7 +195,7 @@ public class GenCircles {
     }
 
     //place lines between the blocks
-    public static void placeFullOval(StructureWorldAccess world, int centerX, int centerZ, int x, int y, int z, boolean force, List<Block> blocksToForce, List<BlockState> blocksToPlace) {
+    public static void placeFullOval(StructureWorldAccess world, int centerX, int centerZ, int x, int y, int z, boolean force, Set<Block> blocksToForce, List<BlockState> blocksToPlace) {
         BlockPos start1 = new BlockPos(centerX + x, y, centerZ + z);
         BlockPos start2 = new BlockPos(centerX - x, y, centerZ + z);
 
@@ -211,7 +212,5 @@ public class GenCircles {
             BlockPlaceUtil.setRandomBlockWithVerification(world, force, blocksToForce, blocksToPlace, mutable);
 
         }
-        //GenLines.drawLine(world, start1, end1, blockstate.get(Random.create().nextBetween(0,length)), force);
-        //GenLines.drawLine(world, start2, end2, blockstate.get(Random.create().nextBetween(0,length)), force);
     }
 }

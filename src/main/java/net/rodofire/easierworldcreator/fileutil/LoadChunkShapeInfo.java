@@ -102,8 +102,8 @@ public class LoadChunkShapeInfo {
      */
     public static void placeStructure(StructureWorldAccess world, List<BlockList> blockLists) {
         for (BlockList blockList : blockLists) {
-            BlockState state = blockList.getBlockstate();
-            for (BlockPos pos : blockList.getPoslist()) {
+            BlockState state = blockList.getBlockState();
+            for (BlockPos pos : blockList.getPosList()) {
                 world.setBlockState(pos, state, 3);
             }
         }
@@ -123,7 +123,7 @@ public class LoadChunkShapeInfo {
         Identifier identifier = new Identifier(extractBlockName(stateString.split("\\[")[0]));
         Optional<? extends RegistryEntry<Block>> optional = blockLookup.getOptional(RegistryKey.of(RegistryKeys.BLOCK, identifier));
         if (optional.isEmpty()) {
-            Easierworldcreator.LOGGER.error("error parsing BlockState: " + stateString.split("\\[")[0]);
+            Easierworldcreator.LOGGER.error("error parsing BlockState: {}", stateString.split("\\[")[0]);
             return Blocks.AIR.getDefaultState();
         }
 
@@ -154,7 +154,7 @@ public class LoadChunkShapeInfo {
      * @param state    the previous states of the {@link BlockState}
      * @param property the property related
      * @param value    the value of the property
-     * @param <T>      the type of the property value, must be Comparable
+     * @param <T>      the type of the property value must be Comparable
      * @return the changed {@link BlockState}
      */
     private static <T extends Comparable<T>> BlockState applyProperty(BlockState state, Property<T> property, String value) {
@@ -208,7 +208,7 @@ public class LoadChunkShapeInfo {
                         }
                     });
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    e.fillInStackTrace();
                 }
             }
         }

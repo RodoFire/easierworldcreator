@@ -16,6 +16,7 @@ import java.util.List;
  * The depth should never be less than 0.
  * There is no benefit to having a depth equal to 0.
  */
+@SuppressWarnings("unused")
 public class ParticleLayer {
 
     private List<Particle> particles;

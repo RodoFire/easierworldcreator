@@ -14,6 +14,7 @@ import java.util.Objects;
 /**
  * class that provide useful methods for files related.
  */
+@SuppressWarnings("unused")
 public class FileUtil {
     /**
      * <p>Method to move a file from one place to another.
@@ -32,12 +33,12 @@ public class FileUtil {
                 Files.move(oldPath, newPath);
 
             } catch (IOException e) {
-                Easierworldcreator.LOGGER.warn("Failed to rename file. oldPath: " + oldPath.toString() + " newPath: " + newPath.toString(), e);
+                Easierworldcreator.LOGGER.warn("Failed to rename file. oldPath: {} newPath: {}", oldPath, newPath, e);
             } catch (SecurityException e) {
-                Easierworldcreator.LOGGER.warn("Insufficient permissions to rename file. oldPath: " + oldPath.toString() + " newPath: " + newPath.toString(), e);
+                Easierworldcreator.LOGGER.warn("Insufficient permissions to rename file. oldPath: {} newPath: {}", oldPath, newPath, e);
             }
         } else {
-            Easierworldcreator.LOGGER.warn("Renaming file failed, file doesn't exist: " + oldPath.toString());
+            Easierworldcreator.LOGGER.warn("Renaming file failed, file doesn't exist: {}", oldPath);
         }
     }
 
@@ -49,7 +50,6 @@ public class FileUtil {
         File file = new File(path.toString());
         if (file.exists()) {
             boolean deleted = file.delete();
-        } else {
         }
     }
 

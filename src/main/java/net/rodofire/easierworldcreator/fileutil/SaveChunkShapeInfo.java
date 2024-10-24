@@ -35,6 +35,7 @@ import java.util.concurrent.Executors;
  * It may use a lot of performance during the write of every files
  * </p>
  */
+@SuppressWarnings("unused")
 public class SaveChunkShapeInfo {
 
     //determines the number of threads that the class can use
@@ -45,7 +46,7 @@ public class SaveChunkShapeInfo {
      * This is the main method on saving the structure into JSON files
      * <p>
      * I multithreaded this class for optimal performance.
-     * Since that the structure is divided into chunks, we can multithread the generation of files
+     * Since that the structure is divided into chunks, we can multithreading the generation of files
      * </p>
      *
      * @param blockLists  the list to divide into chunks and then saving it into JSON files
@@ -64,7 +65,7 @@ public class SaveChunkShapeInfo {
                 try {
                     saveToJson(chunkBlockLists, path, name, offset);
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    e.fillInStackTrace();
                 }
             });
         }
@@ -74,7 +75,7 @@ public class SaveChunkShapeInfo {
      * This is the main method on saving the structure into JSON files
      * <p>
      * I multithreaded this class for optimal performance.
-     * Since that the structure is divided into chunks, we can multithread the generation of files
+     * Since that the structure is divided into chunks, we can multithreading the generation of files
      * </p>
      *
      * @param blockLists  the list to divide into chunks and then saving it into JSON files
@@ -90,7 +91,7 @@ public class SaveChunkShapeInfo {
         try {
             saveToJson(sortedList, path, name, offset);
         } catch (IOException e) {
-            e.printStackTrace();
+            e.fillInStackTrace();
         }
         //});
 
@@ -112,7 +113,7 @@ public class SaveChunkShapeInfo {
      * The Structure will be located in the following path : [save_name]/generated/easierworldcreator/[chunk.x-chunk.z]/custom_feature_[Random long]
      * </p>
      *
-     * @param blockLists the list of blockList that will be converted into json
+     * @param blockLists the list of blockList that will be converted into JSON
      * @throws IOException avoid errors
      */
     private static void saveToJson(Set<BlockList> blockLists, Path basePath, String name, BlockPos offset) throws IOException {
@@ -124,7 +125,7 @@ public class SaveChunkShapeInfo {
         }
 
         BlockList firstBlockList = optional.get();
-        ChunkPos chunkPos = new ChunkPos(firstBlockList.getPoslist().get(0).add(offset)); // extract from blockLists
+        ChunkPos chunkPos = new ChunkPos(firstBlockList.getPosList().get(0).add(offset)); // extract from blockLists
 
         Path chunkDirectoryPath = basePath.resolve("chunk_" + chunkPos.x + "_" + chunkPos.z);
         Files.createDirectories(chunkDirectoryPath);
@@ -137,17 +138,19 @@ public class SaveChunkShapeInfo {
 
         JsonObject jsonObject;
 
+        int offsetX = offset.getX();
+        int offsetZ = offset.getZ();
 
         for (BlockList blockList : blockLists) {
             jsonObject = new JsonObject();
-            jsonObject.addProperty("state", blockList.getBlockstate().toString());
+            jsonObject.addProperty("state", blockList.getBlockState().toString());
 
             JsonArray positions = new JsonArray();
-            for (BlockPos pos : blockList.getPoslist()) {
+            for (BlockPos pos : blockList.getPosList()) {
                 JsonObject posObject = new JsonObject();
-                posObject.addProperty("x", pos.getX() + offset.getX());
-                posObject.addProperty("y", pos.getY() + offset.getY());
-                posObject.addProperty("z", pos.getZ() + offset.getZ());
+                posObject.addProperty("x", pos.getX() + offsetX);
+                posObject.addProperty("y", pos.getY());
+                posObject.addProperty("z", pos.getZ() + offsetZ);
                 positions.add(posObject);
             }
             jsonObject.add("positions", positions);
@@ -166,8 +169,7 @@ public class SaveChunkShapeInfo {
      */
     public static Set<BlockList> sortBlockPos(Set<BlockList> blockLists) {
         for (BlockList blockList : blockLists) {
-            // Tri des positions par axe X, puis Y, puis Z
-            blockList.getPoslist().sort(Comparator
+            blockList.getPosList().sort(Comparator
                     .comparingInt(BlockPos::getX)
                     .thenComparingInt(BlockPos::getZ)
                     .thenComparingInt(BlockPos::getY));
@@ -176,7 +178,7 @@ public class SaveChunkShapeInfo {
     }
 
     /**
-     * divides the a list of blockList into a list of list of blockList that represents every Chunk of the BlockList
+     * divides a list of blockList into a list of blockList that represents every Chunk of the BlockList
      *
      * @param blockLists the list to divide into a list of chunks
      * @return the blockLists divided into chunks
@@ -185,19 +187,19 @@ public class SaveChunkShapeInfo {
         Map<ChunkPos, Set<BlockList>> chunkMap = new HashMap<>();
 
         for (BlockList blockList : blockLists) {
-            for (BlockPos pos : blockList.getPoslist()) {
+            for (BlockPos pos : blockList.getPosList()) {
                 ChunkPos chunkPos = new ChunkPos(pos);
 
                 Set<BlockList> blockListsInChunk = chunkMap.computeIfAbsent(chunkPos, k -> new HashSet<>());
 
                 Optional<BlockList> matchingBlockList = blockListsInChunk.stream()
-                        .filter(bl -> bl.getBlockstate().equals(blockList.getBlockstate()))
+                        .filter(bl -> bl.getBlockState().equals(blockList.getBlockState()))
                         .findFirst();
 
                 if (matchingBlockList.isPresent()) {
                     matchingBlockList.get().addBlockPos(pos);
                 } else {
-                    BlockList newBlockList = new BlockList(List.of(pos), blockList.getBlockstate(), blockList.getTag());
+                    BlockList newBlockList = new BlockList(List.of(pos), blockList.getBlockState(), blockList.getTag());
                     blockListsInChunk.add(newBlockList);
                 }
             }

@@ -8,6 +8,7 @@ import net.minecraft.util.math.random.Random;
 import net.minecraft.world.StructureWorldAccess;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * Useful class to verify and place the block in the world.
@@ -20,14 +21,14 @@ public class BlockPlaceUtil {
      * @param force         force the pos
      * @param blocksToForce list of blocks that can still be forced
      * @param pos           the position of the block
-     * @return
+     * @return true if it can be posed, false if not
      */
-    public static boolean verifyBlock(StructureWorldAccess world, boolean force, List<Block> blocksToForce, BlockPos pos) {
+    public static boolean verifyBlock(StructureWorldAccess world, boolean force, Set<Block> blocksToForce, BlockPos pos) {
         BlockState state2 = world.getBlockState(pos);
 
         if (state2.getHardness(world, pos) < 0) return false;
         if (!force) {
-            if (blocksToForce == null) blocksToForce = List.of(Blocks.BEDROCK);
+            if (blocksToForce == null) blocksToForce = Set.of(Blocks.BEDROCK);
             return state2.isAir() || blocksToForce.stream().anyMatch(state2.getBlock()::equals);
         }
         return true;
@@ -39,14 +40,14 @@ public class BlockPlaceUtil {
      * @param world         the world where the {@link Block} will be placed
      * @param force         force the pos
      * @param blocksToForce list of blocks that can still be forced
-     * @param blocktoplace  list of blocks to place
+     * @param blockToPlace  list of blocks to place
      * @param pos           the position of the block
      * @param i             the index of the stage we're at
      * @return boolean (true if the block was placed, else false)
      */
-    public static boolean setBlockWithOrderWithVerification(StructureWorldAccess world, boolean force, List<Block> blocksToForce, List<BlockState> blocktoplace, BlockPos pos, int i) {
+    public static boolean setBlockWithOrderWithVerification(StructureWorldAccess world, boolean force, Set<Block> blocksToForce, List<BlockState> blockToPlace, BlockPos pos, int i) {
         if (verifyBlock(world, force, blocksToForce, pos)) {
-            placeBlockWithOrder(world, blocktoplace, pos, i);
+            placeBlockWithOrder(world, blockToPlace, pos, i);
             return true;
         }
         return false;
@@ -58,13 +59,13 @@ public class BlockPlaceUtil {
      * @param world         the world where the {@link Block} will be placed
      * @param force         force the pos
      * @param blocksToForce list of blocks that can still be forced
-     * @param blocktoplace  list of blocks to place
+     * @param blockToPlace  list of blocks to place
      * @param pos           the position of the block
      * @return boolean (true if the block was placed, else false)
      */
-    public static boolean setRandomBlockWithVerification(StructureWorldAccess world, boolean force, List<Block> blocksToForce, List<BlockState> blocktoplace, BlockPos pos) {
+    public static boolean setRandomBlockWithVerification(StructureWorldAccess world, boolean force, Set<Block> blocksToForce, List<BlockState> blockToPlace, BlockPos pos) {
         if (verifyBlock(world, force, blocksToForce, pos)) {
-            placeRandomBlock(world, blocktoplace, pos);
+            placeRandomBlock(world, blockToPlace, pos);
             return true;
         }
         return false;
@@ -81,7 +82,7 @@ public class BlockPlaceUtil {
      * @param noise         the 2d noise that will determine if the block can be placed
      * @return boolean (true if the block was placed, else false)
      */
-    public static boolean set2dNoiseBlockWithVerification(StructureWorldAccess world, boolean force, List<Block> blocksToForce, List<BlockState> blockToPlace, BlockPos pos, FastNoiseLite noise) {
+    public static boolean set2dNoiseBlockWithVerification(StructureWorldAccess world, boolean force, Set<Block> blocksToForce, List<BlockState> blockToPlace, BlockPos pos, FastNoiseLite noise) {
         if (verifyBlock(world, force, blocksToForce, pos)) {
             placeBlockWith2DNoise(world, blockToPlace, pos, noise);
             return true;
@@ -100,7 +101,7 @@ public class BlockPlaceUtil {
      * @param noise         the 2d noise that will determine if the block can be placed
      * @return boolean (true if the block was placed, else false)
      */
-    public static boolean set3dNoiseBlockWithVerification(StructureWorldAccess world, boolean force, List<Block> blocksToForce, List<BlockState> blockToPlace, BlockPos pos, FastNoiseLite noise) {
+    public static boolean set3dNoiseBlockWithVerification(StructureWorldAccess world, boolean force, Set<Block> blocksToForce, List<BlockState> blockToPlace, BlockPos pos, FastNoiseLite noise) {
         if (verifyBlock(world, force, blocksToForce, pos)) {
             placeBlockWith3DNoise(world, blockToPlace, pos, noise);
             return true;
@@ -121,7 +122,7 @@ public class BlockPlaceUtil {
     /**
      * Place the block corresponding to the index 'i'.
      * Generally, after that, the index 'i' will be incremented by one every time this method is called.
-     * But you can change it to place 2 same blocks then incrementing
+     * But you can change it to place two same blocks then incrementing
      */
     public static void placeBlockWithOrder(StructureWorldAccess world, List<BlockState> blocksToPlace, BlockPos pos, int i) {
         world.setBlockState(pos, blocksToPlace.get(i), 2);
@@ -132,7 +133,7 @@ public class BlockPlaceUtil {
      * then call the method to get the block depending on the noise
      *
      * @param world         the world of the block
-     * @param blocksToPlace the blockstates list that would be chosen from
+     * @param blocksToPlace the blockStates list that would be chosen from
      * @param pos           the pos of the block to test
      * @param noise         the noise
      */
@@ -153,8 +154,8 @@ public class BlockPlaceUtil {
     }
 
     /**
-     * method to place a block depending on the noise and the blocks inside the list
-     * you get the float a that correspond to the value of the noise.
+     * Method to place a block depending on the noise and the blocks inside the list.
+     * You get the float that corresponds to the value of the noise.
      * <p>the method will compare a with every index of the list and will place the block when e becomes smaller than the index
      * <p>does this: a > i ?
      * <p>- true: a > i+1 ? ...
@@ -169,9 +170,9 @@ public class BlockPlaceUtil {
     /**
      * return the BlockState wanted based on randomness
      * this method doesn't place the block
-     * It is notabely used during the shape gen during world gen
+     * It is notable used during the shape gen during world gen
      *
-     * @param blocksToPlace the blockstates list that would be chosen from
+     * @param blocksToPlace the block states list that would be chosen from
      * @return the block related to the noise
      */
     public static BlockState getRandomBlock(List<BlockState> blocksToPlace) {
@@ -181,9 +182,9 @@ public class BlockPlaceUtil {
     /**
      * return the BlockState wanted based on order
      * this method doesn't place the block
-     * It is notabely used during the shape gen during world gen
+     * It is notable used during the shape gen during world gen
      *
-     * @param blocksToPlace the blockstates list that would be chosen from
+     * @param blocksToPlace the blockStates list that would be chosen from
      * @param i the index to choose from
      * @return the block related to the noise
      */
@@ -195,8 +196,8 @@ public class BlockPlaceUtil {
      *
      * return the BlockState wanted based on 2d noise
      * this method doesn't place the block
-     * It is notabely used during the shape gen during world gen
-     * @param blocksToPlace the blockstates list that would be chosen from
+     * It is notable used during the shape gen during world gen
+     * @param blocksToPlace the blockStates list that would be chosen from
      * @param pos           the pos of the block to test
      * @param noise         the noise
      * @return the block related to the noise
@@ -209,8 +210,8 @@ public class BlockPlaceUtil {
     /**
      * return the BlockState wanted based on 3d noise
      * this method doesn't place the block
-     * It is notabely used during the shape gen during world gen
-     * @param blocksToPlace the blockstates list that would be chosen from
+     * It is notable used during the shape gen during world gen
+     * @param blocksToPlace the blockStates list that would be chosen from
      * @param pos           the pos of the block to test
      * @param noise         the noise
      * @return the block related to the noise
@@ -221,7 +222,7 @@ public class BlockPlaceUtil {
     }
 
     /**
-     * simplify the choose of block
+     * simplify the choice of block
      *
      * @param blocksToPlace the list of blockStates to place
      * @param a             the value of the noise
