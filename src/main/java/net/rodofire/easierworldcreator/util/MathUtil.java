@@ -5,6 +5,7 @@ import net.minecraft.util.math.random.Random;
 /**
  * util math class
  */
+@SuppressWarnings("unused")
 public class MathUtil {
     /**
      * method to get a random opposite with a 50% chance

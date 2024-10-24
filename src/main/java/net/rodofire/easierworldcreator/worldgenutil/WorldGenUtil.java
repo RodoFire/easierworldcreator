@@ -2,17 +2,18 @@ package net.rodofire.easierworldcreator.worldgenutil;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
-import net.minecraft.util.math.*;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.ChunkPos;
+import net.minecraft.util.math.Direction;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.random.Random;
-import net.minecraft.world.StructureWorldAccess;
-import net.minecraft.world.chunk.ChunkStatus;
 import net.rodofire.easierworldcreator.Easierworldcreator;
 import net.rodofire.easierworldcreator.shapeutil.BlockLayer;
-import net.rodofire.easierworldcreator.shapeutil.BlockList;
 import net.rodofire.easierworldcreator.util.FastMaths;
 
 import java.util.*;
 
+@SuppressWarnings("unused")
 public class WorldGenUtil {
 
     public static Direction getRandomDirection() {
@@ -27,10 +28,7 @@ public class WorldGenUtil {
     }
 
     public static Direction getRandomVerticalDirection() {
-        return switch (Random.create().nextBetween(0, 1)) {
-            case 0 -> Direction.UP;
-            default -> Direction.DOWN;
-        };
+        return Random.create().nextBetween(0,1) == 1 ? Direction.UP : Direction.DOWN;
     }
 
     public static Direction getRandomHorizontalDirection() {
@@ -42,55 +40,14 @@ public class WorldGenUtil {
         };
     }
 
-    @Deprecated(forRemoval = true)
-    /**
-     * @see net.rodofire.easierworldcreator.util.MathUtil
-     */
-    public static int getRandomOpposite() {
-        return (Random.create().nextBetween(0, 1) == 0) ? 1 : -1;
+    //return a random int between min height and max height if the chance
+    public static int getSecondHeight(float chance, int maxHeight) {
+        return getSecondHeight(chance, 0, maxHeight);
     }
 
-    @Deprecated(forRemoval = true)
-    /**
-     * @see net.rodofire.easierworldcreator.util.MathUtil
-     */
-    public static boolean getRandomBoolean(float chance) {
-        return Random.create().nextFloat() < chance;
-    }
-
-    @Deprecated(forRemoval = true)
-    /**
-     * @see net.rodofire.easierworldcreator.util.MathUtil
-     */
-    public static int getSign(int a) {
-        return (a < 0) ? -1 : 1;
-    }
-
-    @Deprecated(forRemoval = true)
-    /**
-     * @see net.rodofire.easierworldcreator.util.MathUtil
-     */
-    public static int getSign(double a) {
-        return (a < 0) ? -1 : 1;
-    }
-
-    @Deprecated(forRemoval = true)
-    /**
-     * @see net.rodofire.easierworldcreator.util.MathUtil
-     */
-    public static int getSign(float a) {
-        return (a < 0) ? -1 : 1;
-    }
-
-
-    //return a random int between minheight and maxheight if the chance
-    public static int getSecondHeight(float chance, int maxheight) {
-        return getSecondHeight(chance, 0, maxheight);
-    }
-
-    public static int getSecondHeight(float chance, int minheight, int maxheight) {
+    public static int getSecondHeight(float chance, int minHeight, int maxHeight) {
         if (Random.create().nextFloat() < chance) {
-            return Random.create().nextBetween(minheight, maxheight);
+            return Random.create().nextBetween(minHeight, maxHeight);
         }
         return 0;
     }
@@ -98,7 +55,6 @@ public class WorldGenUtil {
 
     //verify if a block is in a list of BlockState
     public static boolean isBlockInBlockStateList(Block block, List<BlockState> state) {
-        // Parcourir la liste des BlockState pour vérifier si le bloc correspond
         for (BlockState blockState : state) {
             if (blockState.getBlock().equals(block)) {
                 return true;
@@ -109,7 +65,6 @@ public class WorldGenUtil {
 
     //Verify if a BlockState is in a list of BlockStates
     public static boolean isBlockStateInBlockStateList(BlockState block, List<BlockState> state) {
-        // Parcourir la liste des BlockState pour vérifier si le bloc correspond
         for (BlockState blockState : state) {
             if (blockState == block) {
                 return true;
@@ -119,23 +74,22 @@ public class WorldGenUtil {
     }
 
     public static float getDistance(BlockPos pos1, BlockPos pos2) {
-        return (float) FastMaths.getLength(pos1.getX() - pos2.getX(), pos1.getY() - pos2.getY(), pos1.getZ() - pos2.getZ());
+        return FastMaths.getLength(pos1.getX() - pos2.getX(), pos1.getY() - pos2.getY(), pos1.getZ() - pos2.getZ());
     }
 
     public static float getDistance(BlockPos pos1, BlockPos pos2, float precision) {
-        return (float) FastMaths.getLengthWPrecision(pos1.getX() - pos2.getX(), pos1.getY() - pos2.getY(), pos1.getZ() - pos2.getZ(), precision);
+        return FastMaths.getLengthWPrecision(pos1.getX() - pos2.getX(), pos1.getY() - pos2.getY(), pos1.getZ() - pos2.getZ(), precision);
     }
 
     public static boolean isPosAChunkFar(BlockPos pos1, BlockPos pos2) {
         if(Math.abs(pos1.getX() - pos2.getX()) > 16) return true;
-        if(Math.abs(pos1.getZ() - pos2.getZ()) > 16) return true;
-        return false;
+        return Math.abs(pos1.getZ() - pos2.getZ()) > 16;
     }
 
 
-    public static List<Block> addBlockStateListtoBlockList(List<Block> block, List<BlockState> state) {
+    public static Set<Block> addBlockStateListToBlockList(Set<Block> block, List<BlockState> state) {
         List<Block> secondlist = new ArrayList<>();
-        if (block == null) block = new ArrayList<>();
+        if (block == null) block = new HashSet<>();
         for (BlockState blockState : state) {
             secondlist.add(blockState.getBlock());
         }
@@ -158,7 +112,7 @@ public class WorldGenUtil {
 
         // Calculate the distance
         double numerator = Math.abs(A * x0 + B * y0 + C * z0 + D);
-        double denominator = FastMaths.getFastsqrt((float) (A * A + B * B + C * C), 0.001f);
+        double denominator = FastMaths.getFastSqrt((float) (A * A + B * B + C * C), 0.001f);
 
         return (float) (numerator / denominator);
     }
@@ -174,7 +128,7 @@ public class WorldGenUtil {
     public static int getBlockLayerDepth(List<BlockLayer> layers, int index) {
         int i = 0;
         if (index >= layers.size()) {
-            Easierworldcreator.LOGGER.error("int index >= blocklayer size");
+            Easierworldcreator.LOGGER.error("int index >= blockLayer size");
             throw new IndexOutOfBoundsException("Index: " + index + ", Size: " + layers.size());
         }
         for (int a = 0; a <= index; a++) {
@@ -183,21 +137,21 @@ public class WorldGenUtil {
         return i;
     }
 
-    public static int getBlockLayerDepth(List<BlockLayer> layers, int startindex, int endindex) {
+    public static int getBlockLayerDepth(List<BlockLayer> layers, int startIndex, int endIndex) {
         int i = 0;
-        if (startindex >= layers.size()) {
-            Easierworldcreator.LOGGER.error("int startindex >= blocklayer size");
-            throw new IndexOutOfBoundsException("Index: " + startindex + ", Size: " + layers.size());
+        if (startIndex >= layers.size()) {
+            Easierworldcreator.LOGGER.error("int startIndex >= blockLayer size");
+            throw new IndexOutOfBoundsException("Index: " + startIndex + ", Size: " + layers.size());
         }
-        if (endindex >= layers.size()) {
-            Easierworldcreator.LOGGER.error("int endindex >= blocklayer size");
-            throw new IndexOutOfBoundsException("Index: " + endindex + ", Size: " + layers.size());
+        if (endIndex >= layers.size()) {
+            Easierworldcreator.LOGGER.error("int endIndex >= blockLayer size");
+            throw new IndexOutOfBoundsException("Index: " + endIndex + ", Size: " + layers.size());
         }
-        if (endindex < startindex) {
-            Easierworldcreator.LOGGER.error("int firstindex > endindex");
+        if (endIndex < startIndex) {
+            Easierworldcreator.LOGGER.error("int firstIndex > endIndex");
             return 0;
         }
-        for (int a = startindex; a <= endindex; a++) {
+        for (int a = startIndex; a <= endIndex; a++) {
             i += layers.get(a).getDepth();
         }
         return i;
@@ -219,43 +173,41 @@ public class WorldGenUtil {
     }
 
 
-    public static BlockPos getCoordinatesRotation(float x, float y, float z, int rotationx, int rotationy, BlockPos pos) {
-        return getCoordinatesRotation(x, y, z, rotationx, rotationy, 0, pos);
+    public static BlockPos getCoordinatesRotation(float x, float y, float z, int rotationX, int rotationY, BlockPos pos) {
+        return getCoordinatesRotation(x, y, z, rotationX, rotationY, 0, pos);
     }
 
-    public static BlockPos getCoordinatesRotation(float x, float y, float z, int rotationx, int rotationy, int secondrotationx, BlockPos pos) {
-        return getCoordinatesRotation(x, y, z, FastMaths.getFastCos(rotationx), FastMaths.getFastSin(rotationx), FastMaths.getFastCos(rotationy), FastMaths.getFastSin(rotationy), FastMaths.getFastCos(secondrotationx), FastMaths.getFastSin(secondrotationx), pos);
+    public static BlockPos getCoordinatesRotation(float x, float y, float z, int rotationX, int rotationY, int secondRotationX, BlockPos pos) {
+        return getCoordinatesRotation(x, y, z, FastMaths.getFastCos(rotationX), FastMaths.getFastSin(rotationX), FastMaths.getFastCos(rotationY), FastMaths.getFastSin(rotationY), FastMaths.getFastCos(secondRotationX), FastMaths.getFastSin(secondRotationX), pos);
     }
 
-    public static BlockPos getCoordinatesRotation(float x, float y, float z, double cosx, double sinx, double cosy, double siny, double cosx2, double sinx2, BlockPos pos) {
+    public static BlockPos getCoordinatesRotation(float x, float y, float z, double cosX, double sinX, double cosy, double sinY, double cosX2, double sinX2, BlockPos pos) {
         // first x rotation
-        float y_rot1 = (float) (y * cosx - z * sinx);
-        float z_rot1 = (float) (y * sinx + z * cosx);
+        float y_rot1 = (float) (y * cosX - z * sinX);
+        float z_rot1 = (float) (y * sinX + z * cosX);
 
         // y rotation
-        float x_rot_z = (float) (x * cosy - y_rot1 * siny);
-        float y_rot_z = (float) (x * siny + y_rot1 * cosy);
+        float x_rot_z = (float) (x * cosy - y_rot1 * sinY);
+        float y_rot_z = (float) (x * sinY + y_rot1 * cosy);
 
         // second x rotation
-        float y_rot2 = (float) (y_rot_z * cosx2 - z_rot1 * sinx2);
-        float z_rot2 = (float) (y_rot_z * sinx2 + z_rot1 * cosx2);
+        float y_rot2 = (float) (y_rot_z * cosX2 - z_rot1 * sinX2);
+        float z_rot2 = (float) (y_rot_z * sinX2 + z_rot1 * cosX2);
 
-        return new BlockPos(new BlockPos.Mutable().set((Vec3i) pos, (int) x_rot_z, (int) y_rot2, (int) z_rot2));
+        return new BlockPos(new BlockPos.Mutable().set(pos, (int) x_rot_z, (int) y_rot2, (int) z_rot2));
 
     }
 
     /**
-     * This methods allow you to divide a list of blockPos into chunks.
+     * This method allows you to divide a list of blockPos into chunks.
      * It is used later to put the blocks
-     * @param posList
-     * @return
+     * @param posList the list of BlockPos that will be divided
+     * @return a list of set of BlockPos that represents a list of chunks
      */
-    public static List<List<BlockPos>> divideBlockPosIntoChunk(List<BlockPos> posList){
-        Map<ChunkPos, List<BlockPos>> chunkMap = new HashMap<>();
+    public static List<Set<BlockPos>> divideBlockPosIntoChunk(List<BlockPos> posList){
+        Map<ChunkPos, Set<BlockPos>> chunkMap = new HashMap<>();
         for (BlockPos pos : posList){
-            ChunkPos chunkPos = new ChunkPos(pos);
-            List<BlockPos> blockPosInChunk = chunkMap.computeIfAbsent(chunkPos, k -> new ArrayList<>());
-            blockPosInChunk.add(pos);
+            modifyChunkMap(pos, chunkMap);
         }
         return new ArrayList<>(chunkMap.values());
     }
@@ -264,16 +216,5 @@ public class WorldGenUtil {
         ChunkPos chunkPos = new ChunkPos(pos);
         Set<BlockPos> blockPosInChunk = chunkMap.computeIfAbsent(chunkPos, k -> new HashSet<>());
         blockPosInChunk.add(pos);
-    }
-
-    @Deprecated(forRemoval = true)
-    /**
-     * Method to verify if a chunk has been generated. This method could be useful for generating multi-chunk shapes
-     * @param world the world of the chunk
-     * @param chunkPos the pos of the chunk
-     * @return a {@link Boolean} that says if the chunk was generated
-     */
-    public static boolean isChunkGenerated(StructureWorldAccess world, ChunkPos chunkPos) {
-        return world.getChunkManager().getChunk(chunkPos.x, chunkPos.z, ChunkStatus.FULL, false) != null;
     }
 }

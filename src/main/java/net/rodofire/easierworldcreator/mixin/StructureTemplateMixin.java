@@ -1,6 +1,5 @@
 package net.rodofire.easierworldcreator.mixin;
 
-import com.google.common.collect.Lists;
 import net.minecraft.structure.StructureTemplate;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;
@@ -12,6 +11,7 @@ import java.util.List;
  * mixin used for nbt file generation
  */
 @Mixin(StructureTemplate.class)
+@SuppressWarnings("unused")
 public interface StructureTemplateMixin {
     @Accessor("blockInfoLists")
     void setBlockInfoLists(List<StructureTemplate.PalettedBlockInfoList> blockInfoLists);

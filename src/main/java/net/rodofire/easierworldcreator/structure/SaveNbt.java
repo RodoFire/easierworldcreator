@@ -2,6 +2,7 @@ package net.rodofire.easierworldcreator.structure;
 
 import com.google.common.collect.Lists;
 import net.minecraft.block.BlockState;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.structure.StructureTemplate;
 import net.minecraft.structure.StructureTemplateManager;
 import net.minecraft.util.Identifier;
@@ -19,9 +20,12 @@ import org.spongepowered.asm.mixin.Unique;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
+@SuppressWarnings("unused")
 public class SaveNbt {
 
     /**
@@ -49,8 +53,8 @@ public class SaveNbt {
         List<StructureTemplate.StructureBlockInfo> list3 = Lists.newArrayList();
 
         for (BlockList blocks : blockLists) {
-            BlockState blockState = blocks.getBlockstate();
-            for (BlockPos pos : blocks.getPoslist()) {
+            BlockState blockState = blocks.getBlockState();
+            for (BlockPos pos : blocks.getPosList()) {
                 StructureTemplate.StructureBlockInfo structureBlockInfo = new StructureTemplate.StructureBlockInfo(pos, blockState, null);
                 categorize(structureBlockInfo, list, list2, list3);
 
@@ -59,8 +63,10 @@ public class SaveNbt {
                 chunkBlockInfoMap.computeIfAbsent(chunkPos, k -> new ArrayList<>()).add(structureBlockInfo);
             }
         }
+        MinecraftServer server = world.getServer();
+        if (server == null) return;
 
-        StructureTemplateManager structureTemplateManager = world.getServer().getStructureTemplateManager();
+        StructureTemplateManager structureTemplateManager = server.getStructureTemplateManager();
 
         for (Map.Entry<ChunkPos, List<StructureTemplate.StructureBlockInfo>> entry : chunkBlockInfoMap.entrySet()) {
             ChunkPos chunkPos = entry.getKey();
@@ -75,7 +81,7 @@ public class SaveNbt {
             Identifier templateName = new Identifier(Easierworldcreator.MOD_ID,
                     chunkPos.x + "-" + chunkPos.z + "/" + featureName);
 
-            StructureTemplate structureTemplate = new StructureTemplate();
+            StructureTemplate structureTemplate;
 
             try {
                 structureTemplate = structureTemplateManager.getTemplateOrBlank(templateName);
@@ -84,12 +90,10 @@ public class SaveNbt {
 
                 structureTemplateManager.saveTemplate(templateName);
             } catch (Exception e) {
-                e.printStackTrace();  // Gestion des erreurs
+                e.fillInStackTrace();
             }
         }
     }
-
-
 
 
     private static void categorize(
@@ -121,15 +125,16 @@ public class SaveNbt {
 
     /**
      * when you want, you can remove the file
-     * @param nbtlist
+     *
+     * @param nbtList the list of the Identifier related to every structure that has to be removed
      */
-    public static void removeNbtFiles(List<Identifier> nbtlist) {
-        for (Identifier nbt : nbtlist) {
+    public static void removeNbtFiles(List<Identifier> nbtList) {
+        for (Identifier nbt : nbtList) {
             try {
                 Path filePath = Path.of(nbt.getPath());
                 Files.delete(filePath);
             } catch (IOException e) {
-                e.printStackTrace();
+                e.fillInStackTrace();
             }
         }
     }
@@ -140,7 +145,8 @@ public class SaveNbt {
     }
 
     /**
-     * gives you a list of "path" of nbt files related to a chunkpos
+     * gives you a list of "path" of nbt files related to a chunkPos
+     *
      * @param chunk the chunk of the nbt
      * @return the list of "path"
      */
@@ -148,15 +154,16 @@ public class SaveNbt {
         List<Identifier> nbtList = new ArrayList<>();
         String chunkFolderPath = new Identifier(Easierworldcreator.MOD_ID, "generated/structures/" + chunk.x + "_" + chunk.z + "/").getPath();
         try {
-            if (Files.exists(Path.of(chunkFolderPath)) && Files.isDirectory(Path.of(chunkFolderPath))) {
-                Files.list(Paths.get(chunkFolderPath)).forEach(filePath -> {
+            Path path = Path.of(chunkFolderPath);
+            if (Files.exists(path) && Files.isDirectory(path)) {
+                Files.list(path).forEach(filePath -> {
                     if (filePath.toString().endsWith(".nbt")) {
                         nbtList.add(new Identifier(Easierworldcreator.MOD_ID, chunk.x + "_" + chunk.z + "/" + filePath.getFileName().toString()));
                     }
                 });
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            e.fillInStackTrace();
         }
         return nbtList;
     }

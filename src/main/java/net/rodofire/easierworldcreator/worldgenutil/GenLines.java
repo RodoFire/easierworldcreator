@@ -9,19 +9,21 @@ import net.minecraft.world.StructureWorldAccess;
 import net.rodofire.easierworldcreator.shapegen.LineGen;
 
 import java.util.List;
+import java.util.Set;
 
-@Deprecated(forRemoval = false)
 /**
  * switch to new generation :
  * @see LineGen
  * this class will not be updated anymore and won't receive any support
  */
+@Deprecated
+@SuppressWarnings("unused")
 public class GenLines {
     public static void generateAxisLine(StructureWorldAccess world, BlockPos pos, int length,Direction dir,BlockState state){
         generateAxisLine(world,pos,length,dir,false,null, List.of(state));
     }
 
-    public static void generateAxisLine(StructureWorldAccess world, BlockPos pos, int length, Direction dir,boolean force, List<Block> blocksToForce, List<BlockState> blocksToPlace) {
+    public static void generateAxisLine(StructureWorldAccess world, BlockPos pos, int length, Direction dir, boolean force, Set<Block> blocksToForce, List<BlockState> blocksToPlace) {
         for (int i = 0; i < length; i++){
             BlockPlaceUtil.setRandomBlockWithVerification(world,force,blocksToForce,blocksToPlace,pos.offset(dir,i));
         }
@@ -133,3 +135,5 @@ public class GenLines {
         }
     }
 }
+
+
