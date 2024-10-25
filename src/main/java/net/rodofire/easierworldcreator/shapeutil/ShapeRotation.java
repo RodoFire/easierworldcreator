@@ -57,29 +57,29 @@ public abstract class ShapeRotation extends ShapeLayer {
 
 
     /*---------- Rotation related ----------*/
-    public void setZRotation(int yRotation) {
+    public void setYRotation(int yRotation) {
         this.yRotation = yRotation;
         getRotations(this.yRotation, this.zRotation, this.secondYRotation);
-    }
-
-    public int getZRotation() {
-        return zRotation;
     }
 
     public int getYRotation() {
         return yRotation;
     }
 
-    public void setYRotation(int yRotation) {
+    public int getZRotation() {
+        return zRotation;
+    }
+
+    public void setZRotation(int yRotation) {
         this.zRotation = yRotation;
         getRotations(this.yRotation, this.zRotation, this.secondYRotation);
     }
 
-    public int getSecondZRotation() {
+    public int getSecondYRotation() {
         return secondYRotation;
     }
 
-    public void setSecondZRotation(int secondYRotation) {
+    public void setSecondYRotation(int secondYRotation) {
         this.secondYRotation = secondYRotation;
         getRotations(this.yRotation, this.zRotation, this.secondYRotation);
     }
