@@ -57,7 +57,7 @@ package net.rodofire.easierworldcreator.worldgenutil;
 
 import net.minecraft.util.math.BlockPos;
 
-@SuppressWarnings("all")
+@SuppressWarnings({"all", "javadoc"})
 public class FastNoiseLite
 {
     public enum NoiseType
