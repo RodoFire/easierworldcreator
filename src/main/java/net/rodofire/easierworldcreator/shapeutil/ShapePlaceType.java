@@ -98,7 +98,7 @@ public abstract class ShapePlaceType extends ShapeBase {
     }
 
     /**
-     * Place blocks without verification. Used for precomputed List<BlockStates> instead of searching it on the BlockLayer
+     * Place blocks without verification. Used for precomputed {@code List<BlockStates>} instead of searching it on the BlockLayer
      *
      * @param states states the states that will be chosen
      * @param pos    the pos of the block
