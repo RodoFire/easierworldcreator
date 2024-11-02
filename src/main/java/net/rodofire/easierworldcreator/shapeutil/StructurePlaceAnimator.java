@@ -2,6 +2,7 @@ package net.rodofire.easierworldcreator.shapeutil;
 
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.minecraft.block.BlockState;
+import net.minecraft.sound.SoundCategory;
 import net.minecraft.util.Pair;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
@@ -12,13 +13,31 @@ import net.rodofire.easierworldcreator.worldgenutil.BlockStateUtil;
 import net.rodofire.easierworldcreator.worldgenutil.WorldGenUtil;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 @SuppressWarnings("unused")
 public class StructurePlaceAnimator {
     private StructureWorldAccess world;
+
     private AnimatorType animatorType;
     private AnimatorTime animatorTime;
+    private AnimatorSound animatorSound = AnimatorSound.DEFAULT;
+
+    /**
+     * you don't need to manually define each of theses since that they each belong to one animatorTime
+     */
+    private Pair<Integer, Integer> randomBlocksPerTickBound = new Pair<>(0, 100);
+    private int blocksPerTick = 100;
+    private int ticks = 500;
+
+    int ticksRemaining;
+
+    private BlockPos centerPoint = new BlockPos(0, 0, 0);
+    private Vec3d axisDirection = new Vec3d(-1, -1, 0);
+
+
+    private float soundPerTicks = 10f;
 
     public StructurePlaceAnimator(StructureWorldAccess world, AnimatorType animatorType, AnimatorTime animatorTime) {
         this.world = world;
@@ -90,23 +109,37 @@ public class StructurePlaceAnimator {
         this.world = world;
     }
 
-    /**
-     * you don't need to manually define each of theses since that they each belong to one animatorTime
-     */
-    private Pair<Integer, Integer> randomBlocksPerTickBound = new Pair<>(0, 100);
-    private int blocksPerTick = 100;
-    private int ticks = 500;
 
-    int ticksRemaining;
+    /* ------ Sound Related ----- */
+    public AnimatorSound getAnimatorSound() {
+        return animatorSound;
+    }
 
-    private BlockPos centerPoint = new BlockPos(0, 0, 0);
-    private Vec3d axisDirection = new Vec3d(0, 1, 0);
+    public void setAnimatorSound(AnimatorSound animatorSound) {
+        this.animatorSound = animatorSound;
+    }
+
+    public float getSoundPerTicks() {
+        return soundPerTicks;
+    }
+
+    public void setSoundPerTicks(float soundPerTicks) {
+        this.soundPerTicks = soundPerTicks;
+    }
 
     List<Pair<BlockState, BlockPos>> getSortedBlockList(List<Set<BlockList>> blockList) {
         List<Pair<BlockState, BlockPos>> sortedBlockList = new ArrayList<>();
-        BlockStateUtil.convertBlockListToBlockStatePair(blockList, sortedBlockList);
         return switch (this.animatorType) {
             case ALONG_AXIS -> {
+                blockList = blockList.parallelStream().sorted(Comparator.comparingDouble((set) -> {
+                    Optional<BlockList> optionalPos = set.stream().findFirst();
+                    if (optionalPos.isPresent()) {
+                        BlockPos pos = optionalPos.get().getPosList().get(0);
+                        return WorldGenUtil.getDistance(pos, new BlockPos(0, -60, 0));
+                    }
+                    return 0;
+                })).collect(Collectors.toList());
+                BlockStateUtil.convertBlockListToBlockStatePair(blockList, sortedBlockList);
                 Vec3d direction = this.axisDirection.normalize();
                 sortedBlockList = sortedBlockList.parallelStream().sorted(Comparator.comparingDouble((pair) -> {
                     BlockPos pos = pair.getRight();
@@ -118,7 +151,7 @@ public class StructurePlaceAnimator {
             case RADIAL_AXIS -> {
                 Vec3d axisPoint = this.centerPoint.toCenterPos();
                 Vec3d axisDirection = this.axisDirection.normalize();
-
+                BlockStateUtil.convertBlockListToBlockStatePair(blockList, sortedBlockList);
                 sortedBlockList = sortedBlockList.parallelStream().sorted(Comparator.comparingDouble((pair) -> {
                     BlockPos pos = pair.getRight();
                     Vec3d blockPosition = new Vec3d(pos.getX(), pos.getY(), pos.getZ());
@@ -131,12 +164,21 @@ public class StructurePlaceAnimator {
                 yield sortedBlockList;
             }
             case FROM_POINT -> {
+                BlockStateUtil.convertBlockListToBlockStatePair(blockList, sortedBlockList);
                 sortedBlockList = sortedBlockList.parallelStream().sorted(
                         Comparator.comparingDouble((pair) -> WorldGenUtil.getDistance(centerPoint, pair.getRight())
                         )).collect(Collectors.toList());
                 yield sortedBlockList;
             }
+            case FROM_POINT_INVERTED -> {
+                BlockStateUtil.convertBlockListToBlockStatePair(blockList, sortedBlockList);
+                sortedBlockList = sortedBlockList.parallelStream().sorted(
+                        Comparator.comparingDouble((pair) -> -WorldGenUtil.getDistance(centerPoint, pair.getRight())
+                        )).collect(Collectors.toList());
+                yield sortedBlockList;
+            }
             case RANDOM -> {
+                BlockStateUtil.convertBlockListToBlockStatePair(blockList, sortedBlockList);
                 Collections.shuffle(sortedBlockList);
                 yield sortedBlockList;
             }
@@ -145,6 +187,7 @@ public class StructurePlaceAnimator {
     }
 
     public void placeFromBlockList(List<Set<BlockList>> blockList) {
+        System.out.println("animator");
         if (blockList == null || blockList.isEmpty()) {
             Easierworldcreator.LOGGER.warn("StructureBlockAnimator: blockList is null or empty");
             return;
@@ -170,45 +213,87 @@ public class StructurePlaceAnimator {
     public void place(List<Pair<BlockState, BlockPos>> blocksToPlace) {
         int placeTicks;
         List<Integer> randomBlocks = new ArrayList<>();
+        int totalBlocks = blocksToPlace.size();
+        AtomicReference<Float> soundPlayed = new AtomicReference<>((float) 0);
 
         switch (animatorTime) {
-            case TICKS -> placeTicks = blocksToPlace.size() / ticks;
-
+            case TICKS -> {
+                if (ticks == 0) {
+                    Easierworldcreator.LOGGER.error("StructureBlockAnimator: ticks is zero");
+                    return;
+                }
+                blocksPerTick = Math.max(1, totalBlocks / ticks); // a minimum of one block per tick will be placed
+                placeTicks = ticks;
+            }
             case RANDOM_BLOCKS_PER_TICK -> {
-                int size = blocksToPlace.size();
                 int blocksSelected = 0;
-                while (blocksSelected < size) {
-                    int randomInt = Random.create().nextBetween(Math.min(size - blocksSelected, randomBlocksPerTickBound.getLeft()), Math.min(size - blocksSelected, randomBlocksPerTickBound.getRight()));
+                while (blocksSelected < totalBlocks) {
+                    int randomInt = Random.create().nextBetween(
+                            Math.min(totalBlocks - blocksSelected, randomBlocksPerTickBound.getLeft()),
+                            Math.min(totalBlocks - blocksSelected, randomBlocksPerTickBound.getRight())
+                    );
                     blocksSelected += randomInt;
                     randomBlocks.add(randomInt);
                 }
                 placeTicks = randomBlocks.size();
             }
-            case BLOCKS_PER_TICK -> placeTicks = ticks;
+            case BLOCKS_PER_TICK -> {
+                if (blocksPerTick <= 0) {
+                    Easierworldcreator.LOGGER.error("StructureBlockAnimator: blocksPerTick is zero or negative");
+                    return;
+                }
+                placeTicks = (int) Math.ceil((double) totalBlocks / blocksPerTick);
+            }
             default -> throw new IllegalStateException("Unexpected value: " + animatorTime);
         }
 
-        this.ticksRemaining = placeTicks;
-        ServerTickEvents.END_WORLD_TICK.register(world -> {
-            if (this.ticksRemaining <= 0 || blocksToPlace.isEmpty()) {
+
+        switch (animatorSound) {
+            case NO_SOUND -> this.soundPerTicks = 0;
+            case DEFAULT -> this.soundPerTicks = 0.5f;
+            case NUMBER_PER_TICK -> this.soundPerTicks = Math.min(blocksPerTick, this.soundPerTicks);
+            default -> throw new IllegalStateException("Unexpected value: " + animatorSound);
+        }
+
+        ticksRemaining = placeTicks;
+        Easierworldcreator.LOGGER.info("Starting placement with {} ticks and {} blocks per tick", placeTicks, blocksPerTick);
+        Easierworldcreator.LOGGER.info("size: {}", blocksToPlace.size());
+
+        //calling on end server tick because end world tick wouldn't place the blocks 2 times on 3.
+        ServerTickEvents.END_SERVER_TICK.register(server -> {
+            if (ticksRemaining <= 0 || blocksToPlace.isEmpty()) {
                 return;
             }
-            if (animatorType == AnimatorType.RANDOM) {
-                for (int i = 0; i < randomBlocks.get(0) && !blocksToPlace.isEmpty(); i++) {
-                    Pair<BlockState, BlockPos> blockPair = blocksToPlace.remove(0);
-                    world.setBlockState(blockPair.getRight(), blockPair.getLeft(), 3);
-                }
-                randomBlocks.remove(0);
+            soundPlayed.set(soundPlayed.get() + this.soundPerTicks);
+
+            int blocksThisTick;
+            if (animatorTime == AnimatorTime.RANDOM_BLOCKS_PER_TICK && !randomBlocks.isEmpty()) {
+                blocksThisTick = randomBlocks.remove(0);
             } else {
-                for (int i = 0; i < blocksPerTick && !blocksToPlace.isEmpty(); i++) {
-                    Pair<BlockState, BlockPos> blockPair = blocksToPlace.remove(0);
-                    world.setBlockState(blockPair.getRight(), blockPair.getLeft(), 3);
-                }
+                blocksThisTick = Math.min(blocksPerTick, blocksToPlace.size());
             }
-            this.ticksRemaining--;
+
+            for (int i = 0; i < blocksThisTick && !blocksToPlace.isEmpty(); i++) {
+                Pair<BlockState, BlockPos> blockPair = blocksToPlace.remove(0);
+                BlockState state = blockPair.getLeft();
+                BlockPos pos = blockPair.getRight();
+
+                if (soundPlayed.get() >= 1) {
+                    world.playSound(null, pos, state.getSoundGroup().getPlaceSound(), SoundCategory.BLOCKS, (float) Random.create().nextBetween(20, 100) / 10, (float) Random.create().nextBetween(5, 20) / 10);
+                    soundPlayed.set(soundPlayed.get() - 1);
+                }
+                world.setBlockState(blockPair.getRight(), state, 2);
+            }
+            ticksRemaining--;
+
+            if (ticksRemaining == 0 && !blocksToPlace.isEmpty()) {
+                Easierworldcreator.LOGGER.warn("All ticks completed, but {} blocks are still unplaced. Placing remaining blocks in final tick.", blocksToPlace.size());
+                blocksToPlace.forEach(blockPair -> world.setBlockState(blockPair.getRight(), blockPair.getLeft(), 3));
+                blocksToPlace.clear();
+            }
+
+            Easierworldcreator.LOGGER.debug("Tick {}: {} blocks remaining", placeTicks - ticksRemaining, blocksToPlace.size());
         });
-
-
     }
 
 
@@ -216,13 +301,26 @@ public class StructurePlaceAnimator {
         ALONG_AXIS,
         RADIAL_AXIS,
         FROM_POINT,
+        FROM_POINT_INVERTED,
         RANDOM,
         FROM_LIST
     }
 
     public enum AnimatorTime {
         BLOCKS_PER_TICK,
+        /**
+         * will place a random number blocks every tick
+         */
         RANDOM_BLOCKS_PER_TICK,
         TICKS
+    }
+
+    public enum AnimatorSound {
+        NO_SOUND,
+        /**
+         * will play one sound every tick
+         */
+        DEFAULT,
+        NUMBER_PER_TICK
     }
 }
