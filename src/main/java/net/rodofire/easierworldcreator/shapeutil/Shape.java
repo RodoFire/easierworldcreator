@@ -1,5 +1,6 @@
 package net.rodofire.easierworldcreator.shapeutil;
 
+import net.minecraft.block.BlockState;
 import net.minecraft.util.WorldSavePath;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
@@ -11,15 +12,14 @@ import net.rodofire.easierworldcreator.fileutil.FileUtil;
 import net.rodofire.easierworldcreator.fileutil.LoadChunkShapeInfo;
 import net.rodofire.easierworldcreator.fileutil.SaveChunkShapeInfo;
 import net.rodofire.easierworldcreator.util.ChunkUtil;
+import net.rodofire.easierworldcreator.worldgenutil.BlockStateUtil;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.*;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
+import java.util.concurrent.*;
+import java.util.stream.Collectors;
 
 /**
  * Class to create custom shapes
@@ -35,6 +35,8 @@ public abstract class Shape extends ShapeRotation {
     private BlockPos offset = new BlockPos(0, 0, 0);
 
     private String featureName;
+
+    private StructurePlaceAnimator animator;
 
     /**
      * init the Shape
@@ -65,13 +67,37 @@ public abstract class Shape extends ShapeRotation {
         super(world, pos, placeMoment);
     }
 
+    public StructurePlaceAnimator getAnimator() {
+        return animator;
+    }
+
+    public void setAnimator(StructurePlaceAnimator animator) {
+        this.animator = animator;
+    }
+
+    public String getFeatureName() {
+        return featureName;
+    }
+
+    public void setFeatureName(String featureName) {
+        this.featureName = featureName;
+    }
+
+    public BlockPos getOffset() {
+        return offset;
+    }
+
+    public void setOffset(BlockPos offset) {
+        this.offset = offset;
+    }
+
 
     /**
      * This method allows you to place the structure in the world.
      * Any changes done after this moment will not be taken in count except if you place another shape later
      */
     public void place() throws IOException {
-        if (this.getBlockLayers().isEmpty()) {
+        if (this.getBlockLayers() == null || this.getBlockLayers().isEmpty()) {
             Easierworldcreator.LOGGER.warn("shape not placed, no BlockLayer present");
             return;
         }
@@ -88,7 +114,7 @@ public abstract class Shape extends ShapeRotation {
      *
      * @param posList the {@link List} of {@link Set} of {@link BlockPos} calculated before, that will be placed
      */
-    public void place(List<Set<BlockPos>> posList) throws IOException {
+    public void place(List<Set<BlockPos>> posList) {
         if (posList == null || posList.isEmpty()) {
             Easierworldcreator.LOGGER.warn("shape not placed, no BlockPos present");
             return;
@@ -99,88 +125,114 @@ public abstract class Shape extends ShapeRotation {
                 layers.addBlockState(layers.getBlockStates().get(layers.getBlockStates().size() - 1));
             }
         }
-        if (this.getPlaceType() == PlaceType.BLOCKS) {
 
-            //verify if the shape is larger than a chunk
-            //if yes, we have to divide the structure into chunks
-            ExecutorService executorService = Executors.newFixedThreadPool(THREAD_COUNT);
-            if (this.getPlaceMoment() == PlaceMoment.WORLD_GEN && this.biggerThanChunk) {
+        //verify if the shape is larger than a chunk
+        //if yes, we have to divide the structure into chunks
+        ExecutorService executorService = Executors.newFixedThreadPool(THREAD_COUNT);
+        if (this.getPlaceMoment() == PlaceMoment.WORLD_GEN && this.biggerThanChunk) {
 
-                if (!tryPlaceStructure(posList)) {
-                    Easierworldcreator.LOGGER.info("cannot place structure due to too much chunks generated around the original Pos");
-                    return;
-                }
-                Easierworldcreator.LOGGER.info("structure bigger than chunk");
-                long randomLong = Random.create().nextLong();
-                featureName = "custom_feature_" + randomLong;
+            if (!tryPlaceStructure(posList)) {
+                Easierworldcreator.LOGGER.info("cannot place structure due to too much chunks generated around the original Pos");
+                return;
+            }
+            Easierworldcreator.LOGGER.info("structure bigger than chunk");
+            long randomLong = Random.create().nextLong();
+            featureName = "custom_feature_" + randomLong;
 
-                ChunkPos chunk = new ChunkPos(this.getPos());
-                chunk.getStartPos();
+            ChunkPos chunk = new ChunkPos(this.getPos());
+            chunk.getStartPos();
 
-                List<Future<?>> creationTasks = new ArrayList<>();
+            List<Future<?>> creationTasks = new ArrayList<>();
 
-                for (Set<BlockPos> pos : posList) {
-                    Future<?> future = executorService.submit(() -> {
-                        try {
-                            Set<BlockList> blockList = this.getLayers(pos);
-                            SaveChunkShapeInfo.saveChunkWorldGen(blockList, getWorld(), "false_" + featureName, offset);
-
-                        } catch (IOException e) {
-                            e.fillInStackTrace();
-                        }
-                    });
-                    creationTasks.add(future);
-                }
-
-                for (Future<?> future : creationTasks) {
+            for (Set<BlockPos> pos : posList) {
+                Future<?> future = executorService.submit(() -> {
                     try {
-                        future.get();
-                    } catch (InterruptedException | ExecutionException e) {
+                        Set<BlockList> blockList = this.getLayers(pos);
+                        SaveChunkShapeInfo.saveChunkWorldGen(blockList, getWorld(), "false_" + featureName, offset);
+
+                    } catch (IOException e) {
                         e.fillInStackTrace();
                     }
-                }
+                });
+                creationTasks.add(future);
+            }
 
-                List<ChunkPos> chunkPosList = new ArrayList<>();
-                for (Set<BlockPos> pos : posList) {
-                    pos.stream().findFirst().ifPresent(blockPos -> chunkPosList.add(new ChunkPos(blockPos.add(offset))));
-                }
-
-                if (!moveChunks(chunkPosList, 5)) return;
-                Path generatedPath = Objects.requireNonNull(getWorld().getServer()).getSavePath(WorldSavePath.GENERATED).resolve(Easierworldcreator.MOD_ID).resolve("structures").normalize();
-                //tell the garbage collector that it can free the list of pos
-                posList = null;
-
-                for (ChunkPos chunkPos : chunkPosList) {
-                    //executorService.submit(() -> {
-                    try {
-                        FileUtil.renameFile(
-                                generatedPath.resolve("chunk_" + chunkPos.x + "_" + chunkPos.z).resolve("false_" + featureName + ".json"),
-                                generatedPath.resolve("chunk_" + (chunkPos.x + offset.getX() / 16) + "_" + (chunkPos.z + offset.getZ() / 16)).resolve("[" + offset.getX() + "," + offset.getZ() + "]_" + featureName + ".json"));
-                    } catch (Exception e) {
-                        e.fillInStackTrace();
-                    }
-                    //});
-                }
-
-
-                List<Path> path = LoadChunkShapeInfo.verifyFiles(getWorld(), this.getPos());
-                for (Path path1 : path) {
-                    List<BlockList> blockLists = LoadChunkShapeInfo.loadFromJson(getWorld(), path1);
-                    LoadChunkShapeInfo.placeStructure(getWorld(), blockLists);
+            for (Future<?> future : creationTasks) {
+                try {
+                    future.get();
+                } catch (InterruptedException | ExecutionException e) {
+                    e.fillInStackTrace();
                 }
             }
-            //In the case our structure isn't place during world gen, or it is less than a chunk large
-            else {
-                Easierworldcreator.LOGGER.info("structure smaller than chunk");
-                for (Set<BlockPos> pos : posList) {
-                    //executorService.submit(() -> {
-                    this.placeLayers(pos);
-                    //});
-                }
 
+            List<ChunkPos> chunkPosList = new ArrayList<>();
+            for (Set<BlockPos> pos : posList) {
+                pos.stream().findFirst().ifPresent(blockPos -> chunkPosList.add(new ChunkPos(blockPos.add(offset))));
             }
-        } else {
+
+            if (!moveChunks(chunkPosList, 5)) return;
+            Path generatedPath = Objects.requireNonNull(getWorld().getServer()).getSavePath(WorldSavePath.GENERATED).resolve(Easierworldcreator.MOD_ID).resolve("structures").normalize();
+            //tell the garbage collector that it can free the list of pos
+            posList = null;
+
+            for (ChunkPos chunkPos : chunkPosList) {
+                //executorService.submit(() -> {
+                try {
+                    FileUtil.renameFile(
+                            generatedPath.resolve("chunk_" + chunkPos.x + "_" + chunkPos.z).resolve("false_" + featureName + ".json"),
+                            generatedPath.resolve("chunk_" + (chunkPos.x + offset.getX() / 16) + "_" + (chunkPos.z + offset.getZ() / 16)).resolve("[" + offset.getX() + "," + offset.getZ() + "]_" + featureName + ".json"));
+                } catch (Exception e) {
+                    e.fillInStackTrace();
+                }
+                //});
+            }
+
+
+            List<Path> path = LoadChunkShapeInfo.verifyFiles(getWorld(), this.getPos());
+            for (Path path1 : path) {
+                List<BlockList> blockLists = LoadChunkShapeInfo.loadFromJson(getWorld(), path1);
+                LoadChunkShapeInfo.placeStructure(getWorld(), blockLists);
+            }
+        } else if (this.getPlaceMoment() == PlaceMoment.ANIMATED_OTHER) {
+            List<Set<BlockList>> blockList = new ArrayList<>();
+
+            /*for (Set<BlockPos> pos : posList) {
+                blockList.add(this.getLayersWithVerification(pos));
+            }*/
+            Map<BlockPos, BlockState> blockStateMap = new HashMap<>();
+            BlockStateUtil.getBlockStatesFromWorld(posList, blockStateMap, getWorld());
+
+
+            executorService = Executors.newFixedThreadPool(Math.min(posList.size(), Runtime.getRuntime().availableProcessors()) - 2);
+
+            ExecutorService finalExecutorService = executorService;
+            List<CompletableFuture<Set<BlockList>>> result =
+                    posList.stream()
+                            .map(set -> CompletableFuture.supplyAsync(() -> this.getLayersWithVerification(set, blockStateMap), finalExecutorService))
+                            .toList();
+
+            System.out.println("hello");
+            blockList = result.stream()
+                    .map(CompletableFuture::join)
+                    .collect(Collectors.toList());
+
+            System.out.println("hellob");
+
+            if (animator == null) {
+                animator = new StructurePlaceAnimator(this.getWorld(), StructurePlaceAnimator.AnimatorType.RANDOM, StructurePlaceAnimator.AnimatorTime.BLOCKS_PER_TICK);
+                animator.setBlocksPerTick(100);
+            }
+            animator.placeFromBlockList(blockList);
         }
+        //In the case our structure isn't place during world gen, or it is less than a chunk large
+        else {
+            Easierworldcreator.LOGGER.info("structure smaller than chunk");
+            for (Set<BlockPos> pos : posList) {
+                this.placeLayers(pos);
+            }
+
+        }
+        executorService.shutdown();
     }
 
     public void placeWBlockList(List<Set<BlockList>> posList) throws IOException {
@@ -235,7 +287,7 @@ public abstract class Shape extends ShapeRotation {
                         generatedPath.resolve("chunk_" + chunkPos.x + "_" + chunkPos.z).resolve("false_" + featureName + ".json"),
                         generatedPath.resolve("chunk_" + (chunkPos.x + offset.getX() / 16) + "_" + (chunkPos.z + offset.getZ() / 16)).resolve("[" + offset.getX() + "," + offset.getZ() + "]_" + featureName + ".json"));
             } catch (Exception e) {
-                e.printStackTrace();
+                e.fillInStackTrace();
             }
             //});
         }
