@@ -133,6 +133,10 @@ public abstract class ShapeBase {
          */
         WORLD_GEN,
         /**
+         * used for any other moment than world gen and with animated blockPos
+         */
+        ANIMATED_OTHER,
+        /**
          * used for any other moment than world gen
          */
         OTHER
