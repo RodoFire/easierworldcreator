@@ -137,7 +137,7 @@ public class SpiralGen extends Shape {
     //height of the spiral
     private int height;
     //offset of the spiral in degrees, set to 0 by default, but you can change it
-    private int offset = 0;
+    private int spiralOffset = 0;
     //the number of turn that the spiral do between the start and the end, by default, this value is set to 1
     private float turnNumber = 1;
     //set the type of spiral
@@ -290,15 +290,15 @@ public class SpiralGen extends Shape {
         this.turnNumber = turnNumber;
     }
 
-    public int getOffset() {
-        return offset;
+    public int getSpiralOffset() {
+        return spiralOffset;
     }
 
     /**
-     * @param offset the offset of the start of the spiral
+     * @param spiralOffset the offset of the start of the spiral
      */
-    public void setOffset(int offset) {
-        this.offset = offset;
+    public void setSpiralOffset(int spiralOffset) {
+        this.spiralOffset = spiralOffset;
     }
 
     public Pair<Integer, Integer> getHelicoidAngle() {
@@ -326,7 +326,7 @@ public class SpiralGen extends Shape {
             this.generateLargeOutlineSpiral(chunkMap);
         } else if (this.spiralType == SpiralType.DOUBLE_HELICOID || this.spiralType == SpiralType.HALF_DOUBLE_HELICOID || this.spiralType == SpiralType.CUSTOM_DOUBLE_HELICOID) {
             this.generateHelicoid(chunkMap);
-            this.offset = 180;
+            this.spiralOffset = 180;
             this.generateHelicoid(chunkMap);
 
         } else {
@@ -357,8 +357,8 @@ public class SpiralGen extends Shape {
                 float percentage = (float) i / (maxLarge * this.turnNumber * height);
                 float radiusX = this.getXRadius(percentage);
                 float radiusZ = this.getZRadius(percentage);
-                int x = (int) (radiusX * FastMaths.getFastCos((float) (a * i + offset)));
-                int z = (int) (radiusZ * FastMaths.getFastSin((float) (a * i + offset)));
+                int x = (int) (radiusX * FastMaths.getFastCos((float) (a * i + spiralOffset)));
+                int z = (int) (radiusZ * FastMaths.getFastSin((float) (a * i + spiralOffset)));
                 int y = (int) (i / f);
                 BlockPos pos1 = new BlockPos(pos.getX() + x, pos.getY() + y, pos.getZ() + z);
                 if (!this.biggerThanChunk && WorldGenUtil.isPosAChunkFar(pos1, this.getPos()))
@@ -370,8 +370,8 @@ public class SpiralGen extends Shape {
                 float percentage = (float) i / (maxLarge * this.turnNumber * height);
                 float radiusX = this.getXRadius(percentage);
                 float radiusZ = this.getZRadius(percentage);
-                float x = radiusX * FastMaths.getFastCos((float) (a * i + offset));
-                float z = radiusZ * FastMaths.getFastSin((float) (a * i + offset));
+                float x = radiusX * FastMaths.getFastCos((float) (a * i + spiralOffset));
+                float z = radiusZ * FastMaths.getFastSin((float) (a * i + spiralOffset));
                 float y = (float) (i / f);
                 BlockPos pos2 = this.getCoordinatesRotation(x, y, z, pos);
                 if (!this.biggerThanChunk && WorldGenUtil.isPosAChunkFar(pos2, this.getPos()))
@@ -432,8 +432,8 @@ public class SpiralGen extends Shape {
 
                 for (double j = 0; j <= maxLarge; j++) {
 
-                    int x = (int) (gainX * j * FastMaths.getFastCos((float) (a * i + offset)));
-                    int z = (int) (gainZ * j * FastMaths.getFastSin((float) (a * i + offset)));
+                    int x = (int) (gainX * j * FastMaths.getFastCos((float) (a * i + spiralOffset)));
+                    int z = (int) (gainZ * j * FastMaths.getFastSin((float) (a * i + spiralOffset)));
                     double distance = FastMaths.getLength(x, z);
 
 
@@ -472,8 +472,8 @@ public class SpiralGen extends Shape {
 
                 for (double j = 0; j <= maxLarge; j++) {
 
-                    int x = (int) (gainX * j * FastMaths.getFastCos((float) (a * i + offset)));
-                    int z = (int) (gainZ * j * FastMaths.getFastSin((float) (a * i + offset)));
+                    int x = (int) (gainX * j * FastMaths.getFastCos((float) (a * i + spiralOffset)));
+                    int z = (int) (gainZ * j * FastMaths.getFastSin((float) (a * i + spiralOffset)));
 
                     double distance = FastMaths.getLength(x, z);
 
