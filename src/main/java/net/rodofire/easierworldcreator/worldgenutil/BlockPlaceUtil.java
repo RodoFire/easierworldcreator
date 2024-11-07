@@ -8,6 +8,7 @@ import net.minecraft.util.math.random.Random;
 import net.minecraft.world.StructureWorldAccess;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -30,6 +31,17 @@ public class BlockPlaceUtil {
         if (!force) {
             if (blocksToForce == null) blocksToForce = Set.of(Blocks.BEDROCK);
             return state2.isAir() || blocksToForce.stream().anyMatch(state2.getBlock()::equals);
+        }
+        return true;
+    }
+
+    public static boolean verifyBlock(StructureWorldAccess world, boolean force, Set<Block> blocksToForce, BlockPos pos, Map<BlockPos, BlockState> blockStateMap) {
+        BlockState state = blockStateMap.get(pos);
+
+        if (state.getHardness(world, pos) < 0) return false;
+        if (!force) {
+            if (blocksToForce == null) blocksToForce = Set.of(Blocks.BEDROCK);
+            return state.isAir() || blocksToForce.stream().anyMatch(state.getBlock()::equals);
         }
         return true;
     }

@@ -22,7 +22,7 @@ public abstract class FillableShape extends Shape {
     /**
      * set the default filling type
      */
-    Type fillingType = Type.FULL;
+    FillableShape.Type fillingType = FillableShape.Type.FULL;
 
     /**
      * init the ShapeFilling
@@ -81,7 +81,7 @@ public abstract class FillableShape extends Shape {
      *
      * @return the filling type
      */
-    public Type getFillingType() {
+    public FillableShape.Type getFillingType() {
         return fillingType;
     }
 
@@ -90,7 +90,7 @@ public abstract class FillableShape extends Shape {
      *
      * @param fillingType change the fillingType
      */
-    public void setFillingType(Type fillingType) {
+    public void setFillingType(FillableShape.Type fillingType) {
         this.fillingType = fillingType;
     }
 
@@ -117,10 +117,10 @@ public abstract class FillableShape extends Shape {
      * set the filling value depending on the filling type
      */
     protected void setFill() {
-        if (this.fillingType == Type.HALF) {
+        if (this.fillingType == FillableShape.Type.HALF) {
             this.customFill = 0.5f;
         }
-        if (this.fillingType == Type.FULL) {
+        if (this.fillingType == FillableShape.Type.FULL) {
             this.customFill = 1.0f;
         }
         if (this.getCustomFill() > 1f) this.customFill = 1f;

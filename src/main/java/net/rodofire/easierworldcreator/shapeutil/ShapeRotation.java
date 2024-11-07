@@ -57,20 +57,20 @@ public abstract class ShapeRotation extends ShapeLayer {
 
 
     /*---------- Rotation related ----------*/
-    public int getYRotation() {
-        return yRotation;
-    }
-
-    public void setXRotation(int yRotation) {
+    public void setYRotation(int yRotation) {
         this.yRotation = yRotation;
         getRotations(this.yRotation, this.zRotation, this.secondYRotation);
+    }
+
+    public int getYRotation() {
+        return yRotation;
     }
 
     public int getZRotation() {
         return zRotation;
     }
 
-    public void setYRotation(int yRotation) {
+    public void setZRotation(int yRotation) {
         this.zRotation = yRotation;
         getRotations(this.yRotation, this.zRotation, this.secondYRotation);
     }
@@ -84,7 +84,8 @@ public abstract class ShapeRotation extends ShapeLayer {
         getRotations(this.yRotation, this.zRotation, this.secondYRotation);
     }
 
-    public void addXRotation(int YRotation) {
+
+    public void addZRotation(int YRotation) {
         this.yRotation += YRotation;
         getRotations(this.yRotation, this.zRotation, this.secondYRotation);
     }
@@ -94,7 +95,7 @@ public abstract class ShapeRotation extends ShapeLayer {
         getRotations(this.yRotation, this.zRotation, this.secondYRotation);
     }
 
-    public void addSecondXRotation(int secondYRotation) {
+    public void addSecondZRotation(int secondYRotation) {
         this.secondYRotation += secondYRotation;
         getRotations(this.yRotation, this.zRotation, this.secondYRotation);
     }

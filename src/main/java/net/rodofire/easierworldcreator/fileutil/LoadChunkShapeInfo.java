@@ -44,11 +44,16 @@ public class LoadChunkShapeInfo {
      * @param chunkFilePath the path of the shape
      * @return a {@link List} used later to place the BlockStates
      */
-    public static List<BlockList> loadFromJson(StructureWorldAccess world, Path chunkFilePath) throws IOException {
+    public static List<BlockList> loadFromJson(StructureWorldAccess world, Path chunkFilePath) {
         File file = new File(chunkFilePath.toString());
         if(!file.exists()) return List.of();
-
-        String jsonContent = Files.readString(chunkFilePath);
+        String jsonContent;
+        try {
+            jsonContent = Files.readString(chunkFilePath);
+        } catch (IOException e) {
+            e.fillInStackTrace();
+            return List.of();
+        }
 
         Gson gson = new Gson();
 

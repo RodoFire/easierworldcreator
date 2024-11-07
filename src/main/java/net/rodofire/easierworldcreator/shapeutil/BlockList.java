@@ -290,6 +290,16 @@ public class BlockList {
     }
 
     /**
+     * method to replace one blockPos to another one
+     *
+     * @param oldPos the oldPos that will be replaced
+     * @param newPos the newPos that will replace the other blockPos
+     */
+    public void replaceBlockPos(BlockPos oldPos, BlockPos newPos) {
+        this.posList.set(posList.indexOf(oldPos), newPos);
+    }
+
+    /**
      * used to get the blockState
      *
      * @return the blockState of the BlockList

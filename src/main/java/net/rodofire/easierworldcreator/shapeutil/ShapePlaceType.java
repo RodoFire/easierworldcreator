@@ -9,6 +9,7 @@ import net.rodofire.easierworldcreator.worldgenutil.FastNoiseLite;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 @SuppressWarnings("unused")
@@ -98,7 +99,7 @@ public abstract class ShapePlaceType extends ShapeBase {
     }
 
     /**
-     * Place blocks without verification. Used for precomputed List<BlockStates> instead of searching it on the BlockLayer
+     * Place blocks without verification. Used for precomputed {@code List<BlockStates>} instead of searching it on the BlockLayer
      *
      * @param states states the states that will be chosen
      * @param pos    the pos of the block
@@ -180,7 +181,6 @@ public abstract class ShapePlaceType extends ShapeBase {
      */
     public boolean placeBlocksWithVerification(List<BlockState> states, BlockPos pos) {
         return this.placeBlocksWithVerification(states, pos, false, Set.of());
-
     }
 
     /**
@@ -230,6 +230,14 @@ public abstract class ShapePlaceType extends ShapeBase {
 
     public boolean verifyBlocks(BlockPos pos) {
         return BlockPlaceUtil.verifyBlock(this.getWorld(), false, Set.of(), pos);
+    }
+
+    public boolean verifyBlocks(BlockPos pos, Set<Block> blocksToForce, boolean force) {
+        return BlockPlaceUtil.verifyBlock(this.getWorld(), force, blocksToForce, pos);
+    }
+
+    public boolean verifyBlocks(BlockPos pos, Set<Block> blocksToForce, boolean force, Map<BlockPos, BlockState> blockStateMap) {
+        return BlockPlaceUtil.verifyBlock(this.getWorld(), force, blocksToForce, pos, blockStateMap);
     }
 
     /**

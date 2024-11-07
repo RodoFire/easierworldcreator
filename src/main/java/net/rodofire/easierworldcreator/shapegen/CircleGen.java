@@ -116,13 +116,13 @@ public class CircleGen extends FillableShape {
     /*---------- Place Structure ----------*/
     @Override
     public List<Set<BlockPos>> getBlockPos() {
-        if (this.getFillingType() == Type.HALF) {
+        if (this.getFillingType() == FillableShape.Type.HALF) {
             this.setCustomFill(0.5f);
         }
         if (this.getCustomFill() > 1f) this.setCustomFill(1f);
         if (this.getCustomFill() < 0f) this.setCustomFill(0f);
 
-        if (this.getFillingType() == Type.EMPTY) {
+        if (this.getFillingType() == FillableShape.Type.EMPTY) {
             return this.generateEmptyOval();
         }
         return this.generateFullOval();
