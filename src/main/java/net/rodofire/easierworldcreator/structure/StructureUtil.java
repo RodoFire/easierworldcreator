@@ -8,11 +8,8 @@ import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.structure.StructurePlacementData;
 import net.minecraft.structure.StructureTemplate;
-import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.StructureWorldAccess;
-import net.minecraft.world.chunk.Chunk;
 import net.rodofire.easierworldcreator.mixin.StructureTemplateMixin;
 import net.rodofire.easierworldcreator.shapeutil.BlockList;
 import net.rodofire.easierworldcreator.shapeutil.StructurePlaceAnimator;
@@ -23,21 +20,6 @@ import java.util.*;
 
 @SuppressWarnings("unused")
 public class StructureUtil {
-    public static void placeNbtFiles(StructureWorldAccess world, List<Identifier> nbtlist, Chunk chunk) {
-        for (Identifier nbt : nbtlist) {
-            NbtPlacer placer = new NbtPlacer(world, nbt);
-            placer.place(1f, chunk);
-        }
-    }
-
-    public static void placeNbtFiles(StructureWorldAccess world, List<Identifier> nbtlist, ChunkPos chunk) {
-        for (Identifier nbt : nbtlist) {
-            NbtPlacer placer = new NbtPlacer(world, nbt);
-            placer.place(1f, chunk);
-        }
-    }
-
-
     public static void convertNbtToBlockList(StructureTemplate structureTemplate, List<BlockList> blockLists) {
         List<StructureTemplate.PalettedBlockInfoList> blockInfoLists = ((StructureTemplateMixin) structureTemplate).getBlockInfoLists();
         Map<Pair<BlockState, NbtCompound>, List<BlockPos>> blockStateToPositionsMap = new HashMap<>();
