@@ -12,10 +12,15 @@ import net.rodofire.easierworldcreator.Easierworldcreator;
 import net.rodofire.easierworldcreator.worldgenutil.BlockStateUtil;
 import net.rodofire.easierworldcreator.worldgenutil.WorldGenUtil;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
+/**
+ * class to put blocks with an animation
+ */
 @SuppressWarnings("unused")
 public class StructurePlaceAnimator {
     private StructureWorldAccess world;
@@ -39,106 +44,225 @@ public class StructurePlaceAnimator {
 
     private float soundPerTicks = 10f;
 
+    /**
+     * init a {@code StructurePlaceAnimator} object
+     *
+     * @param world        the world the animation will take place
+     * @param animatorType the type of the animation
+     * @param animatorTime the time of the animation
+     */
     public StructurePlaceAnimator(StructureWorldAccess world, AnimatorType animatorType, AnimatorTime animatorTime) {
         this.world = world;
         this.animatorType = animatorType;
         this.animatorTime = animatorTime;
     }
 
+    /**
+     * Returns the random bounds for blocks placed per tick.
+     *
+     * @return a Pair representing the minimum and maximum number of blocks to be placed per tick.
+     */
     public Pair<Integer, Integer> getRandomBlocksPerTickBound() {
         return randomBlocksPerTickBound;
     }
 
+    /**
+     * Sets the random bounds for blocks placed per tick.
+     *
+     * @param randomBlocksPerTickBound a Pair representing the minimum and maximum number of blocks to be placed per tick.
+     */
     public void setRandomBlocksPerTickBound(Pair<Integer, Integer> randomBlocksPerTickBound) {
         this.randomBlocksPerTickBound = randomBlocksPerTickBound;
     }
 
+    /**
+     * Returns the number of blocks to place per tick.
+     *
+     * @return the number of blocks placed each tick.
+     */
     public int getBlocksPerTick() {
         return blocksPerTick;
     }
 
+    /**
+     * Sets the number of blocks to place per tick.
+     *
+     * @param blocksPerTick the number of blocks placed each tick.
+     */
     public void setBlocksPerTick(int blocksPerTick) {
         this.blocksPerTick = blocksPerTick;
     }
 
+    /**
+     * Returns the current tick count.
+     *
+     * @return the number of ticks.
+     */
     public int getTicks() {
         return ticks;
     }
 
+    /**
+     * Sets the current tick count.
+     *
+     * @param ticks the number of ticks.
+     */
     public void setTicks(int ticks) {
         this.ticks = ticks;
     }
 
+    /**
+     * Returns the central point of the structure.
+     *
+     * @return the center point as a BlockPos object.
+     */
     public BlockPos getCenterPoint() {
         return centerPoint;
     }
 
+    /**
+     * Sets the central point of the structure.
+     *
+     * @param centerPoint the center point as a BlockPos object.
+     */
     public void setCenterPoint(BlockPos centerPoint) {
         this.centerPoint = centerPoint;
     }
 
+    /**
+     * Returns the axis direction used in the animation.
+     *
+     * @return the axis direction as a Vec3d object.
+     */
     public Vec3d getAxisDirection() {
         return axisDirection;
     }
 
+    /**
+     * Sets the axis direction used in the animation.
+     *
+     * @param axisDirection the axis direction as a Vec3d object.
+     */
     public void setAxisDirection(Vec3d axisDirection) {
         this.axisDirection = axisDirection;
     }
 
+    /**
+     * Returns the AnimatorTime object, which manages timing for the animation.
+     *
+     * @return the AnimatorTime object.
+     */
     public AnimatorTime getAnimatorTime() {
         return animatorTime;
     }
 
+    /**
+     * Sets the AnimatorTime object, which manages timing for the animation.
+     *
+     * @param animatorTime the AnimatorTime object.
+     */
     public void setAnimatorTime(AnimatorTime animatorTime) {
         this.animatorTime = animatorTime;
     }
 
+    /**
+     * Returns the AnimatorType, representing the type of animation.
+     *
+     * @return the AnimatorType.
+     */
     public AnimatorType getAnimatorType() {
         return animatorType;
     }
 
+    /**
+     * Sets the AnimatorType, representing the type of animation.
+     *
+     * @param animatorType the AnimatorType.
+     */
     public void setAnimatorType(AnimatorType animatorType) {
         this.animatorType = animatorType;
     }
 
+    /**
+     * Returns the StructureWorldAccess for interacting with the world.
+     *
+     * @return the StructureWorldAccess object.
+     */
     public StructureWorldAccess getWorld() {
         return world;
     }
 
+    /**
+     * Sets the StructureWorldAccess for interacting with the world.
+     *
+     * @param world the StructureWorldAccess object.
+     */
     public void setWorld(StructureWorldAccess world) {
         this.world = world;
     }
 
-
     /* ------ Sound Related ----- */
+
+    /**
+     * Returns the AnimatorSound object, which manages sounds for the animation.
+     *
+     * @return the AnimatorSound object.
+     */
     public AnimatorSound getAnimatorSound() {
         return animatorSound;
     }
 
+    /**
+     * Sets the AnimatorSound object, which manages sounds for the animation.
+     *
+     * @param animatorSound the AnimatorSound object.
+     */
     public void setAnimatorSound(AnimatorSound animatorSound) {
         this.animatorSound = animatorSound;
     }
 
+    /**
+     * Returns the interval of ticks between sounds during the animation.
+     *
+     * @return the interval as a float.
+     */
     public float getSoundPerTicks() {
         return soundPerTicks;
     }
 
+    /**
+     * Sets the interval of ticks between sounds during the animation.
+     *
+     * @param soundPerTicks the interval as a float.
+     */
     public void setSoundPerTicks(float soundPerTicks) {
         this.soundPerTicks = soundPerTicks;
     }
 
-    List<Pair<BlockState, BlockPos>> getSortedBlockList(List<Set<BlockList>> blockList) {
+    /**
+     * method to sort the list depending on the {@code animatorType} and handling the divided List of BlockList
+     *
+     * @param blockList the list of BlockList that will be sorted
+     * @return a list of pair of BlockStates and BlockPos
+     */
+    List<BlockList> convertFromDividedToUnified(List<Set<BlockList>> blockList) {
+        List<BlockList> fusedList = new ArrayList<>();
+        for (Set<BlockList> set : blockList) {
+            fusedList.addAll(set);
+        }
+        return fusedList;
+    }
+
+    /**
+     * method to sort the list depending on the {@code animatorType}
+     *
+     * @param blockList the list of BlockList that will be sorted
+     * @return a list of pair of BlockStates and BlockPos
+     */
+    List<Pair<BlockState, BlockPos>> getSortedBlockList(List<BlockList> blockList) {
         List<Pair<BlockState, BlockPos>> sortedBlockList = new ArrayList<>();
         return switch (this.animatorType) {
             case ALONG_AXIS -> {
-                blockList = blockList.parallelStream().sorted(Comparator.comparingDouble((set) -> {
-                    Optional<BlockList> optionalPos = set.stream().findFirst();
-                    if (optionalPos.isPresent()) {
-                        BlockPos pos = optionalPos.get().getPosList().get(0);
-                        return WorldGenUtil.getDistance(pos, new BlockPos(0, -60, 0));
-                    }
-                    return 0;
-                })).collect(Collectors.toList());
                 BlockStateUtil.convertBlockListToBlockStatePair(blockList, sortedBlockList);
                 Vec3d direction = this.axisDirection.normalize();
                 sortedBlockList = sortedBlockList.parallelStream().sorted(Comparator.comparingDouble((pair) -> {
@@ -186,18 +310,46 @@ public class StructurePlaceAnimator {
         };
     }
 
-    public void placeFromBlockList(List<Set<BlockList>> blockList) {
-        System.out.println("animator");
+    /**
+     * method to place the structure by merging and then sorting the BlockList depending on the {@code animatorType}
+     *
+     * @param blockList the list of BlockList that will be placed
+     */
+    public void placeFromDividedBlockList(List<Set<BlockList>> blockList) {
+        if (blockListVerification(blockList)) return;
+        Instant start = Instant.now();
+        List<BlockList> fusedList = convertFromDividedToUnified(blockList);
+        placeFromBlockList(fusedList);
+    }
+
+    /**
+     * method to place the structure by sorting the BlockList depending on the {@code animatorType}
+     *
+     * @param blockList the list of BlockList that will be placed
+     */
+    public void placeFromBlockList(List<BlockList> blockList) {
+        if (blockListVerification(blockList)) return;
+        Instant start = Instant.now();
+        List<Pair<BlockState, BlockPos>> sortedBlockList = getSortedBlockList(blockList);
+        Instant end = Instant.now();
+        Duration timeElapsed = Duration.between(start, end);
+        Easierworldcreator.LOGGER.info("Shape sorted list calculations took : {}ms", timeElapsed.toMillis());
+        this.place(sortedBlockList);
+    }
+
+    /**
+     * method to verify that the provided list is not Empty
+     *
+     * @param blockList the list to verify
+     * @param <T>       allow to be used in the divided and unified context
+     * @return true if it's empty or null or false in the other case
+     */
+    private static <T> boolean blockListVerification(List<T> blockList) {
         if (blockList == null || blockList.isEmpty()) {
             Easierworldcreator.LOGGER.warn("StructureBlockAnimator: blockList is null or empty");
-            return;
+            return true;
         }
-        long start = System.nanoTime();
-        List<Pair<BlockState, BlockPos>> sortedBlockList = getSortedBlockList(blockList);
-        long end = System.nanoTime();
-        long diff = end - start;
-        Easierworldcreator.LOGGER.info("Shape sorted list calculations took : {}ms", ((double) (diff / 1000)) / 1000);
-        this.place(sortedBlockList);
+        return false;
     }
 
     /**
@@ -296,31 +448,69 @@ public class StructurePlaceAnimator {
         });
     }
 
-
+    /**
+     * enum to decide how the order of the blocks
+     */
     public enum AnimatorType {
+        /**
+         * will place the blocks on an orthogonal plan to an axis
+         */
         ALONG_AXIS,
+        /**
+         * will place the blocks closer to an axis first
+         */
         RADIAL_AXIS,
+        /**
+         * will place the blocks from the closer to a blockPos to the further
+         */
         FROM_POINT,
+        /**
+         * will place the blocks from the further to a blockPos to the closer
+         */
         FROM_POINT_INVERTED,
+        /**
+         * will place the blocks in a random order
+         */
         RANDOM,
+        /**
+         * will place the blocks depending on your input
+         */
         FROM_LIST
     }
 
+    /**
+     * enum to determine how much time the structure will be placed
+     */
     public enum AnimatorTime {
+        /**
+         * determines a defined number of blocks per tick
+         */
         BLOCKS_PER_TICK,
         /**
          * will place a random number blocks every tick
          */
         RANDOM_BLOCKS_PER_TICK,
+        /**
+         * determines a fixed number of ticks to place the structure
+         */
         TICKS
     }
 
+    /**
+     * enum to decide how to play sounds
+     */
     public enum AnimatorSound {
+        /**
+         * no sounds will be played
+         */
         NO_SOUND,
         /**
          * will play one sound every tick
          */
         DEFAULT,
+        /**
+         * set a number of sounds per tick
+         */
         NUMBER_PER_TICK
     }
 }
