@@ -7,7 +7,10 @@ import net.minecraft.structure.StructureTemplate;
 import net.minecraft.util.math.BlockPos;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * class used for the generation or the modification of a NBT file
@@ -284,6 +287,10 @@ public class BlockList {
      */
     public void removeBlockPos(List<BlockPos> pos) {
         this.posList.removeAll(pos);
+    }
+
+    public void replaceBlockPos(BlockPos oldPos, BlockPos newPos) {
+        this.posList.set(posList.indexOf(oldPos), newPos);
     }
 
     /**
