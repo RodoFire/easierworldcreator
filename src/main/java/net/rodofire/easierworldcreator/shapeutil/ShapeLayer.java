@@ -29,14 +29,14 @@ public abstract class ShapeLayer extends ShapePlaceType {
     /**
      * init the ShapeLayer
      *
-     * @param world         the world the spiral will spawn in
-     * @param pos           the center of the spiral
-     * @param placeMoment   define the moment where the shape will be placed
-     * @param layerPlace    how the {@code @BlockStates} inside of a {@link BlockLayer} will be placed
-     * @param layersType    how the Layers will be placed
+     * @param world       the world the spiral will spawn in
+     * @param pos         the center of the spiral
+     * @param placeMoment define the moment where the shape will be placed
+     * @param layerPlace  how the {@code @BlockStates} inside of a {@link BlockLayer} will be placed
+     * @param layersType  how the Layers will be placed
      */
     public ShapeLayer(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, @NotNull PlaceMoment placeMoment, LayerPlace layerPlace, LayersType layersType) {
-        super(world, pos, placeMoment,  layerPlace);
+        super(world, pos, placeMoment, layerPlace);
         this.layersType = layersType;
     }
 
@@ -106,7 +106,7 @@ public abstract class ShapeLayer extends ShapePlaceType {
     }
 
 
-    private void verifyForBlockLayer(BlockPos pos, List<BlockState> states, Set<BlockList> blockLists) {
+    private void addPosToBlockList(BlockPos pos, List<BlockState> states, Set<BlockList> blockLists) {
         BlockState state = getBlockToPlace(states, pos);
 
         for (BlockList blockList : blockLists) {
@@ -118,6 +118,14 @@ public abstract class ShapeLayer extends ShapePlaceType {
         blockLists.add(new BlockList(List.of(pos), state));
     }
 
+    private void addVerifiedPosToBlockList(BlockPos pos, List<BlockState> states, Set<Block> blocksToForce, boolean force, Set<BlockList> blockLists, Map<BlockPos, BlockState> blockStateMap) {
+        if (!verifyBlocks(pos, blocksToForce, force, blockStateMap)) {
+            return;
+        }
+        addPosToBlockList(pos, states, blockLists);
+    }
+
+
     /**
      * place the layers of the structure starting from the first layer to the second to the third
      *
@@ -128,48 +136,40 @@ public abstract class ShapeLayer extends ShapePlaceType {
         if (this.getBlockLayers().size() == 1) {
             List<BlockState> states = this.getBlockLayers().get(0).getBlockStates();
             for (BlockPos pos : firstPosList) {
-                verifyForBlockLayer(pos, states, blockLists);
+                addPosToBlockList(pos, states, blockLists);
             }
             return blockLists;
         }
         switch (layersType) {
-            case SURFACE -> {
-                Set<BlockPos> posList = firstPosList; // Use a copy here
-
-                if (posList != null) {
-                    List<BlockState> states = this.getBlockLayers().get(0).getBlockStates();
-                    for (BlockPos pos : firstPosList) {
-                        verifyForBlockLayer(pos, states, blockLists);
-                    }
-                    return blockLists;
-                }
-
-                for (int i = 1; i < this.getBlockLayers().size(); ++i) {
-                    if (posList.isEmpty()) return blockLists;
-                    List<Set<BlockPos>> pos1 = this.placeSurfaceBlockLayer(new HashSet<>(posList), i);
-                    posList = pos1.get(1);
-                    firstPosList = pos1.get(0);
-                    List<BlockState> states = this.getBlockLayers().get(i - 1).getBlockStates();
-
-                    // Create a copy for safe iteration
-                    Set<BlockPos> firstPosListCopy = new HashSet<>(firstPosList);
-                    for (BlockPos pos : firstPosListCopy) {
-                        verifyForBlockLayer(pos, states, blockLists);
-                    }
-                }
-                List<BlockState> states = this.getBlockLayers().get(this.getBlockLayers().size() - 1).getBlockStates();
-
-                // Create a copy for safe iteration
-                Set<BlockPos> posListCopy = new HashSet<>(posList);
-                for (BlockPos pos : posListCopy) {
-                    verifyForBlockLayer(pos, states, blockLists);
-                }
-            }
+            case SURFACE -> blockLists.addAll(this.getSurfaceBlocks(firstPosList));
             case INNER_RADIAL -> blockLists.addAll(this.getInnerRadialBlocks(firstPosList));
             case OUTER_RADIAL -> blockLists.addAll(this.getOuterRadialBlocks(firstPosList));
             case INNER_CYLINDRICAL -> blockLists.addAll(this.getInnerCylindricalBlocks(firstPosList));
             case OUTER_CYLINDRICAL -> blockLists.addAll(this.getOuterCylindricalBlocks(firstPosList));
             case ALONG_DIRECTION -> blockLists.addAll(this.getDirectionalLayers(firstPosList));
+            default -> throw new IllegalStateException("Unexpected value: " + layersType);
+        }
+        return blockLists;
+    }
+
+    public Set<BlockList> getLayersWithVerification(Set<BlockPos> firstPosList, Map<BlockPos, BlockState> blockStateMap) {
+        Set<BlockList> blockLists = new HashSet<>();
+        if (this.getBlockLayers().size() == 1) {
+            List<BlockState> states = this.getBlockLayers().get(0).getBlockStates();
+            for (BlockPos pos : firstPosList) {
+                addPosToBlockList(pos, states, blockLists);
+            }
+            return blockLists;
+        }
+        switch (layersType) {
+            case SURFACE -> blockLists.addAll(this.getVerifiedSurfaceBlocks(firstPosList, blockStateMap));
+            case INNER_RADIAL -> blockLists.addAll(this.getVerifiedInnerRadialBlocks(firstPosList, blockStateMap));
+            case OUTER_RADIAL -> blockLists.addAll(this.getVerifiedOuterRadialBlocks(firstPosList, blockStateMap));
+            case INNER_CYLINDRICAL ->
+                    blockLists.addAll(this.getVerifiedInnerCylindricalBlocks(firstPosList, blockStateMap));
+            case OUTER_CYLINDRICAL ->
+                    blockLists.addAll(this.getVerifiedOuterCylindricalBlocks(firstPosList, blockStateMap));
+            case ALONG_DIRECTION -> blockLists.addAll(this.getVerifiedDirectionalLayers(firstPosList, blockStateMap));
             default -> throw new IllegalStateException("Unexpected value: " + layersType);
         }
         return blockLists;
@@ -189,36 +189,38 @@ public abstract class ShapeLayer extends ShapePlaceType {
             return;
         }
         switch (layersType) {
-            case SURFACE -> {
-                Set<BlockPos> posList;
-                posList = this.placeFirstSurfaceBlockLayers(firstPosList);
-
-                if (posList == null) return;
-
-                for (int i = 1; i < this.getBlockLayers().size(); ++i) {
-                    if (posList.isEmpty()) return;
-                    List<Set<BlockPos>> pos1 = this.placeSurfaceBlockLayer(posList, i);
-                    posList = pos1.get(1);
-                    firstPosList = pos1.get(0);
-
-                    List<BlockState> states = this.getBlockLayers().get(i - 1).getBlockStates();
-
-                    for (BlockPos pos : firstPosList) {
-                        this.placeBlocks(states, pos);
-                    }
-                }
-                List<BlockState> states = this.getBlockLayers().get(this.getBlockLayers().size() - 1).getBlockStates();
-
-                for (BlockPos pos : posList) {
-                    this.placeBlocks(states, pos);
-                }
-            }
+            case SURFACE -> this.placeSurfaceBlocks(firstPosList);
             case INNER_RADIAL -> this.placeInnerRadialBlocks(firstPosList);
             case OUTER_RADIAL -> this.placeOuterRadialBlocks(firstPosList);
             case INNER_CYLINDRICAL -> this.placeInnerCylindricalBlocks(firstPosList);
             case OUTER_CYLINDRICAL -> this.placeOuterCylindricalBlocks(firstPosList);
             case ALONG_DIRECTION -> this.placeDirectionalLayers(firstPosList);
             default -> throw new IllegalStateException("Unexpected value: " + layersType);
+        }
+    }
+
+    private void placeSurfaceBlocks(Set<BlockPos> firstPosList) {
+        Set<BlockPos> posList;
+        posList = this.placeFirstSurfaceBlockLayers(firstPosList);
+
+        if (posList == null) return;
+
+        for (int i = 1; i < this.getBlockLayers().size(); ++i) {
+            if (posList.isEmpty()) return;
+            List<Set<BlockPos>> pos1 = this.placeSurfaceBlockLayer(posList, i);
+            posList = pos1.get(1);
+            firstPosList = pos1.get(0);
+
+            List<BlockState> states = this.getBlockLayers().get(i - 1).getBlockStates();
+
+            for (BlockPos pos : firstPosList) {
+                this.placeBlocks(states, pos);
+            }
+        }
+        List<BlockState> states = this.getBlockLayers().get(this.getBlockLayers().size() - 1).getBlockStates();
+
+        for (BlockPos pos : posList) {
+            this.placeBlocks(states, pos);
         }
     }
 
@@ -444,9 +446,241 @@ public abstract class ShapeLayer extends ShapePlaceType {
     }
 
 
+    /*----------------------------------------------------------------------------------------------------------------*/
+    private Set<BlockList> getVerifiedSurfaceBlocks(Set<BlockPos> firstPosList, Map<BlockPos, BlockState> blockStateMap) {
+        Set<BlockPos> posList = firstPosList;
+        Set<BlockList> blockLists = new HashSet<>();
+
+        if (posList == null) {
+            return blockLists;
+        }
+
+        for (int i = 1; i < this.getBlockLayers().size(); ++i) {
+            if (posList.isEmpty()) return blockLists;
+            BlockLayer layer = this.getBlockLayers().get(i);
+            List<Set<BlockPos>> pos1 = this.placeSurfaceBlockLayer(new HashSet<>(posList), i);
+            posList = pos1.get(1);
+            firstPosList = pos1.get(0);
+            List<BlockState> states = this.getBlockLayers().get(i - 1).getBlockStates();
+
+            Set<BlockPos> firstPosListCopy = new HashSet<>(firstPosList);
+            for (BlockPos pos : firstPosListCopy) {
+                addVerifiedPosToBlockList(pos, states, layer.getBlocksToForce(), layer.isForce(), blockLists, blockStateMap);
+            }
+        }
+        BlockLayer layer = this.getBlockLayers().get(this.getBlockLayers().size() - 1);
+        List<BlockState> states = layer.getBlockStates();
+
+        // Create a copy for safe iteration
+        Set<BlockPos> posListCopy = new HashSet<>(posList);
+        for (BlockPos pos : posListCopy) {
+            addVerifiedPosToBlockList(pos, states, layer.getBlocksToForce(), layer.isForce(), blockLists, blockStateMap);
+        }
+        return blockLists;
+    }
+
+    public Set<BlockList> getVerifiedInnerCylindricalBlocks(Set<BlockPos> posList, Map<BlockPos, BlockState> blockStateMap) {
+        Set<BlockList> blockLists = new HashSet<>();
+        List<Integer> layerDistance = new ArrayList<>();
+        layerDistance.add(this.getBlockLayers().get(0).getDepth());
+
+        for (int i = 1; i < this.getBlockLayers().size(); i++) {
+            layerDistance.add(this.getBlockLayers().get(i).getDepth() + layerDistance.get(i - 1));
+        }
+
+        int layerDistanceSize = layerDistance.size() - 1;
+        for (BlockPos pos : posList) {
+            boolean bl = false;
+            float distance = WorldGenUtil.getDistance(new BlockPos(this.radialCenterPos.getX(), pos.getY(), this.radialCenterPos.getZ()), pos);
+            for (int i = 0; i < layerDistanceSize; i++) {
+                if (distance < layerDistance.get(i)) {
+                    BlockLayer layer = this.getBlockLayers().get(i);
+                    addVerifiedPosToBlockList(pos, layer.getBlockStates(), layer.getBlocksToForce(), layer.isForce(), blockLists, blockStateMap);
+                    bl = true;
+                }
+            }
+            if (!bl) {
+                BlockLayer layer = this.getBlockLayers().get(layerDistanceSize);
+                addVerifiedPosToBlockList(pos, layer.getBlockStates(), layer.getBlocksToForce(), layer.isForce(), blockLists, blockStateMap);
+            }
+        }
+        return blockLists;
+    }
+
+    public Set<BlockList> getVerifiedOuterCylindricalBlocks(Set<BlockPos> posList, Map<BlockPos, BlockState> blockStateMap) {
+        Set<BlockList> blockLists = new HashSet<>();
+        List<Integer> layerDistance = new ArrayList<>();
+
+        //get the max distance of the list
+        float maxDistance = 0;
+        for (BlockPos pos : posList) {
+            float distance = WorldGenUtil.getDistance(new BlockPos(this.radialCenterPos.getX(), pos.getY(), this.radialCenterPos.getZ()), pos);
+            maxDistance = Math.max(distance, maxDistance);
+        }
+
+        layerDistance.add(this.getBlockLayers().get(0).getDepth());
+
+        for (int i = 1; i < this.getBlockLayers().size(); i++) {
+            layerDistance.add(this.getBlockLayers().get(i).getDepth() + layerDistance.get(i - 1));
+        }
+
+        int layerDistanceSize = layerDistance.size();
+        for (BlockPos pos : posList) {
+            boolean bl = false;
+            float distance = WorldGenUtil.getDistance(new BlockPos(this.radialCenterPos.getX(), pos.getY(), this.radialCenterPos.getZ()), pos);
+            for (int i = 0; i < layerDistanceSize - 1; i++) {
+                if (distance > maxDistance - layerDistance.get(i)) {
+                    BlockLayer layer = this.getBlockLayers().get(i);
+                    addVerifiedPosToBlockList(pos, layer.getBlockStates(), layer.getBlocksToForce(), layer.isForce(), blockLists, blockStateMap);
+                    bl = true;
+                }
+            }
+            if (!bl) {
+                BlockLayer layer = this.getBlockLayers().get(layerDistanceSize);
+                addVerifiedPosToBlockList(pos, layer.getBlockStates(), layer.getBlocksToForce(), layer.isForce(), blockLists, blockStateMap);
+            }
+        }
+        return blockLists;
+    }
+
+    //be careful when using layers with 1 block depth, that might do some weird things
+    public Set<BlockList> getVerifiedInnerRadialBlocks(Set<BlockPos> posList, Map<BlockPos, BlockState> blockStateMap) {
+        Set<BlockList> blockLists = new HashSet<>();
+        List<Integer> layerDistance = new ArrayList<>();
+        layerDistance.add(this.getBlockLayers().get(0).getDepth());
+
+        for (int i = 1; i < this.getBlockLayers().size(); i++) {
+            layerDistance.add(this.getBlockLayers().get(i).getDepth() + layerDistance.get(i - 1));
+        }
+
+        int layerDistanceSize = layerDistance.size();
+        for (BlockPos pos : posList) {
+            boolean bl = false;
+            float distance = WorldGenUtil.getDistance(radialCenterPos, pos);
+            for (int i = 0; i < layerDistanceSize - 1; i++) {
+                if (distance < layerDistance.get(i)) {
+                    BlockLayer layer = this.getBlockLayers().get(layerDistanceSize);
+                    addVerifiedPosToBlockList(pos, layer.getBlockStates(), layer.getBlocksToForce(), layer.isForce(), blockLists, blockStateMap);
+                    bl = true;
+                }
+            }
+            if (!bl) {
+                BlockLayer layer = this.getBlockLayers().get(layerDistanceSize);
+                addVerifiedPosToBlockList(pos, layer.getBlockStates(), layer.getBlocksToForce(), layer.isForce(), blockLists, blockStateMap);
+            }
+        }
+        return blockLists;
+    }
+
+    public Set<BlockList> getVerifiedOuterRadialBlocks(Set<BlockPos> posList, Map<BlockPos, BlockState> blockStateMap) {
+        Set<BlockList> blockLists = new HashSet<>();
+        List<Integer> layerDistance = new ArrayList<>();
+        layerDistance.add(this.getBlockLayers().get(0).getDepth());
+
+        float maxDistance = 0;
+        for (BlockPos pos : posList) {
+            float distance = WorldGenUtil.getDistance(this.radialCenterPos, pos);
+            maxDistance = Math.max(distance, maxDistance);
+        }
+        for (int i = 1; i < this.getBlockLayers().size(); i++) {
+            layerDistance.add(this.getBlockLayers().get(i).getDepth() + layerDistance.get(i - 1));
+        }
+
+        int layerDistanceSize = layerDistance.size();
+        for (BlockPos pos : posList) {
+            boolean bl = false;
+            float distance = WorldGenUtil.getDistance(radialCenterPos, pos);
+            for (int i = 0; i < layerDistanceSize - 1; i++) {
+                if (distance > maxDistance - layerDistance.get(i)) {
+                    BlockLayer layer = this.getBlockLayers().get(layerDistanceSize);
+                    addVerifiedPosToBlockList(pos, layer.getBlockStates(), layer.getBlocksToForce(), layer.isForce(), blockLists, blockStateMap);
+                    bl = true;
+                }
+            }
+            if (!bl) {
+                BlockLayer layer = this.getBlockLayers().get(layerDistanceSize);
+                addVerifiedPosToBlockList(pos, layer.getBlockStates(), layer.getBlocksToForce(), layer.isForce(), blockLists, blockStateMap);
+            }
+        }
+        return blockLists;
+    }
+
+    //TODO
+    //known bug where the first layers is a little wider than what it is supposed to be
+    private Set<BlockList> getVerifiedDirectionalLayers(Set<BlockPos> firstPosList, Map<BlockPos, BlockState> blockStateMap) {
+        Vec3d direction = this.directionalLayerDirection.normalize();
+        List<BlockPos> poslist = new ArrayList<>(firstPosList);
+        Set<BlockList> blockLists = new HashSet<>();
+
+        // Sort positions according to the directional vector
+        poslist.sort(Comparator.comparingDouble(pos -> -pos.getX() * direction.x - pos.getY() * direction.y - pos.getZ() * direction.z));
+
+        BlockPos firstPoint = poslist.get(0);
+
+        int layerIndex = 0;
+        int cumulativeDepth = this.getBlockLayers().get(layerIndex).getDepth();
+        float initialDistance = 0;
+        float maxDistance = 0;
+
+        List<BlockState> currentStates = this.getBlockLayers().get(layerIndex).getBlockStates();
+        int totalLayers = this.getBlockLayers().size() - 1;
+
+        for (BlockPos pos : poslist) {
+            float currentDistance = WorldGenUtil.getDistanceFromPointToPlane(direction, firstPoint.toCenterPos(), pos.toCenterPos());
+
+            if (initialDistance == 0 && currentDistance > 2.0E-4) {
+                initialDistance = currentDistance;
+                maxDistance = cumulativeDepth * initialDistance + 0.00002f;
+            }
+            BlockLayer layer = this.getBlockLayers().get(layerIndex);
+            // Move to the next layer if needed
+            while (layerIndex < totalLayers && currentDistance > maxDistance) {
+                layerIndex++;
+                layer = this.getBlockLayers().get(layerIndex);
+                cumulativeDepth += layer.getDepth();
+                maxDistance = cumulativeDepth * initialDistance + 0.00002f;
+                currentStates = layer.getBlockStates();
+            }
+
+            // Add the block position to the appropriate layer
+
+            addVerifiedPosToBlockList(pos, currentStates, layer.getBlocksToForce(), layer.isForce(), blockLists, blockStateMap);
+        }
+
+        return blockLists;
+    }
 
 
     /*-----------------------------------------------------------------------------------------------------------------------------*/
+    private Set<BlockList> getSurfaceBlocks(Set<BlockPos> firstPosList) {
+        Set<BlockPos> posList = firstPosList;
+        Set<BlockList> blockLists = new HashSet<>();
+
+        if (posList == null) {
+            return blockLists;
+        }
+
+        for (int i = 1; i < this.getBlockLayers().size(); ++i) {
+            if (posList.isEmpty()) return blockLists;
+            List<Set<BlockPos>> pos1 = this.placeSurfaceBlockLayer(new HashSet<>(posList), i);
+            posList = pos1.get(1);
+            firstPosList = pos1.get(0);
+            List<BlockState> states = this.getBlockLayers().get(i - 1).getBlockStates();
+
+            Set<BlockPos> firstPosListCopy = new HashSet<>(firstPosList);
+            for (BlockPos pos : firstPosListCopy) {
+                addPosToBlockList(pos, states, blockLists);
+            }
+        }
+        List<BlockState> states = this.getBlockLayers().get(this.getBlockLayers().size() - 1).getBlockStates();
+
+        // Create a copy for safe iteration
+        Set<BlockPos> posListCopy = new HashSet<>(posList);
+        for (BlockPos pos : posListCopy) {
+            addPosToBlockList(pos, states, blockLists);
+        }
+        return blockLists;
+    }
 
     public Set<BlockList> getInnerCylindricalBlocks(Set<BlockPos> posList) {
         Set<BlockList> blockLists = new HashSet<>();
@@ -463,12 +697,12 @@ public abstract class ShapeLayer extends ShapePlaceType {
             float distance = WorldGenUtil.getDistance(new BlockPos(this.radialCenterPos.getX(), pos.getY(), this.radialCenterPos.getZ()), pos);
             for (int i = 0; i < layerDistanceSize - 1; i++) {
                 if (distance < layerDistance.get(i)) {
-                    verifyForBlockLayer(pos, this.getBlockLayers().get(i).getBlockStates(), blockLists);
+                    addPosToBlockList(pos, this.getBlockLayers().get(i).getBlockStates(), blockLists);
                     bl = true;
                 }
             }
             if (!bl) {
-                verifyForBlockLayer(pos, this.getBlockLayers().get(layerDistanceSize - 1).getBlockStates(), blockLists);
+                addPosToBlockList(pos, this.getBlockLayers().get(layerDistanceSize - 1).getBlockStates(), blockLists);
             }
         }
         return blockLists;
@@ -497,12 +731,12 @@ public abstract class ShapeLayer extends ShapePlaceType {
             float distance = WorldGenUtil.getDistance(new BlockPos(this.radialCenterPos.getX(), pos.getY(), this.radialCenterPos.getZ()), pos);
             for (int i = 0; i < layerDistanceSize - 1; i++) {
                 if (distance > maxDistance - layerDistance.get(i)) {
-                    verifyForBlockLayer(pos, this.getBlockLayers().get(i).getBlockStates(), blockLists);
+                    addPosToBlockList(pos, this.getBlockLayers().get(i).getBlockStates(), blockLists);
                     bl = true;
                 }
             }
             if (!bl) {
-                verifyForBlockLayer(pos, this.getBlockLayers().get(layerDistanceSize - 1).getBlockStates(), blockLists);
+                addPosToBlockList(pos, this.getBlockLayers().get(layerDistanceSize - 1).getBlockStates(), blockLists);
             }
         }
         return blockLists;
@@ -524,12 +758,12 @@ public abstract class ShapeLayer extends ShapePlaceType {
             float distance = WorldGenUtil.getDistance(radialCenterPos, pos);
             for (int i = 0; i < layerDistanceSize - 1; i++) {
                 if (distance < layerDistance.get(i)) {
-                    verifyForBlockLayer(pos, this.getBlockLayers().get(i).getBlockStates(), blockLists);
+                    addPosToBlockList(pos, this.getBlockLayers().get(i).getBlockStates(), blockLists);
                     bl = true;
                 }
             }
             if (!bl) {
-                verifyForBlockLayer(pos, this.getBlockLayers().get(layerDistanceSize - 1).getBlockStates(), blockLists);
+                addPosToBlockList(pos, this.getBlockLayers().get(layerDistanceSize - 1).getBlockStates(), blockLists);
             }
         }
         return blockLists;
@@ -555,12 +789,12 @@ public abstract class ShapeLayer extends ShapePlaceType {
             float distance = WorldGenUtil.getDistance(radialCenterPos, pos);
             for (int i = 0; i < layerDistanceSize - 1; i++) {
                 if (distance > maxDistance - layerDistance.get(i)) {
-                    verifyForBlockLayer(pos, this.getBlockLayers().get(i).getBlockStates(), blockLists);
+                    addPosToBlockList(pos, this.getBlockLayers().get(i).getBlockStates(), blockLists);
                     bl = true;
                 }
             }
             if (!bl) {
-                verifyForBlockLayer(pos, this.getBlockLayers().get(layerDistanceSize - 1).getBlockStates(), blockLists);
+                addPosToBlockList(pos, this.getBlockLayers().get(layerDistanceSize - 1).getBlockStates(), blockLists);
             }
         }
         return blockLists;
@@ -604,7 +838,7 @@ public abstract class ShapeLayer extends ShapePlaceType {
             }
 
             // Add the block position to the appropriate layer
-            verifyForBlockLayer(pos, currentStates, blockLists);
+            addPosToBlockList(pos, currentStates, blockLists);
         }
 
         return blockLists;

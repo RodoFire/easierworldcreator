@@ -222,7 +222,7 @@ public abstract class Shape extends ShapeRotation {
                 animator = new StructurePlaceAnimator(this.getWorld(), StructurePlaceAnimator.AnimatorType.RANDOM, StructurePlaceAnimator.AnimatorTime.BLOCKS_PER_TICK);
                 animator.setBlocksPerTick(100);
             }
-            animator.placeFromBlockList(blockList);
+            animator.placeFromDividedBlockList(blockList);
         }
         //In the case our structure isn't place during world gen, or it is less than a chunk large
         else {
