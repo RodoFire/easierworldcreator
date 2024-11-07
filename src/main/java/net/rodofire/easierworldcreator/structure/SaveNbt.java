@@ -111,17 +111,7 @@ public class SaveNbt {
         }
     }
 
-    public static void generateNbtFiles(StructureWorldAccess world, List<Identifier> nbtlist, Chunk chunk) {
-        for (Identifier nbt : nbtlist) {
-            StructureUtil.place(world, nbt, 1f, chunk);
-        }
-    }
 
-    public static void generateNbtFiles(StructureWorldAccess world, List<Identifier> nbtlist, ChunkPos chunk) {
-        for (Identifier nbt : nbtlist) {
-            StructureUtil.place(world, nbt, 1f, chunk);
-        }
-    }
 
     /**
      * when you want, you can remove the file

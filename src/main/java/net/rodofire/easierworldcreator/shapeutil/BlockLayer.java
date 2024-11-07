@@ -22,7 +22,7 @@ import java.util.Set;
 public class BlockLayer {
     private List<BlockState> blockStates;
     private int depth = 1;
-    private Set<Block> blocksToForce;
+    private Set<Block> blocksToForce = new HashSet<>();
     private boolean force;
 
     /**
