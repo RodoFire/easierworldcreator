@@ -71,6 +71,11 @@ public abstract class Shape extends ShapeRotation {
         return animator;
     }
 
+    /**
+     * Method to set the animator. It is required when {@code PlaceMoment} is defined on {@code ANIMATED_OTHER}
+     *
+     * @param animator the animator that will be played
+     */
     public void setAnimator(StructurePlaceAnimator animator) {
         this.animator = animator;
     }
@@ -79,6 +84,13 @@ public abstract class Shape extends ShapeRotation {
         return featureName;
     }
 
+    /**
+     * <p>Method to set a custom name for the structure.
+     * <p>It is optional.
+     * <p>If no name is provided, one random name will be generated.
+     * <p>It allows better readibility in the generated files
+     * @param featureName the name of the structure
+     */
     public void setFeatureName(String featureName) {
         this.featureName = featureName;
     }
@@ -87,6 +99,10 @@ public abstract class Shape extends ShapeRotation {
         return offset;
     }
 
+    /**
+     * method to set an offset
+     * @param offset the offset of the entire structure
+     */
     public void setOffset(BlockPos offset) {
         this.offset = offset;
     }
@@ -96,7 +112,7 @@ public abstract class Shape extends ShapeRotation {
      * This method allows you to place the structure in the world.
      * Any changes done after this moment will not be taken in count except if you place another shape later
      */
-    public void place() throws IOException {
+    public void place() {
         if (this.getBlockLayers() == null || this.getBlockLayers().isEmpty()) {
             Easierworldcreator.LOGGER.warn("shape not placed, no BlockLayer present");
             return;
