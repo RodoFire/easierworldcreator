@@ -19,7 +19,6 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.*;
-import java.util.stream.Collectors;
 
 /**
  * Class to create custom shapes
@@ -210,29 +209,7 @@ public abstract class Shape extends ShapeRotation {
                 LoadChunkShapeInfo.placeStructure(getWorld(), blockLists);
             }
         } else if (this.getPlaceMoment() == PlaceMoment.ANIMATED_OTHER) {
-            List<Set<BlockList>> blockList = new ArrayList<>();
-
-            /*for (Set<BlockPos> pos : posList) {
-                blockList.add(this.getLayersWithVerification(pos));
-            }*/
-            Map<BlockPos, BlockState> blockStateMap = new HashMap<>();
-            BlockStateUtil.getBlockStatesFromWorld(posList, blockStateMap, getWorld());
-
-
-            executorService = Executors.newFixedThreadPool(Math.min(posList.size(), Runtime.getRuntime().availableProcessors()) - 2);
-
-            ExecutorService finalExecutorService = executorService;
-            List<CompletableFuture<Set<BlockList>>> result =
-                    posList.stream()
-                            .map(set -> CompletableFuture.supplyAsync(() -> this.getLayersWithVerification(set, blockStateMap), finalExecutorService))
-                            .toList();
-
-            System.out.println("hello");
-            blockList = result.stream()
-                    .map(CompletableFuture::join)
-                    .collect(Collectors.toList());
-
-            System.out.println("hellob");
+            List<Set<BlockList>> blockList = getBlockListWithVerification(posList);
 
             if (animator == null) {
                 animator = new StructurePlaceAnimator(this.getWorld(), StructurePlaceAnimator.AnimatorType.RANDOM, StructurePlaceAnimator.AnimatorTime.BLOCKS_PER_TICK);
@@ -399,6 +376,24 @@ public abstract class Shape extends ShapeRotation {
             }
         }
         return false;
+    }
+
+    public List<Set<BlockList>> getBlockListWithVerification(List<Set<BlockPos>> posList) {
+        List<Set<BlockList>> blockList;
+        Map<BlockPos, BlockState> blockStateMap = new HashMap<>();
+        BlockStateUtil.getBlockStatesFromWorld(posList, blockStateMap, getWorld());
+
+
+        ExecutorService finalExecutorService = Executors.newFixedThreadPool(Math.min(posList.size(), Runtime.getRuntime().availableProcessors()) - 2);
+        List<CompletableFuture<Set<BlockList>>> result =
+                posList.stream()
+                        .map(set -> CompletableFuture.supplyAsync(() -> this.getLayersWithVerification(set, blockStateMap), finalExecutorService))
+                        .toList();
+
+        blockList = result.stream()
+                .map(CompletableFuture::join)
+                .toList();
+        return blockList;
     }
 
     /**
