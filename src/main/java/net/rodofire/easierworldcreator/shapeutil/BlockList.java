@@ -300,6 +300,34 @@ public class BlockList {
     }
 
     /**
+     * method to get a certain pos from an index in the posList
+     *
+     * @param index the index of the BlockPos
+     * @return the BlockPos of the index
+     */
+    public BlockPos getPos(int index) {
+        return this.posList.get(index);
+    }
+
+    /**
+     * method to get the last blockPos of the posList
+     *
+     * @return the last blockPos of the posList
+     */
+    public BlockPos getLastPos() {
+        return this.posList.get(posList.size() - 1);
+    }
+
+    /**
+     * method to get the first blockPos of the posList
+     *
+     * @return the first blockPos of the posList
+     */
+    public BlockPos getFirstPos() {
+        return this.posList.get(0);
+    }
+
+    /**
      * used to get the blockState
      *
      * @return the blockState of the BlockList
