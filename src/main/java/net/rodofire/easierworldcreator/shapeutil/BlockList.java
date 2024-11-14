@@ -36,7 +36,7 @@ public class BlockList {
      * @param force      set if any block can be replaced by any blockState in this BlockList
      */
     public BlockList(List<BlockPos> posList, BlockState blockState, @Nullable NbtCompound tag, boolean force) {
-        this.posList = posList;
+        this.posList = new ArrayList<>(posList);
         this.blockState = blockState;
         this.tag = tag;
         this.force = force;
@@ -51,7 +51,7 @@ public class BlockList {
      * @param blocksToForce list of blocks that can be forced by any blockStates of this posList
      */
     public BlockList(List<BlockPos> posList, BlockState blockState, @Nullable NbtCompound tag, Set<Block> blocksToForce) {
-        this.posList = posList;
+        this.posList = new ArrayList<>(posList);
         this.blockState = blockState;
         this.tag = tag;
         this.blocksToForce = new HashSet<>(blocksToForce);
@@ -65,7 +65,7 @@ public class BlockList {
      * @param blocksToForce list of blocks that can be forced by any blockStates of this posList
      */
     public BlockList(List<BlockPos> posList, BlockState blockState, Set<Block> blocksToForce) {
-        this.posList = posList;
+        this.posList = new ArrayList<>(posList);
         this.blockState = blockState;
         this.blocksToForce = new HashSet<>(blocksToForce);
     }
@@ -78,7 +78,7 @@ public class BlockList {
      * @param force      set if any block can be replaced by any blockState in this BlockList
      */
     public BlockList(List<BlockPos> posList, BlockState blockState, boolean force) {
-        this.posList = posList;
+        this.posList = new ArrayList<>(posList);
         this.blockState = blockState;
         this.force = force;
     }
