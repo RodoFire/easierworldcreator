@@ -36,7 +36,7 @@ public class BlockList {
      * @param force      set if any block can be replaced by any blockState in this BlockList
      */
     public BlockList(List<BlockPos> posList, BlockState blockState, @Nullable NbtCompound tag, boolean force) {
-        this.posList = posList;
+        this.posList = new ArrayList<>(posList);
         this.blockState = blockState;
         this.tag = tag;
         this.force = force;
@@ -51,7 +51,7 @@ public class BlockList {
      * @param blocksToForce list of blocks that can be forced by any blockStates of this posList
      */
     public BlockList(List<BlockPos> posList, BlockState blockState, @Nullable NbtCompound tag, Set<Block> blocksToForce) {
-        this.posList = posList;
+        this.posList = new ArrayList<>(posList);
         this.blockState = blockState;
         this.tag = tag;
         this.blocksToForce = new HashSet<>(blocksToForce);
@@ -65,7 +65,7 @@ public class BlockList {
      * @param blocksToForce list of blocks that can be forced by any blockStates of this posList
      */
     public BlockList(List<BlockPos> posList, BlockState blockState, Set<Block> blocksToForce) {
-        this.posList = posList;
+        this.posList = new ArrayList<>(posList);
         this.blockState = blockState;
         this.blocksToForce = new HashSet<>(blocksToForce);
     }
@@ -78,7 +78,7 @@ public class BlockList {
      * @param force      set if any block can be replaced by any blockState in this BlockList
      */
     public BlockList(List<BlockPos> posList, BlockState blockState, boolean force) {
-        this.posList = posList;
+        this.posList = new ArrayList<>(posList);
         this.blockState = blockState;
         this.force = force;
     }
@@ -297,6 +297,34 @@ public class BlockList {
      */
     public void replaceBlockPos(BlockPos oldPos, BlockPos newPos) {
         this.posList.set(posList.indexOf(oldPos), newPos);
+    }
+
+    /**
+     * method to get a certain pos from an index in the posList
+     *
+     * @param index the index of the BlockPos
+     * @return the BlockPos of the index
+     */
+    public BlockPos getPos(int index) {
+        return this.posList.get(index);
+    }
+
+    /**
+     * method to get the last blockPos of the posList
+     *
+     * @return the last blockPos of the posList
+     */
+    public BlockPos getLastPos() {
+        return this.posList.get(posList.size() - 1);
+    }
+
+    /**
+     * method to get the first blockPos of the posList
+     *
+     * @return the first blockPos of the posList
+     */
+    public BlockPos getFirstPos() {
+        return this.posList.get(0);
     }
 
     /**
