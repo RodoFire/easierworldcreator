@@ -19,7 +19,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.StructureWorldAccess;
 import net.minecraft.world.chunk.Chunk;
-import net.rodofire.easierworldcreator.Easierworldcreator;
+import net.rodofire.easierworldcreator.EasierWorldCreator;
 import net.rodofire.easierworldcreator.shapeutil.BlockList;
 
 import java.io.File;
@@ -128,7 +128,7 @@ public class LoadChunkShapeInfo {
         Identifier identifier = new Identifier(extractBlockName(stateString.split("\\[")[0]));
         Optional<? extends RegistryEntry<Block>> optional = blockLookup.getOptional(RegistryKey.of(RegistryKeys.BLOCK, identifier));
         if (optional.isEmpty()) {
-            Easierworldcreator.LOGGER.error("error parsing BlockState: {}", stateString.split("\\[")[0]);
+            EasierWorldCreator.LOGGER.error("error parsing BlockState: {}", stateString.split("\\[")[0]);
             return Blocks.AIR.getDefaultState();
         }
 
@@ -200,7 +200,7 @@ public class LoadChunkShapeInfo {
         List<Path> pathList = new ArrayList<>();
         Path generatedPath = Objects.requireNonNull(world.getServer()).getSavePath(WorldSavePath.GENERATED).normalize();
         String chunkDirPrefix = "chunk_" + chunk.x + "_" + chunk.z;  // Prefix to match chunk directories
-        Path directoryPath = generatedPath.resolve(Easierworldcreator.MOD_ID).resolve("structures").resolve(chunkDirPrefix);
+        Path directoryPath = generatedPath.resolve(EasierWorldCreator.MOD_ID).resolve("structures").resolve(chunkDirPrefix);
 
         if (Files.exists(generatedPath) && Files.isDirectory(generatedPath)) {
 

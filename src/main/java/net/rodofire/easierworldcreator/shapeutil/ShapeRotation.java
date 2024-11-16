@@ -19,12 +19,12 @@ public abstract class ShapeRotation extends ShapeLayer {
     private int secondYRotation = 0;
 
     //precalculated cos and sin table for every rotation
-    private double cosX2 = 1;
-    private double cosX = 1;
+    private double cosY2 = 1;
     private double cosY = 1;
-    private double sinX = 0;
-    private double sinX2 = 0;
+    private double cosZ = 1;
     private double sinY = 0;
+    private double sinY2 = 0;
+    private double sinZ = 0;
 
     /**
      * init the ShapeRotation
@@ -111,12 +111,12 @@ public abstract class ShapeRotation extends ShapeLayer {
         this.yRotation = yRotation;
         this.zRotation = zRotation;
         this.secondYRotation = secondYRotation;
-        this.cosX = FastMaths.getFastCos(yRotation);
-        this.cosY = FastMaths.getFastCos(zRotation);
-        this.sinX = FastMaths.getFastSin(yRotation);
-        this.sinY = FastMaths.getFastSin(zRotation);
-        this.cosX2 = FastMaths.getFastCos(secondYRotation);
-        this.sinX2 = FastMaths.getFastSin(secondYRotation);
+        this.cosY = FastMaths.getFastCos(yRotation);
+        this.sinY = FastMaths.getFastSin(yRotation);
+        this.cosZ = FastMaths.getFastCos(zRotation);
+        this.sinZ = FastMaths.getFastSin(zRotation);
+        this.cosY2 = FastMaths.getFastCos(secondYRotation);
+        this.sinY2 = FastMaths.getFastSin(secondYRotation);
         this.setRadialCenterPos(this.getPos());
         this.setRadialCenterVec3d(this.getPos().toCenterPos());
     }
@@ -142,19 +142,18 @@ public abstract class ShapeRotation extends ShapeLayer {
      * @return the BlockPos related to the rotation
      */
     public BlockPos getCoordinatesRotation(float x, float y, float z, BlockPos centerPos) {
-        // first x rotation
-        float y_rot1 = (float) (y * cosX - z * sinX);
-        float z_rot1 = (float) (y * sinX + z * cosX);
+        // first y rotation
+        float x_rot1 = (float) (x * cosY - z * sinY);
+        float z_rot1 = (float) (x * sinY + z * cosY);
+        // z rotation
+        float x_rot_z = (float) (x_rot1 * cosZ - y * sinZ);
+        float y_rot_z = (float) (x_rot1 * sinZ + y * cosZ);
 
-        // y rotation
-        float x_rot_z = (float) (x * cosY - y_rot1 * sinY);
-        float y_rot_z = (float) (x * sinY + y_rot1 * cosY);
+        // second y rotation
+        float x_final = (float) (x_rot_z * cosY2 - z_rot1 * sinY2);
+        float z_final = (float) (x_rot_z * sinY2 + z_rot1 * cosY2);
 
-        // second x rotation
-        float y_rot2 = (float) (y_rot_z * cosX2 - z_rot1 * sinX2);
-        float z_rot2 = (float) (y_rot_z * sinX2 + z_rot1 * cosX2);
-
-        return new BlockPos(new BlockPos.Mutable().set(centerPos, (int) x_rot_z, (int) y_rot2, (int) z_rot2));
+        return new BlockPos(new BlockPos.Mutable().set(centerPos, (int) x_final, (int) y_rot_z, (int) z_final));
     }
 
     /**
