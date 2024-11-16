@@ -1,6 +1,6 @@
 package net.rodofire.easierworldcreator.util;
 
-import net.rodofire.easierworldcreator.Easierworldcreator;
+import net.rodofire.easierworldcreator.EasierWorldCreator;
 
 /**
  * Own implementation of maths focused on better performance
@@ -46,7 +46,7 @@ public class FastMaths {
      * method to initialize class when launching the mod
      */
     public static void registerMaths() {
-        Easierworldcreator.LOGGER.info("registering FastMaths class");
+        EasierWorldCreator.LOGGER.info("registering FastMaths class");
     }
 
     /**
@@ -79,7 +79,7 @@ public class FastMaths {
      */
     public static float getFastTan(float x) {
         if ((int) x % 180 == 90) {
-            Easierworldcreator.LOGGER.error("thrown error, tan can't accept values equal to 90° +- 180° (div by 0 error)");
+            EasierWorldCreator.LOGGER.error("thrown error, tan can't accept values equal to 90° +- 180° (div by 0 error)");
             return 0;
         }
         return sinFastTable[((int) x) % 360] / cosFastTable[((int) x) % 360];
@@ -93,7 +93,7 @@ public class FastMaths {
      */
     public static float getFastExp(float x) {
         if (x > 10.05) {
-            Easierworldcreator.LOGGER.warn("getFastExp() : too big exponential, returning real exp value");
+            EasierWorldCreator.LOGGER.warn("getFastExp() : too big exponential, returning real exp value");
             return (float) Math.exp(x);
         }
         return expFastTable[((int) (x * 100))];
@@ -127,7 +127,7 @@ public class FastMaths {
      */
     public static float getPreciseTan(float x) {
         if ((int) x % 180 == 90) {
-            Easierworldcreator.LOGGER.error("getPreciseExp() :thrown error, tan can't accept values equal to 90° +- 180° (div by 0 error)");
+            EasierWorldCreator.LOGGER.error("getPreciseExp() :thrown error, tan can't accept values equal to 90° +- 180° (div by 0 error)");
             return 0;
         }
         return sinPreciseTable[((int) x * 10) % PRECISE_TRIGO_TABLE_SIZE] / cosPreciseTable[((int) x * 10) % PRECISE_TRIGO_TABLE_SIZE];
@@ -143,7 +143,7 @@ public class FastMaths {
      */
     public static float getPreciseExp(float x) {
         if (x > 10.05) {
-            Easierworldcreator.LOGGER.warn("too big exponential, returning real exp value");
+            EasierWorldCreator.LOGGER.warn("too big exponential, returning real exp value");
             return (float) Math.exp(x);
         }
         return expPreciseTable[((int) (x * 1000))];

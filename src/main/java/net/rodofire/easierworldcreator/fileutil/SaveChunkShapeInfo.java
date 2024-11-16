@@ -8,7 +8,7 @@ import net.minecraft.util.WorldSavePath;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.StructureWorldAccess;
-import net.rodofire.easierworldcreator.Easierworldcreator;
+import net.rodofire.easierworldcreator.EasierWorldCreator;
 import net.rodofire.easierworldcreator.shapeutil.BlockList;
 
 import java.io.IOException;
@@ -214,7 +214,7 @@ public class SaveChunkShapeInfo {
      */
     public static Path createFolders(Path path) throws IOException {
         Files.createDirectories(path);
-        path = path.resolve(Easierworldcreator.MOD_ID);
+        path = path.resolve(EasierWorldCreator.MOD_ID);
         Files.createDirectories(path);
         path = path.resolve("structures");
         Files.createDirectories(path);
