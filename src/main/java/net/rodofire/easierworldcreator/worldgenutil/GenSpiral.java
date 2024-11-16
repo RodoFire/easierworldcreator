@@ -5,7 +5,7 @@ import net.minecraft.block.BlockState;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.random.Random;
 import net.minecraft.world.StructureWorldAccess;
-import net.rodofire.easierworldcreator.Easierworldcreator;
+import net.rodofire.easierworldcreator.EasierWorldCreator;
 import net.rodofire.easierworldcreator.shapegen.SpiralGen;
 import net.rodofire.easierworldcreator.util.FastMaths;
 
@@ -144,7 +144,7 @@ public class GenSpiral {
             BlockPos.Mutable mutable = new BlockPos.Mutable();
             int blockStateLength = blocksToPlace.size();
             if (turn <= 0) {
-                Easierworldcreator.LOGGER.error("param turn can't be <= 0");
+                EasierWorldCreator.LOGGER.error("param turn can't be <= 0");
             }
             float f = (float) (1.5 * turn);
             float a = (float) ((float) 360 / (1.5 * height));
@@ -307,7 +307,7 @@ public class GenSpiral {
             System.out.println("ok  " + blocksToPlace + "  " + blocksToForce);
             int blockStateLength = blocksToPlace.size();
             if (turn <= 0) {
-                Easierworldcreator.LOGGER.error("param turn can't be <= 0");
+                EasierWorldCreator.LOGGER.error("param turn can't be <= 0");
             }
             int maxRadius = Math.max(xRadius, zRadius);
             float f = (turn * maxRadius);

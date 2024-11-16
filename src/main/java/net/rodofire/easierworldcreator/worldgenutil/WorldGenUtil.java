@@ -7,7 +7,7 @@ import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.random.Random;
-import net.rodofire.easierworldcreator.Easierworldcreator;
+import net.rodofire.easierworldcreator.EasierWorldCreator;
 import net.rodofire.easierworldcreator.shapeutil.BlockLayer;
 import net.rodofire.easierworldcreator.util.FastMaths;
 
@@ -128,7 +128,7 @@ public class WorldGenUtil {
     public static int getBlockLayerDepth(List<BlockLayer> layers, int index) {
         int i = 0;
         if (index >= layers.size()) {
-            Easierworldcreator.LOGGER.error("int index >= blockLayer size");
+            EasierWorldCreator.LOGGER.error("int index >= blockLayer size");
             throw new IndexOutOfBoundsException("Index: " + index + ", Size: " + layers.size());
         }
         for (int a = 0; a <= index; a++) {
@@ -140,15 +140,15 @@ public class WorldGenUtil {
     public static int getBlockLayerDepth(List<BlockLayer> layers, int startIndex, int endIndex) {
         int i = 0;
         if (startIndex >= layers.size()) {
-            Easierworldcreator.LOGGER.error("int startIndex >= blockLayer size");
+            EasierWorldCreator.LOGGER.error("int startIndex >= blockLayer size");
             throw new IndexOutOfBoundsException("Index: " + startIndex + ", Size: " + layers.size());
         }
         if (endIndex >= layers.size()) {
-            Easierworldcreator.LOGGER.error("int endIndex >= blockLayer size");
+            EasierWorldCreator.LOGGER.error("int endIndex >= blockLayer size");
             throw new IndexOutOfBoundsException("Index: " + endIndex + ", Size: " + layers.size());
         }
         if (endIndex < startIndex) {
-            Easierworldcreator.LOGGER.error("int firstIndex > endIndex");
+            EasierWorldCreator.LOGGER.error("int firstIndex > endIndex");
             return 0;
         }
         for (int a = startIndex; a <= endIndex; a++) {

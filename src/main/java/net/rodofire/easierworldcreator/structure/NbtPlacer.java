@@ -14,7 +14,7 @@ import net.minecraft.util.InvalidIdentifierException;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.StructureWorldAccess;
-import net.rodofire.easierworldcreator.Easierworldcreator;
+import net.rodofire.easierworldcreator.EasierWorldCreator;
 import net.rodofire.easierworldcreator.shapeutil.BlockList;
 import net.rodofire.easierworldcreator.shapeutil.StructurePlaceAnimator;
 
@@ -114,7 +114,7 @@ public class NbtPlacer {
     public void place(float integrity, BlockPos pos, BlockPos offset, BlockMirror mirror, BlockRotation rotation, boolean ignoreEntities, boolean force, Set<Block> blockToForce, Set<Block> blockToSkip) {
         MinecraftServer server = world.getServer();
         if (server == null) {
-            Easierworldcreator.LOGGER.error("cannot get structure template, MinecraftServer is null. Structure template: {}", templateName);
+            EasierWorldCreator.LOGGER.error("cannot get structure template, MinecraftServer is null. Structure template: {}", templateName);
             return;
         }
         StructureTemplateManager structureTemplateManager = server.getStructureTemplateManager();

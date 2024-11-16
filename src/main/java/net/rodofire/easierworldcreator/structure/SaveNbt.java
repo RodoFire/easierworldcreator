@@ -11,7 +11,7 @@ import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.EmptyBlockView;
 import net.minecraft.world.StructureWorldAccess;
 import net.minecraft.world.chunk.Chunk;
-import net.rodofire.easierworldcreator.Easierworldcreator;
+import net.rodofire.easierworldcreator.EasierWorldCreator;
 import net.rodofire.easierworldcreator.mixin.PalettedBlockInfoListMixin;
 import net.rodofire.easierworldcreator.mixin.StructureTemplateMixin;
 import net.rodofire.easierworldcreator.shapeutil.BlockList;
@@ -78,7 +78,7 @@ public class SaveNbt {
             StructureTemplate.PalettedBlockInfoList palettedBlockInfoList = createPalettedBlockInfoList(combinedList);
             blockInfoLists.add(palettedBlockInfoList);
 
-            Identifier templateName = new Identifier(Easierworldcreator.MOD_ID,
+            Identifier templateName = new Identifier(EasierWorldCreator.MOD_ID,
                     chunkPos.x + "-" + chunkPos.z + "/" + featureName);
 
             StructureTemplate structureTemplate;
@@ -142,13 +142,13 @@ public class SaveNbt {
      */
     public static List<Identifier> loadNBTFiles(ChunkPos chunk) {
         List<Identifier> nbtList = new ArrayList<>();
-        String chunkFolderPath = new Identifier(Easierworldcreator.MOD_ID, "generated/structures/" + chunk.x + "_" + chunk.z + "/").getPath();
+        String chunkFolderPath = new Identifier(EasierWorldCreator.MOD_ID, "generated/structures/" + chunk.x + "_" + chunk.z + "/").getPath();
         try {
             Path path = Path.of(chunkFolderPath);
             if (Files.exists(path) && Files.isDirectory(path)) {
                 Files.list(path).forEach(filePath -> {
                     if (filePath.toString().endsWith(".nbt")) {
-                        nbtList.add(new Identifier(Easierworldcreator.MOD_ID, chunk.x + "_" + chunk.z + "/" + filePath.getFileName().toString()));
+                        nbtList.add(new Identifier(EasierWorldCreator.MOD_ID, chunk.x + "_" + chunk.z + "/" + filePath.getFileName().toString()));
                     }
                 });
             }

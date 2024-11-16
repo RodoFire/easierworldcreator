@@ -2,7 +2,7 @@ package net.rodofire.easierworldcreator.shapeutil;
 
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.StructureWorldAccess;
-import net.rodofire.easierworldcreator.Easierworldcreator;
+import net.rodofire.easierworldcreator.EasierWorldCreator;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
@@ -82,7 +82,7 @@ public abstract class ShapeBase {
 
     public void removeBlockLayer(int index) {
         if (index >= this.blockLayers.size()) {
-            Easierworldcreator.LOGGER.error("int index >= blockLayer size");
+            EasierWorldCreator.LOGGER.error("int index >= blockLayer size");
             throw new IndexOutOfBoundsException("Index: " + index + ", Size: " + this.blockLayers.size());
         }
         this.removeBlockLayer(this.blockLayers.get(index));
@@ -102,7 +102,7 @@ public abstract class ShapeBase {
 
     public BlockLayer getBlockLayer(int index) {
         if (index >= this.blockLayers.size()) {
-            Easierworldcreator.LOGGER.error("int index >= blockLayer size");
+            EasierWorldCreator.LOGGER.error("int index >= blockLayer size");
             throw new IndexOutOfBoundsException("Index: " + index + ", Size: " + this.blockLayers.size());
         }
         return this.blockLayers.get(index);
