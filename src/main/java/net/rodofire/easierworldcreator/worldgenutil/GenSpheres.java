@@ -5,9 +5,9 @@ import net.minecraft.block.BlockState;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.world.StructureWorldAccess;
-import net.rodofire.easierworldcreator.Easierworldcreator;
-import net.rodofire.easierworldcreator.util.FastMaths;
+import net.rodofire.easierworldcreator.EasierWorldCreator;
 import net.rodofire.easierworldcreator.shapegen.SphereGen;
+import net.rodofire.easierworldcreator.util.FastMaths;
 
 import java.util.List;
 import java.util.Set;
@@ -120,7 +120,7 @@ public class GenSpheres {
         int radiusYSquared = radiusY * radiusY;
         int radiusZSquared = radiusZ * radiusZ;
         if (radiusX > 32 || radiusY > 32 || radiusZ > 32) {
-            Easierworldcreator.LOGGER.warn("generating huge sphere (diameter > 64)");
+            EasierWorldCreator.LOGGER.warn("generating huge sphere (diameter > 64)");
         }
         for (float x = minx; x <= maxX; x++) {
             float xs = x*x/radiusXSquared;

@@ -7,7 +7,7 @@ import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.random.Random;
 import net.minecraft.world.StructureWorldAccess;
-import net.rodofire.easierworldcreator.Easierworldcreator;
+import net.rodofire.easierworldcreator.EasierWorldCreator;
 import net.rodofire.easierworldcreator.fileutil.FileUtil;
 import net.rodofire.easierworldcreator.fileutil.LoadChunkShapeInfo;
 import net.rodofire.easierworldcreator.fileutil.SaveChunkShapeInfo;
@@ -113,14 +113,14 @@ public abstract class Shape extends ShapeRotation {
      */
     public void place() {
         if (this.getBlockLayers() == null || this.getBlockLayers().isEmpty()) {
-            Easierworldcreator.LOGGER.warn("shape not placed, no BlockLayer present");
+            EasierWorldCreator.LOGGER.warn("shape not placed, no BlockLayer present");
             return;
         }
         long start = System.nanoTime();
         List<Set<BlockPos>> posList = this.getBlockPos();
         long end = System.nanoTime();
         long diff = end - start;
-        Easierworldcreator.LOGGER.info("Shape coordinate calculations took : {}ms", ((double) (diff / 1000)) / 1000);
+        EasierWorldCreator.LOGGER.info("Shape coordinate calculations took : {}ms", ((double) (diff / 1000)) / 1000);
         place(posList);
     }
 
@@ -131,10 +131,10 @@ public abstract class Shape extends ShapeRotation {
      */
     public void place(List<Set<BlockPos>> posList) {
         if (posList == null || posList.isEmpty()) {
-            Easierworldcreator.LOGGER.warn("shape not placed, no BlockPos present");
+            EasierWorldCreator.LOGGER.warn("shape not placed, no BlockPos present");
             return;
         }
-        Easierworldcreator.LOGGER.info("placing structure");
+        EasierWorldCreator.LOGGER.info("placing structure");
         if (this.getLayerPlace() == LayerPlace.NOISE2D || this.getLayerPlace() == LayerPlace.NOISE3D) {
             for (BlockLayer layers : this.getBlockLayers()) {
                 layers.addBlockState(layers.getBlockStates().get(layers.getBlockStates().size() - 1));
@@ -147,10 +147,10 @@ public abstract class Shape extends ShapeRotation {
         if (this.getPlaceMoment() == PlaceMoment.WORLD_GEN && this.biggerThanChunk) {
 
             if (!tryPlaceStructure(posList)) {
-                Easierworldcreator.LOGGER.info("cannot place structure due to too much chunks generated around the original Pos");
+                EasierWorldCreator.LOGGER.info("cannot place structure due to too much chunks generated around the original Pos");
                 return;
             }
-            Easierworldcreator.LOGGER.info("structure bigger than chunk");
+            EasierWorldCreator.LOGGER.info("structure bigger than chunk");
             long randomLong = Random.create().nextLong();
             featureName = "custom_feature_" + randomLong;
 
@@ -186,7 +186,7 @@ public abstract class Shape extends ShapeRotation {
             }
 
             if (!moveChunks(chunkPosList, 5)) return;
-            Path generatedPath = Objects.requireNonNull(getWorld().getServer()).getSavePath(WorldSavePath.GENERATED).resolve(Easierworldcreator.MOD_ID).resolve("structures").normalize();
+            Path generatedPath = Objects.requireNonNull(getWorld().getServer()).getSavePath(WorldSavePath.GENERATED).resolve(EasierWorldCreator.MOD_ID).resolve("structures").normalize();
             //tell the garbage collector that it can free the list of pos
             posList = null;
 
@@ -219,7 +219,7 @@ public abstract class Shape extends ShapeRotation {
         }
         //In the case our structure isn't place during world gen, or it is less than a chunk large
         else {
-            Easierworldcreator.LOGGER.info("structure smaller than chunk");
+            EasierWorldCreator.LOGGER.info("structure smaller than chunk");
             for (Set<BlockPos> pos : posList) {
                 this.placeLayers(pos);
             }
@@ -238,7 +238,7 @@ public abstract class Shape extends ShapeRotation {
         List<Future<?>> creationTasks = new ArrayList<>();
 
         if (!tryPlaceStructure(convertedList)) {
-            Easierworldcreator.LOGGER.info("cannot place structure due to too much chunks generated around the original Pos");
+            EasierWorldCreator.LOGGER.info("cannot place structure due to too much chunks generated around the original Pos");
             return;
         }
 
@@ -270,7 +270,7 @@ public abstract class Shape extends ShapeRotation {
         }
 
         if (!moveChunks(chunkPosList, 5)) return;
-        Path generatedPath = Objects.requireNonNull(getWorld().getServer()).getSavePath(WorldSavePath.GENERATED).resolve(Easierworldcreator.MOD_ID).resolve("structures").normalize();
+        Path generatedPath = Objects.requireNonNull(getWorld().getServer()).getSavePath(WorldSavePath.GENERATED).resolve(EasierWorldCreator.MOD_ID).resolve("structures").normalize();
 
 
         for (ChunkPos chunkPos : chunkPosList) {
@@ -351,7 +351,7 @@ public abstract class Shape extends ShapeRotation {
 
         if (moveChunks(chunkList, maxOffset)) return true;
 
-        Easierworldcreator.LOGGER.info("can't place the structure");
+        EasierWorldCreator.LOGGER.info("can't place the structure");
         return false;
     }
 

@@ -5,7 +5,7 @@ import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.StructureWorldAccess;
-import net.rodofire.easierworldcreator.Easierworldcreator;
+import net.rodofire.easierworldcreator.EasierWorldCreator;
 import net.rodofire.easierworldcreator.shapeutil.BlockLayer;
 import net.rodofire.easierworldcreator.shapeutil.FillableShape;
 import net.rodofire.easierworldcreator.shapeutil.Shape;
@@ -302,7 +302,7 @@ public class SphereGen extends FillableShape {
 
 
         if (radiusX > 32 || radiusY > 32 || radiusZ > 32) {
-            Easierworldcreator.LOGGER.warn("generating huge sphere (diameter > 64)");
+            EasierWorldCreator.LOGGER.warn("generating huge sphere (diameter > 64)");
         }
         if (this.getYRotation() % 180 == 0 && this.getZRotation() % 180 == 0 && this.getSecondYRotation() % 180 == 0) {
             for (float x = minX; x <= maxX; x++) {

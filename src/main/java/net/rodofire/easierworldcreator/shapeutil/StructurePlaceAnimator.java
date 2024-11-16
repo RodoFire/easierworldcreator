@@ -8,7 +8,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.random.Random;
 import net.minecraft.world.StructureWorldAccess;
-import net.rodofire.easierworldcreator.Easierworldcreator;
+import net.rodofire.easierworldcreator.EasierWorldCreator;
 import net.rodofire.easierworldcreator.worldgenutil.BlockStateUtil;
 import net.rodofire.easierworldcreator.worldgenutil.WorldGenUtil;
 
@@ -333,7 +333,7 @@ public class StructurePlaceAnimator {
         List<Pair<BlockState, BlockPos>> sortedBlockList = getSortedBlockList(blockList);
         Instant end = Instant.now();
         Duration timeElapsed = Duration.between(start, end);
-        Easierworldcreator.LOGGER.info("Shape sorted list calculations took : {}ms", timeElapsed.toMillis());
+        EasierWorldCreator.LOGGER.info("Shape sorted list calculations took : {}ms", timeElapsed.toMillis());
         this.place(sortedBlockList);
     }
 
@@ -346,7 +346,7 @@ public class StructurePlaceAnimator {
      */
     private static <T> boolean blockListVerification(List<T> blockList) {
         if (blockList == null || blockList.isEmpty()) {
-            Easierworldcreator.LOGGER.warn("StructureBlockAnimator: blockList is null or empty");
+            EasierWorldCreator.LOGGER.warn("StructureBlockAnimator: blockList is null or empty");
             return true;
         }
         return false;
@@ -371,7 +371,7 @@ public class StructurePlaceAnimator {
         switch (animatorTime) {
             case TICKS -> {
                 if (ticks == 0) {
-                    Easierworldcreator.LOGGER.error("StructureBlockAnimator: ticks is zero");
+                    EasierWorldCreator.LOGGER.error("StructureBlockAnimator: ticks is zero");
                     return;
                 }
                 blocksPerTick = Math.max(1, totalBlocks / ticks); // a minimum of one block per tick will be placed
@@ -391,7 +391,7 @@ public class StructurePlaceAnimator {
             }
             case BLOCKS_PER_TICK -> {
                 if (blocksPerTick <= 0) {
-                    Easierworldcreator.LOGGER.error("StructureBlockAnimator: blocksPerTick is zero or negative");
+                    EasierWorldCreator.LOGGER.error("StructureBlockAnimator: blocksPerTick is zero or negative");
                     return;
                 }
                 placeTicks = (int) Math.ceil((double) totalBlocks / blocksPerTick);
@@ -408,8 +408,8 @@ public class StructurePlaceAnimator {
         }
 
         ticksRemaining = placeTicks;
-        Easierworldcreator.LOGGER.info("Starting placement with {} ticks and {} blocks per tick", placeTicks, blocksPerTick);
-        Easierworldcreator.LOGGER.info("size: {}", blocksToPlace.size());
+        EasierWorldCreator.LOGGER.info("Starting placement with {} ticks and {} blocks per tick", placeTicks, blocksPerTick);
+        EasierWorldCreator.LOGGER.info("size: {}", blocksToPlace.size());
 
         //calling on end server tick because end world tick wouldn't place the blocks 2 times on 3.
         ServerTickEvents.END_SERVER_TICK.register(server -> {
@@ -439,12 +439,12 @@ public class StructurePlaceAnimator {
             ticksRemaining--;
 
             if (ticksRemaining == 0 && !blocksToPlace.isEmpty()) {
-                Easierworldcreator.LOGGER.warn("All ticks completed, but {} blocks are still unplaced. Placing remaining blocks in final tick.", blocksToPlace.size());
+                EasierWorldCreator.LOGGER.warn("All ticks completed, but {} blocks are still unplaced. Placing remaining blocks in final tick.", blocksToPlace.size());
                 blocksToPlace.forEach(blockPair -> world.setBlockState(blockPair.getRight(), blockPair.getLeft(), 3));
                 blocksToPlace.clear();
             }
 
-            Easierworldcreator.LOGGER.debug("Tick {}: {} blocks remaining", placeTicks - ticksRemaining, blocksToPlace.size());
+            EasierWorldCreator.LOGGER.debug("Tick {}: {} blocks remaining", placeTicks - ticksRemaining, blocksToPlace.size());
         });
     }
 
