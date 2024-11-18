@@ -7,6 +7,9 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
+/**
+ * add possibility of having NbtCompound in compound blockList
+ */
 @SuppressWarnings("unused")
 public class CompoundDefaultBlockList extends DefaultBlockList {
     @Nullable
