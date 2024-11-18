@@ -11,6 +11,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+/**
+ * add possibility of having force in compound blockList
+ */
 @SuppressWarnings("unused")
 public class CompoundForceBlockList extends CompoundDefaultBlockList implements BlockForceData {
     private boolean force;
