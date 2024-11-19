@@ -1,8 +1,9 @@
-package net.rodofire.easierworldcreator.blockdata.block_shape_manager;
+package net.rodofire.easierworldcreator.blockdata.blocklist;
 
 import net.minecraft.block.BlockState;
 import net.minecraft.structure.StructureTemplate;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.random.Random;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -145,6 +146,16 @@ public class DefaultBlockList implements BlockListManager {
         return this.posList.get(0);
     }
 
+    @Override
+    public BlockPos getRandomPos() {
+        return this.posList.get(Random.create().nextInt(size()));
+    }
+
+    @Override
+    public BlockPos getRandomPos(Random random) {
+        return this.posList.get(random.nextInt(size()));
+    }
+
     /**
      * used to get the blockState
      *
@@ -163,6 +174,16 @@ public class DefaultBlockList implements BlockListManager {
     @Override
     public void setBlockState(BlockState blockState) {
         this.blockState = blockState;
+    }
+
+    /**
+     * method to get the number of {@link BlockPos} present in the related BlockList
+     *
+     * @return the number of {@link BlockPos}
+     */
+    @Override
+    public int size() {
+        return this.posList.size();
     }
 
     @Override
