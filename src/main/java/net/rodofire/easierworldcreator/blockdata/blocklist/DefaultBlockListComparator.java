@@ -1,14 +1,15 @@
-package net.rodofire.easierworldcreator.blockdata.block_shape_manager;
+package net.rodofire.easierworldcreator.blockdata.blocklist;
 
 import net.minecraft.block.BlockState;
 import net.minecraft.util.Pair;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.random.Random;
 import net.rodofire.easierworldcreator.blockdata.sorter.BlockSorter;
 
 import java.util.*;
 
 /**
- * class to manage a list of BlockList automatically
+ * class to manage a list of DefaultBlockList automatically
  */
 @SuppressWarnings("unused")
 public class DefaultBlockListComparator {
@@ -162,10 +163,90 @@ public class DefaultBlockListComparator {
     /**
      * method to get the list with the blockPos being sorted
      *
+     * @param sorter the sorter object that will be used to sort the list
      * @return the list of the comparator
      */
     public List<DefaultBlockList> getSorted(BlockSorter sorter) {
         sorter.sortInsideBlockList(this.defaultBlockLists);
         return this.defaultBlockLists;
+    }
+
+    /**
+     * method to get a {@link DefaultBlockList} based on the index
+     *
+     * @param index the index that will be used to get the DefaultBlockList
+     * @return the DefaultBlockList related to the index
+     */
+    public DefaultBlockList get(int index) {
+        return this.defaultBlockLists.get(index);
+    }
+
+    /**
+     * method to get a {@link DefaultBlockList} based on the {@link BlockState}
+     *
+     * @param state the {@code BlockState} related to the DefaultBlocList
+     * @return the DefaultBlockList related to the index
+     */
+    public DefaultBlockList get(BlockState state) {
+        if (!indexes.containsKey(state)) {
+            throw new RuntimeException("BlockState not present in the list blockList comparator");
+        }
+        return indexes.containsKey(state) ? this.defaultBlockLists.get(indexes.get(state)) : null;
+    }
+
+    /**
+     * method to get the first {@link DefaultBlockList} of the list
+     *
+     * @return the first {@link DefaultBlockList} of the list
+     */
+    public DefaultBlockList getFirst() {
+        return this.defaultBlockLists.get(0);
+    }
+
+    /**
+     * method to get the last {@link DefaultBlockList} of the list
+     *
+     * @return the last {@link DefaultBlockList} of the list
+     */
+    public DefaultBlockList getLast() {
+        return this.defaultBlockLists.get(size() - 1);
+    }
+
+    /**
+     * method to get a random {@link DefaultBlockList} of the list
+     *
+     * @return a random DefaultBlockList of the list
+     */
+    public DefaultBlockList getRandom() {
+        return this.defaultBlockLists.get(Random.create().nextInt(size() - 1));
+    }
+
+    /**
+     * method to get a random {@link DefaultBlockList} of the list
+     *
+     * @param random the random object that will be used to get the index
+     * @return a random DefaultBlockList of the list
+     */
+    public DefaultBlockList getRandom(Random random) {
+        return this.defaultBlockLists.get(random.nextInt(size() - 1));
+    }
+
+    /**
+     * method to know the size of the list of the {@link DefaultBlockList}
+     *
+     * @return the size of the list
+     */
+    public int size() {
+        return this.defaultBlockLists.size();
+    }
+
+    /**
+     * method to know if a {@link BlockState} is present
+     *
+     * @param state the state that will be tested
+     * @return true if the {@link BlockState} is present, false if not
+     */
+    public boolean contains(BlockState state) {
+        return indexes.containsKey(state);
     }
 }
