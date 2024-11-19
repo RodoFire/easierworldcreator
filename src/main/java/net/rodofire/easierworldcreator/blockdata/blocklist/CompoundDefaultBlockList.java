@@ -1,4 +1,4 @@
-package net.rodofire.easierworldcreator.blockdata.block_shape_manager;
+package net.rodofire.easierworldcreator.blockdata.blocklist;
 
 import net.minecraft.block.BlockState;
 import net.minecraft.nbt.NbtCompound;

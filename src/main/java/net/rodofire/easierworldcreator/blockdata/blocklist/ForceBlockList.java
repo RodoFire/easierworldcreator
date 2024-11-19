@@ -1,124 +1,89 @@
-package net.rodofire.easierworldcreator.blockdata.block_shape_manager;
+package net.rodofire.easierworldcreator.blockdata.blocklist;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
-import net.minecraft.nbt.NbtCompound;
 import net.minecraft.util.math.BlockPos;
 import net.rodofire.easierworldcreator.blockdata.BlockForceData;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 /**
- * add possibility of having force in compound blockList
+ * BlockList class that has force parameters
  */
 @SuppressWarnings("unused")
-public class CompoundForceBlockList extends CompoundDefaultBlockList implements BlockForceData {
+public class ForceBlockList extends DefaultBlockList implements BlockForceData {
     private boolean force;
     private Set<Block> blocksToForce = new HashSet<>();
 
     /**
-     * init a CompoundForceBlockList
+     * init a ForceBlockList
      *
      * @param posList       pos of the blockState
      * @param state         the blockState related to the pos list
      * @param force         set if any block can be replaced by any blockState in this BlockList
      * @param blocksToForce set all blocks that can be forced by this BlockList
      */
-    public CompoundForceBlockList(List<BlockPos> posList, BlockState state, boolean force, Set<Block> blocksToForce) {
+    public ForceBlockList(List<BlockPos> posList, BlockState state, boolean force, Set<Block> blocksToForce) {
         super(posList, state);
-        this.force = force;
-        this.blocksToForce = new HashSet<>(blocksToForce);
     }
 
     /**
-     * init a CompoundForceBlockList
+     * init a ForceBlockList
+     *
+     * @param posList pos of the blockState
+     * @param state   the blockState related to the pos list
+     * @param force   set if any block can be replaced by any blockState in this BlockList
+     */
+    public ForceBlockList(List<BlockPos> posList, BlockState state, boolean force) {
+        super(posList, state);
+    }
+
+    /**
+     * init a ForceBlockList
      *
      * @param posList       pos of the blockState
      * @param state         the blockState related to the pos list
-     * @param force         set if any block can be replaced by any blockState in this BlockList
-     * @param blocksToForce set all blocks that can be forced by this BlockList
-     * @param tag           the nbt tag that is related to the blockState
-     */
-    public CompoundForceBlockList(List<BlockPos> posList, BlockState state, @Nullable NbtCompound tag, boolean force, Set<Block> blocksToForce) {
-        super(posList, state, tag);
-        this.force = force;
-        this.blocksToForce = new HashSet<>(blocksToForce);
-    }
-
-    /**
-     * init a CompoundForceBlockList
-     *
-     * @param pos           pos of the blockState
-     * @param state         the blockState related to the pos list
-     * @param force         set if any block can be replaced by any blockState in this BlockList
      * @param blocksToForce set all blocks that can be forced by this BlockList
      */
-    public CompoundForceBlockList(BlockPos pos, BlockState state, boolean force, Set<Block> blocksToForce) {
-        super(pos, state);
-        this.force = force;
-        this.blocksToForce = new HashSet<>(blocksToForce);
-    }
-
-    /**
-     * init a CompoundForceBlockList
-     *
-     * @param pos           pos of the blockState
-     * @param state         the blockState related to the pos list
-     * @param force         set if any block can be replaced by any blockState in this BlockList
-     * @param blocksToForce set all blocks that can be forced by this BlockList
-     * @param tag           the nbt tag that is related to the blockState
-     */
-    public CompoundForceBlockList(BlockPos pos, BlockState state, @Nullable NbtCompound tag, boolean force, Set<Block> blocksToForce) {
-        super(pos, state, tag);
-        this.force = force;
-        this.blocksToForce = new HashSet<>(blocksToForce);
-    }
-
-    /**
-     * init a CompoundForceBlockList
-     *
-     * @param posList pos of the blockState
-     * @param state   the blockState related to the pos list
-     */
-    public CompoundForceBlockList(List<BlockPos> posList, BlockState state) {
+    public ForceBlockList(List<BlockPos> posList, BlockState state, Set<Block> blocksToForce) {
         super(posList, state);
     }
 
     /**
-     * init a CompoundForceBlockList
+     * init a ForceBlockList
      *
-     * @param posList pos of the blockState
-     * @param state   the blockState related to the pos list
-     * @param tag     the nbt tag that is related to the blockState
+     * @param pos           pos of the blockState
+     * @param state         the blockState related to the pos list
+     * @param force         set if any block can be replaced by any blockState in this BlockList
+     * @param blocksToForce set all blocks that can be forced by this BlockList
      */
-    public CompoundForceBlockList(List<BlockPos> posList, BlockState state, @Nullable NbtCompound tag) {
-        super(posList, state, tag);
-    }
-
-    /**
-     * init a CompoundForceBlockList
-     *
-     * @param pos   pos of the blockState
-     * @param state the blockState related to the pos list
-     */
-    public CompoundForceBlockList(BlockPos pos, BlockState state) {
+    public ForceBlockList(BlockPos pos, BlockState state, boolean force, Set<Block> blocksToForce) {
         super(pos, state);
     }
 
     /**
-     * init a CompoundForceBlockList
+     * init a ForceBlockList
      *
      * @param pos   pos of the blockState
      * @param state the blockState related to the pos list
-     * @param tag   the nbt tag that is related to the blockState
+     * @param force set if any block can be replaced by any blockState in this BlockList
      */
-    public CompoundForceBlockList(BlockPos pos, BlockState state, @Nullable NbtCompound tag) {
-        super(pos, state, tag);
+    public ForceBlockList(BlockPos pos, BlockState state, boolean force) {
+        super(pos, state);
     }
 
+    /**
+     * init a ForceBlockList
+     *
+     * @param pos           pos of the blockState
+     * @param state         the blockState related to the pos list
+     * @param blocksToForce set all blocks that can be forced by this BlockList
+     */
+    public ForceBlockList(BlockPos pos, BlockState state, Set<Block> blocksToForce) {
+        super(pos, state);
+    }
 
     /**
      * gives you the Set of every block that can be forced
