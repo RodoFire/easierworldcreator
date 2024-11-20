@@ -1,4 +1,4 @@
-package net.rodofire.easierworldcreator.blockdata.blocklist;
+package net.rodofire.easierworldcreator.blockdata.blocklist.multiple;
 
 import net.minecraft.block.BlockState;
 import net.minecraft.nbt.NbtCompound;
@@ -11,7 +11,7 @@ import java.util.List;
  * add possibility of having NbtCompound in compound blockList
  */
 @SuppressWarnings("unused")
-public class CompoundDefaultBlockList extends DefaultBlockList {
+public class CompoundBlockList extends DefaultBlockList {
     @Nullable
     private NbtCompound tag;
 
@@ -21,7 +21,7 @@ public class CompoundDefaultBlockList extends DefaultBlockList {
      * @param posList pos of the blockState
      * @param state   the blockState related to the pos list
      */
-    public CompoundDefaultBlockList(List<BlockPos> posList, BlockState state) {
+    public CompoundBlockList(List<BlockPos> posList, BlockState state) {
         super(posList, state);
     }
 
@@ -32,7 +32,7 @@ public class CompoundDefaultBlockList extends DefaultBlockList {
      * @param state   the blockState related to the pos list
      * @param tag     the nbt tag that is related to the blockState
      */
-    public CompoundDefaultBlockList(List<BlockPos> posList, BlockState state, @Nullable NbtCompound tag) {
+    public CompoundBlockList(List<BlockPos> posList, BlockState state, @Nullable NbtCompound tag) {
         super(posList, state);
         this.tag = tag;
     }
@@ -43,7 +43,7 @@ public class CompoundDefaultBlockList extends DefaultBlockList {
      * @param pos   pos of the blockState
      * @param state the blockState related to the pos list
      */
-    public CompoundDefaultBlockList(BlockPos pos, BlockState state) {
+    public CompoundBlockList(BlockPos pos, BlockState state) {
         super(pos, state);
     }
 
@@ -54,7 +54,7 @@ public class CompoundDefaultBlockList extends DefaultBlockList {
      * @param state the blockState related to the pos list
      * @param tag   the nbt tag that is related to the blockState
      */
-    public CompoundDefaultBlockList(BlockPos pos, BlockState state, @Nullable NbtCompound tag) {
+    public CompoundBlockList(BlockPos pos, BlockState state, @Nullable NbtCompound tag) {
         super(pos, state);
         this.tag = tag;
     }

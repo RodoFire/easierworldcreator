@@ -1,4 +1,4 @@
-package net.rodofire.easierworldcreator.blockdata.blocklist;
+package net.rodofire.easierworldcreator.blockdata.blocklist.multiple;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
@@ -15,7 +15,7 @@ import java.util.Set;
  * add possibility of having force in compound blockList
  */
 @SuppressWarnings("unused")
-public class CompoundForceBlockList extends CompoundDefaultBlockList implements BlockForceData {
+public class CompoundForceBlockList extends CompoundBlockList implements BlockForceData {
     private boolean force;
     private Set<Block> blocksToForce = new HashSet<>();
 

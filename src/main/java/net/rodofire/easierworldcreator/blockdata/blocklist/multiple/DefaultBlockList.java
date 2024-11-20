@@ -1,4 +1,4 @@
-package net.rodofire.easierworldcreator.blockdata.blocklist;
+package net.rodofire.easierworldcreator.blockdata.blocklist.multiple;
 
 import net.minecraft.block.BlockState;
 import net.minecraft.structure.StructureTemplate;
@@ -42,7 +42,6 @@ public class DefaultBlockList implements BlockListManager {
         this.posList.add(pos);
         this.blockState = state;
     }
-
 
     /**
      * used to get the list of blockPos related to a layer
