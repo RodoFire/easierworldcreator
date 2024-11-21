@@ -26,7 +26,7 @@ public class OrderedBlockListComparator<T> {
     /**
      * we're using the short to make the link between the T objects (blockStates in the most cases) and the BlockPos.
      */
-    private final LinkedHashMap<BlockPos, Short> posMap = new LinkedHashMap<>();
+    private LinkedHashMap<BlockPos, Short> posMap = new LinkedHashMap<>();
 
 
     /**
@@ -51,6 +51,13 @@ public class OrderedBlockListComparator<T> {
         for (int i = 0; i < info.size(); i++) {
             put(states.get(i), pos.get(i));
         }
+    }
+
+    /**
+     * Constructor to init an empty {@link OrderedBlockListComparator}.
+     */
+    public OrderedBlockListComparator() {
+
     }
 
     /**
@@ -213,6 +220,24 @@ public class OrderedBlockListComparator<T> {
      */
     protected List<T> getT() {
         return statesMap.values().stream().toList();
+    }
+
+    /**
+     * Method to get the posMap related to the object
+     *
+     * @return the indexes (a Map of BlockPos and indexes)
+     */
+    public LinkedHashMap<BlockPos, Short> getPosMap() {
+        return this.posMap;
+    }
+
+    /**
+     * Method to set the posMap
+     *
+     * @param indexes the posMap that will be set (a Map of BlockPos and indexes)
+     */
+    public void setPosMap(LinkedHashMap<BlockPos, Short> indexes) {
+        this.posMap = new LinkedHashMap<>(indexes);
     }
 
     /**
