@@ -1,11 +1,12 @@
-package net.rodofire.easierworldcreator.shapeutil;
+package net.rodofire.easierworldcreator.shape.block.instanciator;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.StructureWorldAccess;
-import net.rodofire.easierworldcreator.worldgenutil.BlockPlaceUtil;
-import net.rodofire.easierworldcreator.worldgenutil.FastNoiseLite;
+import net.rodofire.easierworldcreator.blockdata.layer.BlockLayer;
+import net.rodofire.easierworldcreator.placer.blocks.util.BlockPlaceUtil;
+import net.rodofire.easierworldcreator.util.FastNoiseLite;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
@@ -13,7 +14,7 @@ import java.util.Map;
 import java.util.Set;
 
 @SuppressWarnings("unused")
-public abstract class ShapePlaceType extends ShapeBase {
+public abstract class AbstractBlockShapePlaceType extends AbstractBlockShapeBase {
     private PlaceType placeType = PlaceType.BLOCKS;
     private LayerPlace layerPlace = LayerPlace.RANDOM;
     private FastNoiseLite noise = new FastNoiseLite();
@@ -29,7 +30,7 @@ public abstract class ShapePlaceType extends ShapeBase {
      * @param placeMoment   define the moment where the shape will be placed
      * @param layerPlace    how the {@code @BlockStates} inside of a {@link BlockLayer} will be placed
      */
-    public ShapePlaceType(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, @NotNull PlaceMoment placeMoment, LayerPlace layerPlace) {
+    public AbstractBlockShapePlaceType(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, @NotNull PlaceMoment placeMoment, LayerPlace layerPlace) {
         super(world, pos, placeMoment);
         this.layerPlace = layerPlace;
     }
@@ -41,7 +42,7 @@ public abstract class ShapePlaceType extends ShapeBase {
      * @param pos         the pos of the shape (usually the center of the structure)
      * @param placeMoment define the moment where the shape will be placed
      */
-    public ShapePlaceType(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, @NotNull PlaceMoment placeMoment) {
+    public AbstractBlockShapePlaceType(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, @NotNull PlaceMoment placeMoment) {
         super(world, pos, placeMoment);
     }
 
