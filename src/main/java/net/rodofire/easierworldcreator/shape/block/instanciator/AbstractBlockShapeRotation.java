@@ -1,8 +1,9 @@
-package net.rodofire.easierworldcreator.shapeutil;
+package net.rodofire.easierworldcreator.shape.block.instanciator;
 
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.StructureWorldAccess;
+import net.rodofire.easierworldcreator.blockdata.layer.BlockLayer;
 import net.rodofire.easierworldcreator.util.FastMaths;
 import org.jetbrains.annotations.NotNull;
 
@@ -10,7 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @SuppressWarnings("unused")
-public abstract class ShapeRotation extends ShapeLayer {
+public abstract class AbstractBlockShapeRotation extends AbstractBlockShapeLayer {
 
     //These are rotations in degrees (0-360).
     //These 3 are used to represent every rotation possible in a 3d world
@@ -38,7 +39,7 @@ public abstract class ShapeRotation extends ShapeLayer {
      * @param zRotation       second rotation around the z-axis
      * @param secondYRotation last rotation around the y-axis
      */
-    public ShapeRotation(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, @NotNull PlaceMoment placeMoment, LayerPlace layerPlace, LayersType layersType, int yRotation, int zRotation, int secondYRotation) {
+    public AbstractBlockShapeRotation(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, @NotNull PlaceMoment placeMoment, LayerPlace layerPlace, LayersType layersType, int yRotation, int zRotation, int secondYRotation) {
         super(world, pos, placeMoment, layerPlace, layersType);
         getRotations(yRotation, zRotation, secondYRotation);
     }
@@ -50,7 +51,7 @@ public abstract class ShapeRotation extends ShapeLayer {
      * @param pos         the pos of the shape (usually the center of the structure)
      * @param placeMoment define the moment where the shape will be placed
      */
-    public ShapeRotation(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, @NotNull PlaceMoment placeMoment) {
+    public AbstractBlockShapeRotation(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, @NotNull PlaceMoment placeMoment) {
         super(world, pos, placeMoment);
         getRotations(0, 0, 0);
     }
