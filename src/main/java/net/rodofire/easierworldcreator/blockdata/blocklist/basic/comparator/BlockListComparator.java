@@ -36,9 +36,9 @@ import java.util.*;
  *            Usually, it would be {@link BlockState}. But there are some cases that require more data like NbtCompounds.
  * @param <V> The type of the {@link OrderedBlockListComparator}
  *            (class to manage BlockList where the {@link BlockPos} are ordered no matter the {@code BlockData},
- *            contrary to this class where each {@link BlockPos} are organized depending on the {@code BlockData})
+ *            contrary to this class where each {@link BlockPos} are organized depending on the {@code BlockData}),
  *            related to the object so that no data is lost, or no incompatibilities are present
- * @param <W> The type of the {@code BlockData} like {@code <U>} but for the {@link OrderedBlockListComparator}.
+ * @param <W> The type of the {@code BlockData}, like {@code <U>}, but for the {@link OrderedBlockListComparator}.
  *            Copy and paste the object that is required to the related {@link OrderedBlockListComparator}
  */
 @SuppressWarnings("unused")
