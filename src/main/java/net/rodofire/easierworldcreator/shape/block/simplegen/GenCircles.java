@@ -1,10 +1,11 @@
-package net.rodofire.easierworldcreator.worldgenutil;
+package net.rodofire.easierworldcreator.shape.block.simplegen;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.StructureWorldAccess;
-import net.rodofire.easierworldcreator.shapegen.CircleGen;
+import net.rodofire.easierworldcreator.placer.blocks.util.BlockPlaceUtil;
+import net.rodofire.easierworldcreator.shape.block.gen.CircleGen;
 
 import java.util.List;
 import java.util.Set;

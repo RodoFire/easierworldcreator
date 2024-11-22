@@ -1,13 +1,13 @@
-package net.rodofire.easierworldcreator.shapegen;
+package net.rodofire.easierworldcreator.shape.block.gen;
 
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.StructureWorldAccess;
-import net.rodofire.easierworldcreator.shapeutil.FillableShape;
-import net.rodofire.easierworldcreator.shapeutil.Shape;
+import net.rodofire.easierworldcreator.shape.block.instanciator.AbstractBlockShape;
+import net.rodofire.easierworldcreator.shape.block.instanciator.AbstractFillableBlockShape;
 import net.rodofire.easierworldcreator.util.FastMaths;
-import net.rodofire.easierworldcreator.worldgenutil.WorldGenUtil;
+import net.rodofire.easierworldcreator.util.WorldGenUtil;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
@@ -124,11 +124,11 @@ Transparent frame
  * <p> - Before 2.1.0, the BlockPos list was a simple list.
  * <p> - Starting from 2.1.0, the shapes return a list of {@link ChunkPos} that has a set of {@link BlockPos}
  * <p>The change from {@link List} to {@link Set} was done to avoid duplicates BlockPos which resulted in unnecessary calculations.
- * <p>this allow easy multithreading for the Block assignment done in the {@link Shape} which result in better performance;
+ * <p>this allow easy multithreading for the Block assignment done in the {@link AbstractBlockShape} which result in better performance;
  * </p>
  */
 @SuppressWarnings("unused")
-public class CylinderGen extends FillableShape {
+public class CylinderGen extends AbstractFillableBlockShape {
     private int radiusX;
     private int radiusZ;
     private int height;

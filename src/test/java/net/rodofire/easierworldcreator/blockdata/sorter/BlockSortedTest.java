@@ -1,7 +1,7 @@
 package net.rodofire.easierworldcreator.blockdata.sorter;
 
 import net.minecraft.util.math.BlockPos;
-import net.rodofire.easierworldcreator.worldgenutil.WorldGenUtil;
+import net.rodofire.easierworldcreator.util.WorldGenUtil;
 
 import java.util.ArrayList;
 import java.util.Comparator;

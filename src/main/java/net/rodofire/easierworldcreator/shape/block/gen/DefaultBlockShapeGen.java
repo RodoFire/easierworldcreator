@@ -1,11 +1,11 @@
-package net.rodofire.easierworldcreator.shapegen;
+package net.rodofire.easierworldcreator.shape.block.gen;
 
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.StructureWorldAccess;
-import net.rodofire.easierworldcreator.shapeutil.BlockLayer;
-import net.rodofire.easierworldcreator.shapeutil.BlockList;
-import net.rodofire.easierworldcreator.shapeutil.Shape;
+import net.rodofire.easierworldcreator.blockdata.blocklist.basic.DefaultBlockList;
+import net.rodofire.easierworldcreator.blockdata.layer.BlockLayer;
+import net.rodofire.easierworldcreator.shape.block.instanciator.AbstractBlockShape;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
@@ -13,10 +13,10 @@ import java.util.Set;
 
 
 /**
- * In the case you have a custom {@link BlockPos} list, or a custom {@link BlockList}, you can initialize the shape with this class. However, don't use the {@code place()} method, use the {@code place(List<Set<BlockPos>>} or use {@code placeWBlockList(List<Set<BlockList>>)}to avoid potential problems.
+ * In the case you have a custom {@link BlockPos} list, or a custom {@link DefaultBlockList}, you can initialize the shape with this class. However, don't use the {@code place()} method, use the {@code place(List<Set<BlockPos>>} or use {@code placeWBlockList(List<Set<BlockList>>)}to avoid potential problems.
  */
 @SuppressWarnings("unused")
-public class DefaultShapeGen extends Shape {
+public class DefaultBlockShapeGen extends AbstractBlockShape {
 
     /**
      * init the Default Shape
@@ -31,7 +31,7 @@ public class DefaultShapeGen extends Shape {
      * @param secondYRotation last rotation around the y-axis
      * @param featureName     the name of the feature
      */
-    public DefaultShapeGen(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, @NotNull PlaceMoment placeMoment, LayerPlace layerPlace, LayersType layersType, int yRotation, int zRotation, int secondYRotation, String featureName) {
+    public DefaultBlockShapeGen(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, @NotNull PlaceMoment placeMoment, LayerPlace layerPlace, LayersType layersType, int yRotation, int zRotation, int secondYRotation, String featureName) {
         super(world, pos, placeMoment, layerPlace, layersType, yRotation, zRotation, secondYRotation, featureName);
     }
 
@@ -42,7 +42,7 @@ public class DefaultShapeGen extends Shape {
      * @param pos         the center of the spiral
      * @param placeMoment define the moment where the shape will be placed
      */
-    public DefaultShapeGen(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, @NotNull PlaceMoment placeMoment) {
+    public DefaultBlockShapeGen(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, @NotNull PlaceMoment placeMoment) {
         super(world, pos, placeMoment);
     }
 

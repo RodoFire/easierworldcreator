@@ -1,4 +1,4 @@
-package net.rodofire.easierworldcreator.worldgenutil;
+package net.rodofire.easierworldcreator.shape.block.simplegen;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
@@ -6,8 +6,10 @@ import net.minecraft.block.Blocks;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.StructureWorldAccess;
-import net.rodofire.easierworldcreator.shapegen.TorusGen;
+import net.rodofire.easierworldcreator.placer.blocks.util.BlockPlaceUtil;
+import net.rodofire.easierworldcreator.shape.block.gen.TorusGen;
 import net.rodofire.easierworldcreator.util.FastMaths;
+import net.rodofire.easierworldcreator.util.WorldGenUtil;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -1,4 +1,4 @@
-package net.rodofire.easierworldcreator.worldgenutil;
+package net.rodofire.easierworldcreator.util;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
@@ -8,8 +8,7 @@ import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.random.Random;
 import net.rodofire.easierworldcreator.EasierWorldCreator;
-import net.rodofire.easierworldcreator.shapeutil.BlockLayer;
-import net.rodofire.easierworldcreator.util.FastMaths;
+import net.rodofire.easierworldcreator.blockdata.layer.BlockLayer;
 
 import java.util.*;
 
