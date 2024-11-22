@@ -48,10 +48,13 @@ public abstract class BlockListComparator<T extends DefaultBlockList, U, V exten
      */
     protected List<T> blockLists = new ArrayList<>();
     /**
-     * For better performance:
+     * Map used for better performance:
      * <li>Instead of searching for a {@code BlockState} inside the list, we use the {@code indexMap}.</li>
      * <li>The map allows us to get the place of the related {@code BlockState} in the {@code posList}.</li>
      * <li>Instead of having a time complexity of O(n), we get O(1) by using only a small amount of memory in more.</li>
+     * </p>
+     * <p> params: {@code <U>} The type of the {@code BlockData}. This represents everything to describe the {@link Block}.
+     * Usually, it would be {@link BlockState}. But there are some cases that require more data like NbtCompounds.
      * </p>
      */
     protected final Map<BlockState, U> indexes = new HashMap<>();
