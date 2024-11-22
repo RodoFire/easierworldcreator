@@ -1,4 +1,4 @@
-package net.rodofire.easierworldcreator.shapeutil;
+package net.rodofire.easierworldcreator.shape.block.instanciator;
 
 import net.minecraft.block.BlockState;
 import net.minecraft.util.WorldSavePath;
@@ -8,11 +8,15 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.random.Random;
 import net.minecraft.world.StructureWorldAccess;
 import net.rodofire.easierworldcreator.EasierWorldCreator;
+import net.rodofire.easierworldcreator.blockdata.blocklist.basic.DefaultBlockList;
+import net.rodofire.easierworldcreator.blockdata.layer.BlockLayer;
+import net.rodofire.easierworldcreator.blockdata.sorter.BlockSorter;
 import net.rodofire.easierworldcreator.fileutil.FileUtil;
 import net.rodofire.easierworldcreator.fileutil.LoadChunkShapeInfo;
 import net.rodofire.easierworldcreator.fileutil.SaveChunkShapeInfo;
+import net.rodofire.easierworldcreator.placer.blocks.animator.StructurePlaceAnimator;
+import net.rodofire.easierworldcreator.placer.blocks.util.BlockStateUtil;
 import net.rodofire.easierworldcreator.util.ChunkUtil;
-import net.rodofire.easierworldcreator.worldgenutil.BlockStateUtil;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
@@ -26,11 +30,11 @@ import java.util.concurrent.*;
  * <p> - Before 2.1.0, the BlockPos list was a simple list.
  * <p> - Starting from 2.1.0, the shapes return a list of {@link ChunkPos} that has a set of {@link BlockPos}
  * <p>The change from {@link List} to {@link Set} was done to avoid duplicates BlockPos which resulted in unnecessary calculations.
- * <p>this allow easy multithreading for the Block assignment done in the {@link Shape} which result in better performance;
+ * <p>this allow easy multithreading for the Block assignment done in the {@link AbstractBlockShape} which result in better performance;
  * </p>
  */
 @SuppressWarnings("unused")
-public abstract class Shape extends ShapeRotation {
+public abstract class AbstractBlockShape extends AbstractBlockShapeRotation {
     private BlockPos offset = new BlockPos(0, 0, 0);
 
     private String featureName;
@@ -50,7 +54,7 @@ public abstract class Shape extends ShapeRotation {
      * @param secondYRotation last rotation around the y-axis
      * @param featureName     the name of the feature
      */
-    public Shape(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, @NotNull PlaceMoment placeMoment, LayerPlace layerPlace, LayersType layersType, int yRotation, int zRotation, int secondYRotation, String featureName) {
+    public AbstractBlockShape(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, @NotNull PlaceMoment placeMoment, LayerPlace layerPlace, LayersType layersType, int yRotation, int zRotation, int secondYRotation, String featureName) {
         super(world, pos, placeMoment, layerPlace, layersType, yRotation, zRotation, secondYRotation);
         this.featureName = featureName;
     }
@@ -62,7 +66,7 @@ public abstract class Shape extends ShapeRotation {
      * @param pos         the pos of the shape (usually the center of the structure)
      * @param placeMoment define the moment where the shape will be placed
      */
-    public Shape(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, @NotNull PlaceMoment placeMoment) {
+    public AbstractBlockShape(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, @NotNull PlaceMoment placeMoment) {
         super(world, pos, placeMoment);
     }
 
@@ -162,8 +166,8 @@ public abstract class Shape extends ShapeRotation {
             for (Set<BlockPos> pos : posList) {
                 Future<?> future = executorService.submit(() -> {
                     try {
-                        Set<BlockList> blockList = this.getLayers(pos);
-                        SaveChunkShapeInfo.saveChunkWorldGen(blockList, getWorld(), "false_" + featureName, offset);
+                        Set<DefaultBlockList> defaultBlockList = this.getLayers(pos);
+                        SaveChunkShapeInfo.saveChunkWorldGen(defaultBlockList, getWorld(), "false_" + featureName, offset);
 
                     } catch (IOException e) {
                         e.fillInStackTrace();
@@ -205,14 +209,14 @@ public abstract class Shape extends ShapeRotation {
 
             List<Path> path = LoadChunkShapeInfo.verifyFiles(getWorld(), this.getPos());
             for (Path path1 : path) {
-                List<BlockList> blockLists = LoadChunkShapeInfo.loadFromJson(getWorld(), path1);
-                LoadChunkShapeInfo.placeStructure(getWorld(), blockLists);
+                List<DefaultBlockList> defaultBlockLists = LoadChunkShapeInfo.loadFromJson(getWorld(), path1);
+                LoadChunkShapeInfo.placeStructure(getWorld(), defaultBlockLists);
             }
         } else if (this.getPlaceMoment() == PlaceMoment.ANIMATED_OTHER) {
-            List<Set<BlockList>> blockList = getBlockListWithVerification(posList);
+            List<Set<DefaultBlockList>> blockList = getBlockListWithVerification(posList);
 
             if (animator == null) {
-                animator = new StructurePlaceAnimator(this.getWorld(), StructurePlaceAnimator.AnimatorType.RANDOM, StructurePlaceAnimator.AnimatorTime.BLOCKS_PER_TICK);
+                animator = new StructurePlaceAnimator(this.getWorld(), new BlockSorter(BlockSorter.BlockSorterType.RANDOM), StructurePlaceAnimator.AnimatorTime.CONSTANT_BLOCKS_PER_TICK);
                 animator.setBlocksPerTick(100);
             }
             animator.placeFromDividedBlockList(blockList);
@@ -228,9 +232,9 @@ public abstract class Shape extends ShapeRotation {
         executorService.shutdown();
     }
 
-    public void placeWBlockList(List<Set<BlockList>> posList) throws IOException {
+    public void placeWBlockList(List<Set<DefaultBlockList>> posList) throws IOException {
         List<Set<BlockPos>> convertedList = new ArrayList<>();
-        for (Set<BlockList> set : posList) {
+        for (Set<DefaultBlockList> set : posList) {
             Set<BlockPos> convertedSet = new HashSet<>();
             set.stream().findFirst().ifPresent(blockList -> convertedSet.add(blockList.getPosList().get(0)));
             convertedList.add(convertedSet);
@@ -242,11 +246,11 @@ public abstract class Shape extends ShapeRotation {
             return;
         }
 
-        for (Set<BlockList> blockList : posList) {
+        for (Set<DefaultBlockList> defaultBlockList : posList) {
             ExecutorService executorService = Executors.newFixedThreadPool(THREAD_COUNT);
             Future<?> future = executorService.submit(() -> {
                 try {
-                    SaveChunkShapeInfo.saveChunkWorldGen(blockList, getWorld(), "false_" + featureName, offset);
+                    SaveChunkShapeInfo.saveChunkWorldGen(defaultBlockList, getWorld(), "false_" + featureName, offset);
 
                 } catch (IOException e) {
                     e.fillInStackTrace();
@@ -288,8 +292,8 @@ public abstract class Shape extends ShapeRotation {
 
         List<Path> path = LoadChunkShapeInfo.verifyFiles(getWorld(), this.getPos());
         for (Path path1 : path) {
-            List<BlockList> blockLists = LoadChunkShapeInfo.loadFromJson(getWorld(), path1);
-            LoadChunkShapeInfo.placeStructure(getWorld(), blockLists);
+            List<DefaultBlockList> defaultBlockLists = LoadChunkShapeInfo.loadFromJson(getWorld(), path1);
+            LoadChunkShapeInfo.placeStructure(getWorld(), defaultBlockLists);
         }
     }
 
@@ -378,14 +382,14 @@ public abstract class Shape extends ShapeRotation {
         return false;
     }
 
-    public List<Set<BlockList>> getBlockListWithVerification(List<Set<BlockPos>> posList) {
-        List<Set<BlockList>> blockList;
+    public List<Set<DefaultBlockList>> getBlockListWithVerification(List<Set<BlockPos>> posList) {
+        List<Set<DefaultBlockList>> blockList;
         Map<BlockPos, BlockState> blockStateMap = new HashMap<>();
         BlockStateUtil.getBlockStatesFromWorld(posList, blockStateMap, getWorld());
 
 
         ExecutorService finalExecutorService = Executors.newFixedThreadPool(Math.min(posList.size(), Runtime.getRuntime().availableProcessors()) - 2);
-        List<CompletableFuture<Set<BlockList>>> result =
+        List<CompletableFuture<Set<DefaultBlockList>>> result =
                 posList.stream()
                         .map(set -> CompletableFuture.supplyAsync(() -> this.getLayersWithVerification(set, blockStateMap), finalExecutorService))
                         .toList();
