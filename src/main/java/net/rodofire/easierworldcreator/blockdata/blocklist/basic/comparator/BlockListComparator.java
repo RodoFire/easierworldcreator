@@ -43,7 +43,17 @@ import java.util.*;
  */
 @SuppressWarnings("unused")
 public abstract class BlockListComparator<T extends DefaultBlockList, U, V extends OrderedBlockListComparator<W>, W> {
+    /**
+     * the List of BlockList that are managed
+     */
     protected List<T> blockLists = new ArrayList<>();
+    /**
+     * For better performance:
+     * <li>Instead of searching for a {@code BlockState} inside the list, we use the {@code indexMap}.</li>
+     * <li>The map allows us to get the place of the related {@code BlockState} in the {@code posList}.</li>
+     * <li>Instead of having a time complexity of O(n), we get O(1) by using only a small amount of memory in more.</li>
+     * </p>
+     */
     protected final Map<BlockState, U> indexes = new HashMap<>();
 
     /**
