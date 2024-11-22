@@ -1,4 +1,4 @@
-package net.rodofire.easierworldcreator.shapeutil;
+package net.rodofire.easierworldcreator.blockdata.layer;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
