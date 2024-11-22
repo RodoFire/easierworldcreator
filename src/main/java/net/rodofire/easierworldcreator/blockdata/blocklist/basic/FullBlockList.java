@@ -1,4 +1,4 @@
-package net.rodofire.easierworldcreator.blockdata.blocklist.multiple;
+package net.rodofire.easierworldcreator.blockdata.blocklist.basic;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
@@ -15,7 +15,7 @@ import java.util.Set;
  * add possibility of having force in compound blockList
  */
 @SuppressWarnings("unused")
-public class CompoundForceBlockList extends CompoundBlockList implements BlockForceData {
+public class FullBlockList extends CompoundBlockList implements BlockForceData {
     private boolean force;
     private Set<Block> blocksToForce = new HashSet<>();
 
@@ -27,7 +27,7 @@ public class CompoundForceBlockList extends CompoundBlockList implements BlockFo
      * @param force         set if any block can be replaced by any blockState in this BlockList
      * @param blocksToForce set all blocks that can be forced by this BlockList
      */
-    public CompoundForceBlockList(List<BlockPos> posList, BlockState state, boolean force, Set<Block> blocksToForce) {
+    public FullBlockList(List<BlockPos> posList, BlockState state, boolean force, Set<Block> blocksToForce) {
         super(posList, state);
         this.force = force;
         this.blocksToForce = new HashSet<>(blocksToForce);
@@ -42,7 +42,7 @@ public class CompoundForceBlockList extends CompoundBlockList implements BlockFo
      * @param blocksToForce set all blocks that can be forced by this BlockList
      * @param tag           the nbt tag that is related to the blockState
      */
-    public CompoundForceBlockList(List<BlockPos> posList, BlockState state, @Nullable NbtCompound tag, boolean force, Set<Block> blocksToForce) {
+    public FullBlockList(List<BlockPos> posList, BlockState state, @Nullable NbtCompound tag, boolean force, Set<Block> blocksToForce) {
         super(posList, state, tag);
         this.force = force;
         this.blocksToForce = new HashSet<>(blocksToForce);
@@ -56,7 +56,7 @@ public class CompoundForceBlockList extends CompoundBlockList implements BlockFo
      * @param force         set if any block can be replaced by any blockState in this BlockList
      * @param blocksToForce set all blocks that can be forced by this BlockList
      */
-    public CompoundForceBlockList(BlockPos pos, BlockState state, boolean force, Set<Block> blocksToForce) {
+    public FullBlockList(BlockPos pos, BlockState state, boolean force, Set<Block> blocksToForce) {
         super(pos, state);
         this.force = force;
         this.blocksToForce = new HashSet<>(blocksToForce);
@@ -71,7 +71,7 @@ public class CompoundForceBlockList extends CompoundBlockList implements BlockFo
      * @param blocksToForce set all blocks that can be forced by this BlockList
      * @param tag           the nbt tag that is related to the blockState
      */
-    public CompoundForceBlockList(BlockPos pos, BlockState state, @Nullable NbtCompound tag, boolean force, Set<Block> blocksToForce) {
+    public FullBlockList(BlockPos pos, BlockState state, @Nullable NbtCompound tag, boolean force, Set<Block> blocksToForce) {
         super(pos, state, tag);
         this.force = force;
         this.blocksToForce = new HashSet<>(blocksToForce);
@@ -83,7 +83,7 @@ public class CompoundForceBlockList extends CompoundBlockList implements BlockFo
      * @param posList pos of the blockState
      * @param state   the blockState related to the pos list
      */
-    public CompoundForceBlockList(List<BlockPos> posList, BlockState state) {
+    public FullBlockList(List<BlockPos> posList, BlockState state) {
         super(posList, state);
     }
 
@@ -94,7 +94,7 @@ public class CompoundForceBlockList extends CompoundBlockList implements BlockFo
      * @param state   the blockState related to the pos list
      * @param tag     the nbt tag that is related to the blockState
      */
-    public CompoundForceBlockList(List<BlockPos> posList, BlockState state, @Nullable NbtCompound tag) {
+    public FullBlockList(List<BlockPos> posList, BlockState state, @Nullable NbtCompound tag) {
         super(posList, state, tag);
     }
 
@@ -104,7 +104,7 @@ public class CompoundForceBlockList extends CompoundBlockList implements BlockFo
      * @param pos   pos of the blockState
      * @param state the blockState related to the pos list
      */
-    public CompoundForceBlockList(BlockPos pos, BlockState state) {
+    public FullBlockList(BlockPos pos, BlockState state) {
         super(pos, state);
     }
 
@@ -115,7 +115,7 @@ public class CompoundForceBlockList extends CompoundBlockList implements BlockFo
      * @param state the blockState related to the pos list
      * @param tag   the nbt tag that is related to the blockState
      */
-    public CompoundForceBlockList(BlockPos pos, BlockState state, @Nullable NbtCompound tag) {
+    public FullBlockList(BlockPos pos, BlockState state, @Nullable NbtCompound tag) {
         super(pos, state, tag);
     }
 

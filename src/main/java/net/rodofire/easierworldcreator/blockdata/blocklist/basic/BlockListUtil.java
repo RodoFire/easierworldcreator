@@ -1,4 +1,4 @@
-package net.rodofire.easierworldcreator.blockdata.blocklist.multiple;
+package net.rodofire.easierworldcreator.blockdata.blocklist.basic;
 
 import net.minecraft.block.BlockState;
 import net.minecraft.util.math.BlockPos;

@@ -1,4 +1,4 @@
-package net.rodofire.easierworldcreator.blockdata.blocklist.multiple;
+package net.rodofire.easierworldcreator.blockdata.blocklist.basic;
 
 import net.minecraft.block.BlockState;
 import net.minecraft.structure.StructureTemplate;
@@ -9,9 +9,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * <p>class used for the generation or the modification of a NBT file.
- * <p>this is an easier version of the {@link StructureTemplate.StructureBlockInfo}
- * <p>It also allows for better manipulation of how blocks behave and allows to save memory since that there is no double blockStates
+ * <p>Class used to connect BlockPos to a BlockState.</p>
+ * <br>
+ * <p>the class is composed of a {@code List<BlockPos>} related to a {@link BlockState}. </p>
+ * <p>This means that all the {@link BlockPos} of the object are connected to the BlockState</p>
+ * <br>
+ * <p>this is an easier version of the {@link StructureTemplate.StructureBlockInfo}</p>
+ * <p>It also allows for better manipulation of how blocks behave and allows to save memory since that there is no double blockStates.</p>
  */
 @SuppressWarnings("unused")
 public class DefaultBlockList implements BlockListManager {
@@ -145,11 +149,21 @@ public class DefaultBlockList implements BlockListManager {
         return this.posList.get(0);
     }
 
+    /**
+     * Method to get a random {@link BlockPos} in the {@code posList} by using a new minecraft Random
+     *
+     * @return a random {@link BlockPos}
+     */
     @Override
     public BlockPos getRandomPos() {
         return this.posList.get(Random.create().nextInt(size()));
     }
 
+    /**
+     * Method to get a random {@link BlockPos} in the {@code posList} based on a provided random
+     *
+     * @return a random {@link BlockPos}
+     */
     @Override
     public BlockPos getRandomPos(Random random) {
         return this.posList.get(random.nextInt(size()));
