@@ -1,14 +1,16 @@
-package net.rodofire.easierworldcreator.shapeutil;
+package net.rodofire.easierworldcreator.shape.block.instanciator;
 
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.StructureWorldAccess;
 import net.rodofire.easierworldcreator.EasierWorldCreator;
+import net.rodofire.easierworldcreator.blockdata.layer.BlockLayer;
+import net.rodofire.easierworldcreator.particledata.layer.ParticleLayer;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
 @SuppressWarnings("unused")
-public abstract class ShapeBase {
+public abstract class AbstractBlockShapeBase {
     @NotNull
     private final StructureWorldAccess world;
     @NotNull
@@ -29,7 +31,7 @@ public abstract class ShapeBase {
      * @param pos         the pos of the shape (usually the center of the structure)
      * @param placeMoment define the moment where the shape will be placed
      */
-    public ShapeBase(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, @NotNull PlaceMoment placeMoment) {
+    public AbstractBlockShapeBase(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, @NotNull PlaceMoment placeMoment) {
         this.world = world;
         this.pos = pos;
         this.placeMoment = placeMoment;
