@@ -1,7 +1,8 @@
-package net.rodofire.easierworldcreator.shapeutil;
+package net.rodofire.easierworldcreator.shape.block.instanciator;
 
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.StructureWorldAccess;
+import net.rodofire.easierworldcreator.blockdata.layer.BlockLayer;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -9,20 +10,20 @@ import org.jetbrains.annotations.NotNull;
  * since that all structure may not need or can't have a custom filling like the line generation, it is not implemented in the ShapeGen class
  */
 @SuppressWarnings("unused")
-public abstract class FillableShape extends Shape {
+public abstract class AbstractFillableBlockShape extends AbstractBlockShape {
     /**
      * if ==0, there will be no circle
      * if ==1f, it will be a full circle
      * Don't need to care if
      *
-     * @see FillableShape is not set on CUSTOM
+     * @see AbstractFillableBlockShape is not set on CUSTOM
      **/
     float customFill = 1f;
 
     /**
      * set the default filling type
      */
-    FillableShape.Type fillingType = FillableShape.Type.FULL;
+    AbstractFillableBlockShape.Type fillingType = AbstractFillableBlockShape.Type.FULL;
 
     /**
      * init the ShapeFilling
@@ -37,7 +38,7 @@ public abstract class FillableShape extends Shape {
      * @param secondYRotation last rotation around the y-axis
      * @param featureName     the name of the feature
      */
-    public FillableShape(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, PlaceMoment placeMoment, LayerPlace layerPlace, LayersType layersType, int yRotation, int zRotation, int secondYRotation, String featureName) {
+    public AbstractFillableBlockShape(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, PlaceMoment placeMoment, LayerPlace layerPlace, LayersType layersType, int yRotation, int zRotation, int secondYRotation, String featureName) {
         super(world, pos, placeMoment, layerPlace, layersType, yRotation, zRotation, secondYRotation, featureName);
     }
 
@@ -48,7 +49,7 @@ public abstract class FillableShape extends Shape {
      * @param pos         the pos of the shape (usually the center of the structure)
      * @param placeMoment define the moment where the shape will be placed
      */
-    public FillableShape(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, PlaceMoment placeMoment) {
+    public AbstractFillableBlockShape(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, PlaceMoment placeMoment) {
         super(world, pos, placeMoment);
     }
 
@@ -81,7 +82,7 @@ public abstract class FillableShape extends Shape {
      *
      * @return the filling type
      */
-    public FillableShape.Type getFillingType() {
+    public AbstractFillableBlockShape.Type getFillingType() {
         return fillingType;
     }
 
@@ -90,7 +91,7 @@ public abstract class FillableShape extends Shape {
      *
      * @param fillingType change the fillingType
      */
-    public void setFillingType(FillableShape.Type fillingType) {
+    public void setFillingType(AbstractFillableBlockShape.Type fillingType) {
         this.fillingType = fillingType;
     }
 
@@ -117,10 +118,10 @@ public abstract class FillableShape extends Shape {
      * set the filling value depending on the filling type
      */
     protected void setFill() {
-        if (this.fillingType == FillableShape.Type.HALF) {
+        if (this.fillingType == AbstractFillableBlockShape.Type.HALF) {
             this.customFill = 0.5f;
         }
-        if (this.fillingType == FillableShape.Type.FULL) {
+        if (this.fillingType == AbstractFillableBlockShape.Type.FULL) {
             this.customFill = 1.0f;
         }
         if (this.getCustomFill() > 1f) this.customFill = 1f;
