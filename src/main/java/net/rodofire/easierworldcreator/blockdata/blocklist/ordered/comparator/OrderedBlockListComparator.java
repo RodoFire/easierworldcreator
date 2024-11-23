@@ -2,8 +2,10 @@ package net.rodofire.easierworldcreator.blockdata.blocklist.ordered.comparator;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
+import net.minecraft.util.Pair;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.random.Random;
+import net.minecraft.world.StructureWorldAccess;
 
 import java.util.*;
 
@@ -14,11 +16,12 @@ import java.util.*;
  * <li> Since that {@code BlockState} takes a lot of memory, we use a unique index represented by a short to make the link.</li>
  * <li> We also want the order of the BlockPos, so we can't compact the BlockPos into one BlockState easily and without having important performance losses.</li>
  * <li> Since that it is highly improbable that there are more than 32 000 different {@code T} objects, we use the short (instead of int), allowing us to save two Bytes of data per BlocPos.</li>
- *</p>
+ * </p>
+ *
  * @param <T> the object that represents the state of the blocks usually a {@code BlockState}, but can include Nbt Compounds depending on the case.
  */
 @SuppressWarnings("unused")
-public class OrderedBlockListComparator<T> {
+public abstract class OrderedBlockListComparator<T> {
     /**
      * we're using BiMap to be able to get the short from the T objects and the other way around
      */
@@ -218,6 +221,59 @@ public class OrderedBlockListComparator<T> {
         this.posMap.remove(pos);
     }
 
+
+    public BlockPos removeBlockPos(short index) {
+        Iterator<BlockPos> iterator = this.posMap.keySet().iterator();
+        for (int i = 0; i < index; i++) {
+            if (!iterator.hasNext()) {
+                throw new IndexOutOfBoundsException();
+            }
+            iterator.next();
+        }
+        if (iterator.hasNext()) {
+            BlockPos pos = iterator.next();
+            this.posMap.remove(pos);
+            return pos;
+        }
+        throw new IndexOutOfBoundsException();
+    }
+
+    public Pair<BlockPos, T> removeBlockPos(int index) {
+        Iterator<BlockPos> iterator = this.posMap.keySet().iterator();
+        for (int i = 0; i < index; i++) {
+            if (!iterator.hasNext()) {
+                throw new IndexOutOfBoundsException();
+            }
+            iterator.next();
+        }
+        if (iterator.hasNext()) {
+            BlockPos pos = iterator.next();
+            short id = this.posMap.remove(pos);
+            return new Pair<>(pos, this.statesMap.get(id));
+        }
+        throw new IndexOutOfBoundsException();
+    }
+
+    public BlockPos removeFirstPos() {
+        Iterator<BlockPos> iterator = this.posMap.keySet().iterator();
+        if (iterator.hasNext()) {
+            BlockPos pos = iterator.next();
+            this.posMap.remove(pos);
+            return pos;
+        }
+        throw new IndexOutOfBoundsException();
+    }
+
+    public Pair<BlockPos, T> removeFirstBlockPos() {
+        Iterator<BlockPos> iterator = this.posMap.keySet().iterator();
+        if (iterator.hasNext()) {
+            BlockPos pos = iterator.next();
+            short id = this.posMap.remove(pos);
+            return new Pair<>(pos, this.statesMap.get(id));
+        }
+        throw new IndexOutOfBoundsException();
+    }
+
     /**
      * Retrieves a list of all states in the states map.
      *
@@ -291,12 +347,22 @@ public class OrderedBlockListComparator<T> {
     /**
      * Retrieves the BlockPos at a specified index.
      *
-     * @param i the index of the BlockPos to retrieve
+     * @param index the index of the BlockPos to retrieve
      * @return the BlockPos at the specified index
      * @throws IndexOutOfBoundsException if the index is out of bounds
      */
-    public BlockPos getBlockPos(int i) {
-        return posMap.keySet().stream().toList().get(i);
+    public BlockPos getBlockPos(int index) {
+        Iterator<BlockPos> iterator = this.posMap.keySet().iterator();
+        for (int i = 0; i < index; i++) {
+            if (!iterator.hasNext()) {
+                throw new IndexOutOfBoundsException();
+            }
+            iterator.next();
+        }
+        if (iterator.hasNext()) {
+            return iterator.next();
+        }
+        throw new IndexOutOfBoundsException();
     }
 
     /**
@@ -306,7 +372,11 @@ public class OrderedBlockListComparator<T> {
      * @throws java.util.NoSuchElementException if the position map is empty
      */
     public BlockPos getFirstBlockPos() {
-        return posMap.keySet().stream().toList().get(0);
+        Iterator<BlockPos> iterator = this.posMap.keySet().iterator();
+        if (iterator.hasNext()) {
+            return iterator.next();
+        }
+        throw new IndexOutOfBoundsException();
     }
 
     /**
@@ -316,7 +386,7 @@ public class OrderedBlockListComparator<T> {
      * @throws java.util.NoSuchElementException if the position map is empty
      */
     public BlockPos getLastBlockPos() {
-        return posMap.keySet().stream().toList().get(size() - 1);
+        return posMap.keySet().stream().toList().get(posSize() - 1);
     }
 
     /**
@@ -326,7 +396,7 @@ public class OrderedBlockListComparator<T> {
      * @throws IllegalStateException if the position map is empty
      */
     public BlockPos getRandomBlockPos() {
-        return posMap.keySet().stream().toList().get(Random.create().nextInt(size() - 1));
+        return getBlockPos(Random.create().nextInt(posSize() - 1));
     }
 
     /**
@@ -337,7 +407,28 @@ public class OrderedBlockListComparator<T> {
      * @throws IllegalStateException if the position map is empty
      */
     public BlockPos getRandomBlockPos(Random random) {
-        return posMap.keySet().stream().toList().get(random.nextInt(size() - 1));
+        return posMap.keySet().stream().toList().get(random.nextInt(posSize() - 1));
+    }
+
+
+    public Pair<BlockPos, T> getPosPair(int index) {
+        BlockPos pos = getBlockPos(index);
+        return new Pair<>(pos, this.statesMap.get(this.posMap.get(pos)));
+    }
+
+    /**
+     * Method to get the first BlockPos. You should
+     *
+     * @return
+     */
+    public Pair<BlockPos, T> getFirstPosPair() {
+        BlockPos pos = getFirstBlockPos();
+        return new Pair<>(pos, this.statesMap.get(this.posMap.get(pos)));
+    }
+
+    public Pair<BlockPos, T> getLastPosPair() {
+        BlockPos pos = getLastBlockPos();
+        return new Pair<>(pos, this.statesMap.get(this.posMap.get(pos)));
     }
 
     /**
@@ -345,7 +436,25 @@ public class OrderedBlockListComparator<T> {
      *
      * @return the size of the position map
      */
-    public int size() {
+    public int posSize() {
         return posMap.size();
     }
+
+    public int stateSize() {
+        return statesMap.size();
+    }
+
+    public boolean isPosEmpty() {
+        return posSize() == 0;
+    }
+
+    public boolean isStateEmpty() {
+        return stateSize() == 0;
+    }
+
+    public abstract boolean place(StructureWorldAccess world, int index);
+
+    public abstract boolean placeFirst(StructureWorldAccess world);
+
+    public abstract boolean placeFirstWithDeletion(StructureWorldAccess world);
 }

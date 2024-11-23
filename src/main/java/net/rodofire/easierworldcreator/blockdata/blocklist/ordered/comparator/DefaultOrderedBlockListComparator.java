@@ -1,7 +1,10 @@
 package net.rodofire.easierworldcreator.blockdata.blocklist.ordered.comparator;
 
 import net.minecraft.block.BlockState;
+import net.minecraft.util.Pair;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.StructureWorldAccess;
+import net.rodofire.easierworldcreator.placer.blocks.util.BlockPlaceUtil;
 
 import java.util.List;
 import java.util.Map;
@@ -71,6 +74,30 @@ public class DefaultOrderedBlockListComparator extends OrderedBlockListComparato
      */
     public BlockState getLastBlockState() {
         return this.statesMap.get((short) (statesMap.size() - 1));
+    }
+
+    @Override
+    public boolean placeFirst(StructureWorldAccess world) {
+        Pair<BlockPos, BlockState> data = this.getFirstPosPair();
+        BlockPos pos = data.getLeft();
+        BlockState state = data.getRight();
+        return BlockPlaceUtil.placeVerifiedBlock(world, false, null, pos, state);
+    }
+
+    @Override
+    public boolean placeFirstWithDeletion(StructureWorldAccess world) {
+        Pair<BlockPos, BlockState> data = this.removeFirstBlockPos();
+        BlockPos pos = data.getLeft();
+        BlockState state = data.getRight();
+        return BlockPlaceUtil.placeVerifiedBlock(world, false, null, pos, state);
+    }
+
+    @Override
+    public boolean place(StructureWorldAccess world, int index) {
+        Pair<BlockPos, BlockState> data = this.getPosPair(index);
+        BlockPos pos = data.getLeft();
+        BlockState state = data.getRight();
+        return BlockPlaceUtil.placeVerifiedBlock(world, false, null, pos, state);
     }
 
 }

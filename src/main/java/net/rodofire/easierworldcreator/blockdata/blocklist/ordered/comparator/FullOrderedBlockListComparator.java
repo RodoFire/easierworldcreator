@@ -6,6 +6,8 @@ import net.minecraft.block.BlockState;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.util.Pair;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.StructureWorldAccess;
+import net.rodofire.easierworldcreator.placer.blocks.util.BlockPlaceUtil;
 
 import java.util.List;
 import java.util.Set;
@@ -123,5 +125,33 @@ public class FullOrderedBlockListComparator extends CompoundOrderedBlockListComp
      */
     public void setForce(Pair<BlockState, NbtCompound> state, boolean force) {
         this.forceBlocks.get(getStateIndex(state)).setLeft(force);
+    }
+
+    @Override
+    public boolean placeFirst(StructureWorldAccess world) {
+        short index = this.posMap.get(this.getFirstBlockPos());
+        Pair<BlockPos, Pair<BlockState, NbtCompound>> data = this.getFirstPosPair();
+        BlockPos pos = data.getLeft();
+        BlockState state = data.getRight().getLeft();
+        NbtCompound nbtCompound = data.getRight().getRight();
+        return BlockPlaceUtil.placeVerifiedBlockWithNbt(world, this.forceBlocks.get(index).getLeft(), this.forceBlocks.get(index).getRight(), pos, state, nbtCompound);
+    }
+
+    @Override
+    public boolean placeFirstWithDeletion(StructureWorldAccess world) {
+        short index = this.posMap.get(this.getFirstBlockPos());
+        Pair<BlockPos, Pair<BlockState, NbtCompound>> data = this.removeFirstBlockPos();
+        BlockPos pos = data.getLeft();
+        BlockState state = data.getRight().getLeft();
+        NbtCompound nbtCompound = data.getRight().getRight();
+        return BlockPlaceUtil.placeVerifiedBlockWithNbt(world, this.forceBlocks.get(index).getLeft(), this.forceBlocks.get(index).getRight(), pos, state, nbtCompound);
+    }
+
+    @Override
+    public boolean place(StructureWorldAccess world, int index) {
+        BlockPos pos = this.getBlockPos(index);
+        short sh = this.posMap.get(pos);
+        Pair<BlockState, NbtCompound> data = this.getPair(sh);
+        return BlockPlaceUtil.placeVerifiedBlockWithNbt(world, this.forceBlocks.get(sh).getLeft(), this.forceBlocks.get(sh).getRight(), pos, data.getLeft(), data.getRight());
     }
 }

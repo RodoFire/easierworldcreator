@@ -5,6 +5,8 @@ import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.util.Pair;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.StructureWorldAccess;
+import net.rodofire.easierworldcreator.placer.blocks.util.BlockPlaceUtil;
 
 import java.util.List;
 import java.util.Map;
@@ -189,5 +191,31 @@ public class ForceOrderedBlockListComparator extends DefaultOrderedBlockListComp
      */
     public void setForce(BlockState state, boolean force) {
         this.forceBlocks.get(getStateIndex(state)).setLeft(force);
+    }
+
+    @Override
+    public boolean placeFirst(StructureWorldAccess world) {
+        short index = this.posMap.get(this.getFirstBlockPos());
+        Pair<BlockPos, BlockState> data = this.getFirstPosPair();
+        BlockPos pos = data.getLeft();
+        BlockState state = data.getRight();
+        return BlockPlaceUtil.placeVerifiedBlock(world, this.forceBlocks.get(index).getLeft(), this.forceBlocks.get(index).getRight(), pos, state);
+    }
+
+    @Override
+    public boolean placeFirstWithDeletion(StructureWorldAccess world) {
+        short index = this.posMap.get(this.getFirstBlockPos());
+        Pair<BlockPos, BlockState> data = this.removeFirstBlockPos();
+        BlockPos pos = data.getLeft();
+        BlockState state = data.getRight();
+        return BlockPlaceUtil.placeVerifiedBlock(world, this.forceBlocks.get(index).getLeft(), this.forceBlocks.get(index).getRight(), pos, state);
+    }
+
+    @Override
+    public boolean place(StructureWorldAccess world, int index) {
+        BlockPos pos = this.getBlockPos(index);
+        short sh = this.posMap.get(pos);
+        BlockState data = this.getBlockState(sh);
+        return BlockPlaceUtil.placeVerifiedBlock(world, this.forceBlocks.get(sh).getLeft(), this.forceBlocks.get(sh).getRight(), pos, data);
     }
 }

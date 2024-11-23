@@ -4,6 +4,8 @@ import net.minecraft.block.BlockState;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.util.Pair;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.StructureWorldAccess;
+import net.rodofire.easierworldcreator.placer.blocks.util.BlockPlaceUtil;
 
 import java.util.HashSet;
 import java.util.List;
@@ -39,6 +41,33 @@ public class CompoundOrderedBlockListComparator extends OrderedBlockListComparat
      * init an empty Compound Comparator
      */
     public CompoundOrderedBlockListComparator() {
+    }
+
+    @Override
+    public boolean place(StructureWorldAccess world, int index) {
+        Pair<BlockPos, Pair<BlockState, NbtCompound>> data = this.getPosPair(index);
+        BlockPos pos = data.getLeft();
+        BlockState state = data.getRight().getLeft();
+        NbtCompound nbtCompound = data.getRight().getRight();
+        return BlockPlaceUtil.placeVerifiedBlockWithNbt(world, false, null, pos, state, nbtCompound);
+    }
+
+    @Override
+    public boolean placeFirst(StructureWorldAccess world) {
+        Pair<BlockPos, Pair<BlockState, NbtCompound>> data = this.getFirstPosPair();
+        BlockPos pos = data.getLeft();
+        BlockState state = data.getRight().getLeft();
+        NbtCompound nbtCompound = data.getRight().getRight();
+        return BlockPlaceUtil.placeVerifiedBlockWithNbt(world, false, null, pos, state, nbtCompound);
+    }
+
+    @Override
+    public boolean placeFirstWithDeletion(StructureWorldAccess world) {
+        Pair<BlockPos, Pair<BlockState, NbtCompound>> data = this.removeFirstBlockPos();
+        BlockPos pos = data.getLeft();
+        BlockState state = data.getRight().getLeft();
+        NbtCompound nbtCompound = data.getRight().getRight();
+        return BlockPlaceUtil.placeVerifiedBlockWithNbt(world, false, null, pos, state, nbtCompound);
     }
 
 
