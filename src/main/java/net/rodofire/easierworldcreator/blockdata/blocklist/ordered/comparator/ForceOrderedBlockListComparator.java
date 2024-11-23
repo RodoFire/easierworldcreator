@@ -19,18 +19,93 @@ import java.util.Set;
 public class ForceOrderedBlockListComparator extends DefaultOrderedBlockListComparator {
     private BiMap<Short, Pair<Boolean, Set<Block>>> forceBlocks;
 
-    public ForceOrderedBlockListComparator(BlockState states, List<BlockPos> posList) {
-        super(states, posList);
+    /**
+     * init a force ordered blockList comparator
+     *
+     * @param state   the state that will be tested and put (in the case it doesn't exist)
+     * @param posList the blockPos that will be put related to the given state
+     */
+    public ForceOrderedBlockListComparator(BlockState state, List<BlockPos> posList) {
+        super(state, posList);
     }
 
-    public ForceOrderedBlockListComparator(BlockState states, List<BlockPos> posList, boolean force, Set<Block> blocksToForce) {
-        super(states, posList);
+    /**
+     * init a force ordered blockList comparator
+     *
+     * @param state         the state that will be tested and put (in the case it doesn't exists)
+     * @param posList       the blockPos that will be put related to the given state
+     * @param force         set if the block should replace all blocks or none
+     * @param blocksToForce the set of blocks that the BlockState can still force
+     */
+    public ForceOrderedBlockListComparator(BlockState state, List<BlockPos> posList, boolean force, Set<Block> blocksToForce) {
+        super(state, posList);
         Pair<Boolean, Set<Block>> forceData = new Pair<>(force, blocksToForce);
         this.forceBlocks.put((short) 0, forceData);
     }
 
+    /**
+     * init a comparator based on a given map
+     *
+     * @param info the map that will serve to initialize the comparator
+     */
     public ForceOrderedBlockListComparator(Map<BlockState, List<BlockPos>> info) {
         super(info);
+    }
+
+    /**
+     * init an empty comparator
+     */
+    public ForceOrderedBlockListComparator() {
+    }
+
+    /**
+     * Method to put some states and some blockpos in the comparator
+     *
+     * @param state         the state that will be tested and put (in the case it doesn't exists)
+     * @param pos           the blockPos that will be put related to the given state
+     * @param force         set if the block should replace all blocks or none
+     * @param blocksToForce the set of blocks that the BlockState can still force
+     */
+    public void put(BlockState state, BlockPos pos, boolean force, Set<Block> blocksToForce) {
+        this.put(state, pos);
+        this.forceBlocks.put(getStateIndex(state), new Pair<>(force, blocksToForce));
+    }
+
+    /**
+     * Method to put some states and some blockpos in the comparator
+     *
+     * @param state         the state that will be tested and put (in the case it doesn't exists)
+     * @param posList       the list of blockPos that will be put related to the given state
+     * @param force         set if the block should replace all blocks or none
+     * @param blocksToForce the set of blocks that the BlockState can still force
+     */
+    public void put(BlockState state, List<BlockPos> posList, boolean force, Set<Block> blocksToForce) {
+        this.put(state, posList);
+        this.forceBlocks.put(getStateIndex(state), new Pair<>(force, blocksToForce));
+    }
+
+    /**
+     * Method to put some states and some blockpos in the comparator
+     *
+     * @param state   the state that will be tested and put (in the case it doesn't exists)
+     * @param posList the list of blockPos that will be put related to the given state
+     * @param force   set if the block should replace all blocks or none
+     */
+    public void put(BlockState state, List<BlockPos> posList, boolean force) {
+        this.put(state, posList);
+        this.forceBlocks.put(getStateIndex(state), new Pair<>(force, null));
+    }
+
+    /**
+     * Method to put some states and some blockpos in the comparator
+     *
+     * @param state         the state that will be tested and put (in the case it doesn't exists)
+     * @param posList       the list of blockPos that will be put related to the given state
+     * @param blocksToForce the set of blocks that the BlockState can still force
+     */
+    public void put(BlockState state, List<BlockPos> posList, Set<Block> blocksToForce) {
+        this.put(state, posList);
+        this.forceBlocks.put(getStateIndex(state), new Pair<>(false, blocksToForce));
     }
 
     /**
