@@ -10,14 +10,18 @@ import net.minecraft.util.math.BlockPos;
 import java.util.List;
 import java.util.Set;
 
+/**
+ * Class that combine Force and Nbt parameters
+ */
+@SuppressWarnings("unused")
 public class FullOrderedBlockListComparator extends CompoundOrderedBlockListComparator {
     private BiMap<Short, Pair<Boolean, Set<Block>>> forceBlocks;
 
 
     /**
-     * Method to put some states and some blockpos in the comparator
+     * Method to put some states and some blockPos in the comparator
      *
-     * @param state   the state that will be tested and put (in the case it doesn't exists)
+     * @param state   the state that will be tested and put (in the case it doesn't exist)
      * @param posList the list of blockPos that will be put related to the given state
      * @param force   set if the block should replace all blocks or none
      */
@@ -27,9 +31,9 @@ public class FullOrderedBlockListComparator extends CompoundOrderedBlockListComp
     }
 
     /**
-     * Method to put some states and some blockpos in the comparator
+     * Method to put some states and some blockPos in the comparator
      *
-     * @param state         the state that will be tested and put (in the case it doesn't exists)
+     * @param state         the state that will be tested and put (in the case it doesn't exist)
      * @param posList       the list of blockPos that will be put related to the given state
      * @param blocksToForce the set of blocks that the BlockState can still force
      */
