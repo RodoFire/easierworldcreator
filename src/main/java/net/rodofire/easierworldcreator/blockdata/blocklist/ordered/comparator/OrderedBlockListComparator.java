@@ -9,11 +9,12 @@ import java.util.*;
 
 /**
  * <p> Class to manage ordered BlockList.
- * <p> For memory saving, we use a link between states and {@link BlockPos}.
- * <p> Since that {@code BlockState} takes a lot of memory, we use a unique index represented by a short to make the link.
- * We also want the order of the BlockPos, so we can't compact the BlockPos into one BlockState easily and without having important performance losses.
- * <p>Since that it is highly improbable that there are more than 32 000 different {@code T} objects, we use the short, allowing us to save two Bytes of data per BlocPos.
- *
+ * <p>
+ * For memory saving, we use a link between states and {@link BlockPos}.
+ * <li> Since that {@code BlockState} takes a lot of memory, we use a unique index represented by a short to make the link.</li>
+ * <li> We also want the order of the BlockPos, so we can't compact the BlockPos into one BlockState easily and without having important performance losses.</li>
+ * <li> Since that it is highly improbable that there are more than 32 000 different {@code T} objects, we use the short (instead of int), allowing us to save two Bytes of data per BlocPos.</li>
+ *</p>
  * @param <T> the object that represents the state of the blocks usually a {@code BlockState}, but can include Nbt Compounds depending on the case.
  */
 @SuppressWarnings("unused")
@@ -21,12 +22,12 @@ public class OrderedBlockListComparator<T> {
     /**
      * we're using BiMap to be able to get the short from the T objects and the other way around
      */
-    private final BiMap<Short, T> statesMap = HashBiMap.create();
+    protected final BiMap<Short, T> statesMap = HashBiMap.create();
 
     /**
      * we're using the short to make the link between the T objects (blockStates in the most cases) and the BlockPos.
      */
-    private LinkedHashMap<BlockPos, Short> posMap = new LinkedHashMap<>();
+    protected LinkedHashMap<BlockPos, Short> posMap = new LinkedHashMap<>();
 
 
     /**
@@ -85,6 +86,10 @@ public class OrderedBlockListComparator<T> {
                 this.posMap.put(pos, statesSize);
             }
         }
+    }
+
+    public void put(T state, BlockPos pos) {
+        this.put(state, List.of(pos));
     }
 
     /**
