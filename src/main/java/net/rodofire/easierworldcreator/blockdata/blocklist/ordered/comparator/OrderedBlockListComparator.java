@@ -13,10 +13,11 @@ import java.util.*;
  * <p> Class to manage ordered BlockList.
  * <p>
  * For memory saving, we use a link between states and {@link BlockPos}.
+ * <ul>
  * <li> Since that {@code BlockState} takes a lot of memory, we use a unique index represented by a short to make the link.</li>
  * <li> We also want the order of the BlockPos, so we can't compact the BlockPos into one BlockState easily and without having important performance losses.</li>
  * <li> Since that it is highly improbable that there are more than 32 000 different {@code T} objects, we use the short (instead of int), allowing us to save two Bytes of data per BlocPos.</li>
- * </p>
+ * </ul>
  *
  * @param <T> the object that represents the state of the blocks usually a {@code BlockState}, but can include Nbt Compounds depending on the case.
  */
@@ -31,6 +32,8 @@ public abstract class OrderedBlockListComparator<T> {
      * we're using the short to make the link between the T objects (blockStates in the most cases) and the BlockPos.
      */
     protected LinkedHashMap<BlockPos, Short> posMap = new LinkedHashMap<>();
+
+    List<BlockPos> posList = new ArrayList<>();
 
 
     /**
@@ -73,12 +76,15 @@ public abstract class OrderedBlockListComparator<T> {
      * @param posList the List of BlockPos that you want to add
      */
     public void put(T state, List<BlockPos> posList) {
+        int i = 0;
         //we put the blockPos depending on the short value
         if (this.statesMap.containsValue(state)) {
             //we compare the short with the blockState value
             short sho = this.statesMap.inverse().get(state);
             for (BlockPos pos : posList) {
+                this.posList.remove(pos);
                 posMap.put(pos, sho);
+                this.posList.add(pos);
             }
         }
         //we add the blockPos with a new index
@@ -86,9 +92,12 @@ public abstract class OrderedBlockListComparator<T> {
             short statesSize = (short) this.statesMap.size();
             this.statesMap.put(statesSize, state);
             for (BlockPos pos : posList) {
+                this.posList.remove(pos);
                 this.posMap.put(pos, statesSize);
+                this.posList.add(pos);
             }
         }
+        System.out.println(i);
     }
 
     public void put(T state, BlockPos pos) {
@@ -179,8 +188,10 @@ public abstract class OrderedBlockListComparator<T> {
             short index = getStateIndex(state);
             this.statesMap.remove(index);
             for (BlockPos pos : this.posMap.keySet()) {
-                if (this.posMap.get(pos) == index)
+                if (this.posMap.get(pos) == index) {
                     this.posMap.remove(pos);
+                    this.posList.remove(pos);
+                }
             }
         }
     }
@@ -219,59 +230,32 @@ public abstract class OrderedBlockListComparator<T> {
      */
     public void removeBlockPos(BlockPos pos) {
         this.posMap.remove(pos);
+        this.posList.remove(pos);
     }
 
 
-    public BlockPos removeBlockPos(short index) {
-        Iterator<BlockPos> iterator = this.posMap.keySet().iterator();
-        for (int i = 0; i < index; i++) {
-            if (!iterator.hasNext()) {
-                throw new IndexOutOfBoundsException();
-            }
-            iterator.next();
-        }
-        if (iterator.hasNext()) {
-            BlockPos pos = iterator.next();
-            this.posMap.remove(pos);
-            return pos;
-        }
-        throw new IndexOutOfBoundsException();
+    public BlockPos removeBlockPos(int index) {
+        BlockPos pos = posList.remove(index);
+        this.posMap.remove(pos);
+        return pos;
     }
 
-    public Pair<BlockPos, T> removeBlockPos(int index) {
-        Iterator<BlockPos> iterator = this.posMap.keySet().iterator();
-        for (int i = 0; i < index; i++) {
-            if (!iterator.hasNext()) {
-                throw new IndexOutOfBoundsException();
-            }
-            iterator.next();
-        }
-        if (iterator.hasNext()) {
-            BlockPos pos = iterator.next();
-            short id = this.posMap.remove(pos);
-            return new Pair<>(pos, this.statesMap.get(id));
-        }
-        throw new IndexOutOfBoundsException();
+    public Pair<BlockPos, T> removeBlockPosPair(int index) {
+        BlockPos pos = posList.remove(index);
+        short id = this.posMap.remove(pos);
+        return new Pair<>(pos, this.statesMap.get(id));
     }
 
     public BlockPos removeFirstPos() {
-        Iterator<BlockPos> iterator = this.posMap.keySet().iterator();
-        if (iterator.hasNext()) {
-            BlockPos pos = iterator.next();
-            this.posMap.remove(pos);
-            return pos;
-        }
-        throw new IndexOutOfBoundsException();
+        return removeBlockPos(0);
     }
 
     public Pair<BlockPos, T> removeFirstBlockPos() {
-        Iterator<BlockPos> iterator = this.posMap.keySet().iterator();
-        if (iterator.hasNext()) {
-            BlockPos pos = iterator.next();
-            short id = this.posMap.remove(pos);
-            return new Pair<>(pos, this.statesMap.get(id));
-        }
-        throw new IndexOutOfBoundsException();
+        return removeBlockPosPair(0);
+    }
+
+    public Pair<BlockPos, T> removeLastBlockPosPair() {
+        return removeBlockPosPair((posList.size() - 1));
     }
 
     /**
@@ -299,6 +283,15 @@ public abstract class OrderedBlockListComparator<T> {
      */
     public void setPosMap(LinkedHashMap<BlockPos, Short> indexes) {
         this.posMap = new LinkedHashMap<>(indexes);
+    }
+
+
+    public void setPosList(List<BlockPos> posList) {
+        this.posList = new ArrayList<>(posList);
+    }
+
+    public List<BlockPos> getPosList() {
+        return this.posList;
     }
 
     /**
@@ -352,17 +345,7 @@ public abstract class OrderedBlockListComparator<T> {
      * @throws IndexOutOfBoundsException if the index is out of bounds
      */
     public BlockPos getBlockPos(int index) {
-        Iterator<BlockPos> iterator = this.posMap.keySet().iterator();
-        for (int i = 0; i < index; i++) {
-            if (!iterator.hasNext()) {
-                throw new IndexOutOfBoundsException();
-            }
-            iterator.next();
-        }
-        if (iterator.hasNext()) {
-            return iterator.next();
-        }
-        throw new IndexOutOfBoundsException();
+        return posList.get(index);
     }
 
     /**
@@ -372,11 +355,7 @@ public abstract class OrderedBlockListComparator<T> {
      * @throws java.util.NoSuchElementException if the position map is empty
      */
     public BlockPos getFirstBlockPos() {
-        Iterator<BlockPos> iterator = this.posMap.keySet().iterator();
-        if (iterator.hasNext()) {
-            return iterator.next();
-        }
-        throw new IndexOutOfBoundsException();
+        return posList.get(0);
     }
 
     /**
@@ -386,7 +365,7 @@ public abstract class OrderedBlockListComparator<T> {
      * @throws java.util.NoSuchElementException if the position map is empty
      */
     public BlockPos getLastBlockPos() {
-        return posMap.keySet().stream().toList().get(posSize() - 1);
+        return posList.get(posSize() - 1);
     }
 
     /**
@@ -407,7 +386,7 @@ public abstract class OrderedBlockListComparator<T> {
      * @throws IllegalStateException if the position map is empty
      */
     public BlockPos getRandomBlockPos(Random random) {
-        return posMap.keySet().stream().toList().get(random.nextInt(posSize() - 1));
+        return getBlockPos(random.nextInt(posSize() - 1));
     }
 
 
@@ -417,15 +396,20 @@ public abstract class OrderedBlockListComparator<T> {
     }
 
     /**
-     * Method to get the first BlockPos. You should
+     * Method to get the first BlockPos pair.
      *
-     * @return
+     * @return the pair of BlockPos and BlockState/nbt
      */
     public Pair<BlockPos, T> getFirstPosPair() {
         BlockPos pos = getFirstBlockPos();
         return new Pair<>(pos, this.statesMap.get(this.posMap.get(pos)));
     }
 
+    /**
+     * method to get the last BlockPos pair
+     *
+     * @return the pair of BlockPos and BlockState/nbt
+     */
     public Pair<BlockPos, T> getLastPosPair() {
         BlockPos pos = getLastBlockPos();
         return new Pair<>(pos, this.statesMap.get(this.posMap.get(pos)));
@@ -440,21 +424,142 @@ public abstract class OrderedBlockListComparator<T> {
         return posMap.size();
     }
 
+    /**
+     * method to get the size of the stateMap
+     *
+     * @return the size of the state map
+     */
     public int stateSize() {
         return statesMap.size();
     }
 
+    /**
+     * method to know if no blockPos are present
+     *
+     * @return true is no blockPos are present, false if not
+     */
     public boolean isPosEmpty() {
         return posSize() == 0;
     }
 
+    /**
+     * method to know if no state are present
+     *
+     * @return true is no blockPos are present, false if not
+     */
     public boolean isStateEmpty() {
         return stateSize() == 0;
     }
 
+    /**
+     * method to place the Block related to the index
+     *
+     * @param world the world the block will be placed
+     * @param index the index of the BlockPos
+     * @return true if the block was placed, false if not
+     */
     public abstract boolean place(StructureWorldAccess world, int index);
 
+    /**
+     * method to place the block with the deletion of the BlockPos
+     *
+     * @param world the world the block will be placed
+     * @param index the index of the block
+     * @return true if the block was placed, false if not
+     */
+    public abstract boolean placeWithDeletion(StructureWorldAccess world, int index);
+
+    /**
+     * Method to place the block related to the index.
+     * The method also performs verification to know if the block can be placed.
+     *
+     * @param world the world the block will be placed
+     * @param index the index of the block
+     * @return true if the block was placed, false if not
+     */
+    public abstract boolean placeWithVerification(StructureWorldAccess world, int index);
+
+    /**
+     * Method to place the block with the deletion of the BlockPos
+     * The method also performs verification to know if the block can be placed.
+     *
+     * @param world the world the block will be placed
+     * @param index the index of the block
+     * @return true if the block was placed, false if not
+     */
+    public abstract boolean placeWithVerificationDeletion(StructureWorldAccess world, int index);
+
+    /**
+     * method to place the first Block
+     *
+     * @param world the world the block will be placed
+     * @return true if the block was placed, false if not
+     */
     public abstract boolean placeFirst(StructureWorldAccess world);
 
+    /**
+     * Method to place the first Block and deleting it.
+     * You shouldn't use this method in normal case since that the method is pretty costly O(n).
+     * Use instead {@code placeLastWithDeletion()} that is faster O(1).
+     *
+     * @param world the world where the block will be placed
+     * @return true if the block was placed, false if not.
+     */
     public abstract boolean placeFirstWithDeletion(StructureWorldAccess world);
+
+    /**
+     * Method to place the first Block.
+     * <p>The method also performs verification to know if the block can be placed.
+     *
+     * @param world the world where the block will be placed
+     * @return true if the block was placed, false if not.
+     */
+    public abstract boolean placeFirstWitVerification(StructureWorldAccess world);
+
+    /**
+     * <p>Method to place the first Block and deleting it.
+     * <p>The method also performs verification to know if the block can be placed.
+     * <p>You shouldn't use this method in normal case since that the method is pretty costly O(n).
+     * <p>Use instead {@code placeLastWithDeletion()} that is faster O(1).
+     *
+     * @param world the world where the block will be placed
+     * @return true if the block was placed, false if not.
+     */
+    public abstract boolean placeFirstWithVerificationDeletion(StructureWorldAccess world);
+
+    /**
+     * Method to place the last Block of the comparator and removing it then.
+     * Consider using this method because it gives you better performance.
+     *
+     * @param world the world the last block will be placed
+     * @return true if the block was placed, false if not
+     */
+    public abstract boolean placeLastWithDeletion(StructureWorldAccess world);
+
+    /**
+     * Method to place the last Block of the comparator.
+     *
+     * @param world the world the last block will be placed
+     * @return true if the block was placed, false if not
+     */
+    public abstract boolean placeLast(StructureWorldAccess world);
+
+    /**
+     * Method to place the last Block.
+     *
+     * @param world the world the last block will be placed
+     *              The method also performs verification to know if the block can be placed.
+     * @return true if the block was placed, false if not
+     */
+    public abstract boolean placeLastWithVerification(StructureWorldAccess world);
+
+    /**
+     * Method to place the last Block of the comparator and removing it then.
+     * The method also performs verification to know if the block can be placed.
+     * Consider using this method because it gives you better performance.
+     *
+     * @param world the world the last block will be placed
+     * @return true if the block was placed, false if not
+     */
+    public abstract boolean placeLastWithVerificationDeletion(StructureWorldAccess world);
 }
