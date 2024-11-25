@@ -455,7 +455,7 @@ public abstract class OrderedBlockListComparator<T> {
     }
 
     /**
-     * method to know if no state are present
+     * method to know if no state is present
      *
      * @return true is no blockPos are present, false if not
      */
@@ -468,7 +468,6 @@ public abstract class OrderedBlockListComparator<T> {
      *
      * @param world the world the block will be placed
      * @param index the index of the BlockPos
-     * @return true if the block was placed, false if not
      */
     public abstract void place(StructureWorldAccess world, int index);
 
@@ -477,7 +476,6 @@ public abstract class OrderedBlockListComparator<T> {
      *
      * @param world the world the block will be placed
      * @param index the index of the block
-     * @return true if the block was placed, false if not
      */
     public abstract void placeWithDeletion(StructureWorldAccess world, int index);
 
@@ -505,7 +503,6 @@ public abstract class OrderedBlockListComparator<T> {
      * method to place the first Block
      *
      * @param world the world the block will be placed
-     * @return true if the block was placed, false if not
      */
     public abstract void placeFirst(StructureWorldAccess world);
 
@@ -515,7 +512,6 @@ public abstract class OrderedBlockListComparator<T> {
      * Use instead {@code placeLastWithDeletion()} that is faster O(1).
      *
      * @param world the world where the block will be placed
-     * @return true if the block was placed, false if not.
      */
     public abstract void placeFirstWithDeletion(StructureWorldAccess world);
 
@@ -544,7 +540,6 @@ public abstract class OrderedBlockListComparator<T> {
      * Consider using this method because it gives you better performance.
      *
      * @param world the world the last block will be placed
-     * @return true if the block was placed, false if not
      */
     public abstract void placeLastWithDeletion(StructureWorldAccess world);
 
@@ -552,7 +547,6 @@ public abstract class OrderedBlockListComparator<T> {
      * Method to place the last Block of the comparator.
      *
      * @param world the world the last block will be placed
-     * @return true if the block was placed, false if not
      */
     public abstract void placeLast(StructureWorldAccess world);
 
