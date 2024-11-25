@@ -18,10 +18,22 @@ import java.util.*;
  * <li> We also want the order of the BlockPos, so we can't compact the BlockPos into one BlockState easily and without having important performance losses.</li>
  * <li> Since that it is highly improbable that there are more than 32 000 different {@code T} objects, we use the short (instead of int), allowing us to save two Bytes of data per BlocPos.</li>
  * </ul>
- *
- * @param <T> the object that represents the state of the blocks usually a {@code BlockState}, but can include Nbt Compounds depending on the case.
+ * To create a class based on the comparator, you can follow this simple example:
+ * <pre>
+ * {@code public class XOrderedBlockListComparator extends OrderedBlockListComparator<BlockState> {
+ *      //constructor
+ *      //abstracts methods
+ *      //custom methods
+ * }
+ * }
+ *</pre>
+ * To know what to put in the {@code <>} read that:
+ * @param <T> the object that represents the state of the blocks usually a {@code BlockState},
+ *           but can include Nbt Compounds depending on the case or Blocks, for example.
+ *           For example, {@link CompoundOrderedBlockListComparator}
+ *           uses a {@code Pair<BlockState, NbtCompound>} to connect Nbt to a BlockState
  */
-@SuppressWarnings("unused")
+@SuppressWarnings({"unused", "UnusedReturnValue"})
 public abstract class OrderedBlockListComparator<T> {
     /**
      * we're using BiMap to be able to get the short from the T objects and the other way around
@@ -458,7 +470,7 @@ public abstract class OrderedBlockListComparator<T> {
      * @param index the index of the BlockPos
      * @return true if the block was placed, false if not
      */
-    public abstract boolean place(StructureWorldAccess world, int index);
+    public abstract void place(StructureWorldAccess world, int index);
 
     /**
      * method to place the block with the deletion of the BlockPos
@@ -467,7 +479,7 @@ public abstract class OrderedBlockListComparator<T> {
      * @param index the index of the block
      * @return true if the block was placed, false if not
      */
-    public abstract boolean placeWithDeletion(StructureWorldAccess world, int index);
+    public abstract void placeWithDeletion(StructureWorldAccess world, int index);
 
     /**
      * Method to place the block related to the index.
@@ -495,7 +507,7 @@ public abstract class OrderedBlockListComparator<T> {
      * @param world the world the block will be placed
      * @return true if the block was placed, false if not
      */
-    public abstract boolean placeFirst(StructureWorldAccess world);
+    public abstract void placeFirst(StructureWorldAccess world);
 
     /**
      * Method to place the first Block and deleting it.
@@ -505,7 +517,7 @@ public abstract class OrderedBlockListComparator<T> {
      * @param world the world where the block will be placed
      * @return true if the block was placed, false if not.
      */
-    public abstract boolean placeFirstWithDeletion(StructureWorldAccess world);
+    public abstract void placeFirstWithDeletion(StructureWorldAccess world);
 
     /**
      * Method to place the first Block.
@@ -514,7 +526,7 @@ public abstract class OrderedBlockListComparator<T> {
      * @param world the world where the block will be placed
      * @return true if the block was placed, false if not.
      */
-    public abstract boolean placeFirstWitVerification(StructureWorldAccess world);
+    public abstract boolean placeFirstWithVerification(StructureWorldAccess world);
 
     /**
      * <p>Method to place the first Block and deleting it.
@@ -534,7 +546,7 @@ public abstract class OrderedBlockListComparator<T> {
      * @param world the world the last block will be placed
      * @return true if the block was placed, false if not
      */
-    public abstract boolean placeLastWithDeletion(StructureWorldAccess world);
+    public abstract void placeLastWithDeletion(StructureWorldAccess world);
 
     /**
      * Method to place the last Block of the comparator.
@@ -542,7 +554,7 @@ public abstract class OrderedBlockListComparator<T> {
      * @param world the world the last block will be placed
      * @return true if the block was placed, false if not
      */
-    public abstract boolean placeLast(StructureWorldAccess world);
+    public abstract void placeLast(StructureWorldAccess world);
 
     /**
      * Method to place the last Block.
