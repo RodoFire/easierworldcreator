@@ -19,6 +19,18 @@ import java.util.Set;
 public class FullOrderedBlockListComparator extends CompoundOrderedBlockListComparator {
     private BiMap<Short, Pair<Boolean, Set<Block>>> forceBlocks;
 
+    /**
+     * Method to put some states and some blockPos in the comparator
+     *
+     * @param state   the state that will be tested and put (in the case it doesn't exist)
+     * @param posList the list of blockPos that will be put related to the given state
+     * @param force   set if the block should replace all blocks or none
+     * @param blocksToForce the set of blocks that the BlockState can still force
+     */
+    public void put(Pair<BlockState, NbtCompound> state, List<BlockPos> posList, boolean force, Set<Block> blocksToForce) {
+        this.put(state, posList);
+        this.forceBlocks.put(getStateIndex(state), new Pair<>(force, blocksToForce));
+    }
 
     /**
      * Method to put some states and some blockPos in the comparator
@@ -127,31 +139,114 @@ public class FullOrderedBlockListComparator extends CompoundOrderedBlockListComp
         this.forceBlocks.get(getStateIndex(state)).setLeft(force);
     }
 
+
+    /**
+     * Method to place the block related to the index.
+     * The method also performs verification to know if the block can be placed.
+     *
+     * @param world the world the block will be placed
+     * @param index the index of the block
+     * @return true if the block was placed, false if not
+     */
     @Override
-    public boolean placeFirst(StructureWorldAccess world) {
-        short index = this.posMap.get(this.getFirstBlockPos());
+    public boolean placeWithVerification(StructureWorldAccess world, int index) {
+        Pair<BlockPos, Pair<BlockState, NbtCompound>> data = this.getPosPair(index);
+        BlockPos pos = data.getLeft();
+        BlockState state = data.getRight().getLeft();
+        NbtCompound nbtCompound = data.getRight().getRight();
+        short ind = this.statesMap.inverse().get(new Pair<>(state, nbtCompound));
+        return BlockPlaceUtil.placeVerifiedBlockWithNbt(world, this.forceBlocks.get(ind).getLeft(), this.forceBlocks.get(ind).getRight(), pos, state, nbtCompound);
+
+    }
+
+    /**
+     * Method to place the block with the deletion of the BlockPos
+     * The method also performs verification to know if the block can be placed.
+     *
+     * @param world the world the block will be placed
+     * @param index the index of the block
+     * @return true if the block was placed, false if not
+     */
+    @Override
+    public boolean placeWithVerificationDeletion(StructureWorldAccess world, int index) {
+        Pair<BlockPos, Pair<BlockState, NbtCompound>> data = this.removeBlockPosPair(index);
+        BlockPos pos = data.getLeft();
+        BlockState state = data.getRight().getLeft();
+        NbtCompound nbtCompound = data.getRight().getRight();
+        short ind = this.statesMap.inverse().get(new Pair<>(state, nbtCompound));
+        return BlockPlaceUtil.placeVerifiedBlockWithNbt(world, this.forceBlocks.get(ind).getLeft(), this.forceBlocks.get(ind).getRight(), pos, state, nbtCompound);
+
+    }
+
+    /**
+     * Method to place the first Block.
+     * <p>The method also performs verification to know if the block can be placed.
+     *
+     * @param world the world where the block will be placed
+     * @return true if the block was placed, false if not.
+     */
+    @Override
+    public boolean placeFirstWithVerification(StructureWorldAccess world) {
         Pair<BlockPos, Pair<BlockState, NbtCompound>> data = this.getFirstPosPair();
         BlockPos pos = data.getLeft();
         BlockState state = data.getRight().getLeft();
         NbtCompound nbtCompound = data.getRight().getRight();
-        return BlockPlaceUtil.placeVerifiedBlockWithNbt(world, this.forceBlocks.get(index).getLeft(), this.forceBlocks.get(index).getRight(), pos, state, nbtCompound);
+        short ind = this.statesMap.inverse().get(new Pair<>(state, nbtCompound));
+        return BlockPlaceUtil.placeVerifiedBlockWithNbt(world, this.forceBlocks.get(ind).getLeft(), this.forceBlocks.get(ind).getRight(), pos, state, nbtCompound);
     }
 
+    /**
+     * <p>Method to place the first Block and deleting it.
+     * <p>The method also performs verification to know if the block can be placed.
+     * <p>You shouldn't use this method in normal case since that the method is pretty costly O(n).
+     * <p>Use instead {@code placeLastWithDeletion()} that is faster O(1).
+     *
+     * @param world the world where the block will be placed
+     * @return true if the block was placed, false if not.
+     */
     @Override
-    public boolean placeFirstWithDeletion(StructureWorldAccess world) {
-        short index = this.posMap.get(this.getFirstBlockPos());
+    public boolean placeFirstWithVerificationDeletion(StructureWorldAccess world) {
         Pair<BlockPos, Pair<BlockState, NbtCompound>> data = this.removeFirstBlockPos();
         BlockPos pos = data.getLeft();
         BlockState state = data.getRight().getLeft();
         NbtCompound nbtCompound = data.getRight().getRight();
-        return BlockPlaceUtil.placeVerifiedBlockWithNbt(world, this.forceBlocks.get(index).getLeft(), this.forceBlocks.get(index).getRight(), pos, state, nbtCompound);
+        short ind = this.statesMap.inverse().get(new Pair<>(state, nbtCompound));
+        return BlockPlaceUtil.placeVerifiedBlockWithNbt(world, this.forceBlocks.get(ind).getLeft(), this.forceBlocks.get(ind).getRight(), pos, state, nbtCompound);
     }
 
+    /**
+     * Method to place the last Block.
+     *
+     * @param world the world the last block will be placed
+     *              The method also performs verification to know if the block can be placed.
+     * @return true if the block was placed, false if not
+     */
     @Override
-    public boolean place(StructureWorldAccess world, int index) {
-        BlockPos pos = this.getBlockPos(index);
-        short sh = this.posMap.get(pos);
-        Pair<BlockState, NbtCompound> data = this.getPair(sh);
-        return BlockPlaceUtil.placeVerifiedBlockWithNbt(world, this.forceBlocks.get(sh).getLeft(), this.forceBlocks.get(sh).getRight(), pos, data.getLeft(), data.getRight());
+    public boolean placeLastWithVerification(StructureWorldAccess world) {
+        Pair<BlockPos, Pair<BlockState, NbtCompound>> data = this.getLastPosPair();
+        BlockPos pos = data.getLeft();
+        BlockState state = data.getRight().getLeft();
+        NbtCompound nbtCompound = data.getRight().getRight();
+        short ind = this.statesMap.inverse().get(new Pair<>(state, nbtCompound));
+        return BlockPlaceUtil.placeVerifiedBlockWithNbt(world, this.forceBlocks.get(ind).getLeft(), this.forceBlocks.get(ind).getRight(), pos, state, nbtCompound);
+
+    }
+
+    /**
+     * Method to place the last Block of the comparator and removing it then.
+     * The method also performs verification to know if the block can be placed.
+     * Consider using this method because it gives you better performance.
+     *
+     * @param world the world the last block will be placed
+     * @return true if the block was placed, false if not
+     */
+    @Override
+    public boolean placeLastWithVerificationDeletion(StructureWorldAccess world) {
+        Pair<BlockPos, Pair<BlockState, NbtCompound>> data = this.removeLastBlockPosPair();
+        BlockPos pos = data.getLeft();
+        BlockState state = data.getRight().getLeft();
+        NbtCompound nbtCompound = data.getRight().getRight();
+        short ind = this.statesMap.inverse().get(new Pair<>(state, nbtCompound));
+        return BlockPlaceUtil.placeVerifiedBlockWithNbt(world, this.forceBlocks.get(ind).getLeft(), this.forceBlocks.get(ind).getRight(), pos, state, nbtCompound);
     }
 }

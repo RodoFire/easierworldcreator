@@ -43,6 +43,129 @@ public class CompoundOrderedBlockListComparator extends OrderedBlockListComparat
     public CompoundOrderedBlockListComparator() {
     }
 
+
+    /**
+     * Method to get the Set of pair that are saved in the comparator
+     *
+     * @return the list of pair
+     */
+    public List<Pair<BlockState, NbtCompound>> getPairs() {
+        return getT();
+    }
+
+    /**
+     * method to get the Pair related to the index
+     *
+     * @param index the index of the Pair
+     * @return the Pair related to the index
+     */
+    public Pair<BlockState, NbtCompound> getPair(short index) {
+        return this.statesMap.get(index);
+    }
+
+    /**
+     * Method to get the first Pair
+     *
+     * @return the first Pair
+     */
+    public Pair<BlockState, NbtCompound> getFirstPair() {
+        return this.statesMap.get((short) 0);
+    }
+
+    /**
+     * Method to get the last Pair
+     *
+     * @return the last Pair
+     */
+    public Pair<BlockState, NbtCompound> getLastPair() {
+        return this.statesMap.get((short) (statesMap.size() - 1));
+    }
+
+    /**
+     * Method to get the set of BlockStates that are saved in the comparator
+     *
+     * @return the set of blockStates
+     */
+    public Set<BlockState> getBlockStates() {
+        Set<BlockState> states = new HashSet<>();
+        List<Pair<BlockState, NbtCompound>> nbt = getT();
+        for (Pair<BlockState, NbtCompound> infos : nbt) {
+            states.add(infos.getLeft());
+        }
+        return states;
+    }
+
+    /**
+     * method to get the blockState related to the index
+     *
+     * @param index the index of the BlockState
+     * @return the blockState related to the index
+     */
+    public BlockState getBlockState(short index) {
+        return this.statesMap.get(index).getLeft();
+    }
+
+    /**
+     * Method to get the first BlockState
+     *
+     * @return the first BlockState
+     */
+    public BlockState getFirstBlockState() {
+        return this.statesMap.get((short) 0).getLeft();
+    }
+
+    /**
+     * Method to get the last BlockState
+     *
+     * @return the last BlockState
+     */
+    public BlockState getLastBlockState() {
+        return this.statesMap.get((short) (statesMap.size() - 1)).getLeft();
+    }
+
+    /**
+     * Method to get the set of compound that are saved in the comparator
+     *
+     * @return the set of compound
+     */
+    public Set<NbtCompound> getCompounds() {
+        Set<NbtCompound> tags = new HashSet<>();
+        List<Pair<BlockState, NbtCompound>> nbt = getT();
+        for (Pair<BlockState, NbtCompound> infos : nbt) {
+            tags.add(infos.getRight());
+        }
+        return tags;
+    }
+
+    /**
+     * method to get the blockState related to the index
+     *
+     * @param index the index of the BlockState
+     * @return the blockState related to the index
+     */
+    public NbtCompound getCompound(short index) {
+        return this.statesMap.get(index).getRight();
+    }
+
+    /**
+     * Method to get the first BlockState
+     *
+     * @return the first BlockState
+     */
+    public NbtCompound getFirstCompound() {
+        return this.statesMap.get((short) 0).getRight();
+    }
+
+    /**
+     * Method to get the last BlockState
+     *
+     * @return the last BlockState
+     */
+    public NbtCompound getLastCompound() {
+        return this.statesMap.get((short) (statesMap.size() - 1)).getRight();
+    }
+
+
     /**
      * method to place the Block related to the index
      *
@@ -236,128 +359,5 @@ public class CompoundOrderedBlockListComparator extends OrderedBlockListComparat
         NbtCompound nbtCompound = data.getRight().getRight();
         return BlockPlaceUtil.placeVerifiedBlockWithNbt(world, false, null, pos, state, nbtCompound);
     }
-
-
-    /**
-     * Method to get the Set of pair that are saved in the comparator
-     *
-     * @return the list of pair
-     */
-    public List<Pair<BlockState, NbtCompound>> getPairs() {
-        return getT();
-    }
-
-    /**
-     * method to get the Pair related to the index
-     *
-     * @param index the index of the Pair
-     * @return the Pair related to the index
-     */
-    public Pair<BlockState, NbtCompound> getPair(short index) {
-        return this.statesMap.get(index);
-    }
-
-    /**
-     * Method to get the first Pair
-     *
-     * @return the first Pair
-     */
-    public Pair<BlockState, NbtCompound> getFirstPair() {
-        return this.statesMap.get((short) 0);
-    }
-
-    /**
-     * Method to get the last Pair
-     *
-     * @return the last Pair
-     */
-    public Pair<BlockState, NbtCompound> getLastPair() {
-        return this.statesMap.get((short) (statesMap.size() - 1));
-    }
-
-    /**
-     * Method to get the set of BlockStates that are saved in the comparator
-     *
-     * @return the set of blockStates
-     */
-    public Set<BlockState> getBlockStates() {
-        Set<BlockState> states = new HashSet<>();
-        List<Pair<BlockState, NbtCompound>> nbt = getT();
-        for (Pair<BlockState, NbtCompound> infos : nbt) {
-            states.add(infos.getLeft());
-        }
-        return states;
-    }
-
-    /**
-     * method to get the blockState related to the index
-     *
-     * @param index the index of the BlockState
-     * @return the blockState related to the index
-     */
-    public BlockState getBlockState(short index) {
-        return this.statesMap.get(index).getLeft();
-    }
-
-    /**
-     * Method to get the first BlockState
-     *
-     * @return the first BlockState
-     */
-    public BlockState getFirstBlockState() {
-        return this.statesMap.get((short) 0).getLeft();
-    }
-
-    /**
-     * Method to get the last BlockState
-     *
-     * @return the last BlockState
-     */
-    public BlockState getLastBlockState() {
-        return this.statesMap.get((short) (statesMap.size() - 1)).getLeft();
-    }
-
-    /**
-     * Method to get the set of compound that are saved in the comparator
-     *
-     * @return the set of compound
-     */
-    public Set<NbtCompound> getCompounds() {
-        Set<NbtCompound> tags = new HashSet<>();
-        List<Pair<BlockState, NbtCompound>> nbt = getT();
-        for (Pair<BlockState, NbtCompound> infos : nbt) {
-            tags.add(infos.getRight());
-        }
-        return tags;
-    }
-
-    /**
-     * method to get the blockState related to the index
-     *
-     * @param index the index of the BlockState
-     * @return the blockState related to the index
-     */
-    public NbtCompound getCompound(short index) {
-        return this.statesMap.get(index).getRight();
-    }
-
-    /**
-     * Method to get the first BlockState
-     *
-     * @return the first BlockState
-     */
-    public NbtCompound getFirstCompound() {
-        return this.statesMap.get((short) 0).getRight();
-    }
-
-    /**
-     * Method to get the last BlockState
-     *
-     * @return the last BlockState
-     */
-    public NbtCompound getLastCompound() {
-        return this.statesMap.get((short) (statesMap.size() - 1)).getRight();
-    }
-
 
 }
