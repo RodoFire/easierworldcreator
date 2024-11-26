@@ -208,11 +208,6 @@ public class TorusGen extends AbstractFillableBlockShape {
         return new ArrayList<>(chunkMap.values());
     }
 
-    @Override
-    public List<Vec3d> getVec3d() {
-        return List.of();
-    }
-
 
     /**
      * generates a full torus / tore with custom filling
@@ -243,12 +238,12 @@ public class TorusGen extends AbstractFillableBlockShape {
                     int angle = (int) Math.toDegrees(Math.atan2(z, x));
                     double outerRadius = getOuterRadius(angle);
                     double innerRadius = getInnerRadius(angle);
-
+                    int squaredSum = xSquared + zSquared;
                     int outerRadiusSquared = (int) (outerRadius * outerRadius);
                     int innerRadiusSquared = (int) (innerRadius * innerRadius);
-                    int a1 = xSquared + zSquared + outerRadiusSquared - innerRadiusSquared;
+                    int a1 = squaredSum + outerRadiusSquared - innerRadiusSquared;
 
-                    int e = 4 * outerRadiusSquared * (xSquared + zSquared);
+                    int e = 4 * outerRadiusSquared * (squaredSum);
 
                     for (int y = -b; y <= 2 * b * this.verticalTorus - b; y++) {
                         int ySquared = y * y;
@@ -289,10 +284,11 @@ public class TorusGen extends AbstractFillableBlockShape {
 
                     int outerRadiusSquared = (int) (outerRadius * outerRadius);
                     int innerRadiusSquared = (int) (innerRadius * innerRadius);
+                    float squaredSum = xSquared + zSquared;
 
-                    float a1 = xSquared + zSquared + outerRadiusSquared - innerRadiusSquared;
+                    float a1 = squaredSum + outerRadiusSquared - innerRadiusSquared;
 
-                    float e = 4 * outerRadiusSquared * (xSquared + zSquared);
+                    float e = 4 * outerRadiusSquared * (squaredSum);
                     for (float y = -b; y <= 2 * b * this.verticalTorus - b; y += 0.5f) {
                         float ySquared = y * y;
 
@@ -320,7 +316,6 @@ public class TorusGen extends AbstractFillableBlockShape {
                 }
             }
         }
-
     }
 
 
