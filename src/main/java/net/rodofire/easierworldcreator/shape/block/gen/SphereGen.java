@@ -3,7 +3,6 @@ package net.rodofire.easierworldcreator.shape.block.gen;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.StructureWorldAccess;
 import net.rodofire.easierworldcreator.EasierWorldCreator;
 import net.rodofire.easierworldcreator.blockdata.layer.BlockLayer;
@@ -117,45 +116,72 @@ public class SphereGen extends AbstractFillableBlockShape {
         this.radiusZ = radius;
     }
 
+    /**
+     * Gets the direction of the half sphere. * * @return The direction of the half sphere.
+     */
     public Direction getHalfSphereDirection() {
         return direction;
     }
 
+    /**
+     * Sets the direction of the half sphere. * * @param direction The direction to set.
+     */
     public void setHalfSphereDirection(Direction direction) {
         this.direction = direction;
     }
 
+    /**
+     * Checks if it is a half sphere. * * @return The type of the half sphere.
+     */
     public SphereType isHalfSphere() {
         return halfSphere;
     }
 
+    /**
+     * Sets the half sphere type. * * @param halfSphere The half sphere type to set.
+     */
     public void setHalfSphere(SphereType halfSphere) {
         this.halfSphere = halfSphere;
-    }
+    } /*---------- Radius Related ----------*/
 
-
-    /*---------- Radius Related ----------*/
-
+    /**
+     * Gets the X radius of the sphere. * * @return The X radius.
+     */
     public int getRadiusX() {
         return radiusX;
     }
 
+    /**
+     * Sets the X radius of the sphere. * * @param radiusX The X radius to set.
+     */
     public void setRadiusX(int radiusX) {
         this.radiusX = radiusX;
     }
 
+    /**
+     * Gets the Y radius of the sphere. * * @return The Y radius.
+     */
     public int getRadiusY() {
         return radiusY;
     }
 
+    /**
+     * Sets the Y radius of the sphere. * * @param radiusY The Y radius to set.
+     */
     public void setRadiusY(int radiusY) {
         this.radiusY = radiusY;
     }
 
+    /**
+     * Gets the Z radius of the sphere. * * @return The Z radius.
+     */
     public int getRadiusZ() {
         return radiusZ;
     }
 
+    /**
+     * Sets the Z radius of the sphere. * * @param radiusZ The Z radius to set.
+     */
     public void setRadiusZ(int radiusZ) {
         this.radiusZ = radiusZ;
     }
@@ -165,10 +191,6 @@ public class SphereGen extends AbstractFillableBlockShape {
         return this.getSphereCoordinates();
     }
 
-    @Override
-    public List<Vec3d> getVec3d() {
-        return List.of();
-    }
 
     //calculate and return the coordinates
     public List<Set<BlockPos>> getSphereCoordinates() {
@@ -369,8 +391,17 @@ public class SphereGen extends AbstractFillableBlockShape {
         }
     }
 
+    /**
+     * enum to define the type of the sphere
+     */
     public enum SphereType {
+        /**
+         * the sphere will be cut in half
+         */
         HALF,
+        /**
+         * default sphere
+         */
         DEFAULT
     }
 

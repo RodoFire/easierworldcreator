@@ -139,63 +139,149 @@ public class TorusGen extends AbstractFillableBlockShape {
         this.outerRadiusZ = outerRadius;
     }
 
+    /**
+     * Gets the inner radius of the torus along the X-axis.
+     *
+     * @return the inner radius along the X-axis.
+     */
     public int getInnerRadiusX() {
         return innerRadiusX;
     }
 
+    /**
+     * Sets the inner radius of the torus along the X-axis.
+     *
+     * @param innerRadiusX the inner radius to set along the X-axis.
+     */
     public void setInnerRadiusX(int innerRadiusX) {
         this.innerRadiusX = innerRadiusX;
     }
 
+    /**
+     * Gets the outer radius of the torus along the X-axis.
+     *
+     * @return the outer radius along the X-axis.
+     */
     public int getOuterRadiusX() {
         return outerRadiusX;
     }
 
+    /**
+     * Sets the outer radius of the torus along the X-axis.
+     *
+     * @param outerRadiusX the outer radius to set along the X-axis.
+     */
     public void setOuterRadiusX(int outerRadiusX) {
         this.outerRadiusX = outerRadiusX;
     }
 
+    /**
+     * Gets the inner radius of the torus along the Z-axis.
+     *
+     * @return the inner radius along the Z-axis.
+     */
     public int getInnerRadiusZ() {
         return innerRadiusZ;
     }
 
+    /**
+     * Sets the inner radius of the torus along the Z-axis.
+     *
+     * @param innerRadiusZ the inner radius to set along the Z-axis.
+     */
     public void setInnerRadiusZ(int innerRadiusZ) {
         this.innerRadiusZ = innerRadiusZ;
     }
 
+    /**
+     * Gets the outer radius of the torus along the Z-axis.
+     *
+     * @return the outer radius along the Z-axis.
+     */
     public int getOuterRadiusZ() {
         return outerRadiusZ;
     }
 
+    /**
+     * Sets the outer radius of the torus along the Z-axis.
+     *
+     * @param outerRadiusZ the outer radius to set along the Z-axis.
+     */
     public void setOuterRadiusZ(int outerRadiusZ) {
         this.outerRadiusZ = outerRadiusZ;
     }
 
-
+    /**
+     * Gets the type of the torus.
+     *
+     * <p>The torus type determines the configuration of the torus, such as whether it is hollow, solid, or has other specific properties.</p>
+     *
+     * @return the {@link TorusType} of the torus.
+     */
     public TorusType getTorusType() {
         return torusType;
     }
 
+    /**
+     * Sets the type of the torus.
+     *
+     * <p>The torus type determines the configuration of the torus, such as whether it is hollow, solid, or has other specific properties.</p>
+     *
+     * @param torusType the {@link TorusType} to set.
+     */
     public void setTorusType(TorusType torusType) {
         this.torusType = torusType;
     }
 
+    /**
+     * Gets the vertical torus ratio.
+     *
+     * <p>The vertical torus determines the percentage of the torus's height relative to its overall dimensions.</p>
+     *
+     * @return the vertical torus ratio as a float.
+     */
     public float getVerticalTorus() {
         return verticalTorus;
     }
 
+    /**
+     * Sets the vertical torus ratio.
+     *
+     * <p>The vertical torus determines the percentage of the torus's height relative to its overall dimensions.</p>
+     *
+     * @param verticalTorus the vertical torus ratio to set, as a float.
+     */
     public void setVerticalTorus(float verticalTorus) {
         this.verticalTorus = verticalTorus;
     }
 
+    /**
+     * Gets the horizontal torus ratio.
+     *
+     * <p>The horizontal torus determines the percentage of the torus's width relative to its overall dimensions.</p>
+     *
+     * @return the horizontal torus ratio as a float.
+     */
     public float getHorizontalTorus() {
         return horizontalTorus;
     }
 
+    /**
+     * Sets the horizontal torus ratio.
+     *
+     * <p>The horizontal torus determines the percentage of the torus's width relative to its overall dimensions.</p>
+     *
+     * @param horizontalTorus the horizontal torus ratio to set, as a float.
+     */
     public void setHorizontalTorus(float horizontalTorus) {
         this.horizontalTorus = horizontalTorus;
     }
 
+    /**
+     * Method to get all the BlockPos needed to place the shape
+     *
+     * @return a list that contain divided BlockPos depending in the chunkPos
+     */
     @Override
     public List<Set<BlockPos>> getBlockPos() {
         setTorusFill();

@@ -1,7 +1,6 @@
 package net.rodofire.easierworldcreator.shape.block.gen;
 
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.StructureWorldAccess;
 import net.rodofire.easierworldcreator.blockdata.blocklist.basic.DefaultBlockList;
 import net.rodofire.easierworldcreator.blockdata.layer.BlockLayer;
@@ -48,11 +47,6 @@ public class DefaultBlockShapeGen extends AbstractBlockShape {
 
     @Override
     public List<Set<BlockPos>> getBlockPos() {
-        return List.of();
-    }
-
-    @Override
-    public List<Vec3d> getVec3d() {
         return List.of();
     }
 }

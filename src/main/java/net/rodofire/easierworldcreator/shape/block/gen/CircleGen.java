@@ -2,7 +2,6 @@ package net.rodofire.easierworldcreator.shape.block.gen;
 
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
-import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.StructureWorldAccess;
 import net.rodofire.easierworldcreator.blockdata.layer.BlockLayer;
 import net.rodofire.easierworldcreator.shape.block.instanciator.AbstractBlockShape;
@@ -76,6 +75,8 @@ public class CircleGen extends AbstractFillableBlockShape {
     }
 
     /**
+     * init a circle generator
+     *
      * @param world       the world the spiral will spawn in
      * @param pos         the center of the spiral
      * @param placeMoment define the moment where the shape will be placed
@@ -89,31 +90,68 @@ public class CircleGen extends AbstractFillableBlockShape {
 
 
     /*---------- Radius Related ----------*/
+
+    /**
+     * method to get the radius of the circle
+     *
+     * @return the radius of the circle on the x-axis
+     */
     public int getRadiusX() {
         return radiusX;
     }
 
+    /**
+     * method to set the radius of the circle
+     *
+     * @param radiusX the radius that will be set on the x-axis
+     */
     public void setRadiusX(int radiusX) {
         this.radiusX = radiusX;
     }
 
+    /**
+     * method to get the radius of the circle
+     *
+     * @return the radius of the circle on the z-axis
+     */
     public int getRadiusZ() {
         return radiusZ;
     }
 
+    /**
+     * method to set the radius of the circle
+     *
+     * @param radiusZ the radius that will be set on the z-axis
+     */
     public void setRadiusZ(int radiusZ) {
         this.radiusZ = radiusZ;
     }
 
+    /**
+     * method to add the radius of the circle
+     *
+     * @param radiusX the radius that will be added on the x-axis
+     */
     public void addRadiusX(int radiusX) {
         this.radiusX += radiusX;
     }
 
-    public void addRadiusY(int radiusY) {
-        this.radiusZ += radiusY;
+    /**
+     * method to add the radius of the circle
+     *
+     * @param radiusZ the radius that will be added on the z-axis
+     */
+    public void addRadiusY(int radiusZ) {
+        this.radiusZ += radiusZ;
     }
 
     /*---------- Place Structure ----------*/
+
+    /**
+     * method to get all the pos of the circle
+     *
+     * @return the blockPos of the circle. The List is divided into chunkPos, allowing for parallel modification
+     */
     @Override
     public List<Set<BlockPos>> getBlockPos() {
         if (this.getFillingType() == AbstractFillableBlockShape.Type.HALF) {
@@ -126,11 +164,6 @@ public class CircleGen extends AbstractFillableBlockShape {
             return this.generateEmptyOval();
         }
         return this.generateFullOval();
-    }
-
-    @Override
-    public List<Vec3d> getVec3d() {
-        return null;
     }
 
     /**

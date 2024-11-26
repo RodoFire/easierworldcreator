@@ -15,21 +15,21 @@ import java.util.*;
  * <p>
  * Class to manage a {@code List<BlockList>}. It is composed of a list of BlockList and a Map of indexes.
  * </p>
- * <p>
- * For better performance:
- * <li>Instead of searching for a {@code BlockState} inside the list, we use the {@code indexMap}.</li>
- * <li>The map allows us to get the place of the related {@code BlockState} in the {@code posList}.</li>
- * <li>Instead of having a time complexity of O(n), we get O(1) by using only a small amount of memory in more.</li>
- * </p>
+ * For better performance:<ul>
+ * <li>Instead of searching for a {@code BlockState} inside the list, we use the {@code indexMap}.
+ * <li>The map allows us to get the place of the related {@code BlockState} in the {@code posList}.
+ * <li>Instead of having a time complexity of O(n), we get O(1) by using only a small amount of memory in more.
+ * </ul>
  * <br>
- * <p>
  * The class provides some useful methods:
+ * <ul>
  * <li> avoid the duplicate of BlockState
- * (that can be pretty annoying or counter productive as well as having a performance impact in the case where a lot {@link BlockState} are duplicated).</li>
- * <li> ability to sort each {@link BlockPos} related to one {@code T}</li>
- * <li> convert this {@link BlockListManager} into a {@link OrderedBlockListComparator} that would allow for more flexibility on how are the BlockPos kept</li>
- * <li> provides some custom getters.</li>
- * </p>
+ * (that can be pretty annoying or counterproductive
+ * as well as having a performance impact in the case where a lot {@link BlockState} are duplicated).
+ * <li> ability to sort each {@link BlockPos} related to one {@code T}
+ * <li> convert this {@link BlockListManager} into a {@link OrderedBlockListComparator}
+ * that would allow for more flexibility on how are the BlockPos kept
+ * <li> provides some custom getters.</ul>
  *
  * @param <T> The type of the {@link BlockListManager} that will be managed by the comparator
  * @param <U> The type of the {@code BlockData}. This represents everything to describe the {@link Block}.
@@ -49,11 +49,12 @@ public abstract class BlockListComparator<T extends DefaultBlockList, U, V exten
     protected List<T> blockLists = new ArrayList<>();
     /**
      * Map used for better performance:
-     * <li>Instead of searching for a {@code BlockState} inside the list, we use the {@code indexMap}.</li>
-     * <li>The map allows us to get the place of the related {@code BlockState} in the {@code posList}.</li>
-     * <li>Instead of having a time complexity of O(n), we get O(1) by using only a small amount of memory in more.</li>
-     * </p>
-     * <p> params: {@code <U>} The type of the {@code BlockData}. This represents everything to describe the {@link Block}.
+     * <ul>
+     * <li>Instead of searching for a {@code BlockState} inside the list, we use the {@code indexMap}.
+     * <li>The map allows us to get the place of the related {@code BlockState} in the {@code posList}.
+     * <li>Instead of having a time complexity of O(n), we get O(1) by using only a small amount of memory in more.
+     * </ul>
+     * <p> Params: {@code <U>} The type of the {@code BlockData}. This represents everything to describe the {@link Block}.
      * Usually, it would be {@link BlockState}. But there are some cases that require more data like NbtCompounds.
      * </p>
      */
@@ -249,7 +250,7 @@ public abstract class BlockListComparator<T extends DefaultBlockList, U, V exten
      * @param sorter the sorter that will sort the BlockPos
      * @return the sorted comparator related to this object
      */
-    public V getIndividualSorted(BlockSorter sorter) {
+    public V getOrderedSorted(BlockSorter sorter) {
         return sorter.sortBlockList(this.getOrdered());
     }
 }

@@ -2,7 +2,6 @@ package net.rodofire.easierworldcreator.shape.block.gen;
 
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
-import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.StructureWorldAccess;
 import net.rodofire.easierworldcreator.shape.block.instanciator.AbstractBlockShape;
 import net.rodofire.easierworldcreator.shape.block.instanciator.AbstractFillableBlockShape;
@@ -13,52 +12,6 @@ import org.jetbrains.annotations.NotNull;
 import java.util.*;
 
 /*
-
-Characters
-
-100
-Brightness
-
-100%
-Contrast
-
-100%
-Saturation
-
-100%
-Hue
-
-0°
-Grayscale
-
-0%
-Sepia
-
-0%
-Invert Colors
-
-0%
- Thresholding
-
-128
- Sharpness
-
-9
- Edge Detection
-
-1
-ASCII gradient
-
-Normal
-Space Density
-
-1
-Quality Enhancements
-
-None
-Transparent frame
-
-0px
 
                                         @@@@@@@@@@@@@@@@@@@@
                                     @@@@@#*++++++++++++++*#@@@@@
@@ -123,8 +76,10 @@ Transparent frame
  * <p> - Since 2.1.0, the shape doesn't return a {@link List<BlockPos>} but it returns instead a {@code List<Set<BlockPos>>}
  * <p> - Before 2.1.0, the BlockPos list was a simple list.
  * <p> - Starting from 2.1.0, the shapes return a list of {@link ChunkPos} that has a set of {@link BlockPos}
- * <p>The change from {@link List} to {@link Set} was done to avoid duplicates BlockPos which resulted in unnecessary calculations.
- * <p>this allow easy multithreading for the Block assignment done in the {@link AbstractBlockShape} which result in better performance;
+ * <p>The change from {@link List} to {@link Set} was done to avoid duplicates BlockPos,
+ * which resulted in unnecessary calculations.
+ * <p>this allows easy multithreading for the Block assignment
+ * done in the {@link AbstractBlockShape} which result in better performance;
  * </p>
  */
 @SuppressWarnings("unused")
@@ -134,6 +89,8 @@ public class CylinderGen extends AbstractFillableBlockShape {
     private int height;
 
     /**
+     * init a Cylinder object
+     *
      * @param world           the world the spiral will spawn in
      * @param pos             the center of the spiral
      * @param placeMoment     define the moment where the shape will be placed
@@ -155,6 +112,8 @@ public class CylinderGen extends AbstractFillableBlockShape {
     }
 
     /**
+     * init a cylinder object
+     *
      * @param world       the world the spiral will spawn in
      * @param pos         the center of the spiral
      * @param placeMoment define the moment where the shape will be placed
@@ -169,37 +128,86 @@ public class CylinderGen extends AbstractFillableBlockShape {
     }
 
 
-    /*---------- Height Related ----------*/
+    /**
+     * Sets the height of the cylinder.
+     *
+     * <p>The height defines the vertical size of the cylinder.</p>
+     *
+     * @param height the height of the cylinder, in units.
+     */
     public void setHeight(int height) {
         this.height = height;
     }
 
+    /**
+     * Gets the height of the cylinder.
+     *
+     * <p>The height represents the vertical size of the cylinder.</p>
+     *
+     * @return the height of the cylinder, in units.
+     */
     public int getHeight() {
         return height;
     }
 
-    /*---------- Radius Related ---------*/
+    /**
+     * Sets the radius of the cylinder along the X-axis.
+     *
+     * <p>The radius along the X-axis determines the horizontal size of the cylinder in the X direction.</p>
+     *
+     * @param radius the radius of the cylinder along the X-axis, in units.
+     */
     public void setRadiusX(int radius) {
         this.radiusX = radius;
     }
 
+    /**
+     * Gets the radius of the cylinder along the X-axis.
+     *
+     * <p>The radius along the X-axis determines the horizontal size of the cylinder in the X direction.</p>
+     *
+     * @return the radius of the cylinder along the X-axis, in units.
+     */
     public int getRadiusX() {
         return radiusX;
     }
 
+    /**
+     * Sets the radius of the cylinder along the Z-axis.
+     *
+     * <p>The radius along the Z-axis determines the horizontal size of the cylinder in the Z direction.</p>
+     *
+     * @param radius the radius of the cylinder along the Z-axis, in units.
+     */
     public void setRadiusZ(int radius) {
         this.radiusZ = radius;
     }
 
+    /**
+     * Gets the radius of the cylinder along the Z-axis.
+     *
+     * <p>The radius along the Z-axis determines the horizontal size of the cylinder in the Z direction.</p>
+     *
+     * @return the radius of the cylinder along the Z-axis, in units.
+     */
     public int getRadiusZ() {
         return radiusZ;
     }
 
+    /**
+     * Method to get the BlockPos of the shape
+     *
+     * @return the blockPos divided into chunkPos
+     */
     @Override
     public List<Set<BlockPos>> getBlockPos() {
         return this.generateCylinder();
     }
 
+    /**
+     * Method to get the BlockPos of the shape
+     * @return the blockPos divided into chunkPos
+     */
     public List<Set<BlockPos>> generateCylinder() {
 
         Map<ChunkPos, Set<BlockPos>> chunkMap = new HashMap<>();
@@ -221,6 +229,7 @@ public class CylinderGen extends AbstractFillableBlockShape {
 
     /**
      * this generates a full cylinder
+     * @param chunkMap the Map of ChunkPos that will be converted into {@code List<Set<BlockPos>>}
      */
     public void generateFullCylinder(Map<ChunkPos, Set<BlockPos>> chunkMap) {
         int radiusXSquared = radiusX * radiusX;
@@ -293,7 +302,8 @@ public class CylinderGen extends AbstractFillableBlockShape {
     }
 
     /**
-     * this generates a full cylinder
+     * this generates a full cylinder.
+     * @param chunkMap the map that will be converted into {@code List<Set>blockPos>>}
      */
     public void generateEmptyCylinder(Map<ChunkPos, Set<BlockPos>> chunkMap) {
         //Rotating a shape requires more blocks.
@@ -323,9 +333,5 @@ public class CylinderGen extends AbstractFillableBlockShape {
         }
     }
 
-    @Override
-    public List<Vec3d> getVec3d() {
-        return List.of();
-    }
 
 }
