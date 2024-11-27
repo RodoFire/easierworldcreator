@@ -335,10 +335,6 @@ public class SpiralGen extends AbstractBlockShape {
         return new ArrayList<>(chunkMap.values());
     }
 
-    @Override
-    public List<Vec3d> getVec3d() {
-        return List.of();
-    }
 
     /**
      * generates a simple spiral
@@ -350,15 +346,19 @@ public class SpiralGen extends AbstractBlockShape {
             Easierworldcreator.LOGGER.error("param turn can't be <= 0");
         }*/
         int maxLarge = Math.max(Math.max(radiusX.getLeft(), radiusX.getRight()), Math.max(radiusZ.getLeft(), radiusZ.getRight()));
-        double f = (this.turnNumber * maxLarge);
-        double a = (double) 360 / (height * maxLarge);
+        float f = (this.turnNumber * maxLarge);
+        float a = (float) 360 / (height * maxLarge);
+        float limit = maxLarge * this.turnNumber * height;
+
+
         if (this.getYRotation() % 180 == 0 && this.getZRotation() % 180 == 0 && this.getSecondYRotation() == 0) {
-            for (double i = 0; i < maxLarge * this.turnNumber * height; i++) {
-                float percentage = (float) i / (maxLarge * this.turnNumber * height);
+            for (float i = 0; i < limit; i++) {
+                float ai = a * i + spiralOffset;
+                float percentage = i / (limit);
                 float radiusX = this.getXRadius(percentage);
                 float radiusZ = this.getZRadius(percentage);
-                int x = (int) (radiusX * FastMaths.getFastCos((float) (a * i + spiralOffset)));
-                int z = (int) (radiusZ * FastMaths.getFastSin((float) (a * i + spiralOffset)));
+                int x = (int) (radiusX * FastMaths.getFastCos(ai));
+                int z = (int) (radiusZ * FastMaths.getFastSin(ai));
                 int y = (int) (i / f);
                 BlockPos pos1 = new BlockPos(pos.getX() + x, pos.getY() + y, pos.getZ() + z);
                 if (!this.biggerThanChunk && WorldGenUtil.isPosAChunkFar(pos1, this.getPos()))
@@ -366,13 +366,14 @@ public class SpiralGen extends AbstractBlockShape {
                 WorldGenUtil.modifyChunkMap(pos1, chunkMap);
             }
         } else {
-            for (double i = 0; i < maxLarge * this.turnNumber * height; i += 0.5) {
-                float percentage = (float) i / (maxLarge * this.turnNumber * height);
+            for (float i = 0; i < limit; i += 0.5f) {
+                float ai = a * i + spiralOffset;
+                float percentage = i / (limit);
                 float radiusX = this.getXRadius(percentage);
                 float radiusZ = this.getZRadius(percentage);
-                float x = radiusX * FastMaths.getFastCos((float) (a * i + spiralOffset));
-                float z = radiusZ * FastMaths.getFastSin((float) (a * i + spiralOffset));
-                float y = (float) (i / f);
+                float x = radiusX * FastMaths.getFastCos(ai);
+                float z = radiusZ * FastMaths.getFastSin(ai);
+                float y = i / f;
                 BlockPos pos2 = this.getCoordinatesRotation(x, y, z, pos);
                 if (!this.biggerThanChunk && WorldGenUtil.isPosAChunkFar(pos2, this.getPos()))
                     this.biggerThanChunk = true;
@@ -410,14 +411,16 @@ public class SpiralGen extends AbstractBlockShape {
             Easierworldcreator.LOGGER.error("param turn can't be <= 0");
         }*/
         int maxLarge = Math.max(Math.max(radiusX.getLeft(), radiusX.getRight()), Math.max(radiusZ.getLeft(), radiusZ.getRight()));
-        double f = (this.turnNumber * maxLarge);
-        double a = (double) 360 / (height * maxLarge);
+        float f = (this.turnNumber * maxLarge);
+        float a = (float) 360 / (height * maxLarge);
+        float limit = maxLarge * this.turnNumber * height;
 
 
         if (this.getYRotation() % 180 == 0 && this.getZRotation() % 180 == 0 && this.getSecondYRotation() == 0 && this.helicoidAngle.getLeft() < 45 && this.helicoidAngle.getLeft() > -45 && this.helicoidAngle.getRight() < 45 && this.helicoidAngle.getRight() > -45) {
-            for (double i = 0; i < maxLarge * this.turnNumber * height; i++) {
+            for (float i = 0; i < limit; i++) {
+                float ai = a * i + spiralOffset;
 
-                float percentage = (float) i / (maxLarge * this.turnNumber * height);
+                float percentage = i / (limit);
                 float radiusX = this.getXRadius(percentage);
                 float radiusZ = this.getZRadius(percentage);
                 float gainX = radiusX / maxLarge;
@@ -429,11 +432,13 @@ public class SpiralGen extends AbstractBlockShape {
                 float innerRadiusZSquared = innerRadiusZ * innerRadiusZ;
 
                 int helicoidAngle = getAngle(percentage);
+                float xpr = gainX * FastMaths.getFastCos(ai);
+                float zpr = gainZ * FastMaths.getFastSin(ai);
 
-                for (double j = 0; j <= maxLarge; j++) {
+                for (float j = 0; j <= maxLarge; j++) {
 
-                    int x = (int) (gainX * j * FastMaths.getFastCos((float) (a * i + spiralOffset)));
-                    int z = (int) (gainZ * j * FastMaths.getFastSin((float) (a * i + spiralOffset)));
+                    int x = (int) (xpr * j);
+                    int z = (int) (zpr * j);
                     double distance = FastMaths.getLength(x, z);
 
 
@@ -455,9 +460,9 @@ public class SpiralGen extends AbstractBlockShape {
                 }
             }
         } else {
-            for (double i = 0; i < maxLarge * this.turnNumber * height; i += 0.25) {
-
-                float percentage = (float) i / (maxLarge * this.turnNumber * height);
+            for (float i = 0; i < limit; i += 0.25f) {
+                float ai = a * i + spiralOffset;
+                float percentage = i / (limit);
                 float radiusX = this.getXRadius(percentage);
                 float radiusZ = this.getZRadius(percentage);
                 float gainX = radiusX / maxLarge;
@@ -470,12 +475,15 @@ public class SpiralGen extends AbstractBlockShape {
 
                 int helicoidAngle = getAngle(percentage);
 
-                for (double j = 0; j <= maxLarge; j++) {
+                float xpr = gainX * FastMaths.getFastCos(ai);
+                float zpr = gainZ * FastMaths.getFastSin(ai);
 
-                    int x = (int) (gainX * j * FastMaths.getFastCos((float) (a * i + spiralOffset)));
-                    int z = (int) (gainZ * j * FastMaths.getFastSin((float) (a * i + spiralOffset)));
+                for (float j = 0; j <= maxLarge; j++) {
 
-                    double distance = FastMaths.getLength(x, z);
+                    int x = (int) (xpr * j);
+                    int z = (int) (zpr * j);
+
+                    float distance = FastMaths.getLength(x, z);
 
 
                     boolean bl = true;
@@ -514,15 +522,26 @@ public class SpiralGen extends AbstractBlockShape {
      * set every possible spiral shape of the mod
      */
     public enum SpiralType {
-        //default shape
+        /**
+         * default shape
+         */
         DEFAULT,
-        //helicoid shape, blocks are posed between the center axis and the outline
+        /**
+         * helicoid shape, blocks are posed between the center axis and the outline
+         */
         HELICOID,
-        //helicoid shape, blocks are posed between the center of the axis and the outline
+        /**
+         * helicoid shape, blocks are posed between the center of the axis and the outline
+         */
         HALF_HELICOID,
         CUSTOM_HELICOID,
-        //helicoid shape,this generates 2 helicoid with an opposite direction
+        /**
+         * helicoid shape,this generates helicoid 2 with an opposite direction
+         */
         DOUBLE_HELICOID,
+        /**
+         * helicoid shape,this generates helicoid 2 with a hole in the middle with an opposite direction
+         */
         HALF_DOUBLE_HELICOID,
         CUSTOM_DOUBLE_HELICOID,
         LARGE_OUTLINE
