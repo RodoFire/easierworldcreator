@@ -16,6 +16,7 @@ public class GenTest {
     }
 
     public static void tests(StructureWorldAccess world) {
-        TorusGenTest.testTorusGen(world);
+        //TorusGenTest.testTorusGen(world);
+        SpiralTest.generateEllipsoidSpiralTest(world);
     }
 }

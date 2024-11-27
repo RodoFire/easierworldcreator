@@ -24,11 +24,13 @@ import net.minecraft.world.gen.placementmodifier.PlacementModifier;
 import net.minecraft.world.gen.placementmodifier.RarityFilterPlacementModifier;
 import net.minecraft.world.gen.placementmodifier.SquarePlacementModifier;
 import net.rodofire.easierworldcreator.EWCTest;
-import net.rodofire.easierworldcreator.shapegen.SphereGen;
-import net.rodofire.easierworldcreator.shapeutil.BlockLayer;
-import net.rodofire.easierworldcreator.shapeutil.ShapeBase;
-import net.rodofire.easierworldcreator.shapeutil.ShapeLayer;
-import net.rodofire.easierworldcreator.shapeutil.StructurePlaceAnimator;
+import net.rodofire.easierworldcreator.blockdata.layer.BlockLayer;
+import net.rodofire.easierworldcreator.blockdata.layer.BlockLayerComparator;
+import net.rodofire.easierworldcreator.blockdata.sorter.BlockSorter;
+import net.rodofire.easierworldcreator.placer.blocks.animator.StructurePlaceAnimator;
+import net.rodofire.easierworldcreator.shape.block.gen.SphereGen;
+import net.rodofire.easierworldcreator.shape.block.instanciator.AbstractBlockShapeBase;
+import net.rodofire.easierworldcreator.shape.block.instanciator.AbstractBlockShapeLayer;
 
 import java.util.List;
 import java.util.Optional;
@@ -47,13 +49,14 @@ public class FeaturesRelated {
 
             long startTimeCartesian = System.nanoTime();
             //NbtPlacer placer = new NbtPlacer(world, new Identifier("village/plains/houses/plains_accessory_1"));
-            SphereGen sphereGen = new SphereGen(world, pos, ShapeBase.PlaceMoment.ANIMATED_OTHER, 32);
-            StructurePlaceAnimator animator = new StructurePlaceAnimator(world, StructurePlaceAnimator.AnimatorType.RANDOM, StructurePlaceAnimator.AnimatorTime.TICKS);
+            SphereGen sphereGen = new SphereGen(world, pos, AbstractBlockShapeBase.PlaceMoment.ANIMATED_OTHER, 32);
+            BlockSorter sorter = new BlockSorter(BlockSorter.BlockSorterType.RANDOM);
+            sorter.setCenterPoint(pos);
+            StructurePlaceAnimator animator = new StructurePlaceAnimator(world, sorter, StructurePlaceAnimator.AnimatorTime.CONSTANT_TICKS);
             animator.setTicks(100);
-            animator.setCenterPoint(pos);
             sphereGen.setAnimator(animator);
-            sphereGen.setBlockLayers(new BlockLayer(List.of(Blocks.GRASS_BLOCK.getDefaultState(), Blocks.GRASS_BLOCK.getDefaultState(), Blocks.COARSE_DIRT.getDefaultState()), 1), new BlockLayer(List.of(Blocks.STONE.getDefaultState(), Blocks.COBBLESTONE.getDefaultState(), Blocks.MOSSY_COBBLESTONE.getDefaultState(), Blocks.TUFF.getDefaultState(), Blocks.STONE.getDefaultState(), Blocks.STONE.getDefaultState()), 1));
-            sphereGen.setLayersType(ShapeLayer.LayersType.SURFACE);
+            sphereGen.setBlockLayer(new BlockLayerComparator(List.of(new BlockLayer(List.of(Blocks.GRASS_BLOCK.getDefaultState(), Blocks.GRASS_BLOCK.getDefaultState(), Blocks.COARSE_DIRT.getDefaultState()), 1), new BlockLayer(List.of(Blocks.STONE.getDefaultState(), Blocks.COBBLESTONE.getDefaultState(), Blocks.MOSSY_COBBLESTONE.getDefaultState(), Blocks.TUFF.getDefaultState(), Blocks.STONE.getDefaultState(), Blocks.STONE.getDefaultState()), 1))));
+            sphereGen.setLayersType(AbstractBlockShapeLayer.LayersType.SURFACE);
 
             sphereGen.place();
 
