@@ -94,7 +94,6 @@ public abstract class OrderedBlockListComparator<T> {
             //we compare the short with the blockState value
             short sho = this.statesMap.inverse().get(state);
             for (BlockPos pos : posList) {
-                this.posList.remove(pos);
                 posMap.put(pos, sho);
                 this.posList.add(pos);
             }
@@ -104,7 +103,6 @@ public abstract class OrderedBlockListComparator<T> {
             short statesSize = (short) this.statesMap.size();
             this.statesMap.put(statesSize, state);
             for (BlockPos pos : posList) {
-                this.posList.remove(pos);
                 this.posMap.put(pos, statesSize);
                 this.posList.add(pos);
             }
@@ -254,7 +252,9 @@ public abstract class OrderedBlockListComparator<T> {
 
     public Pair<BlockPos, T> removeBlockPosPair(int index) {
         BlockPos pos = posList.remove(index);
-        short id = this.posMap.remove(pos);
+        Short id = this.posMap.remove(pos);
+        if (id == null)
+            return null;
         return new Pair<>(pos, this.statesMap.get(id));
     }
 
