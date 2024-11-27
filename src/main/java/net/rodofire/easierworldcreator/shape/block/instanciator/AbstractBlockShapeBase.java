@@ -2,13 +2,12 @@ package net.rodofire.easierworldcreator.shape.block.instanciator;
 
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.StructureWorldAccess;
-import net.rodofire.easierworldcreator.EasierWorldCreator;
-import net.rodofire.easierworldcreator.blockdata.layer.BlockLayer;
-import net.rodofire.easierworldcreator.particledata.layer.ParticleLayer;
+import net.rodofire.easierworldcreator.blockdata.layer.BlockLayerComparator;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.List;
-
+/**
+ * Basic Class for Block Shape generation. This includes the basic needs for the shape generation.
+ */
 @SuppressWarnings("unused")
 public abstract class AbstractBlockShapeBase {
     @NotNull
@@ -19,10 +18,19 @@ public abstract class AbstractBlockShapeBase {
 
     @NotNull
     private PlaceMoment placeMoment;
+    private BlockLayerComparator blockLayer;
 
 
-    private List<BlockLayer> blockLayers;
-    private List<ParticleLayer> particleLayers;
+    /**
+     * boolean used to determine if we have to use the custom chunk building provided by the mod or not
+     */
+    protected boolean biggerThanChunk = false;
+
+    /**
+     * get the number of availible threads
+     */
+    protected static final int THREAD_COUNT = Runtime.getRuntime().availableProcessors();
+
 
     /**
      * init the ShapeBase
@@ -38,79 +46,68 @@ public abstract class AbstractBlockShapeBase {
     }
 
 
-    //boolean used to determine if we have to use the custom chunk building provided by the mod or not
-    protected boolean biggerThanChunk = false;
+    /**
+     * Returns the {@code BlockLayerComparator} associated with this object.
+     *
+     * @return the current {@code BlockLayerComparator}
+     */
+    public BlockLayerComparator getBlockLayer() {
+        return blockLayer;
+    }
 
-    protected static final int THREAD_COUNT = Runtime.getRuntime().availableProcessors();
-
+    /**
+     * Sets the {@code BlockLayerComparator} for this object.
+     *
+     * @param blockLayer the {@code BlockLayerComparator} to set
+     */
+    public void setBlockLayer(BlockLayerComparator blockLayer) {
+        this.blockLayer = blockLayer;
+    }
 
     /*----------- Pos Related ----------*/
+
+    /**
+     * Retrieves the {@code BlockPos} associated with this object.
+     *
+     * @return the current {@code BlockPos}
+     */
     public @NotNull BlockPos getPos() {
         return pos;
     }
 
+    /**
+     * Sets the {@code BlockPos} for this object.
+     *
+     * @param pos the {@code BlockPos} to set
+     * @throws NullPointerException if the provided {@code pos} is null
+     */
     public void setPos(@NotNull BlockPos pos) {
         this.pos = pos;
     }
 
+    /**
+     * Adds the given offset to the current {@code BlockPos}.
+     *
+     * @param pos1 the {@code BlockPos} to add as an offset
+     */
     public void addPosOffset(BlockPos pos1) {
         this.pos.add(pos1);
     }
 
+    /**
+     * Retrieves the {@code StructureWorldAccess} associated with this object.
+     *
+     * @return the current {@code StructureWorldAccess}
+     */
     public @NotNull StructureWorldAccess getWorld() {
         return world;
     }
 
-
-
-
-    /*---------- Layers Related ----------*/
-
-    public void addBlockLayers(List<BlockLayer> blockLayers) {
-        this.blockLayers.addAll(blockLayers);
-    }
-
-    public void addBlockLayer(BlockLayer blockLayer) {
-        this.blockLayers.add(blockLayer);
-    }
-
-    public void removeBlockLayer(List<BlockLayer> blockLayers) {
-        this.blockLayers.removeAll(blockLayers);
-    }
-
-    public void removeBlockLayer(BlockLayer blockLayer) {
-        this.blockLayers.remove(blockLayer);
-    }
-
-    public void removeBlockLayer(int index) {
-        if (index >= this.blockLayers.size()) {
-            EasierWorldCreator.LOGGER.error("int index >= blockLayer size");
-            throw new IndexOutOfBoundsException("Index: " + index + ", Size: " + this.blockLayers.size());
-        }
-        this.removeBlockLayer(this.blockLayers.get(index));
-    }
-
-    public List<BlockLayer> getBlockLayers() {
-        return this.blockLayers;
-    }
-
-    public void setBlockLayers(List<BlockLayer> blockLayers) {
-        this.blockLayers = blockLayers;
-    }
-
-    public void setBlockLayers(BlockLayer... layers) {
-        this.blockLayers = List.of(layers);
-    }
-
-    public BlockLayer getBlockLayer(int index) {
-        if (index >= this.blockLayers.size()) {
-            EasierWorldCreator.LOGGER.error("int index >= blockLayer size");
-            throw new IndexOutOfBoundsException("Index: " + index + ", Size: " + this.blockLayers.size());
-        }
-        return this.blockLayers.get(index);
-    }
-
-
+    /**
+     * Retrieves the {@code PlaceMoment} associated with this object.
+     *
+     * @return the current {@code PlaceMoment}
+     */
     public @NotNull PlaceMoment getPlaceMoment() {
         return placeMoment;
     }
