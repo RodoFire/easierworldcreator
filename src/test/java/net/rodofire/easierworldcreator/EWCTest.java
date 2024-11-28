@@ -5,7 +5,6 @@ import net.fabricmc.fabric.api.biome.v1.BiomeModifications;
 import net.fabricmc.fabric.api.biome.v1.BiomeSelectors;
 import net.minecraft.world.biome.BiomeKeys;
 import net.minecraft.world.gen.GenerationStep;
-import net.rodofire.easierworldcreator.blockdata.sorter.BlockSortedTest;
 import net.rodofire.easierworldcreator.devtest.FeaturesRelated;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,7 +17,6 @@ public class EWCTest implements ModInitializer {
 
     @Override
     public void onInitialize() {
-        BlockSortedTest.testSorting();
         FeaturesRelated.ModItems.registerModItems();
         FeaturesRelated.ModBlocks.registerModBlocks();
         FeaturesRelated.ModFeatures.addFeatures();
