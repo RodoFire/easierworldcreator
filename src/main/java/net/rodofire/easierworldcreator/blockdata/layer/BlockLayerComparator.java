@@ -79,7 +79,7 @@ public class BlockLayerComparator {
      * @param index the index of the {@code BlockLayer} to retrieve
      * @return the {@code BlockLayer} at the specified index
      */
-    public BlockLayer getLayer(int index) {
+    public BlockLayer get(int index) {
         return this.layers.get(index);
     }
 
@@ -89,7 +89,7 @@ public class BlockLayerComparator {
      * @param index the index of the {@code BlockLayer} to remove
      * @return the removed {@code BlockLayer}
      */
-    public BlockLayer removeLayer(int index) {
+    public BlockLayer remove(int index) {
         return this.layers.remove(index);
     }
 
@@ -166,6 +166,15 @@ public class BlockLayerComparator {
      */
     public int size() {
         return this.layers.size();
+    }
+
+    /**
+     * Method to know if the BlockLayer List is empty
+     *
+     * @return true if it is empty, false if not
+     */
+    public boolean isEmpty() {
+        return this.layers.isEmpty();
     }
 
     /**
