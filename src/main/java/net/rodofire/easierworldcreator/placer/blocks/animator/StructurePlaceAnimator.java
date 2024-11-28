@@ -340,9 +340,9 @@ public class StructurePlaceAnimator {
                 BlockPos pos = info.getLeft();
 
                 if (comparator instanceof CompoundOrderedBlockListComparator cmp) {
-                    state = cmp.getFirstBlockState();
+                    state = cmp.getLastBlockState();
                 } else if (comparator instanceof DefaultOrderedBlockListComparator cmp) {
-                    state = cmp.getFirstBlockState();
+                    state = cmp.getLastBlockState();
                 }
 
                 comparator.placeLastWithDeletion(world);
@@ -355,15 +355,22 @@ public class StructurePlaceAnimator {
             ticksPassed++;
 
             if (ticksPassed == this.ticks && !comparator.isPosEmpty()) {
-                EasierWorldCreator.LOGGER.warn("All ticks completed, but {} blocks are still unplaced. Placing remaining blocks in final tick.", comparator.posSize());
-                for (int i = 0; i < comparator.posSize(); i++) {
-                    comparator.placeFirstWithDeletion(world);
+                int left = comparator.posSize();
+                EasierWorldCreator.LOGGER.info("All ticks completed, but {} blocks are still unplaced. Placing remaining blocks in final tick.", left);
+                for (int i = 0; i < left; i++) {
+                    comparator.placeLastWithDeletion(world);
                 }
+                System.out.println("left" + comparator.posSize());
             }
         });
     }
 
-
+    /**
+     * Method used to calculate the factors of the animator
+     *
+     * @param totalBlocks  the number of blocks that have to be placed
+     * @param randomBlocks the random blocks list in the case of the
+     */
     private void calculateBlockPerTicks(int totalBlocks, List<Integer> randomBlocks) {
         switch (animatorTime) {
             case CONSTANT_TICKS -> {
