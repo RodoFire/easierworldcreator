@@ -6,9 +6,9 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.world.StructureWorldAccess;
 import net.rodofire.easierworldcreator.EasierWorldCreator;
+import net.rodofire.easierworldcreator.maths.FastMaths;
 import net.rodofire.easierworldcreator.placer.blocks.util.BlockPlaceUtil;
 import net.rodofire.easierworldcreator.shape.block.gen.SphereGen;
-import net.rodofire.easierworldcreator.util.FastMaths;
 
 import java.util.List;
 import java.util.Set;

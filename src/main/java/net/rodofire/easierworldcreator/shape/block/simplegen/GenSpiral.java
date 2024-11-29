@@ -6,8 +6,8 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.random.Random;
 import net.minecraft.world.StructureWorldAccess;
 import net.rodofire.easierworldcreator.EasierWorldCreator;
+import net.rodofire.easierworldcreator.maths.FastMaths;
 import net.rodofire.easierworldcreator.shape.block.gen.SpiralGen;
-import net.rodofire.easierworldcreator.util.FastMaths;
 
 import java.util.ArrayList;
 import java.util.List;
