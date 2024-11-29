@@ -2,6 +2,7 @@ package net.rodofire.easierworldcreator.blockdata.layer;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
+import net.minecraft.util.Pair;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -21,6 +22,7 @@ import java.util.Set;
 @SuppressWarnings("unused")
 public class BlockLayer {
     private List<BlockState> blockStates;
+    List<Short> chances;
     private int depth = 1;
     private Set<Block> blocksToForce = new HashSet<>();
     private boolean force;
@@ -33,8 +35,29 @@ public class BlockLayer {
      * @param blocksToForce list of blocks that can be forced by any blockStates of this posList
      */
     public BlockLayer(List<BlockState> states, int depth, Set<Block> blocksToForce) {
-        this.blockStates = new ArrayList<>();
-        this.blockStates.addAll(states);
+        this.blockStates = new ArrayList<>(states);
+        chances = new ArrayList<>();
+        for (int i = 0; i < states.size(); i++) {
+            chances.add((short) 1);
+        }
+        this.depth = depth;
+        this.blocksToForce = new HashSet<>(blocksToForce);
+    }
+
+    /**
+     * init the BlockLayer
+     *
+     * @param states        list of BlockStates
+     * @param depth         depth of the BlockStates
+     * @param blocksToForce list of blocks that can be forced by any blockStates of this posList
+     * @param chances       the chance of the related blockStates being chosen
+     */
+    public BlockLayer(List<BlockState> states, List<Short> chances, int depth, Set<Block> blocksToForce) {
+        this.blockStates = new ArrayList<>(states);
+        this.chances = new ArrayList<>();
+        for (int i = 0; i < states.size(); i++) {
+            this.chances.add(chances.get(i));
+        }
         this.depth = depth;
         this.blocksToForce = new HashSet<>(blocksToForce);
     }
@@ -46,8 +69,11 @@ public class BlockLayer {
      * @param force  set if any block can be replaced by any blockState in this BlockList
      */
     public BlockLayer(List<BlockState> states, boolean force) {
-        this.blockStates = new ArrayList<>();
-        this.blockStates.addAll(states);
+        this.blockStates = new ArrayList<>(states);
+        chances = new ArrayList<>();
+        for (int i = 0; i < states.size(); i++) {
+            chances.add((short) 1);
+        }
         this.force = force;
     }
 
@@ -61,6 +87,8 @@ public class BlockLayer {
     public BlockLayer(BlockState state, int depth, Set<Block> blocksToForce) {
         this.blockStates = new ArrayList<>();
         this.blockStates.add(state);
+        chances = new ArrayList<>();
+        this.chances.add((short) 1);
         this.depth = depth;
         this.blocksToForce = new HashSet<>(blocksToForce);
     }
@@ -74,6 +102,8 @@ public class BlockLayer {
     public BlockLayer(BlockState state, boolean force) {
         this.blockStates = new ArrayList<>();
         this.blockStates.add(state);
+        chances = new ArrayList<>();
+        this.chances.add((short) 1);
         this.force = force;
     }
 
@@ -84,8 +114,11 @@ public class BlockLayer {
      * @param depth  depth of the BlockStates
      */
     public BlockLayer(List<BlockState> states, int depth) {
-        this.blockStates = new ArrayList<>();
-        this.blockStates.addAll(states);
+        this.blockStates = new ArrayList<>(states);
+        chances = new ArrayList<>();
+        for (int i = 0; i < states.size(); i++) {
+            chances.add((short) 1);
+        }
         this.depth = depth;
     }
 
@@ -95,8 +128,25 @@ public class BlockLayer {
      * @param states list of BlockStates
      */
     public BlockLayer(List<BlockState> states) {
-        this.blockStates = new ArrayList<>();
-        this.blockStates.addAll(states);
+        this.blockStates = new ArrayList<>(states);
+        chances = new ArrayList<>();
+        for (int i = 0; i < states.size(); i++) {
+            chances.add((short) 1);
+        }
+    }
+
+    /**
+     * init the BlockLayer
+     *
+     * @param states  list of BlockStates
+     * @param chances the chance of the state being chosen
+     */
+    public BlockLayer(List<BlockState> states, List<Short> chances) {
+        this.blockStates = new ArrayList<>(states);
+        this.chances = new ArrayList<>();
+        for (int i = 0; i < states.size(); i++) {
+            this.chances.add((chances.get(i)));
+        }
     }
 
     /**
@@ -108,6 +158,8 @@ public class BlockLayer {
     public BlockLayer(BlockState state, int depth) {
         this.blockStates = new ArrayList<>();
         this.blockStates.add(state);
+        chances = new ArrayList<>();
+        this.chances.add((short) 1);
         this.depth = depth;
     }
 
@@ -119,6 +171,8 @@ public class BlockLayer {
     public BlockLayer(BlockState state) {
         this.blockStates = new ArrayList<>();
         this.blockStates.add(state);
+        chances = new ArrayList<>();
+        this.chances.add((short) 1);
     }
 
     /**
@@ -149,12 +203,33 @@ public class BlockLayer {
     }
 
     /**
-     * method used to get all the {@link BlockState} in a {@link BlockLayer}
+     * Method used to get all the {@link BlockState} in a {@link BlockLayer}.
+     * The list returned will contain the BlockStates of the list,
+     * where each will be present n times, n being the chance related to that BlockState
      *
      * @return the blockStates list of the layer
      */
     public List<BlockState> getBlockStates() {
-        return blockStates;
+        List<BlockState> state = new ArrayList<>();
+        for (int i = 0; i < this.blockStates.size(); i++) {
+            for (int j = 0; j < this.chances.get(i); j++) {
+                state.add(this.blockStates.get(i));
+            }
+        }
+        return state;
+    }
+
+    /**
+     * method to get the blockState as well as his chance
+     *
+     * @return a list of pair corresponding to blockState as well as his chance
+     */
+    public List<Pair<BlockState, Short>> get() {
+        List<Pair<BlockState, Short>> list = new ArrayList<>();
+        for (int i = 0; i < this.blockStates.size(); i++) {
+            list.add(new Pair<>(this.blockStates.get(i), this.chances.get(i)));
+        }
+        return list;
     }
 
     /**
@@ -163,7 +238,11 @@ public class BlockLayer {
      * @param blocks change the BlockStates of a layer
      */
     public void setBlockStates(List<BlockState> blocks) {
-        this.blockStates = blocks;
+        this.blockStates = new ArrayList<>(blocks);
+        chances = new ArrayList<>();
+        for (int i = 0; i < blocks.size(); i++) {
+            chances.add((short) 1);
+        }
     }
 
     /**
@@ -173,6 +252,7 @@ public class BlockLayer {
      */
     public void addBlockState(BlockState state) {
         this.blockStates.add(state);
+        this.chances.add((short) 1);
     }
 
     /**
@@ -182,6 +262,34 @@ public class BlockLayer {
      */
     public void addBlockStates(List<BlockState> states) {
         this.blockStates.addAll(states);
+        for (int i = 0; i < states.size(); i++) {
+            this.chances.add((short) 1);
+        }
+    }
+
+    /**
+     * add a BlockState to the layer
+     *
+     * @param state  BlockState to be added
+     * @param chance the chance of a blockState being chosen
+     */
+    public void addBlockState(BlockState state, short chance) {
+        this.blockStates.add(state);
+        this.chances.add(chance);
+    }
+
+    /**
+     * add multiple BlockStates to the layer
+     *
+     * @param states  List of BlockState to be added
+     * @param chances the chance list related to the states of a blockState being chosen
+     * @throws IndexOutOfBoundsException in the case, the chance list has a size inferior to the BlockStates chance.
+     */
+    public void addBlockStates(List<BlockState> states, List<Short> chances) {
+        this.blockStates.addAll(states);
+        for (int i = 0; i < states.size(); i++) {
+            this.chances.add(chances.get(i));
+        }
     }
 
     /**
@@ -190,6 +298,9 @@ public class BlockLayer {
      * @param state list of BlockStates that will be removed
      */
     public void removeBlockState(List<BlockState> state) {
+        for (BlockState blockState : state) {
+            this.chances.remove(this.blockStates.indexOf(blockState));
+        }
         this.blockStates.removeAll(state);
     }
 
@@ -199,6 +310,7 @@ public class BlockLayer {
      * @param state BlockState that will be removed
      */
     public void removeBlockState(BlockState state) {
+        this.chances.remove(this.blockStates.indexOf(state));
         this.blockStates.remove(state);
     }
 
@@ -208,6 +320,7 @@ public class BlockLayer {
      * @param index remove the BlockState at the index
      */
     public void removeBlockState(int index) {
+        this.chances.remove(index);
         this.blockStates.remove(index);
     }
 
