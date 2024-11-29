@@ -135,8 +135,8 @@ public abstract class AbstractBlockShapeLayer extends AbstractBlockShapePlaceTyp
      */
     public Set<DefaultBlockList> getLayers(Set<BlockPos> firstPosList) {
         Set<DefaultBlockList> defaultBlockLists = new HashSet<>();
-        if (this.getBlockLayers().size() == 1) {
-            List<BlockState> states = this.getBlockLayers().get(0).getBlockStates();
+        if (this.getBlockLayer().size() == 1) {
+            List<BlockState> states = this.getBlockLayer().get(0).getBlockStates();
             for (BlockPos pos : firstPosList) {
                 addPosToBlockList(pos, states, defaultBlockLists);
             }
@@ -156,8 +156,8 @@ public abstract class AbstractBlockShapeLayer extends AbstractBlockShapePlaceTyp
 
     public Set<DefaultBlockList> getLayersWithVerification(Set<BlockPos> firstPosList, Map<BlockPos, BlockState> blockStateMap) {
         Set<DefaultBlockList> defaultBlockLists = new HashSet<>();
-        if (this.getBlockLayers().size() == 1) {
-            List<BlockState> states = this.getBlockLayers().get(0).getBlockStates();
+        if (this.getBlockLayer().size() == 1) {
+            List<BlockState> states = this.getBlockLayer().get(0).getBlockStates();
             for (BlockPos pos : firstPosList) {
                 addPosToBlockList(pos, states, defaultBlockLists);
             }
@@ -186,8 +186,8 @@ public abstract class AbstractBlockShapeLayer extends AbstractBlockShapePlaceTyp
      * @param firstPosList list of the BlockPos that compose the structure
      */
     public void placeLayers(Set<BlockPos> firstPosList) {
-        if (this.getBlockLayers().size() == 1) {
-            List<BlockState> states = this.getBlockLayers().get(0).getBlockStates();
+        if (this.getBlockLayer().size() == 1) {
+            List<BlockState> states = this.getBlockLayer().get(0).getBlockStates();
             for (BlockPos pos : firstPosList) {
                 placeBlocksWithVerification(states, pos);
             }
@@ -210,19 +210,19 @@ public abstract class AbstractBlockShapeLayer extends AbstractBlockShapePlaceTyp
 
         if (posList == null) return;
 
-        for (int i = 1; i < this.getBlockLayers().size(); ++i) {
+        for (int i = 1; i < this.getBlockLayer().size(); ++i) {
             if (posList.isEmpty()) return;
             List<Set<BlockPos>> pos1 = this.placeSurfaceBlockLayer(posList, i);
             posList = pos1.get(1);
             firstPosList = pos1.get(0);
 
-            List<BlockState> states = this.getBlockLayers().get(i - 1).getBlockStates();
+            List<BlockState> states = this.getBlockLayer().get(i - 1).getBlockStates();
 
             for (BlockPos pos : firstPosList) {
                 this.placeBlocks(states, pos);
             }
         }
-        List<BlockState> states = this.getBlockLayers().get(this.getBlockLayers().size() - 1).getBlockStates();
+        List<BlockState> states = this.getBlockLayer().get(this.getBlockLayer().size() - 1).getBlockStates();
 
         for (BlockPos pos : posList) {
             this.placeBlocks(states, pos);
@@ -265,7 +265,7 @@ public abstract class AbstractBlockShapeLayer extends AbstractBlockShapePlaceTyp
         Set<BlockPos> newPosList = new HashSet<>();
 
         // Precompute the depth of the previous layer if it exists
-        int previousLayerDepth = this.getBlockLayers().get(layerIndex - 1).getDepth();
+        int previousLayerDepth = this.getBlockLayer().get(layerIndex - 1).getDepth();
 
         // Convert posList to a set for faster lookups
         Set<BlockPos> posSet = new HashSet<>(posList);
@@ -286,10 +286,10 @@ public abstract class AbstractBlockShapeLayer extends AbstractBlockShapePlaceTyp
 
     public void placeInnerCylindricalBlocks(Set<BlockPos> posList) {
         List<Integer> layerDistance = new ArrayList<>();
-        layerDistance.add(this.getBlockLayers().get(0).getDepth());
+        layerDistance.add(this.getBlockLayer().get(0).getDepth());
 
-        for (int i = 1; i < this.getBlockLayers().size(); i++) {
-            layerDistance.add(this.getBlockLayers().get(i).getDepth() + layerDistance.get(i - 1));
+        for (int i = 1; i < this.getBlockLayer().size(); i++) {
+            layerDistance.add(this.getBlockLayer().get(i).getDepth() + layerDistance.get(i - 1));
         }
 
         int layerDistanceSize = layerDistance.size();
@@ -310,15 +310,15 @@ public abstract class AbstractBlockShapeLayer extends AbstractBlockShapePlaceTyp
 
     public void placeOuterCylindricalBlocks(Set<BlockPos> posList) {
         List<Integer> layerDistance = new ArrayList<>();
-        layerDistance.add(this.getBlockLayers().get(0).getDepth());
+        layerDistance.add(this.getBlockLayer().get(0).getDepth());
 
         float maxDistance = 0;
         for (BlockPos pos : posList) {
             float distance = WorldGenUtil.getDistance(new BlockPos(this.radialCenterPos.getX(), pos.getY(), this.radialCenterPos.getZ()), pos);
             maxDistance = Math.max(distance, maxDistance);
         }
-        for (int i = 1; i < this.getBlockLayers().size(); i++) {
-            layerDistance.add(this.getBlockLayers().get(i).getDepth() + layerDistance.get(i - 1));
+        for (int i = 1; i < this.getBlockLayer().size(); i++) {
+            layerDistance.add(this.getBlockLayer().get(i).getDepth() + layerDistance.get(i - 1));
         }
 
         int layerDistanceSize = layerDistance.size();
@@ -341,10 +341,10 @@ public abstract class AbstractBlockShapeLayer extends AbstractBlockShapePlaceTyp
     public void placeInnerRadialBlocks(Set<BlockPos> posList) {
         Set<DefaultBlockList> defaultBlockLists = new HashSet<>();
         List<Integer> layerDistance = new ArrayList<>();
-        layerDistance.add(this.getBlockLayers().get(0).getDepth());
+        layerDistance.add(this.getBlockLayer().get(0).getDepth());
 
-        for (int i = 1; i < this.getBlockLayers().size(); i++) {
-            layerDistance.add(this.getBlockLayers().get(i).getDepth() + layerDistance.get(i - 1));
+        for (int i = 1; i < this.getBlockLayer().size(); i++) {
+            layerDistance.add(this.getBlockLayer().get(i).getDepth() + layerDistance.get(i - 1));
         }
 
         int layerDistanceSize = layerDistance.size();
@@ -353,27 +353,27 @@ public abstract class AbstractBlockShapeLayer extends AbstractBlockShapePlaceTyp
             float distance = WorldGenUtil.getDistance(new BlockPos(this.radialCenterPos.getX(), pos.getY(), this.radialCenterPos.getZ()), pos);
             for (int i = 0; i < layerDistanceSize - 1; i++) {
                 if (distance < layerDistance.get(i)) {
-                    placeBlocksWithVerification(this.getBlockLayers().get(i).getBlockStates(), pos);
+                    placeBlocksWithVerification(this.getBlockLayer().get(i).getBlockStates(), pos);
                     bl = true;
                 }
             }
             if (!bl) {
-                placeBlocksWithVerification(this.getBlockLayers().get(layerDistanceSize - 1).getBlockStates(), pos);
+                placeBlocksWithVerification(this.getBlockLayer().get(layerDistanceSize - 1).getBlockStates(), pos);
             }
         }
     }
 
     public void placeOuterRadialBlocks(Set<BlockPos> posList) {
         List<Integer> layerDistance = new ArrayList<>();
-        layerDistance.add(this.getBlockLayers().get(0).getDepth());
+        layerDistance.add(this.getBlockLayer().get(0).getDepth());
 
         float maxDistance = 0;
         for (BlockPos pos : posList) {
             float distance = WorldGenUtil.getDistance(this.radialCenterPos, pos);
             maxDistance = Math.max(distance, maxDistance);
         }
-        for (int i = 1; i < this.getBlockLayers().size(); i++) {
-            layerDistance.add(this.getBlockLayers().get(i).getDepth() + layerDistance.get(i - 1));
+        for (int i = 1; i < this.getBlockLayer().size(); i++) {
+            layerDistance.add(this.getBlockLayer().get(i).getDepth() + layerDistance.get(i - 1));
         }
 
         int layerDistanceSize = layerDistance.size();
@@ -417,12 +417,12 @@ public abstract class AbstractBlockShapeLayer extends AbstractBlockShapePlaceTyp
         BlockPos firstPoint = poslist.get(0);
 
         int u = 0;
-        int a = this.getBlockLayers().get(u).getDepth();
+        int a = this.getBlockLayer().get(u).getDepth();
         float b;
         float g = 0;
         float h = 0;
-        List<BlockState> states = getBlockLayers().get(u).getBlockStates();
-        int size = this.getBlockLayers().size() - 1;
+        List<BlockState> states = getBlockLayer().get(u).getBlockStates();
+        int size = this.getBlockLayer().size() - 1;
         for (BlockPos pos : poslist) {
 
             if (u != size) {
@@ -436,9 +436,9 @@ public abstract class AbstractBlockShapeLayer extends AbstractBlockShapePlaceTyp
                     placeBlocksWithVerification(states, pos);
                 } else {
                     u++;
-                    a += this.getBlockLayers().get(u).getDepth();
+                    a += this.getBlockLayer().get(u).getDepth();
                     h = (float) (a * g + 0.00002);
-                    states = getBlockLayers().get(u).getBlockStates();
+                    states = getBlockLayer().get(u).getBlockStates();
                     placeBlocksWithVerification(states, pos);
 
                 }
@@ -460,20 +460,20 @@ public abstract class AbstractBlockShapeLayer extends AbstractBlockShapePlaceTyp
             return defaultBlockLists;
         }
 
-        for (int i = 1; i < this.getBlockLayers().size(); ++i) {
+        for (int i = 1; i < this.getBlockLayer().size(); ++i) {
             if (posList.isEmpty()) return defaultBlockLists;
-            BlockLayer layer = this.getBlockLayers().get(i);
+            BlockLayer layer = this.getBlockLayer().get(i);
             List<Set<BlockPos>> pos1 = this.placeSurfaceBlockLayer(new HashSet<>(posList), i);
             posList = pos1.get(1);
             firstPosList = pos1.get(0);
-            List<BlockState> states = this.getBlockLayers().get(i - 1).getBlockStates();
+            List<BlockState> states = this.getBlockLayer().get(i - 1).getBlockStates();
 
             Set<BlockPos> firstPosListCopy = new HashSet<>(firstPosList);
             for (BlockPos pos : firstPosListCopy) {
                 addVerifiedPosToBlockList(pos, states, layer.getBlocksToForce(), layer.isForce(), defaultBlockLists, blockStateMap);
             }
         }
-        BlockLayer layer = this.getBlockLayers().get(this.getBlockLayers().size() - 1);
+        BlockLayer layer = this.getBlockLayer().get(this.getBlockLayer().size() - 1);
         List<BlockState> states = layer.getBlockStates();
 
         // Create a copy for safe iteration
@@ -487,10 +487,10 @@ public abstract class AbstractBlockShapeLayer extends AbstractBlockShapePlaceTyp
     public Set<DefaultBlockList> getVerifiedInnerCylindricalBlocks(Set<BlockPos> posList, Map<BlockPos, BlockState> blockStateMap) {
         Set<DefaultBlockList> defaultBlockLists = new HashSet<>();
         List<Integer> layerDistance = new ArrayList<>();
-        layerDistance.add(this.getBlockLayers().get(0).getDepth());
+        layerDistance.add(this.getBlockLayer().get(0).getDepth());
 
-        for (int i = 1; i < this.getBlockLayers().size(); i++) {
-            layerDistance.add(this.getBlockLayers().get(i).getDepth() + layerDistance.get(i - 1));
+        for (int i = 1; i < this.getBlockLayer().size(); i++) {
+            layerDistance.add(this.getBlockLayer().get(i).getDepth() + layerDistance.get(i - 1));
         }
 
         int layerDistanceSize = layerDistance.size() - 1;
@@ -499,13 +499,13 @@ public abstract class AbstractBlockShapeLayer extends AbstractBlockShapePlaceTyp
             float distance = WorldGenUtil.getDistance(new BlockPos(this.radialCenterPos.getX(), pos.getY(), this.radialCenterPos.getZ()), pos);
             for (int i = 0; i < layerDistanceSize; i++) {
                 if (distance < layerDistance.get(i)) {
-                    BlockLayer layer = this.getBlockLayers().get(i);
+                    BlockLayer layer = this.getBlockLayer().get(i);
                     addVerifiedPosToBlockList(pos, layer.getBlockStates(), layer.getBlocksToForce(), layer.isForce(), defaultBlockLists, blockStateMap);
                     bl = true;
                 }
             }
             if (!bl) {
-                BlockLayer layer = this.getBlockLayers().get(layerDistanceSize);
+                BlockLayer layer = this.getBlockLayer().get(layerDistanceSize);
                 addVerifiedPosToBlockList(pos, layer.getBlockStates(), layer.getBlocksToForce(), layer.isForce(), defaultBlockLists, blockStateMap);
             }
         }
@@ -523,10 +523,10 @@ public abstract class AbstractBlockShapeLayer extends AbstractBlockShapePlaceTyp
             maxDistance = Math.max(distance, maxDistance);
         }
 
-        layerDistance.add(this.getBlockLayers().get(0).getDepth());
+        layerDistance.add(this.getBlockLayer().get(0).getDepth());
 
-        for (int i = 1; i < this.getBlockLayers().size(); i++) {
-            layerDistance.add(this.getBlockLayers().get(i).getDepth() + layerDistance.get(i - 1));
+        for (int i = 1; i < this.getBlockLayer().size(); i++) {
+            layerDistance.add(this.getBlockLayer().get(i).getDepth() + layerDistance.get(i - 1));
         }
 
         int layerDistanceSize = layerDistance.size();
@@ -535,13 +535,13 @@ public abstract class AbstractBlockShapeLayer extends AbstractBlockShapePlaceTyp
             float distance = WorldGenUtil.getDistance(new BlockPos(this.radialCenterPos.getX(), pos.getY(), this.radialCenterPos.getZ()), pos);
             for (int i = 0; i < layerDistanceSize - 1; i++) {
                 if (distance > maxDistance - layerDistance.get(i)) {
-                    BlockLayer layer = this.getBlockLayers().get(i);
+                    BlockLayer layer = this.getBlockLayer().get(i);
                     addVerifiedPosToBlockList(pos, layer.getBlockStates(), layer.getBlocksToForce(), layer.isForce(), defaultBlockLists, blockStateMap);
                     bl = true;
                 }
             }
             if (!bl) {
-                BlockLayer layer = this.getBlockLayers().get(layerDistanceSize);
+                BlockLayer layer = this.getBlockLayer().get(layerDistanceSize);
                 addVerifiedPosToBlockList(pos, layer.getBlockStates(), layer.getBlocksToForce(), layer.isForce(), defaultBlockLists, blockStateMap);
             }
         }
@@ -552,10 +552,10 @@ public abstract class AbstractBlockShapeLayer extends AbstractBlockShapePlaceTyp
     public Set<DefaultBlockList> getVerifiedInnerRadialBlocks(Set<BlockPos> posList, Map<BlockPos, BlockState> blockStateMap) {
         Set<DefaultBlockList> defaultBlockLists = new HashSet<>();
         List<Integer> layerDistance = new ArrayList<>();
-        layerDistance.add(this.getBlockLayers().get(0).getDepth());
+        layerDistance.add(this.getBlockLayer().get(0).getDepth());
 
-        for (int i = 1; i < this.getBlockLayers().size(); i++) {
-            layerDistance.add(this.getBlockLayers().get(i).getDepth() + layerDistance.get(i - 1));
+        for (int i = 1; i < this.getBlockLayer().size(); i++) {
+            layerDistance.add(this.getBlockLayer().get(i).getDepth() + layerDistance.get(i - 1));
         }
 
         int layerDistanceSize = layerDistance.size();
@@ -564,13 +564,13 @@ public abstract class AbstractBlockShapeLayer extends AbstractBlockShapePlaceTyp
             float distance = WorldGenUtil.getDistance(radialCenterPos, pos);
             for (int i = 0; i < layerDistanceSize - 1; i++) {
                 if (distance < layerDistance.get(i)) {
-                    BlockLayer layer = this.getBlockLayers().get(layerDistanceSize);
+                    BlockLayer layer = this.getBlockLayer().get(layerDistanceSize);
                     addVerifiedPosToBlockList(pos, layer.getBlockStates(), layer.getBlocksToForce(), layer.isForce(), defaultBlockLists, blockStateMap);
                     bl = true;
                 }
             }
             if (!bl) {
-                BlockLayer layer = this.getBlockLayers().get(layerDistanceSize);
+                BlockLayer layer = this.getBlockLayer().get(layerDistanceSize);
                 addVerifiedPosToBlockList(pos, layer.getBlockStates(), layer.getBlocksToForce(), layer.isForce(), defaultBlockLists, blockStateMap);
             }
         }
@@ -580,15 +580,15 @@ public abstract class AbstractBlockShapeLayer extends AbstractBlockShapePlaceTyp
     public Set<DefaultBlockList> getVerifiedOuterRadialBlocks(Set<BlockPos> posList, Map<BlockPos, BlockState> blockStateMap) {
         Set<DefaultBlockList> defaultBlockLists = new HashSet<>();
         List<Integer> layerDistance = new ArrayList<>();
-        layerDistance.add(this.getBlockLayers().get(0).getDepth());
+        layerDistance.add(this.getBlockLayer().get(0).getDepth());
 
         float maxDistance = 0;
         for (BlockPos pos : posList) {
             float distance = WorldGenUtil.getDistance(this.radialCenterPos, pos);
             maxDistance = Math.max(distance, maxDistance);
         }
-        for (int i = 1; i < this.getBlockLayers().size(); i++) {
-            layerDistance.add(this.getBlockLayers().get(i).getDepth() + layerDistance.get(i - 1));
+        for (int i = 1; i < this.getBlockLayer().size(); i++) {
+            layerDistance.add(this.getBlockLayer().get(i).getDepth() + layerDistance.get(i - 1));
         }
 
         int layerDistanceSize = layerDistance.size();
@@ -597,13 +597,13 @@ public abstract class AbstractBlockShapeLayer extends AbstractBlockShapePlaceTyp
             float distance = WorldGenUtil.getDistance(radialCenterPos, pos);
             for (int i = 0; i < layerDistanceSize - 1; i++) {
                 if (distance > maxDistance - layerDistance.get(i)) {
-                    BlockLayer layer = this.getBlockLayers().get(layerDistanceSize);
+                    BlockLayer layer = this.getBlockLayer().get(layerDistanceSize);
                     addVerifiedPosToBlockList(pos, layer.getBlockStates(), layer.getBlocksToForce(), layer.isForce(), defaultBlockLists, blockStateMap);
                     bl = true;
                 }
             }
             if (!bl) {
-                BlockLayer layer = this.getBlockLayers().get(layerDistanceSize);
+                BlockLayer layer = this.getBlockLayer().get(layerDistanceSize);
                 addVerifiedPosToBlockList(pos, layer.getBlockStates(), layer.getBlocksToForce(), layer.isForce(), defaultBlockLists, blockStateMap);
             }
         }
@@ -623,12 +623,12 @@ public abstract class AbstractBlockShapeLayer extends AbstractBlockShapePlaceTyp
         BlockPos firstPoint = poslist.get(0);
 
         int layerIndex = 0;
-        int cumulativeDepth = this.getBlockLayers().get(layerIndex).getDepth();
+        int cumulativeDepth = this.getBlockLayer().get(layerIndex).getDepth();
         float initialDistance = 0;
         float maxDistance = 0;
 
-        List<BlockState> currentStates = this.getBlockLayers().get(layerIndex).getBlockStates();
-        int totalLayers = this.getBlockLayers().size() - 1;
+        List<BlockState> currentStates = this.getBlockLayer().get(layerIndex).getBlockStates();
+        int totalLayers = this.getBlockLayer().size() - 1;
 
         for (BlockPos pos : poslist) {
             float currentDistance = WorldGenUtil.getDistanceFromPointToPlane(direction, firstPoint.toCenterPos(), pos.toCenterPos());
@@ -637,11 +637,11 @@ public abstract class AbstractBlockShapeLayer extends AbstractBlockShapePlaceTyp
                 initialDistance = currentDistance;
                 maxDistance = cumulativeDepth * initialDistance + 0.00002f;
             }
-            BlockLayer layer = this.getBlockLayers().get(layerIndex);
+            BlockLayer layer = this.getBlockLayer().get(layerIndex);
             // Move to the next layer if needed
             while (layerIndex < totalLayers && currentDistance > maxDistance) {
                 layerIndex++;
-                layer = this.getBlockLayers().get(layerIndex);
+                layer = this.getBlockLayer().get(layerIndex);
                 cumulativeDepth += layer.getDepth();
                 maxDistance = cumulativeDepth * initialDistance + 0.00002f;
                 currentStates = layer.getBlockStates();
@@ -665,19 +665,19 @@ public abstract class AbstractBlockShapeLayer extends AbstractBlockShapePlaceTyp
             return defaultBlockLists;
         }
 
-        for (int i = 1; i < this.getBlockLayers().size(); ++i) {
+        for (int i = 1; i < this.getBlockLayer().size(); ++i) {
             if (posList.isEmpty()) return defaultBlockLists;
             List<Set<BlockPos>> pos1 = this.placeSurfaceBlockLayer(new HashSet<>(posList), i);
             posList = pos1.get(1);
             firstPosList = pos1.get(0);
-            List<BlockState> states = this.getBlockLayers().get(i - 1).getBlockStates();
+            List<BlockState> states = this.getBlockLayer().get(i - 1).getBlockStates();
 
             Set<BlockPos> firstPosListCopy = new HashSet<>(firstPosList);
             for (BlockPos pos : firstPosListCopy) {
                 addPosToBlockList(pos, states, defaultBlockLists);
             }
         }
-        List<BlockState> states = this.getBlockLayers().get(this.getBlockLayers().size() - 1).getBlockStates();
+        List<BlockState> states = this.getBlockLayer().get(this.getBlockLayer().size() - 1).getBlockStates();
 
         // Create a copy for safe iteration
         Set<BlockPos> posListCopy = new HashSet<>(posList);
@@ -690,10 +690,10 @@ public abstract class AbstractBlockShapeLayer extends AbstractBlockShapePlaceTyp
     public Set<DefaultBlockList> getInnerCylindricalBlocks(Set<BlockPos> posList) {
         Set<DefaultBlockList> defaultBlockLists = new HashSet<>();
         List<Integer> layerDistance = new ArrayList<>();
-        layerDistance.add(this.getBlockLayers().get(0).getDepth());
+        layerDistance.add(this.getBlockLayer().get(0).getDepth());
 
-        for (int i = 1; i < this.getBlockLayers().size(); i++) {
-            layerDistance.add(this.getBlockLayers().get(i).getDepth() + layerDistance.get(i - 1));
+        for (int i = 1; i < this.getBlockLayer().size(); i++) {
+            layerDistance.add(this.getBlockLayer().get(i).getDepth() + layerDistance.get(i - 1));
         }
 
         int layerDistanceSize = layerDistance.size();
@@ -702,12 +702,12 @@ public abstract class AbstractBlockShapeLayer extends AbstractBlockShapePlaceTyp
             float distance = WorldGenUtil.getDistance(new BlockPos(this.radialCenterPos.getX(), pos.getY(), this.radialCenterPos.getZ()), pos);
             for (int i = 0; i < layerDistanceSize - 1; i++) {
                 if (distance < layerDistance.get(i)) {
-                    addPosToBlockList(pos, this.getBlockLayers().get(i).getBlockStates(), defaultBlockLists);
+                    addPosToBlockList(pos, this.getBlockLayer().get(i).getBlockStates(), defaultBlockLists);
                     bl = true;
                 }
             }
             if (!bl) {
-                addPosToBlockList(pos, this.getBlockLayers().get(layerDistanceSize - 1).getBlockStates(), defaultBlockLists);
+                addPosToBlockList(pos, this.getBlockLayer().get(layerDistanceSize - 1).getBlockStates(), defaultBlockLists);
             }
         }
         return defaultBlockLists;
@@ -724,10 +724,10 @@ public abstract class AbstractBlockShapeLayer extends AbstractBlockShapePlaceTyp
             maxDistance = Math.max(distance, maxDistance);
         }
 
-        layerDistance.add(this.getBlockLayers().get(0).getDepth());
+        layerDistance.add(this.getBlockLayer().get(0).getDepth());
 
-        for (int i = 1; i < this.getBlockLayers().size(); i++) {
-            layerDistance.add(this.getBlockLayers().get(i).getDepth() + layerDistance.get(i - 1));
+        for (int i = 1; i < this.getBlockLayer().size(); i++) {
+            layerDistance.add(this.getBlockLayer().get(i).getDepth() + layerDistance.get(i - 1));
         }
 
         int layerDistanceSize = layerDistance.size();
@@ -736,12 +736,12 @@ public abstract class AbstractBlockShapeLayer extends AbstractBlockShapePlaceTyp
             float distance = WorldGenUtil.getDistance(new BlockPos(this.radialCenterPos.getX(), pos.getY(), this.radialCenterPos.getZ()), pos);
             for (int i = 0; i < layerDistanceSize - 1; i++) {
                 if (distance > maxDistance - layerDistance.get(i)) {
-                    addPosToBlockList(pos, this.getBlockLayers().get(i).getBlockStates(), defaultBlockLists);
+                    addPosToBlockList(pos, this.getBlockLayer().get(i).getBlockStates(), defaultBlockLists);
                     bl = true;
                 }
             }
             if (!bl) {
-                addPosToBlockList(pos, this.getBlockLayers().get(layerDistanceSize - 1).getBlockStates(), defaultBlockLists);
+                addPosToBlockList(pos, this.getBlockLayer().get(layerDistanceSize - 1).getBlockStates(), defaultBlockLists);
             }
         }
         return defaultBlockLists;
@@ -751,10 +751,10 @@ public abstract class AbstractBlockShapeLayer extends AbstractBlockShapePlaceTyp
     public Set<DefaultBlockList> getInnerRadialBlocks(Set<BlockPos> posList) {
         Set<DefaultBlockList> defaultBlockLists = new HashSet<>();
         List<Integer> layerDistance = new ArrayList<>();
-        layerDistance.add(this.getBlockLayers().get(0).getDepth());
+        layerDistance.add(this.getBlockLayer().get(0).getDepth());
 
-        for (int i = 1; i < this.getBlockLayers().size(); i++) {
-            layerDistance.add(this.getBlockLayers().get(i).getDepth() + layerDistance.get(i - 1));
+        for (int i = 1; i < this.getBlockLayer().size(); i++) {
+            layerDistance.add(this.getBlockLayer().get(i).getDepth() + layerDistance.get(i - 1));
         }
 
         int layerDistanceSize = layerDistance.size();
@@ -763,12 +763,12 @@ public abstract class AbstractBlockShapeLayer extends AbstractBlockShapePlaceTyp
             float distance = WorldGenUtil.getDistance(radialCenterPos, pos);
             for (int i = 0; i < layerDistanceSize - 1; i++) {
                 if (distance < layerDistance.get(i)) {
-                    addPosToBlockList(pos, this.getBlockLayers().get(i).getBlockStates(), defaultBlockLists);
+                    addPosToBlockList(pos, this.getBlockLayer().get(i).getBlockStates(), defaultBlockLists);
                     bl = true;
                 }
             }
             if (!bl) {
-                addPosToBlockList(pos, this.getBlockLayers().get(layerDistanceSize - 1).getBlockStates(), defaultBlockLists);
+                addPosToBlockList(pos, this.getBlockLayer().get(layerDistanceSize - 1).getBlockStates(), defaultBlockLists);
             }
         }
         return defaultBlockLists;
@@ -777,15 +777,15 @@ public abstract class AbstractBlockShapeLayer extends AbstractBlockShapePlaceTyp
     public Set<DefaultBlockList> getOuterRadialBlocks(Set<BlockPos> posList) {
         Set<DefaultBlockList> defaultBlockLists = new HashSet<>();
         List<Integer> layerDistance = new ArrayList<>();
-        layerDistance.add(this.getBlockLayers().get(0).getDepth());
+        layerDistance.add(this.getBlockLayer().get(0).getDepth());
 
         float maxDistance = 0;
         for (BlockPos pos : posList) {
             float distance = WorldGenUtil.getDistance(this.radialCenterPos, pos);
             maxDistance = Math.max(distance, maxDistance);
         }
-        for (int i = 1; i < this.getBlockLayers().size(); i++) {
-            layerDistance.add(this.getBlockLayers().get(i).getDepth() + layerDistance.get(i - 1));
+        for (int i = 1; i < this.getBlockLayer().size(); i++) {
+            layerDistance.add(this.getBlockLayer().get(i).getDepth() + layerDistance.get(i - 1));
         }
 
         int layerDistanceSize = layerDistance.size();
@@ -794,12 +794,12 @@ public abstract class AbstractBlockShapeLayer extends AbstractBlockShapePlaceTyp
             float distance = WorldGenUtil.getDistance(radialCenterPos, pos);
             for (int i = 0; i < layerDistanceSize - 1; i++) {
                 if (distance > maxDistance - layerDistance.get(i)) {
-                    addPosToBlockList(pos, this.getBlockLayers().get(i).getBlockStates(), defaultBlockLists);
+                    addPosToBlockList(pos, this.getBlockLayer().get(i).getBlockStates(), defaultBlockLists);
                     bl = true;
                 }
             }
             if (!bl) {
-                addPosToBlockList(pos, this.getBlockLayers().get(layerDistanceSize - 1).getBlockStates(), defaultBlockLists);
+                addPosToBlockList(pos, this.getBlockLayer().get(layerDistanceSize - 1).getBlockStates(), defaultBlockLists);
             }
         }
         return defaultBlockLists;
@@ -819,12 +819,12 @@ public abstract class AbstractBlockShapeLayer extends AbstractBlockShapePlaceTyp
         BlockPos firstPoint = poslist.get(0);
 
         int layerIndex = 0;
-        int cumulativeDepth = this.getBlockLayers().get(layerIndex).getDepth();
+        int cumulativeDepth = this.getBlockLayer().get(layerIndex).getDepth();
         float initialDistance = 0;
         float maxDistance = 0;
 
-        List<BlockState> currentStates = this.getBlockLayers().get(layerIndex).getBlockStates();
-        int totalLayers = this.getBlockLayers().size() - 1;
+        List<BlockState> currentStates = this.getBlockLayer().get(layerIndex).getBlockStates();
+        int totalLayers = this.getBlockLayer().size() - 1;
 
         for (BlockPos pos : poslist) {
             float currentDistance = WorldGenUtil.getDistanceFromPointToPlane(direction, firstPoint.toCenterPos(), pos.toCenterPos());
@@ -837,9 +837,9 @@ public abstract class AbstractBlockShapeLayer extends AbstractBlockShapePlaceTyp
             // Move to the next layer if needed
             while (layerIndex < totalLayers && currentDistance > maxDistance) {
                 layerIndex++;
-                cumulativeDepth += this.getBlockLayers().get(layerIndex).getDepth();
+                cumulativeDepth += this.getBlockLayer().get(layerIndex).getDepth();
                 maxDistance = cumulativeDepth * initialDistance + 0.00002f;
-                currentStates = this.getBlockLayers().get(layerIndex).getBlockStates();
+                currentStates = this.getBlockLayer().get(layerIndex).getBlockStates();
             }
 
             // Add the block position to the appropriate layer
@@ -860,16 +860,26 @@ public abstract class AbstractBlockShapeLayer extends AbstractBlockShapePlaceTyp
          * and until it reaches the depth of the layer
          */
         SURFACE,
-        //place the blocks in a sphere shape, first layer being placed at the center
+        /**
+         * place the blocks in a sphere shape, first layer being placed at the center
+         */
         INNER_RADIAL,
-        //place the blocks in a sphere shape, the last layer being placed at the center
+        /**
+         * place the blocks in a sphere shape, the last layer being placed at the center
+         */
         OUTER_RADIAL,
-        //place the blocks in a cylindrical shape, the first layer being placed at the center
+        /**
+         * place the blocks in a cylindrical shape, the first layer being placed at the center
+         */
         INNER_CYLINDRICAL,
-        //place the blocks in a cylindrical shape, the last layer being placed near the center
+        /**
+         * place the blocks in a cylindrical shape, the last layer being placed near the center
+         */
         OUTER_CYLINDRICAL,
-        //place the blocks on a plan
-        //the plan is defined by the vector "directionalLayerDirection"
+        /**
+         * place the blocks on a plan
+         * the plan is defined by the vector "directionalLayerDirection"
+         */
         ALONG_DIRECTION
     }
 }

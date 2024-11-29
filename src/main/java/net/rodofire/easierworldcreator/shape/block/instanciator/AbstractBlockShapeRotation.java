@@ -4,7 +4,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.StructureWorldAccess;
 import net.rodofire.easierworldcreator.blockdata.layer.BlockLayer;
-import net.rodofire.easierworldcreator.util.FastMaths;
+import net.rodofire.easierworldcreator.maths.FastMaths;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;

@@ -4,11 +4,12 @@ import net.minecraft.block.BlockState;
 import net.minecraft.util.WorldSavePath;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
-import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.random.Random;
 import net.minecraft.world.StructureWorldAccess;
 import net.rodofire.easierworldcreator.EasierWorldCreator;
+import net.rodofire.easierworldcreator.blockdata.blocklist.BlockListUtil;
 import net.rodofire.easierworldcreator.blockdata.blocklist.basic.DefaultBlockList;
+import net.rodofire.easierworldcreator.blockdata.blocklist.basic.comparator.DefaultBlockListComparator;
 import net.rodofire.easierworldcreator.blockdata.layer.BlockLayer;
 import net.rodofire.easierworldcreator.blockdata.sorter.BlockSorter;
 import net.rodofire.easierworldcreator.fileutil.FileUtil;
@@ -29,8 +30,8 @@ import java.util.concurrent.*;
  * <p> - Since 2.1.0, the shape doesn't return a {@link List<BlockPos>} but it returns instead a {@code List<Set<BlockPos>>}
  * <p> - Before 2.1.0, the BlockPos list was a simple list.
  * <p> - Starting from 2.1.0, the shapes return a list of {@link ChunkPos} that has a set of {@link BlockPos}
- * <p>The change from {@link List} to {@link Set} was done to avoid duplicates BlockPos which resulted in unnecessary calculations.
- * <p>this allow easy multithreading for the Block assignment done in the {@link AbstractBlockShape} which result in better performance;
+ * <p>The change from {@link List} to {@link Set} was done to avoid duplicates BlockPos, which resulted in unnecessary calculations.
+ * <p>this allows easy multithreading for the Block assignment done in the {@link AbstractBlockShape} which result in better performance;
  * </p>
  */
 @SuppressWarnings("unused")
@@ -92,6 +93,7 @@ public abstract class AbstractBlockShape extends AbstractBlockShapeRotation {
      * <p>It is optional.
      * <p>If no name is provided, one random name will be generated.
      * <p>It allows better readibility in the generated files
+     *
      * @param featureName the name of the structure
      */
     public void setFeatureName(String featureName) {
@@ -104,6 +106,7 @@ public abstract class AbstractBlockShape extends AbstractBlockShapeRotation {
 
     /**
      * method to set an offset
+     *
      * @param offset the offset of the entire structure
      */
     public void setOffset(BlockPos offset) {
@@ -116,7 +119,7 @@ public abstract class AbstractBlockShape extends AbstractBlockShapeRotation {
      * Any changes done after this moment will not be taken in count except if you place another shape later
      */
     public void place() {
-        if (this.getBlockLayers() == null || this.getBlockLayers().isEmpty()) {
+        if (this.getBlockLayer() == null || this.getBlockLayer().isEmpty()) {
             EasierWorldCreator.LOGGER.warn("shape not placed, no BlockLayer present");
             return;
         }
@@ -140,7 +143,7 @@ public abstract class AbstractBlockShape extends AbstractBlockShapeRotation {
         }
         EasierWorldCreator.LOGGER.info("placing structure");
         if (this.getLayerPlace() == LayerPlace.NOISE2D || this.getLayerPlace() == LayerPlace.NOISE3D) {
-            for (BlockLayer layers : this.getBlockLayers()) {
+            for (BlockLayer layers : this.getBlockLayer().getLayers()) {
                 layers.addBlockState(layers.getBlockStates().get(layers.getBlockStates().size() - 1));
             }
         }
@@ -191,19 +194,16 @@ public abstract class AbstractBlockShape extends AbstractBlockShapeRotation {
 
             if (!moveChunks(chunkPosList, 5)) return;
             Path generatedPath = Objects.requireNonNull(getWorld().getServer()).getSavePath(WorldSavePath.GENERATED).resolve(EasierWorldCreator.MOD_ID).resolve("structures").normalize();
+
             //tell the garbage collector that it can free the list of pos
-            posList = null;
+            posList.clear();
 
             for (ChunkPos chunkPos : chunkPosList) {
-                //executorService.submit(() -> {
-                try {
+                executorService.submit(() -> {
                     FileUtil.renameFile(
                             generatedPath.resolve("chunk_" + chunkPos.x + "_" + chunkPos.z).resolve("false_" + featureName + ".json"),
                             generatedPath.resolve("chunk_" + (chunkPos.x + offset.getX() / 16) + "_" + (chunkPos.z + offset.getZ() / 16)).resolve("[" + offset.getX() + "," + offset.getZ() + "]_" + featureName + ".json"));
-                } catch (Exception e) {
-                    e.fillInStackTrace();
-                }
-                //});
+                });
             }
 
 
@@ -213,17 +213,16 @@ public abstract class AbstractBlockShape extends AbstractBlockShapeRotation {
                 LoadChunkShapeInfo.placeStructure(getWorld(), defaultBlockLists);
             }
         } else if (this.getPlaceMoment() == PlaceMoment.ANIMATED_OTHER) {
-            List<Set<DefaultBlockList>> blockList = getBlockListWithVerification(posList);
-
             if (animator == null) {
                 animator = new StructurePlaceAnimator(this.getWorld(), new BlockSorter(BlockSorter.BlockSorterType.RANDOM), StructurePlaceAnimator.AnimatorTime.CONSTANT_BLOCKS_PER_TICK);
                 animator.setBlocksPerTick(100);
             }
-            animator.placeFromDividedBlockList(blockList);
+            List<Set<DefaultBlockList>> blockList = getBlockListWithVerification(posList);
+            DefaultBlockListComparator comparator = new DefaultBlockListComparator(BlockListUtil.unDivideBlockList(blockList));
+            animator.placeFromBlockList(comparator);
         }
         //In the case our structure isn't place during world gen, or it is less than a chunk large
         else {
-            EasierWorldCreator.LOGGER.info("structure smaller than chunk");
             for (Set<BlockPos> pos : posList) {
                 this.placeLayers(pos);
             }
@@ -303,17 +302,6 @@ public abstract class AbstractBlockShape extends AbstractBlockShapeRotation {
      * @return a list of blockPos for every shape
      */
     public abstract List<Set<BlockPos>> getBlockPos();
-
-    /**
-     * method to get the Vec3d that will be placed later
-     *
-     * @return a list of Vec3d for every shape
-     */
-    public abstract List<Vec3d> getVec3d();
-
-
-
-
 
 
     /*---------- Place Structure ----------*/

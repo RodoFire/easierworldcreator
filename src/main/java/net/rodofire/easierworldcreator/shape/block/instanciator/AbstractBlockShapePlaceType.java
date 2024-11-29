@@ -15,7 +15,6 @@ import java.util.Set;
 
 @SuppressWarnings("unused")
 public abstract class AbstractBlockShapePlaceType extends AbstractBlockShapeBase {
-    private PlaceType placeType = PlaceType.BLOCKS;
     private LayerPlace layerPlace = LayerPlace.RANDOM;
     private FastNoiseLite noise = new FastNoiseLite();
 
@@ -25,10 +24,10 @@ public abstract class AbstractBlockShapePlaceType extends AbstractBlockShapeBase
     /**
      * init the ShapePlaceType
      *
-     * @param world         the world the spiral will spawn in
-     * @param pos           the center of the spiral
-     * @param placeMoment   define the moment where the shape will be placed
-     * @param layerPlace    how the {@code @BlockStates} inside of a {@link BlockLayer} will be placed
+     * @param world       the world the spiral will spawn in
+     * @param pos         the center of the spiral
+     * @param placeMoment define the moment where the shape will be placed
+     * @param layerPlace  how the {@code @BlockStates} inside of a {@link BlockLayer} will be placed
      */
     public AbstractBlockShapePlaceType(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, @NotNull PlaceMoment placeMoment, LayerPlace layerPlace) {
         super(world, pos, placeMoment);
@@ -56,15 +55,6 @@ public abstract class AbstractBlockShapePlaceType extends AbstractBlockShapeBase
         return layerPlace;
     }
 
-    /*---------- Place Related ----------*/
-    public void setPlaceType(PlaceType placeType) {
-        this.placeType = placeType;
-    }
-
-    public PlaceType getPlaceType() {
-        return placeType;
-    }
-
     /*---------- Noise Related ----------*/
     public void setNoise(FastNoiseLite noise) {
         this.noise = noise;
@@ -84,17 +74,17 @@ public abstract class AbstractBlockShapePlaceType extends AbstractBlockShapeBase
     public void placeBlocks(int index, BlockPos pos) {
         switch (this.layerPlace) {
             case RANDOM:
-                BlockPlaceUtil.placeRandomBlock(this.getWorld(), this.getBlockLayers().get(index).getBlockStates(), pos);
+                BlockPlaceUtil.placeRandomBlock(this.getWorld(), this.getBlockLayer().get(index).getBlockStates(), pos);
                 break;
             case NOISE2D:
-                BlockPlaceUtil.placeBlockWith2DNoise(this.getWorld(), this.getBlockLayers().get(index).getBlockStates(), pos, this.noise);
+                BlockPlaceUtil.placeBlockWith2DNoise(this.getWorld(), this.getBlockLayer().get(index).getBlockStates(), pos, this.noise);
                 break;
             case NOISE3D:
-                BlockPlaceUtil.placeBlockWith3DNoise(this.getWorld(), this.getBlockLayers().get(index).getBlockStates(), pos, this.noise);
+                BlockPlaceUtil.placeBlockWith3DNoise(this.getWorld(), this.getBlockLayer().get(index).getBlockStates(), pos, this.noise);
                 break;
             default:
-                BlockPlaceUtil.placeBlockWithOrder(this.getWorld(), this.getBlockLayers().get(index).getBlockStates(), pos, this.placedBlocks);
-                this.placedBlocks = this.placedBlocks % (this.getBlockLayers().size() - 1);
+                BlockPlaceUtil.placeBlockWithOrder(this.getWorld(), this.getBlockLayer().get(index).getBlockStates(), pos, this.placedBlocks);
+                this.placedBlocks = this.placedBlocks % (this.getBlockLayer().size() - 1);
                 break;
         }
     }
@@ -118,7 +108,7 @@ public abstract class AbstractBlockShapePlaceType extends AbstractBlockShapeBase
                 break;
             default:
                 BlockPlaceUtil.placeBlockWithOrder(this.getWorld(), states, pos, this.placedBlocks);
-                this.placedBlocks = this.placedBlocks % (this.getBlockLayers().size() - 1);
+                this.placedBlocks = this.placedBlocks % (this.getBlockLayer().size() - 1);
                 break;
         }
     }
@@ -131,17 +121,17 @@ public abstract class AbstractBlockShapePlaceType extends AbstractBlockShapeBase
      * @return boolean if the block was placed
      */
     public boolean placeBlocksWithVerification(int index, BlockPos pos) {
-        BlockLayer blockLayer = this.getBlockLayers().get(index);
+        BlockLayer blockLayer = this.getBlockLayer().get(index);
         switch (this.layerPlace) {
             case RANDOM:
                 return BlockPlaceUtil.setRandomBlockWithVerification(this.getWorld(), blockLayer.isForce(), blockLayer.getBlocksToForce(), blockLayer.getBlockStates(), pos);
             case NOISE2D:
-                return BlockPlaceUtil.set2dNoiseBlockWithVerification(this.getWorld(), blockLayer.isForce(), blockLayer.getBlocksToForce(), this.getBlockLayers().get(index).getBlockStates(), pos, this.noise);
+                return BlockPlaceUtil.set2dNoiseBlockWithVerification(this.getWorld(), blockLayer.isForce(), blockLayer.getBlocksToForce(), this.getBlockLayer().get(index).getBlockStates(), pos, this.noise);
             case NOISE3D:
-                return BlockPlaceUtil.set3dNoiseBlockWithVerification(this.getWorld(), blockLayer.isForce(), blockLayer.getBlocksToForce(), this.getBlockLayers().get(index).getBlockStates(), pos, this.noise);
+                return BlockPlaceUtil.set3dNoiseBlockWithVerification(this.getWorld(), blockLayer.isForce(), blockLayer.getBlocksToForce(), this.getBlockLayer().get(index).getBlockStates(), pos, this.noise);
             default:
-                boolean bl = BlockPlaceUtil.setBlockWithOrderWithVerification(this.getWorld(), blockLayer.isForce(), blockLayer.getBlocksToForce(), this.getBlockLayers().get(index).getBlockStates(), pos, this.placedBlocks);
-                this.placedBlocks = (this.placedBlocks + 1) % (this.getBlockLayers().size() - 1);
+                boolean bl = BlockPlaceUtil.setBlockWithOrderWithVerification(this.getWorld(), blockLayer.isForce(), blockLayer.getBlocksToForce(), this.getBlockLayer().get(index).getBlockStates(), pos, this.placedBlocks);
+                this.placedBlocks = (this.placedBlocks + 1) % (this.getBlockLayer().size() - 1);
                 return bl;
         }
     }
@@ -166,7 +156,7 @@ public abstract class AbstractBlockShapePlaceType extends AbstractBlockShapeBase
                 return BlockPlaceUtil.set3dNoiseBlockWithVerification(this.getWorld(), force, blocksToForce, states, pos, this.noise);
             default:
                 boolean bl = BlockPlaceUtil.setBlockWithOrderWithVerification(this.getWorld(), force, blocksToForce, states, pos, this.placedBlocks);
-                this.placedBlocks = (this.placedBlocks + 1) % (this.getBlockLayers().size() - 1);
+                this.placedBlocks = (this.placedBlocks + 1) % (this.getBlockLayer().size() - 1);
                 return bl;
         }
 
@@ -194,14 +184,14 @@ public abstract class AbstractBlockShapePlaceType extends AbstractBlockShapeBase
     public BlockState getBlockToPlace(int index, BlockPos pos) {
         switch (this.layerPlace) {
             case RANDOM:
-                return BlockPlaceUtil.getRandomBlock(this.getBlockLayers().get(index).getBlockStates());
+                return BlockPlaceUtil.getRandomBlock(this.getBlockLayer().get(index).getBlockStates());
             case NOISE2D:
-                return BlockPlaceUtil.getBlockWith2DNoise(this.getBlockLayers().get(index).getBlockStates(), pos, this.noise);
+                return BlockPlaceUtil.getBlockWith2DNoise(this.getBlockLayer().get(index).getBlockStates(), pos, this.noise);
             case NOISE3D:
-                return BlockPlaceUtil.getBlockWith3DNoise(this.getBlockLayers().get(index).getBlockStates(), pos, this.noise);
+                return BlockPlaceUtil.getBlockWith3DNoise(this.getBlockLayer().get(index).getBlockStates(), pos, this.noise);
             default:
-                BlockState blockState = BlockPlaceUtil.getBlockWithOrder(this.getBlockLayers().get(index).getBlockStates(), this.placedBlocks);
-                this.placedBlocks = (this.placedBlocks + 1) % (this.getBlockLayers().size() - 1);
+                BlockState blockState = BlockPlaceUtil.getBlockWithOrder(this.getBlockLayer().get(index).getBlockStates(), this.placedBlocks);
+                this.placedBlocks = (this.placedBlocks + 1) % (this.getBlockLayer().size() - 1);
                 return blockState;
         }
     }
@@ -224,36 +214,35 @@ public abstract class AbstractBlockShapePlaceType extends AbstractBlockShapeBase
                 return BlockPlaceUtil.getBlockWith3DNoise(states, pos, this.noise);
             default:
                 BlockState blockState = BlockPlaceUtil.getBlockWithOrder(states, this.placedBlocks);
-                this.placedBlocks = (this.placedBlocks + 1) % (this.getBlockLayers().size() - 1);
+                this.placedBlocks = (this.placedBlocks + 1) % (this.getBlockLayer().size() - 1);
                 return blockState;
         }
     }
 
+    /**
+     * method to know if the block can be placed
+     *
+     * @param pos the blockPos that will be tested
+     * @return true if it can be placed, false if not
+     */
     public boolean verifyBlocks(BlockPos pos) {
         return BlockPlaceUtil.verifyBlock(this.getWorld(), false, Set.of(), pos);
     }
 
+    /**
+     * method to know if the block can be placed
+     *
+     * @param pos           the blockPos that will be tested
+     * @param blocksToForce the blocks that can be forced
+     * @param force         if true, all blocks will be forced, except blocks like bedrock or end portals
+     * @return true if it can be placed, false if not
+     */
     public boolean verifyBlocks(BlockPos pos, Set<Block> blocksToForce, boolean force) {
         return BlockPlaceUtil.verifyBlock(this.getWorld(), force, blocksToForce, pos);
     }
 
     public boolean verifyBlocks(BlockPos pos, Set<Block> blocksToForce, boolean force, Map<BlockPos, BlockState> blockStateMap) {
         return BlockPlaceUtil.verifyBlock(this.getWorld(), force, blocksToForce, pos, blockStateMap);
-    }
-
-    /**
-     * set the type of objects that will be placed
-     */
-    public enum PlaceType {
-        /**
-         * place blocks
-         */
-        BLOCKS,
-        /**
-         * place particles
-         * are not implemented for the moment
-         */
-        PARTICLE
     }
 
     /**
