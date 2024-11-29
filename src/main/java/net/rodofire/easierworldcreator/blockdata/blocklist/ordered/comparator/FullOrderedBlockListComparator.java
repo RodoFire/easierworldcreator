@@ -1,6 +1,7 @@
 package net.rodofire.easierworldcreator.blockdata.blocklist.ordered.comparator;
 
 import com.google.common.collect.BiMap;
+import com.google.common.collect.HashBiMap;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.nbt.NbtCompound;
@@ -17,7 +18,7 @@ import java.util.Set;
  */
 @SuppressWarnings("unused")
 public class FullOrderedBlockListComparator extends CompoundOrderedBlockListComparator {
-    private BiMap<Short, Pair<Boolean, Set<Block>>> forceBlocks;
+    private BiMap<Short, Pair<Boolean, Set<Block>>> forceBlocks = HashBiMap.create();
 
     /**
      * Method to put some states and some blockPos in the comparator
