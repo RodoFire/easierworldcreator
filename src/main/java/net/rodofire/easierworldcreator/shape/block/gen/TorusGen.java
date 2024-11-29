@@ -313,9 +313,8 @@ public class TorusGen extends AbstractFillableBlockShape {
 
         int b = maxOuterRadiusX + maxInnerRadiusX;
 
-        if ((verticalTorus == 1f && horizontalTorus == 1f && this.getYRotation() % 180 == 0 && this.getZRotation() % 180 == 0 && this.getSecondYRotation() % 180 == 0)
-                || (verticalTorus == 1f && this.getYRotation() % 180 == 0) || (horizontalTorus == 1f && this.getYRotation() % 180 == 0 && this.getSecondYRotation() % 180 == 0)) {
-
+        if ((verticalTorus == 1f && horizontalTorus == 1f && this.getYRotation() % 180 == 0 && this.getZRotation() == 0 && this.getSecondYRotation() % 180 == 0)
+                || (horizontalTorus == 1f && this.getYRotation() % 180 == 0 && this.getSecondYRotation() % 180 == 0)) {
             for (int x = (-b); x <= 2 * b * this.horizontalTorus - b; x++) {
                 int xSquared = x * x;
                 for (int z = -b; z <= b; z++) {
