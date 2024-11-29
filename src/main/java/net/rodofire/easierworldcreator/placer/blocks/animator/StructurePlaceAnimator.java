@@ -15,6 +15,8 @@ import net.rodofire.easierworldcreator.blockdata.blocklist.ordered.comparator.Co
 import net.rodofire.easierworldcreator.blockdata.blocklist.ordered.comparator.DefaultOrderedBlockListComparator;
 import net.rodofire.easierworldcreator.blockdata.blocklist.ordered.comparator.OrderedBlockListComparator;
 import net.rodofire.easierworldcreator.blockdata.sorter.BlockSorter;
+import net.rodofire.easierworldcreator.maths.equation.CubicEquation;
+import net.rodofire.easierworldcreator.maths.equation.QuadraticEquation;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -49,7 +51,7 @@ import java.util.concurrent.atomic.AtomicReference;
  * <li> Specify how you want your animation to be played.
  * </ul>
  */
-@SuppressWarnings("unused")
+@SuppressWarnings({"unused", "Duplicates"})
 public class StructurePlaceAnimator {
     private StructureWorldAccess world;
     BlockSorter blockSorter;
@@ -336,7 +338,7 @@ public class StructurePlaceAnimator {
             for (int i = 0; i < blocksThisTick && !comparator.getBlockPosSet().isEmpty(); i++) {
                 //init the state. the block doesn't matter
                 BlockState state = Blocks.BARRIER.getDefaultState();
-                Pair<BlockPos, U> info = comparator.getFirstPosPair();
+                Pair<BlockPos, U> info = comparator.getLastPosPair();
                 BlockPos pos = info.getLeft();
 
                 if (comparator instanceof CompoundOrderedBlockListComparator cmp) {
@@ -360,7 +362,7 @@ public class StructurePlaceAnimator {
                 for (int i = 0; i < left; i++) {
                     comparator.placeLastWithDeletion(world);
                 }
-                System.out.println("left" + comparator.posSize());
+                comparator.removeAll();
             }
         });
     }
@@ -369,7 +371,7 @@ public class StructurePlaceAnimator {
      * Method used to calculate the factors of the animator
      *
      * @param totalBlocks  the number of blocks that have to be placed
-     * @param randomBlocks the random blocks list in the case of the
+     * @param randomBlocks the random blocks list in the case of random placeTime
      */
     private void calculateBlockPerTicks(int totalBlocks, List<Integer> randomBlocks) {
         switch (animatorTime) {
@@ -391,7 +393,7 @@ public class StructurePlaceAnimator {
                 if (end < 1)
                     end = 1;
 
-                this.ticks = 2 * totalBlocks / (start + end);
+                this.ticks = (int) Math.ceil((double) (2 * totalBlocks) / (start + end));
 
                 this.bx = (float) (end - start) / (this.ticks - 1);
                 this.c = start;
@@ -405,7 +407,21 @@ public class StructurePlaceAnimator {
                 if (end < 1)
                     end = 1;
 
-                this.ticks = 2 * totalBlocks / (start + end);
+                float a = (float) -(4 * start - end) / 3;
+                float b = totalBlocks - (float) (3 * start - end) / 2;
+                float c = (float) (-start + end) / 6;
+
+                QuadraticEquation quadraticEquation = new QuadraticEquation(a, b, c);
+                Pair<Float, Float> result = quadraticEquation.solve();
+                if (result == null || (result.getRight() < 0 && result.getLeft() < 0)) {
+                    this.ax2 = 1;
+                    return;
+                }
+                if (result.getLeft() < 0) {
+                    this.ticks = (int) Math.ceil(result.getRight());
+                } else {
+                    this.ticks = (int) Math.ceil(result.getLeft());
+                }
 
                 if (this.ticks == 1) {
                     this.c = totalBlocks;
@@ -430,25 +446,62 @@ public class StructurePlaceAnimator {
             case CONSTANT_BLOCKS_PER_TICK -> {
                 if (blocksPerTick <= 0) {
                     EasierWorldCreator.LOGGER.error("StructureBlockAnimator: blocksPerTick is zero or negative");
-                    return;
+                    throw new IllegalStateException();
                 }
+                this.c = blocksPerTick;
                 this.ticks = (int) Math.ceil((double) totalBlocks / blocksPerTick);
             }
             case LINEAR_BLOCK_PER_TICK -> {
                 if (blocksPerTick <= 0) {
                     EasierWorldCreator.LOGGER.error("StructureBlockAnimator: blocksPerTick is zero or negative");
+                    throw new IllegalStateException();
+                }
+
+                float a = (float) blocksPerTick / 2;
+                float b = (float) blocksPerTick / 2;
+                float c = (float) -totalBlocks;
+
+                QuadraticEquation equation = new QuadraticEquation(a, b, c);
+                Pair<Float, Float> result = equation.solve();
+
+                if (result == null || (result.getRight() < 0 && result.getLeft() < 0)) {
+                    this.ax2 = 1;
                     return;
                 }
+                if (result.getLeft() < 0) {
+                    this.ticks = (int) Math.ceil(result.getRight());
+                } else {
+                    this.ticks = (int) Math.ceil(result.getLeft());
+                }
+
                 this.bx = blocksPerTick;
-                this.ticks = (int) Math.ceil((double) totalBlocks / blocksPerTick);
             }
             case QUADRATIC_BLOCK_PER_TICK -> {
                 if (blocksPerTick <= 0) {
                     EasierWorldCreator.LOGGER.error("StructureBlockAnimator: blocksPerTick is zero or negative");
-                    return;
+                    throw new IllegalStateException();
                 }
+
+
+                float a = (float) blocksPerTick / 3;
+                float b = (float) blocksPerTick / 2;
+                float c = (float) blocksPerTick / 6;
+                float d = -totalBlocks;
+
+                CubicEquation equation = new CubicEquation();
+                equation.solve(a, b, c, d);
+
+                if (equation.x1 > 1) {
+                    this.ticks = (int) Math.ceil(equation.x1);
+                } else if (equation.x2 > 1) {
+                    this.ticks = (int) Math.ceil(equation.x2);
+                } else if (equation.x3 > 1) {
+                    this.ticks = (int) Math.ceil(equation.x3);
+                } else {
+                    this.ticks = 2000;
+                }
+
                 this.ax2 = blocksPerTick;
-                this.ticks = (int) Math.ceil((double) totalBlocks / blocksPerTick);
             }
             default -> throw new IllegalStateException("Unexpected value: " + animatorTime);
         }
