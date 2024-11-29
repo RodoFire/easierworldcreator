@@ -88,7 +88,6 @@ public abstract class OrderedBlockListComparator<T> {
      * @param posList the List of BlockPos that you want to add
      */
     public void put(T state, List<BlockPos> posList) {
-        int i = 0;
         //we put the blockPos depending on the short value
         if (this.statesMap.containsValue(state)) {
             //we compare the short with the blockState value
@@ -107,7 +106,6 @@ public abstract class OrderedBlockListComparator<T> {
                 this.posList.add(pos);
             }
         }
-        System.out.println(i);
     }
 
     public void put(T state, BlockPos pos) {
@@ -252,9 +250,7 @@ public abstract class OrderedBlockListComparator<T> {
 
     public Pair<BlockPos, T> removeBlockPosPair(int index) {
         BlockPos pos = posList.remove(index);
-        Short id = this.posMap.remove(pos);
-        if (id == null)
-            return null;
+        Short id = this.posMap.get(pos);
         return new Pair<>(pos, this.statesMap.get(id));
     }
 
@@ -268,6 +264,12 @@ public abstract class OrderedBlockListComparator<T> {
 
     public Pair<BlockPos, T> removeLastBlockPosPair() {
         return removeBlockPosPair((posList.size() - 1));
+    }
+
+    public void removeAll() {
+        this.posList.clear();
+        this.posMap.clear();
+        this.statesMap.clear();
     }
 
     /**
@@ -433,7 +435,7 @@ public abstract class OrderedBlockListComparator<T> {
      * @return the size of the position map
      */
     public int posSize() {
-        return posMap.size();
+        return posList.size();
     }
 
     /**
