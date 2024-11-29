@@ -1,7 +1,10 @@
-package net.rodofire.easierworldcreator.blockdata.blocklist.basic;
+package net.rodofire.easierworldcreator.blockdata.blocklist;
 
 import net.minecraft.block.BlockState;
 import net.minecraft.util.math.BlockPos;
+import net.rodofire.easierworldcreator.blockdata.blocklist.basic.DefaultBlockList;
+import net.rodofire.easierworldcreator.blockdata.blocklist.basic.ForceBlockList;
+import net.rodofire.easierworldcreator.blockdata.sorter.BlockSorter;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -30,7 +33,8 @@ public class BlockListUtil {
         }
     }
 
-    public static List<DefaultBlockList> UnDivideBlockList(List<Set<DefaultBlockList>> blockList) {
+
+    public static List<DefaultBlockList> unDivideBlockList(List<Set<DefaultBlockList>> blockList) {
         List<DefaultBlockList> combinedDefaultBlockList = new ArrayList<>();
 
         //map that store a BlockState.
@@ -43,6 +47,35 @@ public class BlockListUtil {
         //we combine the blockList in parallel for better performance
         blockList.parallelStream().forEach(set -> {
             for (DefaultBlockList block : set) {
+                int posIndex = blockStateIndexMap.computeIfAbsent(block.getBlockState(), state -> {
+                    synchronized (combinedDefaultBlockList) {
+                        combinedDefaultBlockList.add(block);
+                        return index.getAndIncrement();
+                    }
+                });
+
+                synchronized (combinedDefaultBlockList) {
+                    combinedDefaultBlockList.get(posIndex).addBlockPos(block.getPosList());
+                }
+            }
+        });
+
+        return combinedDefaultBlockList;
+    }
+
+    public static List<ForceBlockList> unDivideForceBlockList(List<Set<ForceBlockList>> blockList) {
+        List<ForceBlockList> combinedDefaultBlockList = new ArrayList<>();
+
+        //map that store a BlockState.
+        //  -if the blockState is present, then, you get the index at which you add some blockPos
+        //  -if not, you add a new blockList inside the combinedBlockList
+        Map<BlockState, Integer> blockStateIndexMap = new ConcurrentHashMap<>();
+
+        AtomicInteger index = new AtomicInteger(0);
+
+        //we combine the blockList in parallel for better performance
+        blockList.parallelStream().forEach(set -> {
+            for (ForceBlockList block : set) {
                 int posIndex = blockStateIndexMap.computeIfAbsent(block.getBlockState(), state -> {
                     synchronized (combinedDefaultBlockList) {
                         combinedDefaultBlockList.add(block);
@@ -98,6 +131,20 @@ public class BlockListUtil {
                     combine2BlockList(result, list2);
                     return result;
                 });
+    }
+
+
+    /**
+     * method to sort a BlockList
+     *
+     * @param blockList the blockList that will be sorted
+     * @param sorter    the sorter object that will be used to get the sorted BlockPos
+     * @return the sorted BlockList
+     */
+    public static <T extends DefaultBlockList> List<T> getSorted(List<T> blockList, BlockSorter sorter) {
+        List<T> sortedList = new ArrayList<>(blockList);
+        sorter.sortInsideBlockList(sortedList);
+        return sortedList;
     }
 
     /**
