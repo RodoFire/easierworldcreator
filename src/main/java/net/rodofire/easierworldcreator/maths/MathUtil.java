@@ -1,4 +1,4 @@
-package net.rodofire.easierworldcreator.util;
+package net.rodofire.easierworldcreator.maths;
 
 import net.minecraft.util.math.random.Random;
 

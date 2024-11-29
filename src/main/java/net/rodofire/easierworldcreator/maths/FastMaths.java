@@ -1,4 +1,4 @@
-package net.rodofire.easierworldcreator.util;
+package net.rodofire.easierworldcreator.maths;
 
 import net.rodofire.easierworldcreator.EasierWorldCreator;
 
