@@ -10,7 +10,6 @@ import net.rodofire.easierworldcreator.util.WorldGenUtil;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 
 /**
@@ -241,8 +240,7 @@ public class BlockSorter {
                 yield defaultBlockList;
             }
             case RANDOM -> {
-                defaultBlockList.setPosList(defaultBlockList.getPosList().parallelStream().sorted(Comparator.comparingDouble((pos) -> ThreadLocalRandom.current().nextDouble())
-                ).toList());
+                Collections.shuffle(defaultBlockList.getPosList());
                 yield defaultBlockList;
             }
             default -> throw new IllegalStateException("Unexpected value: " + type);
