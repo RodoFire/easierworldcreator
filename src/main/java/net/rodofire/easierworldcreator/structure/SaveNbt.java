@@ -12,9 +12,9 @@ import net.minecraft.world.EmptyBlockView;
 import net.minecraft.world.StructureWorldAccess;
 import net.minecraft.world.chunk.Chunk;
 import net.rodofire.easierworldcreator.EasierWorldCreator;
+import net.rodofire.easierworldcreator.blockdata.blocklist.basic.DefaultBlockList;
 import net.rodofire.easierworldcreator.mixin.PalettedBlockInfoListMixin;
 import net.rodofire.easierworldcreator.mixin.StructureTemplateMixin;
-import net.rodofire.easierworldcreator.shapeutil.BlockList;
 import org.spongepowered.asm.mixin.Unique;
 
 import java.io.IOException;
@@ -37,22 +37,22 @@ public class SaveNbt {
      * <p>
      * The methods receive a list of blockList.
      * The list represents all the blocks of the generated structure.
-     * for every BlockPos and BlockStates, the method verify the chunk it belongs to and add it to the Map chunkBlockInfoMap.
+     * For every BlockPos and BlockStates, the method verify the chunk it belongs to and add it to the Map chunkBlockInfoMap.
      * This divides the structure into chunks that will be saved just after converting the first list into a {@link StructureTemplate.PalettedBlockInfoList}
      * The Structure will be located in the following path : [save_name]/generated/easierworldcreator/[chunk.x-chunk.z]/custom_feature_[Random long]
      * </p>
      *
-     * @param blockLists a list of BlockList to save it into the nbt file
+     * @param defaultBlockLists a list of BlockList to save it into the nbt file
      */
     @SuppressWarnings("UnreachableCode")
-    public static void saveNbtDuringWorldGen(StructureWorldAccess world, List<BlockList> blockLists, String featureName) {
+    public static void saveNbtDuringWorldGen(StructureWorldAccess world, List<DefaultBlockList> defaultBlockLists, String featureName) {
         Map<ChunkPos, List<StructureTemplate.StructureBlockInfo>> chunkBlockInfoMap = new HashMap<>();
 
         List<StructureTemplate.StructureBlockInfo> list = Lists.newArrayList();
         List<StructureTemplate.StructureBlockInfo> list2 = Lists.newArrayList();
         List<StructureTemplate.StructureBlockInfo> list3 = Lists.newArrayList();
 
-        for (BlockList blocks : blockLists) {
+        for (DefaultBlockList blocks : defaultBlockLists) {
             BlockState blockState = blocks.getBlockState();
             for (BlockPos pos : blocks.getPosList()) {
                 StructureTemplate.StructureBlockInfo structureBlockInfo = new StructureTemplate.StructureBlockInfo(pos, blockState, null);

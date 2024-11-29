@@ -1,4 +1,4 @@
-package net.rodofire.easierworldcreator.shapeutil;
+package net.rodofire.easierworldcreator.particledata.layer;
 
 import net.minecraft.client.particle.Particle;
 
