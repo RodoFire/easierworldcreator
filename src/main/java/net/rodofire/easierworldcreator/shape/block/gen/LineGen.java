@@ -3,7 +3,6 @@ package net.rodofire.easierworldcreator.shape.block.gen;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.StructureWorldAccess;
 import net.rodofire.easierworldcreator.blockdata.layer.BlockLayer;
 import net.rodofire.easierworldcreator.shape.block.instanciator.AbstractBlockShape;
@@ -19,7 +18,7 @@ import java.util.*;
  * Before 2.1.0, the BlockPos list was a simple list.
  * Starting from 2.1.0, the shapes returns a list of {@link ChunkPos} that has a set of {@link BlockPos}
  * The change from {@link List} to {@link Set} was done to avoid duplicates BlockPos which resulted in unnecessary calculations.
- * this allow easy multithreading for the Block assignment done in the {@link AbstractBlockShape} which result in better performance;
+ * This allow easy multithreading for the Block assignment done in the {@link AbstractBlockShape} which result in better performance;
  * </p>
  */
 @SuppressWarnings("unused")
@@ -79,11 +78,6 @@ public class LineGen extends AbstractBlockShape {
             this.drawLine(chunkMap);
         }
         return new ArrayList<>(chunkMap.values());
-    }
-
-    @Override
-    public List<Vec3d> getVec3d() {
-        return List.of();
     }
 
     /**
