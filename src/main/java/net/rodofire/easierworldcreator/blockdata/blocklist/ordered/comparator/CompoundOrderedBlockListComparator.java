@@ -43,6 +43,10 @@ public class CompoundOrderedBlockListComparator extends OrderedBlockListComparat
     public CompoundOrderedBlockListComparator() {
     }
 
+    public void put(CompoundOrderedBlockListComparator comparator) {
+        super.put(comparator);
+    }
+
 
     /**
      * Method to get the Set of pair that are saved in the comparator

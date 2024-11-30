@@ -57,6 +57,11 @@ public class FullOrderedBlockListComparator extends CompoundOrderedBlockListComp
         this.forceBlocks.put(getStateIndex(state), new Pair<>(false, blocksToForce));
     }
 
+    public void put(FullOrderedBlockListComparator comparator) {
+        super.put(comparator);
+        forceBlocks.putAll(comparator.getForceBlocks());
+    }
+
     /**
      * gives you the Set of every block that can be forced
      *
@@ -65,6 +70,10 @@ public class FullOrderedBlockListComparator extends CompoundOrderedBlockListComp
 
     public Set<Block> getBlocksToForce(Pair<BlockState, NbtCompound> state) {
         return forceBlocks.get(getStateIndex(state)).getRight();
+    }
+
+    public BiMap<Short, Pair<Boolean, Set<Block>>> getForceBlocks() {
+        return forceBlocks;
     }
 
     /**

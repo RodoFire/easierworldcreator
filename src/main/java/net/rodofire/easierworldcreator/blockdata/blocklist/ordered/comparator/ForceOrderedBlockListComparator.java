@@ -125,6 +125,11 @@ public class ForceOrderedBlockListComparator extends DefaultOrderedBlockListComp
         this.forceBlocks.put(getStateIndex(state), new Pair<>(false, blocksToForce));
     }
 
+    public void put(ForceOrderedBlockListComparator comparator) {
+        super.put(comparator);
+        forceBlocks.putAll(comparator.getForceBlocks());
+    }
+
     /**
      * gives you the Set of every block that can be forced
      *
@@ -133,6 +138,10 @@ public class ForceOrderedBlockListComparator extends DefaultOrderedBlockListComp
 
     public Set<Block> getBlocksToForce(BlockState state) {
         return forceBlocks.get(getStateIndex(state)).getRight();
+    }
+
+    public BiMap<Short, Pair<Boolean, Set<Block>>> getForceBlocks() {
+        return forceBlocks;
     }
 
     /**

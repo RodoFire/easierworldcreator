@@ -76,6 +76,11 @@ public class DefaultOrderedBlockListComparator extends OrderedBlockListComparato
         return this.statesMap.get((short) (statesMap.size() - 1));
     }
 
+
+    public void put(DefaultOrderedBlockListComparator comparator) {
+        super.put(comparator);
+    }
+
     /**
      * method to place the first Block
      *
