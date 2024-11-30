@@ -11,8 +11,11 @@ import net.minecraft.item.Item;
 import net.minecraft.registry.*;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.util.BlockMirror;
+import net.minecraft.util.BlockRotation;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.random.Random;
 import net.minecraft.world.StructureWorldAccess;
 import net.minecraft.world.World;
@@ -24,11 +27,9 @@ import net.minecraft.world.gen.placementmodifier.PlacementModifier;
 import net.minecraft.world.gen.placementmodifier.RarityFilterPlacementModifier;
 import net.minecraft.world.gen.placementmodifier.SquarePlacementModifier;
 import net.rodofire.easierworldcreator.EWCTest;
-import net.rodofire.easierworldcreator.shapegen.SphereGen;
-import net.rodofire.easierworldcreator.shapeutil.BlockLayer;
-import net.rodofire.easierworldcreator.shapeutil.ShapeBase;
-import net.rodofire.easierworldcreator.shapeutil.ShapeLayer;
-import net.rodofire.easierworldcreator.shapeutil.StructurePlaceAnimator;
+import net.rodofire.easierworldcreator.blockdata.sorter.BlockSorter;
+import net.rodofire.easierworldcreator.placer.blocks.animator.StructurePlaceAnimator;
+import net.rodofire.easierworldcreator.structure.NbtPlacer;
 
 import java.util.List;
 import java.util.Optional;
@@ -47,15 +48,30 @@ public class FeaturesRelated {
 
             long startTimeCartesian = System.nanoTime();
             //NbtPlacer placer = new NbtPlacer(world, new Identifier("village/plains/houses/plains_accessory_1"));
-            SphereGen sphereGen = new SphereGen(world, pos, ShapeBase.PlaceMoment.ANIMATED_OTHER, 32);
-            StructurePlaceAnimator animator = new StructurePlaceAnimator(world, StructurePlaceAnimator.AnimatorType.RANDOM, StructurePlaceAnimator.AnimatorTime.TICKS);
+            /*SphereGen sphereGen = new SphereGen(world, pos, AbstractBlockShapeBase.PlaceMoment.ANIMATED_OTHER, 32);
+            TorusGen torusGen = new TorusGen(world, pos, AbstractBlockShapeBase.PlaceMoment.ANIMATED_OTHER, 20, 50);
+            BlockSorter sorter = new BlockSorter(BlockSorter.BlockSorterType.ALONG_AXIS);
+            sorter.setCenterPoint(pos);
+            StructurePlaceAnimator animator = new StructurePlaceAnimator(world, sorter, StructurePlaceAnimator.AnimatorTime.QUADRATIC_TICKS);
+            animator.setBounds(new Pair<>(1,3000));
+            animator.setBlocksPerTick(10);
             animator.setTicks(100);
-            animator.setCenterPoint(pos);
-            sphereGen.setAnimator(animator);
-            sphereGen.setBlockLayers(new BlockLayer(List.of(Blocks.GRASS_BLOCK.getDefaultState(), Blocks.GRASS_BLOCK.getDefaultState(), Blocks.COARSE_DIRT.getDefaultState()), 1), new BlockLayer(List.of(Blocks.STONE.getDefaultState(), Blocks.COBBLESTONE.getDefaultState(), Blocks.MOSSY_COBBLESTONE.getDefaultState(), Blocks.TUFF.getDefaultState(), Blocks.STONE.getDefaultState(), Blocks.STONE.getDefaultState()), 1));
-            sphereGen.setLayersType(ShapeLayer.LayersType.SURFACE);
+            torusGen.setAnimator(animator);
+            torusGen.setBlockLayer(new BlockLayerComparator(List.of(new BlockLayer(List.of(Blocks.BAMBOO_BLOCK.getDefaultState(), Blocks.BAMBOO_MOSAIC.getDefaultState(), Blocks.BAMBOO_PLANKS.getDefaultState()), 1), new BlockLayer(List.of(Blocks.OAK_WOOD.getDefaultState(), Blocks.OAK_PLANKS.getDefaultState(), Blocks.STRIPPED_OAK_WOOD.getDefaultState(), Blocks.OAK_WOOD.getDefaultState(), Blocks.OAK_PLANKS.getDefaultState(), Blocks.OAK_PLANKS.getDefaultState()), 1))));
+            torusGen.setLayersType(AbstractBlockShapeLayer.LayersType.SURFACE);
+            torusGen.setZRotation(45);
+            torusGen.setSecondYRotation(30);
+            torusGen.place();*/
 
-            sphereGen.place();
+            NbtPlacer placer = new NbtPlacer(world, new Identifier("village/plains/houses/plains_medium_house_2"));
+            BlockSorter sorter = new BlockSorter(BlockSorter.BlockSorterType.ALONG_AXIS);
+            sorter.setCenterPoint(pos);
+            sorter.setAxisDirection(new Vec3d(0, -1, 0));
+            StructurePlaceAnimator animator = new StructurePlaceAnimator(world, sorter, StructurePlaceAnimator.AnimatorTime.CONSTANT_BLOCKS_PER_TICK);
+            animator.setBlocksPerTick(1);
+            placer.setAnimator(animator);
+            placer.place(1.0f, pos, new BlockPos(-3, 0, -7), BlockMirror.NONE, BlockRotation.NONE, true);
+
 
 
             long endTimeCartesian = (System.nanoTime());
@@ -65,7 +81,7 @@ public class FeaturesRelated {
         }
     }
 
-    public class ModConfiguredFeatures<FC extends FeatureConfig> {
+    public static class ModConfiguredFeatures<FC extends FeatureConfig> {
         public static final RegistryKey<ConfiguredFeature<?, ?>> FEATURE_TESTER_KEY = registerKey("feature_teste_key");
 
         public static void bootstrap(Registerable<ConfiguredFeature<?, ?>> context) {

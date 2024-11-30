@@ -1,7 +1,7 @@
 {
 	"schemaVersion": 1,
 	"id": "easierworldcreator",
-	"version": "2.2.1-1.20.1",
+	"version": "2.3.0-1.20.1",
 
 	"name": "Easier-World-Creator",
 	"description": "Mod To help creating Features",
@@ -31,7 +31,7 @@
 		"fabric-api": "*"
 	},
 	"breaks" : {
-		"mushrooomsmod": "<=0.0.12-1.20.4"
+		"mushrooomsmod": "<=0.0.15-1.20.4"
 	},
 	"suggests": {
 		"another-mod": "*"
