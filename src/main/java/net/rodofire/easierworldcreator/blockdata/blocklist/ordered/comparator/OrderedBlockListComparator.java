@@ -112,6 +112,13 @@ public abstract class OrderedBlockListComparator<T> {
         this.put(state, List.of(pos));
     }
 
+
+    protected <U extends OrderedBlockListComparator<T>> void put(U comparator) {
+        this.statesMap.putAll(comparator.getStatesMap());
+        this.posMap.putAll(comparator.getPosMap());
+        this.posList.addAll(comparator.getPosList());
+    }
+
     /**
      * Method to add a {@code T} object as well as a list of BlockPos.
      * <p>- In the case there's already a {@code T} object, the method will only add the BlockPos list to the {@code posMap} with the related index.
@@ -280,6 +287,12 @@ public abstract class OrderedBlockListComparator<T> {
     protected List<T> getT() {
         return statesMap.values().stream().toList();
     }
+
+
+    public BiMap<Short, T> getStatesMap() {
+        return statesMap;
+    }
+
 
     /**
      * Method to get the posMap related to the object
