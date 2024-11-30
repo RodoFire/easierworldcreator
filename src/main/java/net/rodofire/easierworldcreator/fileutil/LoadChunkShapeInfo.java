@@ -20,7 +20,7 @@ import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.StructureWorldAccess;
 import net.minecraft.world.chunk.Chunk;
 import net.rodofire.easierworldcreator.EasierWorldCreator;
-import net.rodofire.easierworldcreator.shapeutil.BlockList;
+import net.rodofire.easierworldcreator.blockdata.blocklist.basic.DefaultBlockList;
 
 import java.io.File;
 import java.io.IOException;
@@ -44,7 +44,7 @@ public class LoadChunkShapeInfo {
      * @param chunkFilePath the path of the shape
      * @return a {@link List} used later to place the BlockStates
      */
-    public static List<BlockList> loadFromJson(StructureWorldAccess world, Path chunkFilePath) {
+    public static List<DefaultBlockList> loadFromJson(StructureWorldAccess world, Path chunkFilePath) {
         File file = new File(chunkFilePath.toString());
         if(!file.exists()) return List.of();
         String jsonContent;
@@ -59,7 +59,7 @@ public class LoadChunkShapeInfo {
 
         JsonArray jsonArray = gson.fromJson(jsonContent, JsonArray.class);
 
-        List<BlockList> blockLists = new ArrayList<>();
+        List<DefaultBlockList> defaultBlockLists = new ArrayList<>();
         String fileName = chunkFilePath.getFileName().toString();
 
         Pattern pattern = Pattern.compile("\\[(-?\\d+),(-?\\d+)]_.*\\.json");
@@ -92,23 +92,23 @@ public class LoadChunkShapeInfo {
             }
 
             // Create a new BlockList and add it to the set
-            BlockList blockList = new BlockList(posList, blockState);
-            blockLists.add(blockList);
+            DefaultBlockList defaultBlockList = new DefaultBlockList(posList, blockState);
+            defaultBlockLists.add(defaultBlockList);
         }
 
-        return blockLists;
+        return defaultBlockLists;
     }
 
     /**
      * method to place the structure
      *
      * @param world      the world the structure will spawn in
-     * @param blockLists the list of blockList that compose the structure
+     * @param defaultBlockLists the list of blockList that compose the structure
      */
-    public static void placeStructure(StructureWorldAccess world, List<BlockList> blockLists) {
-        for (BlockList blockList : blockLists) {
-            BlockState state = blockList.getBlockState();
-            for (BlockPos pos : blockList.getPosList()) {
+    public static void placeStructure(StructureWorldAccess world, List<DefaultBlockList> defaultBlockLists) {
+        for (DefaultBlockList defaultBlockList : defaultBlockLists) {
+            BlockState state = defaultBlockList.getBlockState();
+            for (BlockPos pos : defaultBlockList.getPosList()) {
                 world.setBlockState(pos, state, 3);
             }
         }
