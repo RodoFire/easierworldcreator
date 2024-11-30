@@ -10,17 +10,24 @@ import net.minecraft.structure.StructurePlacementData;
 import net.minecraft.structure.StructureTemplate;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.StructureWorldAccess;
+import net.rodofire.easierworldcreator.blockdata.blocklist.basic.CompoundBlockList;
+import net.rodofire.easierworldcreator.blockdata.blocklist.basic.DefaultBlockList;
+import net.rodofire.easierworldcreator.blockdata.blocklist.basic.FullBlockList;
+import net.rodofire.easierworldcreator.blockdata.blocklist.basic.comparator.BlockListComparator;
+import net.rodofire.easierworldcreator.blockdata.blocklist.basic.comparator.CompoundBlockListComparator;
+import net.rodofire.easierworldcreator.blockdata.blocklist.basic.comparator.FullBlockListComparator;
+import net.rodofire.easierworldcreator.blockdata.blocklist.ordered.comparator.OrderedBlockListComparator;
+import net.rodofire.easierworldcreator.maths.MathUtil;
 import net.rodofire.easierworldcreator.mixin.StructureTemplateMixin;
-import net.rodofire.easierworldcreator.shapeutil.BlockList;
-import net.rodofire.easierworldcreator.shapeutil.StructurePlaceAnimator;
-import net.rodofire.easierworldcreator.util.MathUtil;
-import net.rodofire.easierworldcreator.worldgenutil.BlockPlaceUtil;
+import net.rodofire.easierworldcreator.placer.blocks.animator.StructurePlaceAnimator;
+import net.rodofire.easierworldcreator.placer.blocks.util.BlockPlaceUtil;
 
 import java.util.*;
 
+//TODO check if tag is present, if yes, cast CompoundBlockList
 @SuppressWarnings("unused")
 public class StructureUtil {
-    public static void convertNbtToBlockList(StructureTemplate structureTemplate, List<BlockList> blockLists) {
+    public static void convertNbtToComparator(StructureTemplate structureTemplate, List<DefaultBlockList> defaultBlockLists) {
         List<StructureTemplate.PalettedBlockInfoList> blockInfoLists = ((StructureTemplateMixin) structureTemplate).getBlockInfoLists();
         Map<Pair<BlockState, NbtCompound>, List<BlockPos>> blockStateToPositionsMap = new HashMap<>();
         for (StructureTemplate.PalettedBlockInfoList palettedList : blockInfoLists) {
@@ -29,9 +36,9 @@ public class StructureUtil {
                 BlockPos blockPos = blockInfo.pos();
                 NbtCompound tag = blockInfo.nbt();
 
-                Pair<BlockState, NbtCompound> stateAndTagPair = new Pair<>(blockState, tag);
+                //Pair<BlockState, NbtCompound> stateAndTagPair = new Pair<>(blockState/*, tag*/);
 
-                blockStateToPositionsMap.computeIfAbsent(stateAndTagPair, k -> new ArrayList<>()).add(blockPos);
+                //blockStateToPositionsMap.computeIfAbsent(stateAndTagPair, k -> new ArrayList<>()).add(blockPos);
             }
         }
 
@@ -40,11 +47,11 @@ public class StructureUtil {
             NbtCompound tag = entry.getKey().getSecond();
             List<BlockPos> positions = entry.getValue();
 
-            blockLists.add(new BlockList(positions, blockState, tag));
+            //defaultBlockLists.add(new DefaultBlockList(positions, blockState/*/*, tag*/*/));
         }
     }
 
-    public static void convertNbtToBlockList(StructureTemplate structureTemplate, List<BlockList> blockLists, StructurePlacementData data, StructureWorldAccess world, BlockPos pos) {
+    public static void convertNbtToComparator(StructureTemplate structureTemplate, CompoundBlockListComparator comparator, StructurePlacementData data, StructureWorldAccess world, BlockPos pos) {
         List<StructureTemplate.StructureBlockInfo> list = data.getRandomBlockInfos(((StructureTemplateMixin) structureTemplate).getBlockInfoLists(), pos).getAll();
         List<StructureTemplate.StructureBlockInfo> blockInfoList = StructureTemplate.process(world, pos, new BlockPos(0, 0, 0), data, list);
 
@@ -66,41 +73,67 @@ public class StructureUtil {
             NbtCompound tag = entry.getKey().getSecond();
             List<BlockPos> positions = entry.getValue();
 
-            blockLists.add(new BlockList(positions, blockState, tag));
+            comparator.put(new CompoundBlockList(positions, blockState, tag));
+        }
+    }
+
+    public static void convertNbtToComparator(StructureTemplate structureTemplate, FullBlockListComparator comparator, StructurePlacementData data, StructureWorldAccess world, BlockPos pos) {
+        List<StructureTemplate.StructureBlockInfo> list = data.getRandomBlockInfos(((StructureTemplateMixin) structureTemplate).getBlockInfoLists(), pos).getAll();
+        List<StructureTemplate.StructureBlockInfo> blockInfoList = StructureTemplate.process(world, pos, new BlockPos(0, 0, 0), data, list);
+
+        Map<Pair<BlockState, NbtCompound>, List<BlockPos>> blockStateToPositionsMap = new HashMap<>();
+        //for (StructureTemplate.PalettedBlockInfoList palettedList : ((StructureTemplateMixin) structureTemplate).getBlockInfoLists()) {
+        for (StructureTemplate.StructureBlockInfo blockInfo : blockInfoList) {
+            BlockState blockState = blockInfo.state();
+            BlockPos blockPos = blockInfo.pos();
+            NbtCompound tag = blockInfo.nbt();
+
+            Pair<BlockState, NbtCompound> stateAndTagPair = new Pair<>(blockState, tag);
+
+            blockStateToPositionsMap.computeIfAbsent(stateAndTagPair, k -> new ArrayList<>()).add(blockPos);
+        }
+        //}
+
+        for (Map.Entry<Pair<BlockState, NbtCompound>, List<BlockPos>> entry : blockStateToPositionsMap.entrySet()) {
+            BlockState blockState = entry.getKey().getFirst();
+            NbtCompound tag = entry.getKey().getSecond();
+            List<BlockPos> positions = entry.getValue();
+
+            comparator.put(new FullBlockList(positions, blockState, tag));
         }
     }
 
 
-    public static void place(StructureWorldAccess world, StructurePlaceAnimator animator, List<BlockList> blockLists, BlockPos block, boolean force, Set<Block> blockToForce, Set<Block> blockToSkip, float integrity) {
+    public static <T extends BlockListComparator<U, V, W, X>, U extends DefaultBlockList, V, W extends OrderedBlockListComparator<X>, X> void place(StructureWorldAccess world, StructurePlaceAnimator animator, T comparator, BlockPos block, boolean force, Set<Block> blockToForce, Set<Block> blockToSkip, float integrity) {
         //avoid errors due to aberrant values
         if (integrity < 0) integrity = 0;
         if (integrity > 1) integrity = 1;
 
-        Iterator<BlockList> blockListIterator = blockLists.iterator();
-        while (blockListIterator.hasNext()) {
-            BlockList blockList = blockListIterator.next();
-            BlockState blockState = blockList.getBlockState();
+        Iterator<U> iterator = comparator.get().iterator();
+        while (iterator.hasNext()) {
+            U defaultBlockList = iterator.next();
+            BlockState blockState = defaultBlockList.getBlockState();
 
             if (blockState.isOf(Blocks.JIGSAW) || blockState.isOf(Blocks.STRUCTURE_BLOCK) || blockState.isOf(Blocks.STRUCTURE_VOID) || blockState.isOf(Blocks.AIR))
-                blockListIterator.remove();
+                iterator.remove();
 
             if (blockToSkip != null && !blockToSkip.isEmpty())
                 if (blockToSkip.contains(blockState.getBlock()))
-                    blockListIterator.remove();
+                    iterator.remove();
 
-            NbtCompound tag = blockList.getTag();
+            //NbtCompound tag = defaultBlockList.getTag();
 
             boolean bl1 = blockToForce == null || blockToForce.isEmpty();
-            for (BlockPos pos : blockList.getPosList()) {
-                blockList.replaceBlockPos(pos, pos.add(block));
+            for (BlockPos pos : defaultBlockList.getPosList()) {
+                defaultBlockList.replaceBlockPos(pos, pos.add(block));
                 if (!bl1 || force) {
                     if (integrity < 1f) {
                         if (MathUtil.getRandomBoolean(integrity)) {
-                            blockList.removeBlockPos(pos);
+                            defaultBlockList.removeBlockPos(pos);
                         }
                     }
                     if (!BlockPlaceUtil.verifyBlock(world, force, blockToForce, pos.add(block))) {
-                        blockList.removeBlockPos(pos);
+                        defaultBlockList.removeBlockPos(pos);
                     }
                 }
             }
@@ -135,24 +168,27 @@ public class StructureUtil {
         }*/
         //we place the structure depending on if the animator is present or not
         if (animator != null) {
-            animator.placeFromBlockList(blockLists);
-            System.out.println(blockLists);
+            animator.placeFromBlockList(comparator);
+            System.out.println(comparator);
         } else {
-            for (BlockList blockList : blockLists) {
+            for (U blockList : comparator.get()) {
                 BlockState blockState = blockList.getBlockState();
-                NbtCompound tag = blockList.getTag();
                 for (BlockPos pos : blockList.getPosList()) {
                     world.setBlockState(pos, blockState, 3);
-                    if (tag != null) {
-                        BlockEntity blockEntity = world.getBlockEntity(pos);
-                        if (blockEntity != null) {
-                            NbtCompound currentNbt = blockEntity.createNbtWithIdentifyingData();
-                            currentNbt.copyFrom(tag);
+                    if (blockList instanceof CompoundBlockList cmp) {
+                        NbtCompound tag = cmp.getTag();
+                        if (tag != null) {
+                            BlockEntity blockEntity = world.getBlockEntity(pos);
+                            if (blockEntity != null) {
+                                NbtCompound currentNbt = blockEntity.createNbtWithIdentifyingData();
+                                currentNbt.copyFrom(tag);
 
-                            blockEntity.readNbt(currentNbt);
-                            blockEntity.markDirty();
+                                blockEntity.readNbt(currentNbt);
+                                blockEntity.markDirty();
+                            }
                         }
                     }
+
                 }
             }
         }

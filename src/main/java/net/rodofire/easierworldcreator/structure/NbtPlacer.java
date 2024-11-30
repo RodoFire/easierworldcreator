@@ -15,16 +15,18 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.StructureWorldAccess;
 import net.rodofire.easierworldcreator.EasierWorldCreator;
-import net.rodofire.easierworldcreator.shapeutil.BlockList;
-import net.rodofire.easierworldcreator.shapeutil.StructurePlaceAnimator;
+import net.rodofire.easierworldcreator.blockdata.blocklist.basic.comparator.CompoundBlockListComparator;
+import net.rodofire.easierworldcreator.blockdata.blocklist.basic.comparator.FullBlockListComparator;
+import net.rodofire.easierworldcreator.placer.blocks.animator.StructurePlaceAnimator;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
 /**
- * Class to place nbt structures in the world
+ * Class to place nbt structures in the world. To use a NbtPlacer, you can use this code:
+ * <pre>{@code NbtPlacer placer = new NbtPlacer(world, new Identifier("Path_of_your_structure"));
+ * placer.place(pos)
+ * }</pre>
  */
 @SuppressWarnings("unused")
 public class NbtPlacer {
@@ -140,13 +142,20 @@ public class NbtPlacer {
             }
             StructureTemplate structureTemplate = optional.get();
 
-            boolean bl1 = animator != null || !force;
             boolean bl2 = blockToForce == null || blockToForce.isEmpty();
             boolean bl3 = blockToSkip == null || blockToSkip.isEmpty();
-            if (bl1 || !bl2 || !bl3) {
-                List<BlockList> blockLists = new ArrayList<>();
-                StructureUtil.convertNbtToBlockList(structureTemplate, blockLists, structurePlacementData, world, new BlockPos(0, 0, 0));
-                StructureUtil.place(world, animator, blockLists, pos, force, blockToForce, blockToSkip, 1.0f);
+
+
+            if (animator != null || !bl2 || !bl3) {
+                if (bl2) {
+                    FullBlockListComparator comparator = new FullBlockListComparator();
+                    StructureUtil.convertNbtToComparator(structureTemplate, comparator, structurePlacementData, world, offset);
+                    StructureUtil.place(world, animator, comparator, pos, force, blockToForce, blockToSkip, 1.0f);
+                } else {
+                    CompoundBlockListComparator comparator = new CompoundBlockListComparator();
+                    StructureUtil.convertNbtToComparator(structureTemplate, comparator, structurePlacementData, world, offset);
+                    StructureUtil.place(world, animator, comparator, pos, force, blockToForce, blockToSkip, 1.0f);
+                }
             } else {
                 structureTemplate.place(world, pos, offset, structurePlacementData, world.getRandom(), 3);
             }
