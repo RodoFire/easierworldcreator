@@ -536,7 +536,6 @@ public class StructurePlaceAnimator {
          * Will place an increasing (or decreasing) number of blocks per ticks that will grow on x².
          * You will have to specify the number of blockPerTicks that will be used based on the following principle:
          * <ul>
-         * <br>
          * <li> tick0 -> zero blocks placed
          * <li> tick1 -> blockPerTick blocks placed
          * <li> tick2 -> 4 * blockPerTick blocks placed (2*2)
