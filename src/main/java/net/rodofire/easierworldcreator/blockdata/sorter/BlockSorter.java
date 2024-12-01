@@ -183,6 +183,14 @@ public class BlockSorter {
                     );
                 }
             }
+            case FROM_LIST -> {
+            }
+            case INVERSE -> {
+                for (T blockList : blockListShapeManager) {
+                    Collections.reverse(blockList.getPosList());
+                }
+            }
+            default -> throw new IllegalStateException("Unexpected sorter value: " + this.type);
         }
     }
 
@@ -243,6 +251,11 @@ public class BlockSorter {
                 Collections.shuffle(defaultBlockList.getPosList());
                 yield defaultBlockList;
             }
+            case FROM_LIST -> defaultBlockList;
+            case INVERSE -> {
+                Collections.reverse(defaultBlockList.getPosList());
+                yield defaultBlockList;
+            }
             default -> throw new IllegalStateException("Unexpected value: " + type);
         };
     }
@@ -283,6 +296,10 @@ public class BlockSorter {
          * will place the blocks in a random order
          */
         RANDOM,
+        /**
+         * Invert the BlockPos List
+         */
+        INVERSE,
         /**
          * will place the blocks depending on your input
          */
