@@ -260,19 +260,23 @@ public class BlockSorter {
          */
         RADIAL_AXIS,
         /**
-         * will place the blocks from the closer to a blockPos to the further
+         * Will place the blocks from the closer to a blockPos to the further.
+         * You need to set the centerPoint from where the calculations will be done : {@code setCenterPoint()}
          */
         FROM_POINT,
         /**
          * will place the blocks from the further to a blockPos to the closer
+         * You need to set the centerPoint from where the calculations will be done : {@code setCenterPoint()}
          */
         FROM_POINT_INVERTED,
         /**
          * will take a random point of the shape and will place the blocks from the closer to the further
+         * You need to set the centerPoint from where the calculations will be done : {@code setCenterPoint()}
          */
         FROM_RANDOM_POINT,
         /**
          * will take a random point of the shape and will place the blocks from the further to the closer
+         * You need to set the centerPoint from where the calculations will be done : {@code setCenterPoint()}
          */
         FROM_RANDOM_POINT_INVERTED,
         /**
