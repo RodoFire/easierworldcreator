@@ -26,12 +26,13 @@ import java.util.*;
  *      //custom methods
  * }
  * }
- *</pre>
+ * </pre>
  * To know what to put in the {@code <>} read that:
+ *
  * @param <T> the object that represents the state of the blocks usually a {@code BlockState},
- *           but can include Nbt Compounds depending on the case or Blocks, for example.
- *           For example, {@link CompoundOrderedBlockListComparator}
- *           uses a {@code Pair<BlockState, NbtCompound>} to connect Nbt to a BlockState
+ *            but can include Nbt Compounds depending on the case or Blocks, for example.
+ *            For example, {@link CompoundOrderedBlockListComparator}
+ *            uses a {@code Pair<BlockState, NbtCompound>} to connect Nbt to a BlockState
  */
 @SuppressWarnings({"unused", "UnusedReturnValue"})
 public abstract class OrderedBlockListComparator<T> {
@@ -114,12 +115,24 @@ public abstract class OrderedBlockListComparator<T> {
 
 
     protected <U extends OrderedBlockListComparator<T>> void put(U comparator) {
+        //map to convert old indexes to new indexes
+        Map<Short, Short> states = new HashMap<>();
+
+        //we add the T in the case no equal object is present
         for (T state : comparator.statesMap.values()) {
             if (!this.statesMap.containsValue(state)) {
-                this.statesMap.put((short) this.statesMap.size(), state);
+                short size = (short) this.statesMap.size();
+                this.statesMap.put(size, state);
+                states.put(comparator.statesMap.inverse().get(state), size);
+            } else {
+                states.put(comparator.statesMap.inverse().get(state), this.statesMap.inverse().get(state));
             }
         }
-        this.posMap.putAll(comparator.getPosMap());
+        //we make sure that the related BlockPos is kept
+        for (BlockPos pos : comparator.posMap.keySet()) {
+            this.posMap.put(pos, states.get(comparator.posMap.get(pos)));
+        }
+        //nothing special to make here
         this.posList.addAll(comparator.getPosList());
     }
 
