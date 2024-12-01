@@ -114,7 +114,11 @@ public abstract class OrderedBlockListComparator<T> {
 
 
     protected <U extends OrderedBlockListComparator<T>> void put(U comparator) {
-        this.statesMap.putAll(comparator.getStatesMap());
+        for (T state : comparator.statesMap.values()) {
+            if (!this.statesMap.containsValue(state)) {
+                this.statesMap.put((short) this.statesMap.size(), state);
+            }
+        }
         this.posMap.putAll(comparator.getPosMap());
         this.posList.addAll(comparator.getPosList());
     }
