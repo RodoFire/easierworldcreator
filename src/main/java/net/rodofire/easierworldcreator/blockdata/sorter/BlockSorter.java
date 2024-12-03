@@ -247,6 +247,31 @@ public class BlockSorter {
                 ).toList());
                 yield defaultBlockList;
             }
+            case FROM_PLANE -> {
+                Vec3d axisPoint = this.centerPoint.toCenterPos();
+                Vec3d axisDirection = this.axisDirection.normalize();
+                defaultBlockList.setPosList(defaultBlockList.getPosList().parallelStream().sorted(Comparator.comparingDouble(pos -> {
+                    Vec3d blockVec = new Vec3d(pos.getX(), pos.getY(), pos.getZ());
+
+                    double distance = blockVec.subtract(axisPoint).dotProduct(axisDirection);
+
+                    return -Math.abs(distance);
+                })).toList());
+                yield defaultBlockList;
+            }
+            case FROM_PLANE_INVERTED -> {
+                Vec3d axisPoint = this.centerPoint.toCenterPos();
+                Vec3d axisDirection = this.axisDirection.normalize();
+                defaultBlockList.setPosList(defaultBlockList.getPosList().parallelStream().sorted(Comparator.comparingDouble(pos -> {
+                    Vec3d blockVec = new Vec3d(pos.getX(), pos.getY(), pos.getZ());
+
+                    double distance = blockVec.subtract(axisPoint).dotProduct(axisDirection);
+
+                    return Math.abs(distance);
+                })).toList());
+                yield defaultBlockList;
+
+            }
             case RANDOM -> {
                 Collections.shuffle(defaultBlockList.getPosList());
                 yield defaultBlockList;
@@ -265,7 +290,7 @@ public class BlockSorter {
      */
     public enum BlockSorterType {
         /**
-         * will place the blocks on an orthogonal plan to an axis
+         * Will place the blocks on an orthogonal plan to an axis. To use, it, use the method {@code setAxisDirection()}
          */
         ALONG_AXIS,
         /**
@@ -292,6 +317,18 @@ public class BlockSorter {
          * You need to set the centerPoint from where the calculations will be done : {@code setCenterPoint()}
          */
         FROM_RANDOM_POINT_INVERTED,
+        /**
+         * Will sort the BlockPos depending on the distance between the plane and the BlockPos.
+         * The closer BlockPos will be first while the further will be last
+         * To create a plane, you have to use {@code setCenterPoint()} as well as {@code setAxisDirection()}.
+         */
+        FROM_PLANE,
+        /**
+         * Will sort the BlockPos depending on the distance between the plane and the BlockPos.
+         * The further BlockPos will be first while the closer will be last
+         * To create a plane, you have to use {@code setCenterPoint()} as well as {@code setAxisDirection()}.
+         */
+        FROM_PLANE_INVERTED,
         /**
          * will place the blocks in a random order
          */
