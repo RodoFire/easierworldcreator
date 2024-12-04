@@ -119,7 +119,6 @@ public abstract class AbstractBlockShapeRotation extends AbstractBlockShapeLayer
         this.cosY2 = FastMaths.getFastCos(secondYRotation);
         this.sinY2 = FastMaths.getFastSin(secondYRotation);
         this.setRadialCenterPos(this.getPos());
-        this.setRadialCenterVec3d(this.getPos().toCenterPos());
     }
 
     /**

@@ -271,7 +271,7 @@ public abstract class OrderedBlockListComparator<T> {
      *
      * @param index the index of the BlockPos to remove.
      * @return the removed BlockPos.
-     * @throws IndexOutOfBoundsException if the index is out of range (index < 0 || index >= posList.size()).
+     * @throws IndexOutOfBoundsException if the index is out of range.
      */
     public BlockPos removeBlockPos(int index) {
         BlockPos pos = posList.remove(index);
@@ -284,7 +284,7 @@ public abstract class OrderedBlockListComparator<T> {
      *
      * @param index the index of the BlockPos to remove.
      * @return a Pair containing the removed BlockPos and its associated state.
-     * @throws IndexOutOfBoundsException if the index is out of range (index < 0 || index >= posList.size()).
+     * @throws IndexOutOfBoundsException if the index is out of range.
      */
     public Pair<BlockPos, T> removeBlockPosPair(int index) {
         BlockPos pos = posList.remove(index);

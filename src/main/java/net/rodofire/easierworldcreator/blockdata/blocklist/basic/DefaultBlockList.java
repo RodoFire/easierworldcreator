@@ -114,7 +114,7 @@ public class DefaultBlockList implements BlockListManager {
      *
      * @param index the index of the BlockPos to remove.
      * @return the removed BlockPos.
-     * @throws IndexOutOfBoundsException if the index is out of range (index < 0 || index >= posList.size()).
+     * @throws IndexOutOfBoundsException if the index is out of range
      */
     public BlockPos removePos(int index) {
         return posList.remove(index);
