@@ -266,30 +266,76 @@ public abstract class OrderedBlockListComparator<T> {
     }
 
 
+    /**
+     * Removes the BlockPos at the specified index from the posList and posMap.
+     *
+     * @param index the index of the BlockPos to remove.
+     * @return the removed BlockPos.
+     * @throws IndexOutOfBoundsException if the index is out of range (index < 0 || index >= posList.size()).
+     */
     public BlockPos removeBlockPos(int index) {
         BlockPos pos = posList.remove(index);
         this.posMap.remove(pos);
         return pos;
     }
 
+    /**
+     * Removes the BlockPos at the specified index from the posList and retrieves its associated state.
+     *
+     * @param index the index of the BlockPos to remove.
+     * @return a Pair containing the removed BlockPos and its associated state.
+     * @throws IndexOutOfBoundsException if the index is out of range (index < 0 || index >= posList.size()).
+     */
     public Pair<BlockPos, T> removeBlockPosPair(int index) {
         BlockPos pos = posList.remove(index);
         Short id = this.posMap.get(pos);
         return new Pair<>(pos, this.statesMap.get(id));
     }
 
+    /**
+     * Removes and returns the first BlockPos from the posList and posMap.
+     *
+     * @return the first BlockPos that was removed.
+     * @throws IndexOutOfBoundsException if the list is empty.
+     */
     public BlockPos removeFirstPos() {
         return removeBlockPos(0);
     }
 
+    /**
+     * Removes and returns the last BlockPos from the posList and posMap.
+     *
+     * @return the first BlockPos that was removed.
+     * @throws IndexOutOfBoundsException if the list is empty.
+     */
+    public BlockPos removeLastPos() {
+        return removeBlockPos(posSize() - 1);
+    }
+
+    /**
+     * Removes and returns the first BlockPos and its associated state from the posList.
+     *
+     * @return a Pair containing the first BlockPos and its associated state.
+     * @throws IndexOutOfBoundsException if the list is empty.
+     */
     public Pair<BlockPos, T> removeFirstBlockPos() {
         return removeBlockPosPair(0);
     }
 
+    /**
+     * Removes and returns the last BlockPos and its associated state from the posList.
+     *
+     * @return a Pair containing the last BlockPos and its associated state.
+     * @throws IndexOutOfBoundsException if the list is empty.
+     */
     public Pair<BlockPos, T> removeLastBlockPosPair() {
-        return removeBlockPosPair((posList.size() - 1));
+        return removeBlockPosPair(posList.size() - 1);
     }
 
+    /**
+     * Clears all elements from posList, posMap, and statesMap.
+     * After this operation, all structures will be empty.
+     */
     public void removeAll() {
         this.posList.clear();
         this.posMap.clear();
@@ -493,6 +539,50 @@ public abstract class OrderedBlockListComparator<T> {
      */
     public boolean isStateEmpty() {
         return stateSize() == 0;
+    }
+
+    /**
+     * Method to place all the blocks in the comparator
+     *
+     * @param worldAccess the world where the blocks will be placed
+     */
+    public void placeAll(StructureWorldAccess worldAccess) {
+        for (int i = 0; i < posList.size(); i++) {
+            this.place(worldAccess, i);
+        }
+    }
+
+    /**
+     * Method to place all the blocks in the comparator with the BlockPos getting verified
+     *
+     * @param worldAccess the world where the blocks will be placed
+     */
+    public void placeAllWithVerification(StructureWorldAccess worldAccess) {
+        for (int i = 0; i < posList.size(); i++) {
+            this.placeWithVerification(worldAccess, i);
+        }
+    }
+
+    /**
+     * Method to place all the blocks in the comparator and removing the BlockPos
+     *
+     * @param worldAccess the world where the blocks will be placed
+     */
+    public void placeAllWithDeletion(StructureWorldAccess worldAccess) {
+        for (int i = 0; i < posList.size(); i++) {
+            this.placeLastWithDeletion(worldAccess);
+        }
+    }
+
+    /**
+     * Method to place all the blocks in the comparator with the BlockPos getting verified and the getting deleted
+     *
+     * @param worldAccess the world where the blocks will be placed
+     */
+    public void placeAllWithVerificationDeletion(StructureWorldAccess worldAccess) {
+        for (int i = 0; i < posList.size(); i++) {
+            this.placeLastWithVerificationDeletion(worldAccess);
+        }
     }
 
     /**
