@@ -23,6 +23,18 @@ public class BlockPlaceUtil {
      * method to verify that the block is not an unbreakable block or not and to verify if the block can be put or not.
      *
      * @param world         the world where the {@link Block} will be placed
+     * @param pos           the position of the block
+     * @return true if it can be posed, false if not
+     */
+    public static boolean verifyBlock(StructureWorldAccess world, BlockPos pos) {
+        BlockState state = world.getBlockState(pos);
+        return state.isAir();
+    }
+
+    /**
+     * method to verify that the block is not an unbreakable block or not and to verify if the block can be put or not.
+     *
+     * @param world         the world where the {@link Block} will be placed
      * @param force         force the pos
      * @param blocksToForce list of blocks that can still be forced
      * @param pos           the position of the block
