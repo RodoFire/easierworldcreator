@@ -47,14 +47,21 @@ public interface BlockListManager {
      *
      * @param pos the pos removed
      */
-    void removeBlockPos(BlockPos pos);
+    void removePos(BlockPos pos);
 
     /**
      * allow you to remove a list of {@link BlockPos} to the existing list
      *
      * @param pos the list pos removed
      */
-    void removeBlockPos(List<BlockPos> pos);
+    void removePos(List<BlockPos> pos);
+
+    /**
+     * method to remove the last blockPos of a blockList
+     *
+     * @return the BlockPos removed
+     */
+    BlockPos removeLastPos();
 
     /**
      * method to replace one blockPos to another one
@@ -62,7 +69,7 @@ public interface BlockListManager {
      * @param oldPos the oldPos that will be replaced
      * @param newPos the newPos that will replace the other {@link BlockPos}
      */
-    void replaceBlockPos(BlockPos oldPos, BlockPos newPos);
+    void replacePos(BlockPos oldPos, BlockPos newPos);
 
     /**
      * method to get a certain {@link BlockPos} from an index in the posList
