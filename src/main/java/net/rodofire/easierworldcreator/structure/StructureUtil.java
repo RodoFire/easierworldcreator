@@ -6,6 +6,7 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.registry.DynamicRegistryManager;
 import net.minecraft.structure.StructurePlacementData;
 import net.minecraft.structure.StructureTemplate;
 import net.minecraft.util.math.BlockPos;
@@ -24,7 +25,6 @@ import net.rodofire.easierworldcreator.placer.blocks.util.BlockPlaceUtil;
 
 import java.util.*;
 
-//TODO check if tag is present, if yes, cast CompoundBlockList
 @SuppressWarnings("unused")
 public class StructureUtil {
     public static void convertNbtToComparator(StructureTemplate structureTemplate, List<DefaultBlockList> defaultBlockLists) {
@@ -180,10 +180,11 @@ public class StructureUtil {
                         if (tag != null) {
                             BlockEntity blockEntity = world.getBlockEntity(pos);
                             if (blockEntity != null) {
-                                NbtCompound currentNbt = blockEntity.createNbtWithIdentifyingData();
+                                DynamicRegistryManager registry =  world.getRegistryManager();
+                                NbtCompound currentNbt = blockEntity.createNbtWithIdentifyingData(registry);
                                 currentNbt.copyFrom(tag);
 
-                                blockEntity.readNbt(currentNbt);
+                                blockEntity.read(currentNbt, registry);
                                 blockEntity.markDirty();
                             }
                         }

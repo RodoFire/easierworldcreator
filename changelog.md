@@ -1,3 +1,4 @@
-## 2.3.1 update:
+## 2.3.3 update:
 
-small update adding method to combine `OrderedBlockListComparator`
+- new invert parameter in `BlockSorter`
+- fixed inconsistent BlockPos data when putting from orderedBlockList

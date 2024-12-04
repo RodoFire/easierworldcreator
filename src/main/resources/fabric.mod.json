@@ -1,7 +1,8 @@
 {
 	"schemaVersion": 1,
 	"id": "easierworldcreator",
-	"version": "2.3.0-1.20.1",
+
+	"version": "2.3.3-1.20.6",
 
 	"name": "Easier-World-Creator",
 	"description": "Mod To help creating Features",
@@ -25,13 +26,10 @@
 		"easierworldcreator.mixins.json"
 	],
 	"depends": {
-		"fabricloader": ">=0.15.11",
-		"minecraft": ["1.20.1","1.20.2","1.20.3","1.20.4"],
-		"java": ">=17",
+		"fabricloader": ">=0.16.9",
+		"minecraft": "1.20.6",
+		"java": ">=21",
 		"fabric-api": "*"
-	},
-	"breaks" : {
-		"mushrooomsmod": "<=0.0.15-1.20.4"
 	},
 	"suggests": {
 		"another-mod": "*"
