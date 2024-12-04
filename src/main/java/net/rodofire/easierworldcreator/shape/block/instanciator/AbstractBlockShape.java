@@ -278,13 +278,10 @@ public abstract class AbstractBlockShape extends AbstractBlockShapeRotation {
 
         for (ChunkPos chunkPos : chunkPosList) {
             //executorService.submit(() -> {
-            try {
-                FileUtil.renameFile(
-                        generatedPath.resolve("chunk_" + chunkPos.x + "_" + chunkPos.z).resolve("false_" + featureName + ".json"),
-                        generatedPath.resolve("chunk_" + (chunkPos.x + offset.getX() / 16) + "_" + (chunkPos.z + offset.getZ() / 16)).resolve("[" + offset.getX() + "," + offset.getZ() + "]_" + featureName + ".json"));
-            } catch (Exception e) {
-                e.fillInStackTrace();
-            }
+            FileUtil.renameFile(
+                    generatedPath.resolve("chunk_" + chunkPos.x + "_" + chunkPos.z).resolve("false_" + featureName + ".json"),
+                    generatedPath.resolve("chunk_" + (chunkPos.x + offset.getX() / 16) + "_" + (chunkPos.z + offset.getZ() / 16)).resolve("[" + offset.getX() + "," + offset.getZ() + "]_" + featureName + ".json"));
+
             //});
         }
 
@@ -376,7 +373,7 @@ public abstract class AbstractBlockShape extends AbstractBlockShapeRotation {
         BlockStateUtil.getBlockStatesFromWorld(posList, blockStateMap, getWorld());
 
 
-        ExecutorService finalExecutorService = Executors.newFixedThreadPool(Math.min(posList.size(), Runtime.getRuntime().availableProcessors()) - 2);
+        ExecutorService finalExecutorService = Executors.newFixedThreadPool(Math.min(posList.size(), Runtime.getRuntime().availableProcessors()));
         List<CompletableFuture<Set<DefaultBlockList>>> result =
                 posList.stream()
                         .map(set -> CompletableFuture.supplyAsync(() -> this.getLayersWithVerification(set, blockStateMap), finalExecutorService))

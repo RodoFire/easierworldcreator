@@ -24,8 +24,6 @@ public abstract class AbstractBlockShapeLayer extends AbstractBlockShapePlaceTyp
     //Center of the structure if PlaceType == Block
     private BlockPos radialCenterPos = this.getPos();
 
-    //Center of the structure if PlaceType == Particle
-    private Vec3d radialCenterVec3d;
 
 
     /**
@@ -83,13 +81,6 @@ public abstract class AbstractBlockShapeLayer extends AbstractBlockShapePlaceTyp
         this.layersType = layersType;
     }
 
-    public Vec3d getRadialCenterVec3d() {
-        return radialCenterVec3d;
-    }
-
-    public void setRadialCenterVec3d(Vec3d radialCenterVec3d) {
-        this.radialCenterVec3d = radialCenterVec3d;
-    }
 
     public BlockPos getRadialCenterPos() {
         return radialCenterPos;

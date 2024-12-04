@@ -4,6 +4,8 @@ import net.minecraft.block.BlockState;
 import net.minecraft.structure.StructureTemplate;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.random.Random;
+import net.minecraft.world.StructureWorldAccess;
+import net.rodofire.easierworldcreator.placer.blocks.util.BlockPlaceUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -93,7 +95,7 @@ public class DefaultBlockList implements BlockListManager {
      * @param pos the pos removed
      */
     @Override
-    public void removeBlockPos(BlockPos pos) {
+    public void removePos(BlockPos pos) {
         this.posList.remove(pos);
     }
 
@@ -103,8 +105,47 @@ public class DefaultBlockList implements BlockListManager {
      * @param pos the list pos removed
      */
     @Override
-    public void removeBlockPos(List<BlockPos> pos) {
+    public void removePos(List<BlockPos> pos) {
         this.posList.removeAll(pos);
+    }
+
+    /**
+     * Removes the BlockPos at the specified index from the posList and posMap.
+     *
+     * @param index the index of the BlockPos to remove.
+     * @return the removed BlockPos.
+     * @throws IndexOutOfBoundsException if the index is out of range
+     */
+    public BlockPos removePos(int index) {
+        return posList.remove(index);
+    }
+
+    /**
+     * Removes and returns the first BlockPos from the posList and posMap.
+     *
+     * @return the first BlockPos that was removed.
+     * @throws IndexOutOfBoundsException if the list is empty.
+     */
+    public BlockPos removeFirstPos() {
+        return removePos(0);
+    }
+
+    /**
+     * Removes and returns the last BlockPos from the posList and posMap.
+     *
+     * @return the first BlockPos that was removed.
+     * @throws IndexOutOfBoundsException if the list is empty.
+     */
+    public BlockPos removeLastPos() {
+        return removePos(size() - 1);
+    }
+
+    /**
+     * Clears all elements from posList, posMap, and statesMap.
+     * After this operation, all structures will be empty.
+     */
+    public void removeAll() {
+        this.posList.clear();
     }
 
     /**
@@ -114,7 +155,7 @@ public class DefaultBlockList implements BlockListManager {
      * @param newPos the newPos that will replace the other blockPos
      */
     @Override
-    public void replaceBlockPos(BlockPos oldPos, BlockPos newPos) {
+    public void replacePos(BlockPos oldPos, BlockPos newPos) {
         this.posList.set(posList.indexOf(oldPos), newPos);
     }
 
@@ -197,6 +238,185 @@ public class DefaultBlockList implements BlockListManager {
     @Override
     public int size() {
         return this.posList.size();
+    }
+
+    /**
+     * Method to place all the blocks in the comparator
+     *
+     * @param worldAccess the world where the blocks will be placed
+     */
+    public void placeAll(StructureWorldAccess worldAccess) {
+        for (int i = 0; i < posList.size(); i++) {
+            this.place(worldAccess, i);
+        }
+    }
+
+    /**
+     * Method to place all the blocks in the comparator with the BlockPos getting verified
+     *
+     * @param worldAccess the world where the blocks will be placed
+     */
+    public void placeAllWithVerification(StructureWorldAccess worldAccess) {
+        for (int i = 0; i < posList.size(); i++) {
+            this.placeWithVerification(worldAccess, i);
+        }
+    }
+
+    /**
+     * Method to place all the blocks in the comparator and removing the BlockPos
+     *
+     * @param worldAccess the world where the blocks will be placed
+     */
+    public void placeAllWithDeletion(StructureWorldAccess worldAccess) {
+        for (int i = 0; i < posList.size(); i++) {
+            this.placeLastWithDeletion(worldAccess);
+        }
+    }
+
+    /**
+     * Method to place all the blocks in the comparator with the BlockPos getting verified and the getting deleted
+     *
+     * @param worldAccess the world where the blocks will be placed
+     */
+    public void placeAllWithVerificationDeletion(StructureWorldAccess worldAccess) {
+        for (int i = 0; i < posList.size(); i++) {
+            this.placeLastWithVerificationDeletion(worldAccess);
+        }
+    }
+
+    /**
+     * method to place the Block related to the index
+     *
+     * @param world the world the block will be placed
+     * @param index the index of the BlockPos
+     */
+    public void place(StructureWorldAccess world, int index) {
+        BlockPlaceUtil.placeBlock(world, this.getPos(index), this.blockState);
+    }
+
+
+    /**
+     * method to place the block with the deletion of the BlockPos
+     *
+     * @param world the world the block will be placed
+     * @param index the index of the block
+     */
+    public void placeWithDeletion(StructureWorldAccess world, int index) {
+        BlockPlaceUtil.placeBlock(world, this.removePos(index), this.blockState);
+    }
+
+    /**
+     * Method to place the block related to the index.
+     * The method also performs verification to know if the block can be placed.
+     *
+     * @param world the world the block will be placed
+     * @param index the index of the block
+     * @return true if the block was placed, false if not
+     */
+    public boolean placeWithVerification(StructureWorldAccess world, int index) {
+        return BlockPlaceUtil.placeVerifiedBlock(world, false, null, this.getPos(index), this.blockState);
+    }
+
+    /**
+     * Method to place the block with the deletion of the BlockPos
+     * The method also performs verification to know if the block can be placed.
+     *
+     * @param world the world the block will be placed
+     * @param index the index of the block
+     * @return true if the block was placed, false if not
+     */
+    public boolean placeWithVerificationDeletion(StructureWorldAccess world, int index) {
+        return BlockPlaceUtil.placeVerifiedBlock(world, false, null, this.removePos(index), this.blockState);
+    }
+
+    /**
+     * method to place the first Block
+     *
+     * @param world the world the block will be placed
+     */
+    public void placeFirst(StructureWorldAccess world) {
+        BlockPlaceUtil.placeBlock(world, this.getFirstPos(), this.blockState);
+    }
+
+    /**
+     * Method to place the first Block and deleting it.
+     * You shouldn't use this method in normal case since that the method is pretty costly O(n).
+     * Use instead {@code placeLastWithDeletion()} that is faster O(1).
+     *
+     * @param world the world where the block will be placed
+     */
+    public void placeFirstWithDeletion(StructureWorldAccess world) {
+        BlockPlaceUtil.placeBlock(world, this.removeFirstPos(), this.blockState);
+
+    }
+
+    /**
+     * Method to place the first Block.
+     * <p>The method also performs verification to know if the block can be placed.
+     *
+     * @param world the world where the block will be placed
+     * @return true if the block was placed, false if not.
+     */
+    public boolean placeFirstWithVerification(StructureWorldAccess world) {
+        return BlockPlaceUtil.placeVerifiedBlock(world, false, null, this.getFirstPos(), this.blockState);
+    }
+
+    /**
+     * <p>Method to place the first Block and deleting it.
+     * <p>The method also performs verification to know if the block can be placed.
+     * <p>You shouldn't use this method in normal case since that the method is pretty costly O(n).
+     * <p>Use instead {@code placeLastWithDeletion()} that is faster O(1).
+     *
+     * @param world the world where the block will be placed
+     * @return true if the block was placed, false if not.
+     */
+    public boolean placeFirstWithVerificationDeletion(StructureWorldAccess world) {
+        return BlockPlaceUtil.placeVerifiedBlock(world, false, null, this.removeFirstPos(), this.blockState);
+
+    }
+
+    /**
+     * Method to place the last Block of the comparator and removing it then.
+     * Consider using this method because it gives you better performance.
+     *
+     * @param world the world the last block will be placed
+     */
+    public void placeLastWithDeletion(StructureWorldAccess world) {
+        BlockPlaceUtil.placeBlock(world, this.getLastPos(), this.blockState);
+    }
+
+    /**
+     * Method to place the last Block of the comparator.
+     *
+     * @param world the world the last block will be placed
+     */
+    public void placeLast(StructureWorldAccess world) {
+        BlockPlaceUtil.placeBlock(world, this.getLastPos(), this.blockState);
+
+    }
+
+    /**
+     * Method to place the last Block.
+     *
+     * @param world the world the last block will be placed
+     *              The method also performs verification to know if the block can be placed.
+     * @return true if the block was placed, false if not
+     */
+    public boolean placeLastWithVerification(StructureWorldAccess world) {
+        return BlockPlaceUtil.placeVerifiedBlock(world, false, null, this.getLastPos(), this.blockState);
+
+    }
+
+    /**
+     * Method to place the last Block of the comparator and removing it then.
+     * The method also performs verification to know if the block can be placed.
+     * Consider using this method because it gives you better performance.
+     *
+     * @param world the world the last block will be placed
+     * @return true if the block was placed, false if not
+     */
+    public boolean placeLastWithVerificationDeletion(StructureWorldAccess world) {
+        return BlockPlaceUtil.placeVerifiedBlock(world, false, null, this.removeLastPos(), this.blockState);
     }
 
     @Override
