@@ -4,6 +4,7 @@ import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.random.Random;
+import net.minecraft.world.StructureWorldAccess;
 import net.rodofire.easierworldcreator.blockdata.blocklist.basic.BlockListManager;
 import net.rodofire.easierworldcreator.blockdata.blocklist.basic.DefaultBlockList;
 import net.rodofire.easierworldcreator.blockdata.blocklist.ordered.comparator.OrderedBlockListComparator;
@@ -13,7 +14,7 @@ import java.util.*;
 
 /**
  * <p>
- * Class to manage a {@code List<BlockList>}. It is composed of a list of BlockList and a Map of indexes.
+ * Class to manage a {@code List<BlockList>}. It is composed of a list of BlockLists and a Map of indexes.
  * </p>
  * For better performance:<ul>
  * <li>Instead of searching for a {@code BlockState} inside the list, we use the {@code indexMap}.
@@ -252,5 +253,50 @@ public abstract class BlockListComparator<T extends DefaultBlockList, U, V exten
      */
     public V getOrderedSorted(BlockSorter sorter) {
         return sorter.sortBlockList(this.getOrdered());
+    }
+
+
+    /**
+     * Method to place all the blocks in the comparator
+     *
+     * @param worldAccess the world where the blocks will be placed
+     */
+    public void placeAll(StructureWorldAccess worldAccess) {
+        for (T blockList : this.blockLists) {
+            blockList.placeAll(worldAccess);
+        }
+    }
+
+    /**
+     * Method to place all the blocks in the comparator with the BlockPos getting verified
+     *
+     * @param worldAccess the world where the blocks will be placed
+     */
+    public void placeAllWithVerification(StructureWorldAccess worldAccess) {
+        for (T blockList : this.blockLists) {
+            blockList.placeAllWithVerification(worldAccess);
+        }
+    }
+
+    /**
+     * Method to place all the blocks in the comparator and removing the BlockPos
+     *
+     * @param worldAccess the world where the blocks will be placed
+     */
+    public void placeAllWithDeletion(StructureWorldAccess worldAccess) {
+        for (T blockList : this.blockLists) {
+            blockList.placeAllWithDeletion(worldAccess);
+        }
+    }
+
+    /**
+     * Method to place all the blocks in the comparator with the BlockPos getting verified and the getting deleted
+     *
+     * @param worldAccess the world where the blocks will be placed
+     */
+    public void placeAllWithVerificationDeletion(StructureWorldAccess worldAccess) {
+        for (T blockList : this.blockLists) {
+            blockList.placeAllWithVerificationDeletion(worldAccess);
+        }
     }
 }

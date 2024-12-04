@@ -125,15 +125,15 @@ public class StructureUtil {
 
             boolean bl1 = blockToForce == null || blockToForce.isEmpty();
             for (BlockPos pos : defaultBlockList.getPosList()) {
-                defaultBlockList.replaceBlockPos(pos, pos.add(block));
+                defaultBlockList.replacePos(pos, pos.add(block));
                 if (!bl1 || force) {
                     if (integrity < 1f) {
                         if (MathUtil.getRandomBoolean(integrity)) {
-                            defaultBlockList.removeBlockPos(pos);
+                            defaultBlockList.removePos(pos);
                         }
                     }
                     if (!BlockPlaceUtil.verifyBlock(world, force, blockToForce, pos.add(block))) {
-                        defaultBlockList.removeBlockPos(pos);
+                        defaultBlockList.removePos(pos);
                     }
                 }
             }
