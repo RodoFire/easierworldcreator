@@ -1,5 +1,8 @@
 package net.rodofire.easierworldcreator.blockdata.blocklist.basic;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 import net.minecraft.block.BlockState;
 import net.minecraft.structure.StructureTemplate;
 import net.minecraft.util.math.BlockPos;
@@ -7,6 +10,9 @@ import net.minecraft.util.math.random.Random;
 import net.minecraft.world.StructureWorldAccess;
 import net.rodofire.easierworldcreator.placer.blocks.util.BlockPlaceUtil;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -382,7 +388,7 @@ public class DefaultBlockList implements BlockListManager {
      * @param world the world the last block will be placed
      */
     public void placeLastWithDeletion(StructureWorldAccess world) {
-        BlockPlaceUtil.placeBlock(world, this.getLastPos(), this.blockState);
+        BlockPlaceUtil.placeBlock(world, this.removeLastPos(), this.blockState);
     }
 
     /**
@@ -421,9 +427,40 @@ public class DefaultBlockList implements BlockListManager {
 
     @Override
     public String toString() {
-        return "BlockShapeManager{" +
-                "posList=" + posList +
-                ", blockState=" + blockState +
-                '}';
+        return "[" +
+                "blockState=" + blockState.toString() +
+                "; posList=" + posList.stream().toString() +
+                ']';
+    }
+
+    public void toJson(Path path, BlockPos offset) {
+        Gson gson = new Gson();
+        JsonArray jsonArray = new JsonArray();
+
+        JsonObject jsonObject;
+
+        int offsetX = offset.getX();
+        int offsetY = offset.getY();
+        int offsetZ = offset.getZ();
+
+        jsonObject = new JsonObject();
+        jsonObject.addProperty("state", this.getBlockState().toString());
+        for (BlockPos pos : this.posList) {
+            JsonArray positions = new JsonArray();
+            JsonObject posObject = new JsonObject();
+            posObject.addProperty("x", pos.getX() + offsetX);
+            posObject.addProperty("y", pos.getY() + offsetY);
+            posObject.addProperty("z", pos.getZ() + offsetZ);
+            positions.add(posObject);
+
+            jsonObject.add("positions", positions);
+            jsonArray.add(jsonObject);
+        }
+
+        try {
+            Files.writeString(path, gson.toJson(jsonArray));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
