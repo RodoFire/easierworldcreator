@@ -17,6 +17,11 @@ public class TextButtonWidget extends ButtonWidget {
 
     public TextButtonWidget(int x, int y, int width, int height, Text text, ButtonWidget.PressAction onPress, int textColor) {
         super(x, y, width, height, text, onPress, DEFAULT_NARRATION_SUPPLIER);
+        this.textColor = textColor;
+    }
+
+    public void setColor(int color) {
+        this.textColor = color;
     }
 
     @Override
@@ -27,8 +32,8 @@ public class TextButtonWidget extends ButtonWidget {
         RenderSystem.enableDepthTest();
         context.drawNineSlicedTexture(WIDGETS_TEXTURE, this.getX(), this.getY(), this.getWidth(), this.getHeight(), 20, 4, 200, 20, 0, this.getTextureY());
         context.setShaderColor(
-                (float) ((textColor & 0xFF0000) >> 2) / 256,
-                (float) ((textColor & 0xFF00) >> 1) / 256,
+                (float) ((textColor & 0xFF0000) >> 16) / 256,
+                (float) ((textColor & 0xFF00) >> 8) / 256,
                 (float) (textColor & 0xFF) / 256,
                 1.0F
         );
