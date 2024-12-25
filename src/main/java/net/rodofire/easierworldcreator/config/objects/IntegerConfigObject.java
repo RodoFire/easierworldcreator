@@ -4,22 +4,23 @@ public class IntegerConfigObject extends AbstractConfigObject<Integer> {
     private int minValue = Integer.MIN_VALUE;
     private int maxValue = Integer.MAX_VALUE;
 
-    public IntegerConfigObject(final int defaultValue) {
-        super(defaultValue);
+
+    public IntegerConfigObject(final int defaultValue, String description, String name) {
+        super(description, name, defaultValue);
     }
 
-    public IntegerConfigObject(final int defaultValue, String description) {
-        super(description, defaultValue);
+    public IntegerConfigObject(final int defaultValue, String name) {
+        super(name, name, defaultValue);
     }
 
-    public IntegerConfigObject(final int defaultValue, final int minValue, final int maxValue) {
-        super(defaultValue);
+    public IntegerConfigObject(final int defaultValue, final int minValue, final int maxValue, String name, String description) {
+        super(description, name, defaultValue);
         this.minValue = minValue;
         this.maxValue = maxValue;
     }
 
-    public IntegerConfigObject(final int defaultValue, final int minValue, final int maxValue, String description) {
-        super(description, defaultValue);
+    public IntegerConfigObject(final int defaultValue, final int minValue, final int maxValue, String name) {
+        super(name, defaultValue);
         this.minValue = minValue;
         this.maxValue = maxValue;
     }
@@ -41,6 +42,14 @@ public class IntegerConfigObject extends AbstractConfigObject<Integer> {
 
     public int getMaxValue() {
         return maxValue;
+    }
+
+    public void setMinValue(int minValue) {
+        this.minValue = minValue;
+    }
+
+    public void setMaxValue(int maxValue) {
+        this.maxValue = maxValue;
     }
 
     @Override

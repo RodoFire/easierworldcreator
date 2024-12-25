@@ -3,12 +3,12 @@ package net.rodofire.easierworldcreator.config.objects;
 
 public class BooleanConfigObject extends AbstractConfigObject<Boolean> {
 
-    public BooleanConfigObject(final boolean defaultValue) {
-        super(defaultValue);
+    public BooleanConfigObject(final boolean defaultValue, String name) {
+        super(name, defaultValue);
     }
 
-    public BooleanConfigObject(final boolean defaultValue, String description) {
-        super(description, defaultValue);
+    public BooleanConfigObject(final boolean defaultValue, String description, String name) {
+        super(description, name, defaultValue);
         this.actualValue = defaultValue;
     }
 

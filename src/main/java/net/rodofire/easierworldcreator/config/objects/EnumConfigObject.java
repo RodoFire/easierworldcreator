@@ -6,29 +6,32 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 
 public class EnumConfigObject extends AbstractConfigObject<String> {
-    public LinkedHashSet<String> getEnums() {
-        return enums;
-    }
-
     private LinkedHashSet<String> enums = new LinkedHashSet<>();
 
-    public EnumConfigObject(String defaultValue, Set<String> enums) {
-        super(defaultValue);
+    public EnumConfigObject(String defaultValue, String name, String description, Set<String> enums) {
+        super(description, name, defaultValue);
         this.enums.addAll(enums);
     }
 
-    public EnumConfigObject(String defaultValue, Set<String> enums, String description) {
-        super(description, defaultValue);
+
+    public EnumConfigObject(String defaultValue, String name, Set<String> enums) {
+        super(name, defaultValue);
         this.enums.addAll(enums);
     }
 
     public String getNext() {
         Iterator<String> iter = enums.iterator();
+        int i = 0;
         String actual = iter.next();
         while (!actual.equals(actualValue)) {
+            i++;
             actual = iter.next();
         }
-        return iter.next();
+        return i >= enums.size() - 1 ? enums.iterator().next() : iter.next();
+    }
+
+    public LinkedHashSet<String> getEnums() {
+        return enums;
     }
 
     @Override
