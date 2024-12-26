@@ -58,6 +58,11 @@ public abstract class AbstractConfigObject<T> {
         this.actualValue = actualValue;
     }
 
+
+    public boolean shouldRestart() {
+        return restart;
+    }
+
     public String getKey() {
         return key;
     }

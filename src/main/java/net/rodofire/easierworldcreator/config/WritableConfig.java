@@ -15,10 +15,10 @@ import java.util.Map;
 import java.util.Optional;
 
 public class WritableConfig {
-    ConfigCaterory category;
+    ConfigCategory category;
     String modId;
 
-    public WritableConfig(String modId, ConfigCaterory category) {
+    public WritableConfig(String modId, ConfigCategory category) {
         this.category = category;
         this.modId = modId;
     }

@@ -14,7 +14,7 @@ public class ReadableConfig {
         this.MOD_ID = modID;
     }
 
-    public void refresh(ConfigCaterory caterory) {
+    public void refresh(ConfigCategory caterory) {
         Toml toml = new Toml();
         toml.read(ConfigUtil.getConfigPath(MOD_ID).resolve(caterory.getName() + ".toml").toFile());
         for (Map.Entry<String, BooleanConfigObject> obj : caterory.bools.entrySet()) {
