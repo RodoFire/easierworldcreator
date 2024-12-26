@@ -1,9 +1,13 @@
 package net.rodofire.easierworldcreator.config.client;
 
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.gui.Drawable;
+import net.minecraft.client.gui.Element;
+import net.minecraft.client.gui.Selectable;
 import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.client.gui.widget.TextWidget;
 import net.minecraft.text.Text;
@@ -17,127 +21,118 @@ import net.rodofire.easierworldcreator.config.objects.AbstractConfigObject;
 import net.rodofire.easierworldcreator.config.objects.BooleanConfigObject;
 import net.rodofire.easierworldcreator.config.objects.EnumConfigObject;
 import net.rodofire.easierworldcreator.config.objects.IntegerConfigObject;
-import org.spongepowered.include.com.google.common.collect.BiMap;
-import org.spongepowered.include.com.google.common.collect.HashBiMap;
 
 import java.util.Iterator;
-import java.util.Set;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
-public class DefaultConfigScreen extends Screen {
+@Environment(EnvType.CLIENT)
+public class DefaultConfigScreen extends AbstractConfigScreen {
     private final Screen parent;
-    private ModConfig config;
-    private final ModConfig copy;
-
-    String modId;
 
     private int currentCategoryIndex = 0;
-    private int selected = 0;
     private final int maxCategoriesVisible = 5;
     private Identifier TEXTURE = Screen.OPTIONS_BACKGROUND_TEXTURE;
     int backgroundHeight = 32;
     int backgroundWidth = 32;
-    Set<ConfigCategory> categories;
-    protected final BiMap<String, Integer> indexes = HashBiMap.create();
 
-    private int scrollY = 0;
-    private int maxScrollY = 0;
+    /**
+     * map used to determine which element should be drawn
+     */
+    Map<Short, List<Drawable>> drawables = new LinkedHashMap<>();
+
+    private short scrollY = 0;
+    private short maxScrollY = 0;
     private int scrollBarHeight;
     private boolean isDraggingScrollBar = false;
     private int dragStartY;
-    private MinecraftClient mc = MinecraftClient.getInstance();
+
+    private boolean cancelScreen = false;
+    private boolean restartScreen = false;
 
     public DefaultConfigScreen(Screen parent, ModConfig config, String modId) {
-        super(Text.translatable("config.screen." + modId + ".title"));
+        super(config, modId);
         this.parent = parent;
-        this.modId = modId;
-        this.config = config;
-        this.copy = config;
         this.categories = config.getCategories();
-        initIndexes();
     }
 
     public DefaultConfigScreen(Screen parent, ModConfig config, String modId, Identifier background) {
-        super(Text.translatable("config.screen." + modId + ".title"));
+        super(config, modId);
         this.parent = parent;
-        this.modId = modId;
-        this.config = config;
-        this.copy = config;
         this.categories = config.getCategories();
         this.TEXTURE = background;
         this.backgroundHeight = this.height;
         this.backgroundWidth = this.width;
-        initIndexes();
-    }
-
-    private void initIndexes() {
-        int i = 0;
-        for (ConfigCategory category : categories) {
-            indexes.put(category.getName(), i);
-            i++;
-        }
     }
 
     @Override
-    protected void init() {
+    protected void init(ConfigCategory category) {
+        cancelScreen = false;
         int centerX = this.width / 2;
         int startY = 10;
         int buttonWidth = this.width / 8;
         int buttonHeight = 20;
 
-        super.init();
-        ConfigCategory category = copy.getCategory(indexes.inverse().get(selected));
-
         int contentHeight = calculateContentHeight(category, buttonHeight);
-        maxScrollY = Math.max(0, contentHeight - (this.height - 40));
-
+        maxScrollY = (short) calculateContentHeight(category, buttonHeight);
         int visibleAreaHeight = this.height - 40;
         scrollBarHeight = Math.max(20, (visibleAreaHeight * visibleAreaHeight) / contentHeight);
 
-        addTopCategories(buttonWidth, buttonHeight, startY, centerX);
+        drawTopCategories(buttonWidth, buttonHeight, startY, centerX);
 
-        addElements(category, buttonWidth, buttonHeight, centerX, startY + 45);
+        addElements(category, buttonWidth, buttonHeight, centerX, startY + 45 - scrollY);
 
-        addBottomElements();
+        drawBottomElements();
     }
 
     public void addElements(ConfigCategory category, int buttonWidth, int buttonHeight, int startX, int startY) {
         if (!category.getBools().isEmpty()) {
-            this.addDrawableChild(new TextWidget(this.width / 12, startY, 2 * this.width / 12, buttonHeight, Text.translatable("config.ewc.boolean_category"), this.textRenderer));
+
+            this.toDraw(new TextWidget(this.width / 12, startY - scrollY, 2 * this.width / 12, buttonHeight, Text.translatable("config.ewc.boolean_category"), this.textRenderer), startY);
             startY += buttonHeight + 5;
             for (BooleanConfigObject obj : category.getBools().values()) {
-                this.addDrawableChild(new TextWidget(3 * this.width / 12, startY, 3 * this.width / 12, buttonHeight, Text.translatable("config." + modId + "." + obj.getKey()), this.textRenderer));
-                this.addDrawableChild(new TextButtonWidget(13 * this.width / 24, startY, this.width / 6, buttonHeight, Text.translatable("config.ewc.boolean." + obj.getActualValue()), button -> toggleBoolean(obj, button), obj.getActualValue() ? 0x00FF00 : 0xFF0000));
-                addResetButton(9 * this.width / 12, startY, button -> reset(obj));
+                this.toDraw(new TextWidget(3 * this.width / 12, startY - scrollY, 3 * this.width / 12, buttonHeight, Text.translatable("config." + modId + "." + obj.getKey()), this.textRenderer), startY);
+                this.toDraw(new TextButtonWidget(13 * this.width / 24, startY - scrollY, this.width / 6, buttonHeight, Text.translatable("config.ewc.boolean." + obj.getActualValue()), button -> toggleBoolean(obj, button), obj.getActualValue() ? 0x00FF00 : 0xFF0000), startY);
+                this.toDraw(addResetButton(9 * this.width / 12, startY - scrollY, obj), startY);
+
                 startY += buttonHeight + 5;
             }
             startY += 6;
         }
         if (!category.getInts().isEmpty()) {
-            this.addDrawableChild(new TextWidget(this.width / 12, startY, 2 * this.width / 12, buttonHeight, Text.translatable("config.ewc.integer_category"), this.textRenderer));
+            this.toDraw(new TextWidget(this.width / 12, startY - scrollY, 2 * this.width / 12, buttonHeight, Text.translatable("config.ewc.integer_category"), this.textRenderer), startY);
             startY += buttonHeight + 5;
             for (IntegerConfigObject obj : category.getInts().values()) {
-                this.addDrawableChild(new TextWidget(3 * this.width / 12, startY, 3 * this.width / 12, buttonHeight, Text.translatable("config." + modId + "." + obj.getKey()), this.textRenderer));
-                this.addDrawableChild(new TextFieldWidget(this.textRenderer, 13 * this.width / 24, startY, this.width / 6, buttonHeight, Text.of(String.valueOf(obj.getActualValue()))));
-                addResetButton(9 * this.width / 12, startY, button -> reset(obj));
+                this.toDraw(new TextWidget(3 * this.width / 12, startY - scrollY, 3 * this.width / 12, buttonHeight, Text.translatable("config." + modId + "." + obj.getKey()), this.textRenderer), startY);
+                this.toDraw(new TextFieldWidget(this.textRenderer, 13 * this.width / 24, startY - scrollY, this.width / 6, buttonHeight, Text.of(String.valueOf(obj.getActualValue()))), startY);
+                this.toDraw(addResetButton(9 * this.width / 12, startY - scrollY, obj), startY);
+
                 startY += buttonHeight + 5;
             }
             startY += 6;
         }
 
         if (!category.getEnums().isEmpty()) {
-            this.addDrawableChild(new TextWidget(this.width / 12, startY, 2 * this.width / 12, buttonHeight, Text.translatable("config.ewc.enum_category"), this.textRenderer));
+            this.toDraw(new TextWidget(this.width / 12, startY - scrollY, 2 * this.width / 12, buttonHeight, Text.translatable("config.ewc.enum_category"), this.textRenderer), startY);
             startY += buttonHeight + 5;
             for (EnumConfigObject obj : category.getEnums().values()) {
-                this.addDrawableChild(new TextWidget(3 * this.width / 12, startY, 3 * this.width / 12, buttonHeight, Text.translatable("config." + modId + "." + obj.getKey()), this.textRenderer));
-                this.addDrawableChild(new TextButtonWidget(13 * this.width / 24, startY, this.width / 6, buttonHeight, Text.translatable("config." + modId + "." + obj.getActualValue()), button -> cycleEnum(obj, button)));
-                addResetButton(9 * this.width / 12, startY, button -> reset(obj));
+                this.toDraw(new TextWidget(3 * this.width / 12, startY - scrollY, 3 * this.width / 12, buttonHeight, Text.translatable("config." + modId + "." + obj.getKey()), this.textRenderer), startY);
+                this.toDraw(new TextButtonWidget(13 * this.width / 24, startY - scrollY, this.width / 6, buttonHeight, Text.translatable("config." + modId + "." + obj.getActualValue()), button -> cycleEnum(obj, button)), startY);
+                this.toDraw(addResetButton(9 * this.width / 12, startY - scrollY, obj), startY);
+
                 startY += buttonHeight + 5;
             }
         }
     }
 
+    protected <T extends Element & Drawable & Selectable> void toDraw(T drawableElement, int startY) {
+        if (startY - this.scrollY > 50 && startY - this.scrollY < this.height - 55)
+            this.addDrawableChild(drawableElement);
+    }
+
     private int calculateContentHeight(ConfigCategory category, int buttonHeight) {
-        int height = 55;
+        int height = -this.height + 110;
         if (!category.getBools().isEmpty()) {
             height += buttonHeight + 11;
             height += category.getBools().size() * (buttonHeight + 5);
@@ -153,7 +148,7 @@ public class DefaultConfigScreen extends Screen {
         return height;
     }
 
-    private void addTopCategories(int buttonWidth, int buttonHeight, int startY, int centerX) {
+    private void drawTopCategories(int buttonWidth, int buttonHeight, int startY, int centerX) {
         int categoriesNumber = Math.min(this.categories.size(), maxCategoriesVisible);
         int startX;
         startX = centerX - (buttonWidth + 2) * categoriesNumber / 2 + 1;
@@ -181,7 +176,7 @@ public class DefaultConfigScreen extends Screen {
         }
     }
 
-    public void addBottomElements() {
+    public void drawBottomElements() {
         int buttonWidth = this.width / 5;
         int buttonHeight = 20;
         int startX = this.width / 2 - buttonWidth - 10;
@@ -206,24 +201,6 @@ public class DefaultConfigScreen extends Screen {
         }
     }
 
-    public void addResetButton(int startX, int yOffset, ButtonWidget.PressAction action) {
-        this.addDrawableChild(new ImageButtonWidget(startX, yOffset, 20, 20, new Identifier(EasierWorldCreator.MOD_ID, "textures/gui/reset_button.png"), action));
-    }
-
-    private void toggleBoolean(BooleanConfigObject configObject, ButtonWidget button) {
-        boolean newValue = !configObject.getActualValue();
-        configObject.setActualValue(newValue);
-        button.setMessage(Text.translatable("config.ewc.boolean." + configObject.getActualValue()));
-        if (button instanceof TextButtonWidget textButtonWidget) {
-            textButtonWidget.setColor(newValue ? 0x00FF00 : 0xFF0000);
-        }
-    }
-
-    public void cycleEnum(EnumConfigObject configObject, ButtonWidget button) {
-        configObject.setActualValue(configObject.getNext());
-        button.setMessage(Text.translatable("config." + modId + "." + configObject.getActualValue()));
-    }
-
     private <T extends AbstractConfigObject<U>, U> void reset(T configObject) {
         configObject.setActualValue(configObject.getDefaultValue());
         this.clearChildren();
@@ -246,37 +223,40 @@ public class DefaultConfigScreen extends Screen {
     }
 
     public void saveExit() {
-        this.config = copy;
-        this.config.save();
-        System.out.println("before close");
-        this.clearChildren();
-        System.out.println("after close");
-        if (!config.shouldRestart()) {
-            MinecraftClient.getInstance().setScreen(new ShouldRestartScreen());
-        } else {
-            MinecraftClient.getInstance().setScreen(parent);
-        }
+        if (!shouldRestart())
+            this.restartScreen = true;
+        close();
     }
 
     private void cancel() {
-        this.clearChildren();
-        if (client != null) {
-            client.setScreen(new CancelScreen(parent, this));
-        }
+        //if(config != copy)
+        this.cancelScreen = true;
+        close();
     }
 
     @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double amount) {
         if (maxScrollY > 0) {
-            scrollY = Math.max(0, Math.min(maxScrollY, scrollY - (int) (amount * 10)));
+            scrollY = (short) Math.max(0, Math.min(maxScrollY, scrollY - (int) (amount * 10)));
+            this.clearChildren();
+            this.init();
             return true;
         }
-        return super.mouseScrolled(mouseX, mouseY, amount);
+        super.mouseScrolled(mouseX, mouseY, amount);
+        return true;
     }
 
     @Override
     public void close() {
         super.close();
-        MinecraftClient.getInstance().setScreen(parent);
+        if (this.restartScreen) {
+            System.out.println("restart");
+            MinecraftClient.getInstance().setScreen(new ShouldRestartScreen());
+        } else if (this.cancelScreen) {
+            System.out.println("cancel");
+            MinecraftClient.getInstance().setScreen(new CancelScreen(parent, this));
+        } else {
+            MinecraftClient.getInstance().setScreen(this.parent);
+        }
     }
 }

@@ -1,18 +1,22 @@
 package net.rodofire.easierworldcreator.config.client;
 
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.font.MultilineText;
+import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.TextWidget;
 import net.minecraft.text.Text;
 import net.rodofire.easierworldcreator.client.hud.widget.TextButtonWidget;
 
+@Environment(EnvType.CLIENT)
 public class CancelScreen extends Screen {
     private Screen parent;
     private Screen base;
 
     protected CancelScreen(Screen parent, Screen base) {
         super(Text.translatable("config.ewc.cancel"));
-        System.out.println(parent);
         this.parent = parent;
         this.base = base;
     }
@@ -20,15 +24,28 @@ public class CancelScreen extends Screen {
     @Override
     protected void init() {
         this.addDrawable(new TextWidget(0, this.height / 3, this.width, 30, Text.translatable("config.ewc.wanna_quit"), this.textRenderer));
-        this.addDrawable(new TextButtonWidget(this.width / 2 - this.width / 3, this.height / 2, this.width / 3 - 10, 25, Text.translatable("config.ewc.cancel"), button -> {
+        this.addDrawableChild(new TextButtonWidget(this.width / 2 - this.width / 3, 2 * this.height / 3, this.width / 3 - 10, 25, Text.translatable("config.ewc.cancel"), button -> {
             this.clearChildren();
             this.close();
             MinecraftClient.getInstance().setScreen(base);
         }, 0xFFFFFF, 0x00FF00));
-        this.addDrawable(new TextButtonWidget(this.width / 2 + 10, this.height / 2, this.width / 3 - 10, 25, Text.translatable("config.ewc.confirm"), button -> {
+        this.addDrawableChild(new TextButtonWidget(this.width / 2 + 10, 2 * this.height / 3, this.width / 3 - 10, 25, Text.translatable("config.ewc.confirm"), button -> {
             this.clearChildren();
             this.close();
-            MinecraftClient.getInstance().setScreen(null);
+            MinecraftClient.getInstance().setScreen(parent);
         }, 0xFFFFFF, 0xFF0000));
+    }
+
+    @Override
+    public void close() {
+        MinecraftClient.getInstance().setScreen(base);
+    }
+
+    @Override
+    public void render(DrawContext context, int mouseX, int mouseY, float delta) {
+        this.renderBackground(context);
+        super.render(context, mouseX, mouseY, delta);
+        MultilineText.create(textRenderer, Text.translatable("config.ewc.wanna_quit"), this.width / 2).drawCenterWithShadow(context, this.width / 2, this.height / 4, 30, 0xFFFFFF);
+
     }
 }
