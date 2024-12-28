@@ -78,8 +78,7 @@ public abstract class AbstractConfigScreen extends Screen {
     }
 
     protected boolean configEquals() {
-        this.clearChildren();
-        return !config.equals(copy);
+        return config.equals(copy);
     }
 
     protected void saveConfig() {

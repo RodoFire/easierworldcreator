@@ -44,7 +44,7 @@ public class ConfigScreen {
             return;
         }
 
-        DefaultConfigScreen screen1 = new DefaultConfigScreen(parent, modConfig, modId, new Identifier(EasierWorldCreator.MOD_ID, "textures/gui/config_background.png"));
+        DefaultConfigScreen screen1 = new DefaultConfigScreen(parent, modConfig, modId, new Identifier(EasierWorldCreator.MOD_ID, "textures/gui/config_background.png"), 1920, 1080);
         screen.put(modId, screen1);
     }
 
