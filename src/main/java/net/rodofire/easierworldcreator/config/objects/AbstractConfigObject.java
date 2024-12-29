@@ -21,6 +21,7 @@ public abstract class AbstractConfigObject<T> {
     String description;
     T defaultValue;
     T actualValue;
+    T previousValue;
     public boolean requireRestart = false;
     boolean restart = false;
 
@@ -28,6 +29,7 @@ public abstract class AbstractConfigObject<T> {
         this.description = description;
         this.defaultValue = defaultValue;
         this.actualValue = defaultValue;
+        this.previousValue = defaultValue;
         this.key = name;
         this.name = name;
     }
@@ -35,6 +37,7 @@ public abstract class AbstractConfigObject<T> {
     public AbstractConfigObject(String name, T defaultValue) {
         this.defaultValue = defaultValue;
         this.actualValue = defaultValue;
+        this.previousValue = defaultValue;
         this.key = name;
         this.name = name;
     }
@@ -51,7 +54,7 @@ public abstract class AbstractConfigObject<T> {
 
     public void setActualValue(T actualValue) {
         if (requireRestart) {
-            restart = !actualValue.equals(this.actualValue);
+            restart = !actualValue.equals(this.previousValue);
         }
         this.actualValue = actualValue;
     }
@@ -73,6 +76,13 @@ public abstract class AbstractConfigObject<T> {
         return description == null ? ("# Possible Values:\n") : getDescriptionKey(modId) + ("\n# Possible Values:\n");
     }
 
+    public T getPreviousValue() {
+        return previousValue;
+    }
+
+    public void setPreviousValue(T previousValue) {
+        this.previousValue = previousValue;
+    }
 
     public void setKey(String key) {
         this.key = key;

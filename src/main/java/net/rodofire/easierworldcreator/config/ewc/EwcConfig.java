@@ -20,6 +20,7 @@ public class EwcConfig {
 
     public static void setConfig() {
         BooleanConfigObject bool = new BooleanConfigObject(true, "performance_mode");
+        bool.requireRestart = true;
         SERVER_CATEGORY.addBoolean(bool);
         SERVER_CATEGORY.addInt("testint", 2, -1000, 150 );
         SERVER_CATEGORY.addEnum("testenum", "bonjour", Set.of("bonjour", "banane", "hi"));
