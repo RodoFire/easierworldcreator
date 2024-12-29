@@ -270,7 +270,7 @@ public class DefaultConfigScreen extends AbstractConfigScreen {
     }
 
     public void drawBottomElements() {
-        int buttonWidth = this.width / 5;
+        int buttonWidth = 3 * this.width / 10;
         int buttonHeight = 20;
         int startX = this.width / 2 - buttonWidth - 10;
         int startY = this.height - 35;
