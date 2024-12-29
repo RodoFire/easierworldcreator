@@ -1,7 +1,19 @@
 {
-  "config.easierworldcreator.performance_mode" : "performance_mode",
-  "config.ewc.performance_mode": "performance_mode",
-  "config.ewc.boolean.true": "vrai",
-  "config.ewc.boolean.false": "faux"
+  "config.easierworldcreator.performance_mode": "Mode de Performance",
+  "config.ewc.boolean.true": "Vrai",
+  "config.ewc.boolean.false": "Faux",
+  "config.ewc.category": "Categorie",
+  "config.ewc.boolean_category": "Categorie: Booléens",
+  "config.ewc.integer_category": "Category: Entiers",
+  "config.ewc.enum_category": "Category: Enumérations",
+  "config.ewc.cancel": "Annuler",
+  "config.ewc.confirm": "Confirmer",
+  "config.ewc.reset": "Rénitialiser à la Valeur par Défault",
+  "config.ewc.min_value": "Valeur min",
+  "config.ewc.max_value": "Valeur Max",
+  "config.ewc.save_exit": "Sauvegarder & Quitter",
+  "config.ewc.wanna_quit": "Voulez vraiment quitter? Les changements ne seront pas sauvegardés",
+  "config.ewc.restart_message": "Vous avez effectué des changements qui requièrent le rechargement du jeu. Cliquez sur RELANCER pour relancer le jeu",
+  "config.ewc.accept_restart": "Relancher le Jeu"
 
 }
