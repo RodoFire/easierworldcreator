@@ -29,7 +29,6 @@ public class ImageButtonWidget extends ButtonWidget {
         this.drawMessage(context, client.textRenderer, i | MathHelper.ceil(this.alpha * 255.0F) << 24);
         drawTexture(context, image, this.getX() + 3, this.getY() + 3, 0, 0, 0, this.width - 6, this.height - 6, this.width - 6, this.height - 6);
 
-
     }
 
     private int getTextureY() {

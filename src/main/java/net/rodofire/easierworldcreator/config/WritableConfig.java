@@ -52,7 +52,7 @@ public class WritableConfig {
             writer.newLine();
             for (Map.Entry<String, T> obj : configObject.entrySet()) {
                 String key = obj.getKey();
-                U value = obj.getValue().getDefaultValue();
+                U value = obj.getValue().getActualValue();
                 if (value instanceof String str) {
                     str = "\"" + str + "\"";
                     value = (U) str;

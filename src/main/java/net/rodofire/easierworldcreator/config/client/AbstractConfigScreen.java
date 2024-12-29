@@ -1,10 +1,12 @@
 package net.rodofire.easierworldcreator.config.client;
 
 import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.gui.tooltip.Tooltip;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.rodofire.easierworldcreator.EasierWorldCreator;
+import net.rodofire.easierworldcreator.client.hud.widget.AbstractEntryWidget;
 import net.rodofire.easierworldcreator.client.hud.widget.ImageButtonWidget;
 import net.rodofire.easierworldcreator.client.hud.widget.TextButtonWidget;
 import net.rodofire.easierworldcreator.config.ConfigCategory;
@@ -12,6 +14,7 @@ import net.rodofire.easierworldcreator.config.ModConfig;
 import net.rodofire.easierworldcreator.config.objects.AbstractConfigObject;
 import net.rodofire.easierworldcreator.config.objects.BooleanConfigObject;
 import net.rodofire.easierworldcreator.config.objects.EnumConfigObject;
+import net.rodofire.easierworldcreator.config.objects.IntegerConfigObject;
 import org.spongepowered.include.com.google.common.collect.BiMap;
 import org.spongepowered.include.com.google.common.collect.HashBiMap;
 
@@ -46,7 +49,9 @@ public abstract class AbstractConfigScreen extends Screen {
     protected abstract void init(ConfigCategory category);
 
     public <T extends AbstractConfigObject<U>, U> ImageButtonWidget addResetButton(int startX, int yOffset, T obj) {
-        return new ImageButtonWidget(startX, yOffset, 20, 20, new Identifier(EasierWorldCreator.MOD_ID, "textures/gui/reset_button.png"), press -> reset(obj));
+        ImageButtonWidget buttonWidget = new ImageButtonWidget(startX, yOffset, 20, 20, new Identifier(EasierWorldCreator.MOD_ID, "textures/gui/reset_button.png"), press -> reset(obj));
+        buttonWidget.setTooltip(Tooltip.of(Text.translatable("config.ewc.reset")));
+        return buttonWidget;
     }
 
     private void initIndexes() {
@@ -69,6 +74,15 @@ public abstract class AbstractConfigScreen extends Screen {
     public void cycleEnum(EnumConfigObject configObject, ButtonWidget button) {
         configObject.setActualValue(configObject.getNext());
         button.setMessage(Text.translatable("config." + modId + "." + configObject.getActualValue()));
+    }
+
+    protected void verifyInteger(IntegerConfigObject configObject, AbstractEntryWidget button, String cgr) {
+        if (cgr.isEmpty()) return;
+        if (!configObject.isAcceptable(Integer.parseInt(cgr))) {
+            button.setEditableColor(0xFF0000);
+        } else {
+            button.setEditableColor(0xFFFFFF);
+        }
     }
 
     private <T extends AbstractConfigObject<U>, U> void reset(T configObject) {

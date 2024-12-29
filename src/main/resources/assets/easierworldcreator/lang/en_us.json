@@ -1,0 +1,19 @@
+{
+  "config.easierworldcreator.performance_mode" : "Performance Mode",
+  "config.ewc.boolean.true": "true",
+  "config.ewc.boolean.false": "false",
+  "config.ewc.category": "Category",
+  "config.ewc.boolean_category": "Category: Booleans",
+  "config.ewc.integer_category": "Category: Integers",
+  "config.ewc.enum_category": "Category: Enums",
+  "config.ewc.cancel": "Cancel",
+  "config.ewc.confirm": "Confirm",
+  "config.ewc.reset" : "Reset",
+  "config.ewc.save_exit": "Save & Exit",
+  "config.ewc.wanna_quit" : "Are you sure you want to quit? Changes will not be saved",
+  "config.ewc.restart_message" : "You made some changes that requires your game to restart. Click on RESTART to restart your game",
+  "config.ewc.accept_restart" : "Restart Game",
+  "config.easierworldcreator.bonjour": "hello",
+  "config.easierworldcreator.hi": "hi",
+  "config.easierworldcreator.banane": "banana"
+}

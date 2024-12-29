@@ -3,6 +3,7 @@ package net.rodofire.easierworldcreator;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.biome.v1.BiomeModifications;
 import net.fabricmc.fabric.api.biome.v1.BiomeSelectors;
+import net.minecraft.client.resource.language.I18n;
 import net.minecraft.world.biome.BiomeKeys;
 import net.minecraft.world.gen.GenerationStep;
 import net.rodofire.easierworldcreator.devtest.FeaturesRelated;
@@ -22,7 +23,8 @@ public class EWCTest implements ModInitializer {
         FeaturesRelated.ModFeatures.addFeatures();
         BiomeModifications.addFeature(BiomeSelectors.includeByKey(BiomeKeys.PLAINS, BiomeKeys.BEACH), GenerationStep.Feature.TOP_LAYER_MODIFICATION, FeaturesRelated.ModPLacedFeatures.FEATURE_TESTER);
 
-        EasierWorldCreator.init();
+        EasierWorldCreator.init();        System.out.println(I18n.translate("config.easierworldcreator.performance_mode"));
+
         if (Objects.equals(System.getenv("enableTests"), "true")) {
             LOGGER.info("starting tests");
             Tests.registerTests();

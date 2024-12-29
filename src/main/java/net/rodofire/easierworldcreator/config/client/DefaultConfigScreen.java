@@ -9,12 +9,13 @@ import net.minecraft.client.gui.Drawable;
 import net.minecraft.client.gui.Element;
 import net.minecraft.client.gui.Selectable;
 import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.widget.TextFieldWidget;
+import net.minecraft.client.gui.tooltip.Tooltip;
 import net.minecraft.client.gui.widget.TextWidget;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.rodofire.easierworldcreator.EasierWorldCreator;
 import net.rodofire.easierworldcreator.client.hud.widget.ImageButtonWidget;
+import net.rodofire.easierworldcreator.client.hud.widget.IntegerEntryWidget;
 import net.rodofire.easierworldcreator.client.hud.widget.ScrollBarWidget;
 import net.rodofire.easierworldcreator.client.hud.widget.TextButtonWidget;
 import net.rodofire.easierworldcreator.config.ConfigCategory;
@@ -38,6 +39,8 @@ public class DefaultConfigScreen extends AbstractConfigScreen {
     int backgroundWidth = 1920;
     int backgroundShaderColor = 0xABABABFF;
     int backgroundDarkRectangleShaderColor = 0x00000000;
+
+    private int[] lastDimension = {0, 0};
 
     private short scrollY = 0;
     private short maxScrollY = 0;
@@ -88,6 +91,12 @@ public class DefaultConfigScreen extends AbstractConfigScreen {
 
     @Override
     protected void init(ConfigCategory category) {
+        if (lastDimension[0] != this.width || lastDimension[1] != this.height) {
+            this.scrollY = 0;
+            lastDimension[0] = this.width;
+            lastDimension[1] = this.height;
+        }
+
         cancelScreen = false;
         int centerX = this.width / 2;
         int startY = 10;
@@ -113,7 +122,16 @@ public class DefaultConfigScreen extends AbstractConfigScreen {
             startY += buttonHeight + 5;
             for (BooleanConfigObject obj : category.getBools().values()) {
                 this.toDraw(new TextWidget(5 * this.width / 24, startY - scrollY, 7 * this.width / 24, buttonHeight, Text.translatable("config." + modId + "." + obj.getKey()), this.textRenderer), startY, buttonHeight);
-                this.toDraw(new TextButtonWidget(14 * this.width / 24, startY - scrollY, 3 * this.width / 12, buttonHeight, Text.translatable("config.ewc.boolean." + obj.getActualValue()), button -> toggleBoolean(obj, button), obj.getActualValue() ? 0x00FF00 : 0xFF0000), startY, buttonHeight);
+
+                this.toDraw(
+                        new TextButtonWidget(
+                                14 * this.width / 24, startY - scrollY,
+                                3 * this.width / 12, buttonHeight,
+                                Text.translatable("config.ewc.boolean." + obj.getActualValue()),
+                                button -> toggleBoolean(obj, button),
+                                obj.getActualValue() ? 0x00FF00 : 0xFF0000), startY, buttonHeight
+                );
+
                 this.toDraw(addResetButton(27 * this.width / 32, startY - scrollY, obj), startY, buttonHeight);
 
                 startY += buttonHeight + 5;
@@ -124,8 +142,17 @@ public class DefaultConfigScreen extends AbstractConfigScreen {
             this.toDraw(new TextWidget(this.width / 12, startY - scrollY, 2 * this.width / 12, buttonHeight, Text.translatable("config.ewc.integer_category"), this.textRenderer), startY, buttonHeight);
             startY += buttonHeight + 5;
             for (IntegerConfigObject obj : category.getInts().values()) {
-                this.toDraw(new TextWidget(5 * this.width / 24, startY - scrollY, 7 * this.width / 24, buttonHeight, Text.translatable("config." + modId + "." + obj.getKey()), this.textRenderer), startY, buttonHeight);
-                this.toDraw(new TextFieldWidget(this.textRenderer, 14 * this.width / 24, startY - scrollY, 3 * this.width / 12, buttonHeight, Text.of(String.valueOf(obj.getActualValue()))), startY, buttonHeight);
+                TextWidget textWidget = new TextWidget(5 * this.width / 24, startY - scrollY, 7 * this.width / 24, buttonHeight, Text.translatable("config." + modId + "." + obj.getKey()), this.textRenderer);
+                textWidget.setTooltip(Tooltip.of(Text.translatable(obj.getDescriptionKey(modId))));
+                this.toDraw(textWidget, startY, buttonHeight);
+
+                this.toDraw(new IntegerEntryWidget(this.textRenderer,
+                                14 * this.width / 24, startY - scrollY,
+                                3 * this.width / 12, buttonHeight,
+                                null, Text.literal("config_entry"), String.valueOf(obj.getActualValue()), null, (button, chr) -> this.verifyInteger(obj, button, chr)),
+                        startY, buttonHeight
+                );
+
                 this.toDraw(addResetButton(27 * this.width / 32, startY - scrollY, obj), startY, buttonHeight);
 
                 startY += buttonHeight + 5;

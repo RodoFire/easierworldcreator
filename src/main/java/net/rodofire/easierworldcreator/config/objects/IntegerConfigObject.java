@@ -40,6 +40,10 @@ public class IntegerConfigObject extends AbstractConfigObject<Integer> {
         return minValue;
     }
 
+    public boolean isAcceptable(int value) {
+        return value >= minValue && value <= maxValue;
+    }
+
     public int getMaxValue() {
         return maxValue;
     }

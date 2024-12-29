@@ -7,7 +7,6 @@ import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.random.Random;
 import net.minecraft.world.StructureWorldAccess;
 import net.rodofire.easierworldcreator.EasierWorldCreator;
-import net.rodofire.easierworldcreator.blockdata.blocklist.BlockListUtil;
 import net.rodofire.easierworldcreator.blockdata.blocklist.basic.DefaultBlockList;
 import net.rodofire.easierworldcreator.blockdata.blocklist.basic.comparator.DefaultBlockListComparator;
 import net.rodofire.easierworldcreator.blockdata.layer.BlockLayer;
@@ -168,12 +167,11 @@ public abstract class AbstractBlockShape extends AbstractBlockShapeRotation {
 
             for (Set<BlockPos> pos : posList) {
                 Future<?> future = executorService.submit(() -> {
-                    try {
-                        Set<DefaultBlockList> defaultBlockList = this.getLayers(pos);
-                        SaveChunkShapeInfo.saveChunkWorldGen(defaultBlockList, getWorld(), "false_" + featureName, offset);
-
-                    } catch (IOException e) {
-                        e.fillInStackTrace();
+                    Optional<BlockPos> opt = pos.stream().findFirst();
+                    if (opt.isPresent()) {
+                        DefaultBlockListComparator comparator = this.getLayers(pos);
+                        Path generatedPath = SaveChunkShapeInfo.getMultiChunkPath(getWorld(), new ChunkPos(opt.get()));
+                        comparator.toJson(generatedPath, offset);
                     }
                 });
                 creationTasks.add(future);
@@ -217,8 +215,7 @@ public abstract class AbstractBlockShape extends AbstractBlockShapeRotation {
                 animator = new StructurePlaceAnimator(this.getWorld(), new BlockSorter(BlockSorter.BlockSorterType.RANDOM), StructurePlaceAnimator.AnimatorTime.CONSTANT_BLOCKS_PER_TICK);
                 animator.setBlocksPerTick(100);
             }
-            List<Set<DefaultBlockList>> blockList = getBlockListWithVerification(posList);
-            DefaultBlockListComparator comparator = new DefaultBlockListComparator(BlockListUtil.unDivideBlockList(blockList));
+            DefaultBlockListComparator comparator = getBlockListWithVerification(posList);
             animator.placeFromBlockList(comparator);
         }
         //In the case our structure isn't place during world gen, or it is less than a chunk large
@@ -231,7 +228,7 @@ public abstract class AbstractBlockShape extends AbstractBlockShapeRotation {
         executorService.shutdown();
     }
 
-    public void placeWBlockList(List<Set<DefaultBlockList>> posList) throws IOException {
+    public void placeWBlockList(List<Set<DefaultBlockList>> posList) {
         List<Set<BlockPos>> convertedList = new ArrayList<>();
         for (Set<DefaultBlockList> set : posList) {
             Set<BlockPos> convertedSet = new HashSet<>();
@@ -367,21 +364,27 @@ public abstract class AbstractBlockShape extends AbstractBlockShapeRotation {
         return false;
     }
 
-    public List<Set<DefaultBlockList>> getBlockListWithVerification(List<Set<BlockPos>> posList) {
-        List<Set<DefaultBlockList>> blockList;
+    public DefaultBlockListComparator getBlockListWithVerification(List<Set<BlockPos>> posList) {
+        DefaultBlockListComparator blockList = new DefaultBlockListComparator();
         Map<BlockPos, BlockState> blockStateMap = new HashMap<>();
         BlockStateUtil.getBlockStatesFromWorld(posList, blockStateMap, getWorld());
 
 
         ExecutorService finalExecutorService = Executors.newFixedThreadPool(Math.min(posList.size(), Runtime.getRuntime().availableProcessors()));
-        List<CompletableFuture<Set<DefaultBlockList>>> result =
+        List<CompletableFuture<DefaultBlockListComparator>> result =
                 posList.stream()
                         .map(set -> CompletableFuture.supplyAsync(() -> this.getLayersWithVerification(set, blockStateMap), finalExecutorService))
                         .toList();
 
-        blockList = result.stream()
-                .map(CompletableFuture::join)
-                .toList();
+        result.forEach(future -> {
+            try {
+                DefaultBlockListComparator comp = future.get(); // Récupération du résultat du CompletableFuture
+                blockList.put(comp.get());
+            } catch (Exception e) {
+                e.fillInStackTrace();
+            }
+        });
+        finalExecutorService.shutdown();
         return blockList;
     }
 

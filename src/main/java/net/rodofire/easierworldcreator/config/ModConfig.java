@@ -8,6 +8,7 @@ import java.nio.file.Path;
 import java.util.*;
 import java.util.stream.Collectors;
 
+@SuppressWarnings("unused")
 public class ModConfig {
     boolean protectedConfig = false;
     private final String MOD_ID;
@@ -56,7 +57,7 @@ public class ModConfig {
         Path path = ConfigUtil.getConfigPath(MOD_ID);
         for (ConfigCategory cat : categories) {
             WritableConfig writer = new WritableConfig(MOD_ID, cat);
-            writer.write(path.resolve(cat.getName() + "toml"));
+            writer.write(path.resolve(cat.getName() + ".toml"));
         }
     }
 
@@ -114,5 +115,32 @@ public class ModConfig {
             WritableConfig wc = new WritableConfig(this.MOD_ID, category);
             wc.write(path.resolve(category.getName() + ".toml"));
         }
+    }
+
+    public ModConfig copy() {
+        ModConfig config = new ModConfig(MOD_ID);
+        config.categories = new LinkedHashSet<>(categories);
+        config.protectedConfig = this.protectedConfig;
+        return config;
+    }
+
+    public void apply(ModConfig config) {
+        this.protectedConfig = config.protectedConfig;
+        this.categories = config.categories;
+    }
+
+    public boolean equals(ModConfig obj) {
+        if (categories.size() != obj.categories.size()) {
+            return false;
+        }
+        Iterator<ConfigCategory> catIt = categories.iterator();
+        Iterator<ConfigCategory> catIt2 = obj.categories.iterator();
+        for (int i = 0; i < categories.size(); i++) {
+            ConfigCategory cat = catIt.next();
+            ConfigCategory cat2 = catIt2.next();
+            if (!cat.equals(cat2)) return false;
+        }
+        boolean bl = true;
+        return Objects.equals(obj.MOD_ID, this.MOD_ID);
     }
 }

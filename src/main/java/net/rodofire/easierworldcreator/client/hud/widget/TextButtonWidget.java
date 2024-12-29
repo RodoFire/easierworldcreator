@@ -10,6 +10,7 @@ import net.minecraft.util.math.MathHelper;
 @SuppressWarnings("unused")
 public class TextButtonWidget extends ButtonWidget {
     int textColor = 0xFFFFFF;
+    int buttonColor = 0xFFFFFF;
 
     public TextButtonWidget(int x, int y, int width, int height, Text text, ButtonWidget.PressAction onPress) {
         super(x, y, width, height, text, onPress, DEFAULT_NARRATION_SUPPLIER);
@@ -20,6 +21,12 @@ public class TextButtonWidget extends ButtonWidget {
         this.textColor = textColor;
     }
 
+    public TextButtonWidget(int x, int y, int width, int height, Text text, ButtonWidget.PressAction onPress, int textColor, int buttonColor) {
+        super(x, y, width, height, text, onPress, DEFAULT_NARRATION_SUPPLIER);
+        this.textColor = textColor;
+        this.buttonColor = buttonColor;
+    }
+
     public void setColor(int color) {
         this.textColor = color;
     }
@@ -27,7 +34,11 @@ public class TextButtonWidget extends ButtonWidget {
     @Override
     protected void renderButton(DrawContext context, int mouseX, int mouseY, float delta) {
         MinecraftClient client = MinecraftClient.getInstance();
-        context.setShaderColor(1.0F, 1.0F, 1.0F, this.alpha);
+        context.setShaderColor(
+                (float) ((buttonColor & 0xFF0000) >> 16) / 256,
+                (float) ((buttonColor & 0xFF00) >> 8) / 256,
+                (float) (buttonColor & 0xFF) / 256,
+                this.alpha);
         RenderSystem.enableBlend();
         RenderSystem.enableDepthTest();
         context.drawNineSlicedTexture(WIDGETS_TEXTURE, this.getX(), this.getY(), this.getWidth(), this.getHeight(), 20, 4, 200, 20, 0, this.getTextureY());

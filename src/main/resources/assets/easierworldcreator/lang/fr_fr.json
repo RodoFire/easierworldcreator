@@ -1,0 +1,7 @@
+{
+  "config.easierworldcreator.performance_mode" : "performance_mode",
+  "config.ewc.performance_mode": "performance_mode",
+  "config.ewc.boolean.true": "vrai",
+  "config.ewc.boolean.false": "faux"
+
+}

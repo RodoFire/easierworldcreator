@@ -4,15 +4,16 @@ import net.rodofire.easierworldcreator.config.objects.BooleanConfigObject;
 import net.rodofire.easierworldcreator.config.objects.EnumConfigObject;
 import net.rodofire.easierworldcreator.config.objects.IntegerConfigObject;
 
-import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
 public class ConfigCategory {
     final String name;
-    Map<String, BooleanConfigObject> bools = new HashMap<>();
-    Map<String, IntegerConfigObject> ints = new HashMap<>();
-    Map<String, EnumConfigObject> enums = new HashMap<>();
+    Map<String, BooleanConfigObject> bools = new LinkedHashMap<>();
+    Map<String, IntegerConfigObject> ints = new LinkedHashMap<>();
+    Map<String, EnumConfigObject> enums = new LinkedHashMap<>();
 
     public ConfigCategory(String name) {
         this.name = name;
@@ -26,9 +27,17 @@ public class ConfigCategory {
         bools.put(name, new BooleanConfigObject(defaultValue, name));
     }
 
+    public void addBoolean(BooleanConfigObject bool) {
+        bools.put(bool.getName(), bool);
+    }
+
 
     public void addInt(String name, int defaultValue) {
         ints.put(name, new IntegerConfigObject(defaultValue, name));
+    }
+
+    public void addInt(IntegerConfigObject integer){
+        ints.put(integer.getName(),integer);
     }
 
     public void addInt(String name, int defaultValue, String description, int minValue, int maxValue) {
@@ -66,6 +75,10 @@ public class ConfigCategory {
         enums.put(name, new EnumConfigObject(defaultValue, name, description, strings));
     }
 
+    public void addEnum(EnumConfigObject obj){
+        enums.put(obj.getName(), obj);
+    }
+
     public Map<String, BooleanConfigObject> getBools() {
         return bools;
     }
@@ -80,6 +93,35 @@ public class ConfigCategory {
 
     public void init() {
 
+    }
+
+    public boolean equals(ConfigCategory category) {
+        if(bools.size() != category.bools.size()) return false;
+        if(ints.size() != category.ints.size()) return false;
+        if(enums.size() != category.enums.size()) return false;
+
+        Iterator<BooleanConfigObject> bool = bools.values().iterator();
+        Iterator<BooleanConfigObject> bool2 = category.bools.values().iterator();
+        Iterator<IntegerConfigObject> it = ints.values().iterator();
+        Iterator<IntegerConfigObject> it2 = category.ints.values().iterator();
+        Iterator<EnumConfigObject> enu = enums.values().iterator();
+        Iterator<EnumConfigObject> enu2 = category.enums.values().iterator();
+        for(int i = 0; i < category.bools.size(); i++) {
+            BooleanConfigObject boo = bool.next();
+            BooleanConfigObject boo2 = bool2.next();
+            if (!boo.equals(boo2)) return false;
+        }
+        for(int i = 0; i < category.ints.size(); i++) {
+            IntegerConfigObject ii = it.next();
+            IntegerConfigObject ii2 = it2.next();
+            if (!ii.equals(ii2)) return false;
+        }
+        for(int i = 0; i < category.enums.size(); i++) {
+            EnumConfigObject ei = enu.next();
+            EnumConfigObject ei2 = enu2.next();
+            if (!ei.equals(ei2)) return false;
+        }
+        return name.equals(category.name);
     }
 
 }

@@ -6,6 +6,9 @@ public abstract class AbstractConfigObject<T> {
      * <p> letters should be undercase
      * <p>in your translation file, you should translate "config.[mod_id].[key]"
      * if not set, the [key] value will be set to [name]
+     * <p>  the key of the description used in the screen.
+     * <p> letters should be undercase
+     * <p>in your translation file, you should translate "config.[mod_id].[key].description"
      */
     String key;
     /**
@@ -16,12 +19,6 @@ public abstract class AbstractConfigObject<T> {
      * the description used in the toml file
      */
     String description;
-    /**
-     * the key of the description used in the screen.
-     * <p> letters should be undercase
-     * <p>in your translation file, you should translate "config.[mod_id].[key].descriptionKey"
-     */
-    String descriptionKey;
     T defaultValue;
     T actualValue;
     public boolean requireRestart = false;
@@ -53,8 +50,9 @@ public abstract class AbstractConfigObject<T> {
     }
 
     public void setActualValue(T actualValue) {
-        if (requireRestart && actualValue != this.actualValue)
-            restart = true;
+        if (requireRestart) {
+            restart = !actualValue.equals(this.actualValue);
+        }
         this.actualValue = actualValue;
     }
 
@@ -69,10 +67,6 @@ public abstract class AbstractConfigObject<T> {
 
     public String getName() {
         return name;
-    }
-
-    public String getDescriptionKey(String modId) {
-        return "# " + /*Text.of("config." + modId + "." +*/ description/*)*/;
     }
 
     public String getDefaultDescription(String modId) {
@@ -96,15 +90,39 @@ public abstract class AbstractConfigObject<T> {
         this.description = description;
     }
 
-    public String getDescriptionKey() {
-        return descriptionKey;
-    }
-
-    public void setDescriptionKey(String descriptionKey) {
-        this.descriptionKey = descriptionKey;
+    public String getDescriptionKey(String modId) {
+        return "config." + modId + "." + key + ".description";
     }
 
     public T getDefaultValue() {
         return defaultValue;
+    }
+
+    public boolean equals(AbstractConfigObject<T> other) {
+        if (name != null && other.name != null)
+            if (!name.equals(other.name)) return false;
+
+        if (!(other.name == null && name == null))
+            return false;
+
+        if (actualValue != null && other.actualValue != null)
+            if (!actualValue.equals(other.actualValue)) return false;
+
+        if (!(other.actualValue == null && actualValue == null))
+            return false;
+
+        if (defaultValue != null && other.defaultValue != null)
+            if (!defaultValue.equals(other.defaultValue)) return false;
+
+        if (!(defaultValue == null && other.defaultValue != null))
+            return false;
+
+        if (description != null && other.description != null)
+            return false;
+
+        if (!(other.description == null && description == null))
+            return false;
+
+        return true;
     }
 }

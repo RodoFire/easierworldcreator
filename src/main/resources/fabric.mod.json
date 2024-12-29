@@ -1,39 +1,54 @@
 {
-	"schemaVersion": 1,
-	"id": "easierworldcreator",
-	"version": "2.3.0-1.20.1",
-
-	"name": "Easier-World-Creator",
-	"description": "Mod To help creating Features",
-	"authors": [
-		"RodoFire"
-	],
-	"contact": {
-		"homepage": "https://modrinth.com/mod/ewc",
-		"sources": "https://github.com/RodoFire/easierworldcreator",
-		"issues": "https://github.com/RodoFire/easierworldcreator/issues"
-	},
-	"license": "MIT",
-	"icon": "assets/easierworldcreator/icon.png",
-	"environment": "*",
-	"entrypoints": {
-		"main": [
-			"net.rodofire.easierworldcreator.EasierWorldCreator"
-		]
-	},
-	"mixins": [
-		"easierworldcreator.mixins.json"
-	],
-	"depends": {
-		"fabricloader": ">=0.15.11",
-		"minecraft": ["1.20.1","1.20.2","1.20.3","1.20.4"],
-		"java": ">=17",
-		"fabric-api": "*"
-	},
-	"breaks" : {
-		"mushrooomsmod": "<=0.0.15-1.20.4"
-	},
-	"suggests": {
-		"another-mod": "*"
-	}
+  "schemaVersion": 1,
+  "id": "easierworldcreator",
+  "version": "2.3.4-1.20.1",
+  "name": "Easier-World-Creator",
+  "description": "Mod To help creating Features",
+  "authors": [
+    "RodoFire"
+  ],
+  "contact": {
+    "homepage": "https://modrinth.com/mod/ewc",
+    "sources": "https://github.com/RodoFire/easierworldcreator",
+    "issues": "https://github.com/RodoFire/easierworldcreator/issues"
+  },
+  "license": "MIT",
+  "icon": "assets/easierworldcreator/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "net.rodofire.easierworldcreator.EasierWorldCreator"
+    ],
+    "modmenu": [
+      "net.rodofire.easierworldcreator.config.client.ModMenuConfigScreen"
+    ]
+  },
+  "mixins": [
+    "easierworldcreator.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.15.11",
+    "minecraft": [
+      "1.20.1",
+      "1.20.2",
+      "1.20.3",
+      "1.20.4"
+    ],
+    "java": ">=17",
+    "fabric-api": "*"
+  },
+  "breaks": {
+    "mushrooomsmod": "<=0.0.16-1.20.4"
+  },
+  "suggests": {
+    "another-mod": "*"
+  },
+  "custom": {
+    "modmenu": {
+      "links": {
+        "discord": "https://discord.gg/bAQRUxNyFj"
+      },
+      "update_checker": true
+    }
+  }
 }

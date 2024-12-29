@@ -139,37 +139,9 @@ public class StructureUtil {
             }
 
         }
-        //we remove or not the pos of the list
-        /*for (BlockList blockList : blockLists) {
-            BlockState blockState = blockList.getBlockState();
-            if (blockState.isOf(Blocks.JIGSAW))
-                continue;
-
-            if (blockToSkip != null && !blockToSkip.isEmpty())
-                if (blockToSkip.contains(blockState.getBlock()))
-                    continue;
-
-            NbtCompound tag = blockList.getTag();
-
-            boolean bl1 = blockToForce == null || blockToForce.isEmpty();
-            for (BlockPos pos : blockList.getPosList()) {
-                blockList.replaceBlockPos(pos, pos.add(block));
-                if (!bl1 || force) {
-                    if (integrity < 1f) {
-                        if (MathUtil.getRandomBoolean(integrity)) {
-                            blockList.removeBlockPos(pos);
-                        }
-                    }
-                    if (!BlockPlaceUtil.verifyBlock(world, force, blockToForce, pos.add(block))) {
-                        blockList.removeBlockPos(pos);
-                    }
-                }
-            }
-        }*/
         //we place the structure depending on if the animator is present or not
         if (animator != null) {
             animator.placeFromBlockList(comparator);
-            System.out.println(comparator);
         } else {
             for (U blockList : comparator.get()) {
                 BlockState blockState = blockList.getBlockState();

@@ -13,6 +13,7 @@ base {
 
 repositories {
     maven { url "https://maven.terraformersmc.com/releases/" }
+    mavenCentral()
 }
 
 fabricApi {
@@ -40,6 +41,7 @@ dependencies {
 
     modApi "com.terraformersmc:modmenu:7.2.2"
     testImplementation 'org.junit.jupiter:junit-jupiter:5.10.0'
+    implementation 'com.moandjiezana.toml:toml4j:0.7.2'
 }
 
 processResources {

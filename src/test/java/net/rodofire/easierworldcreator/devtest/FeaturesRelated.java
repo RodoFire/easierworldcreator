@@ -64,8 +64,8 @@ public class FeaturesRelated {
             torusGen.place();*/
 
             NbtPlacer placer = new NbtPlacer(world, new Identifier("village/plains/houses/plains_medium_house_2"));
-            BlockSorter sorter = new BlockSorter(BlockSorter.BlockSorterType.ALONG_AXIS);
-            sorter.setCenterPoint(pos);
+            BlockSorter sorter = new BlockSorter(BlockSorter.BlockSorterType.FROM_PLANE);
+            sorter.setCenterPoint(pos.up(3));
             sorter.setAxisDirection(new Vec3d(0, -1, 0));
             StructurePlaceAnimator animator = new StructurePlaceAnimator(world, sorter, StructurePlaceAnimator.AnimatorTime.CONSTANT_BLOCKS_PER_TICK);
             animator.setBlocksPerTick(1);
