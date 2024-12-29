@@ -78,10 +78,15 @@ public abstract class AbstractConfigScreen extends Screen {
 
     protected void verifyInteger(IntegerConfigObject configObject, AbstractEntryWidget button, String cgr) {
         if (cgr.isEmpty()) return;
+        if (cgr.equals("-")) {
+            button.setEditableColor(0xFF0000);
+            return;
+        }
         if (!configObject.isAcceptable(Integer.parseInt(cgr))) {
             button.setEditableColor(0xFF0000);
         } else {
             button.setEditableColor(0xFFFFFF);
+            configObject.setActualValue(Integer.parseInt(cgr));
         }
     }
 

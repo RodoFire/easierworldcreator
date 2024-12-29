@@ -99,7 +99,7 @@ public class DefaultConfigScreen extends AbstractConfigScreen {
 
         cancelScreen = false;
         int centerX = this.width / 2;
-        int startY = 10;
+        int startY = 13;
         int buttonWidth = this.width / 8;
         int buttonHeight = 20;
 
@@ -109,19 +109,32 @@ public class DefaultConfigScreen extends AbstractConfigScreen {
 
         drawTopCategories(buttonWidth, buttonHeight, startY, centerX);
 
-        addElements(category, buttonWidth, buttonHeight, centerX, startY + 45 - scrollY);
+        addElements(category, buttonWidth, buttonHeight, centerX, startY + 27 - scrollY);
 
         drawBottomElements();
-        this.addDrawableChild(new ScrollBarWidget(this.width - 10, 45, this.height - 35, this.width, this.height - 110, scrollY, maxScrollY, button -> System.out.println("hi"), Text.translatable("config.ewc.scroll_bar")));
+        this.addDrawableChild(new ScrollBarWidget(this.width - 10, 42, this.height - 35, this.width, this.height - 110, scrollY, maxScrollY, button -> System.out.println("hi"), Text.translatable("config.ewc.scroll_bar")));
     }
 
     public void addElements(ConfigCategory category, int buttonWidth, int buttonHeight, int startX, int startY) {
+        boolean bl = false;
+        boolean write;
         if (!category.getBools().isEmpty()) {
 
-            this.toDraw(new TextWidget(this.width / 12, startY - scrollY, 2 * this.width / 12, buttonHeight, Text.translatable("config.ewc.boolean_category"), this.textRenderer), startY, buttonHeight);
-            startY += buttonHeight + 5;
+            if (this.toDraw(new TextWidget(this.width / 12, startY - scrollY, 2 * this.width / 12, buttonHeight, Text.translatable("config.ewc.boolean_category"), this.textRenderer), startY, buttonHeight)) {
+                bl = true;
+            }
+            startY += buttonHeight + 3;
             for (BooleanConfigObject obj : category.getBools().values()) {
-                this.toDraw(new TextWidget(5 * this.width / 24, startY - scrollY, 7 * this.width / 24, buttonHeight, Text.translatable("config." + modId + "." + obj.getKey()), this.textRenderer), startY, buttonHeight);
+                TextWidget textWidget = new TextWidget(5 * this.width / 24, startY - scrollY, 7 * this.width / 24, buttonHeight, Text.translatable("config." + modId + "." + obj.getKey()), this.textRenderer);
+                textWidget.setTooltip(Tooltip.of(Text.translatable(obj.getDescriptionKey(modId))));
+
+                write = this.toDraw(textWidget, startY, buttonHeight);
+
+                if (!write && bl)
+                    return;
+                else if (write && !bl) {
+                    bl = true;
+                }
 
                 this.toDraw(
                         new TextButtonWidget(
@@ -134,37 +147,67 @@ public class DefaultConfigScreen extends AbstractConfigScreen {
 
                 this.toDraw(addResetButton(27 * this.width / 32, startY - scrollY, obj), startY, buttonHeight);
 
-                startY += buttonHeight + 5;
+                startY += buttonHeight + 3;
             }
-            startY += 6;
+            startY += 4;
         }
         if (!category.getInts().isEmpty()) {
-            this.toDraw(new TextWidget(this.width / 12, startY - scrollY, 2 * this.width / 12, buttonHeight, Text.translatable("config.ewc.integer_category"), this.textRenderer), startY, buttonHeight);
-            startY += buttonHeight + 5;
+            write = this.toDraw(new TextWidget(this.width / 12, startY - scrollY, 2 * this.width / 12, buttonHeight, Text.translatable("config.ewc.integer_category"), this.textRenderer), startY, buttonHeight);
+            if (!write && bl)
+                return;
+            else if (write && !bl) {
+                bl = true;
+            }
+            startY += buttonHeight + 3;
+
             for (IntegerConfigObject obj : category.getInts().values()) {
                 TextWidget textWidget = new TextWidget(5 * this.width / 24, startY - scrollY, 7 * this.width / 24, buttonHeight, Text.translatable("config." + modId + "." + obj.getKey()), this.textRenderer);
                 textWidget.setTooltip(Tooltip.of(Text.translatable(obj.getDescriptionKey(modId))));
-                this.toDraw(textWidget, startY, buttonHeight);
+                write = this.toDraw(textWidget, startY, buttonHeight);
+                if (!write && bl)
+                    return;
+                else if (write && !bl) {
+                    bl = true;
+                }
 
-                this.toDraw(new IntegerEntryWidget(this.textRenderer,
-                                14 * this.width / 24, startY - scrollY,
-                                3 * this.width / 12, buttonHeight,
-                                null, Text.literal("config_entry"), String.valueOf(obj.getActualValue()), null, (button, chr) -> this.verifyInteger(obj, button, chr)),
+                IntegerEntryWidget integerEntryWidget = new IntegerEntryWidget(this.textRenderer,
+                        14 * this.width / 24, startY - scrollY,
+                        3 * this.width / 12, buttonHeight,
+                        null, Text.literal("config_entry"), String.valueOf(obj.getActualValue()), null, (button, chr) -> this.verifyInteger(obj, button, chr));
+
+                integerEntryWidget.setTooltip(Tooltip.of(Text.of(
+                        Text.translatable("config.ewc.min_value").getString() + ": " + obj.getMinValue() + ", " + Text.translatable("config.ewc.max_value").getString() + ": " + obj.getMaxValue()
+                )));
+
+                this.toDraw(integerEntryWidget,
                         startY, buttonHeight
                 );
 
                 this.toDraw(addResetButton(27 * this.width / 32, startY - scrollY, obj), startY, buttonHeight);
 
-                startY += buttonHeight + 5;
+                startY += buttonHeight + 3;
             }
-            startY += 6;
+            startY += 4;
         }
 
         if (!category.getEnums().isEmpty()) {
-            this.toDraw(new TextWidget(this.width / 12, startY - scrollY, 2 * this.width / 12, buttonHeight, Text.translatable("config.ewc.enum_category"), this.textRenderer), startY, buttonHeight);
-            startY += buttonHeight + 5;
+            write = this.toDraw(new TextWidget(this.width / 12, startY - scrollY, 2 * this.width / 12, buttonHeight, Text.translatable("config.ewc.enum_category"), this.textRenderer), startY, buttonHeight);
+            if (!write && bl)
+                return;
+            else if (write && !bl) {
+                bl = true;
+            }
+            startY += buttonHeight + 3;
             for (EnumConfigObject obj : category.getEnums().values()) {
-                this.toDraw(new TextWidget(5 * this.width / 24, startY - scrollY, 7 * this.width / 24, buttonHeight, Text.translatable("config." + modId + "." + obj.getKey()), this.textRenderer), startY, buttonHeight);
+                TextWidget textWidget = new TextWidget(5 * this.width / 24, startY - scrollY, 7 * this.width / 24, buttonHeight, Text.translatable("config." + modId + "." + obj.getKey()), this.textRenderer);
+                textWidget.setTooltip(Tooltip.of(Text.translatable(obj.getDescriptionKey(modId))));
+                write = this.toDraw(textWidget, startY, buttonHeight);
+                if (!write && bl)
+                    return;
+                else if (write && !bl) {
+                    bl = true;
+                }
+
                 this.toDraw(new TextButtonWidget(14 * this.width / 24, startY - scrollY, 3 * this.width / 12, buttonHeight, Text.translatable("config." + modId + "." + obj.getActualValue()), button -> cycleEnum(obj, button)), startY, buttonHeight);
                 this.toDraw(addResetButton(27 * this.width / 32, startY - scrollY, obj), startY, buttonHeight);
 
@@ -173,24 +216,27 @@ public class DefaultConfigScreen extends AbstractConfigScreen {
         }
     }
 
-    protected <T extends Element & Drawable & Selectable> void toDraw(T drawableElement, int startY, int height) {
-        if (startY - this.scrollY > 50 && startY + height - this.scrollY < this.height - 35)
+    protected <T extends Element & Drawable & Selectable> boolean toDraw(T drawableElement, int startY, int height) {
+        if (startY - this.scrollY >= 40 && startY + height - this.scrollY < this.height - 35) {
             this.addDrawableChild(drawableElement);
+            return true;
+        }
+        return false;
     }
 
     private int calculateContentHeight(ConfigCategory category, int buttonHeight) {
-        int height = -this.height + 110;
+        int height = -this.height + 75;
         if (!category.getBools().isEmpty()) {
-            height += buttonHeight + 11;
-            height += category.getBools().size() * (buttonHeight + 5);
+            height += buttonHeight + 4;
+            height += category.getBools().size() * (buttonHeight + 3);
         }
         if (!category.getInts().isEmpty()) {
-            height += buttonHeight + 11;
-            height += category.getInts().size() * (buttonHeight + 5);
+            height += buttonHeight + 4;
+            height += category.getInts().size() * (buttonHeight + 3);
         }
         if (!category.getEnums().isEmpty()) {
-            height += buttonHeight + 5;
-            height += category.getEnums().size() * (buttonHeight + 5);
+            height += buttonHeight + 4;
+            height += category.getEnums().size() * (buttonHeight + 3);
         }
         return height;
     }
@@ -227,7 +273,7 @@ public class DefaultConfigScreen extends AbstractConfigScreen {
         int buttonWidth = this.width / 5;
         int buttonHeight = 20;
         int startX = this.width / 2 - buttonWidth - 10;
-        int startY = this.height - 40;
+        int startY = this.height - 35;
 
         this.addDrawableChild(new TextButtonWidget(startX, startY, buttonWidth, buttonHeight, Text.translatable("config.ewc.cancel"), button -> this.cancel(), 0xFFFFFF, 0xFF0000));
         this.addDrawableChild(new TextButtonWidget(startX + buttonWidth + 20, startY, buttonWidth, buttonHeight, Text.translatable("config.ewc.save_exit"), button -> this.saveExit(), 0xFFFFFF, 0x00FF00));
@@ -303,9 +349,9 @@ public class DefaultConfigScreen extends AbstractConfigScreen {
         );
 
         int darkRectX = 0;
-        int darkRectY = 45;
+        int darkRectY = 40;
         int darkRectWidth = this.width;
-        int darkRectHeight = this.height - 85;
+        int darkRectHeight = this.height - 80;
 
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
