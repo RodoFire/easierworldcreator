@@ -23,19 +23,8 @@ public class EwcConfig {
         bool.requireRestart = true;
         SERVER_CATEGORY.addBoolean(bool);
         SERVER_CATEGORY.addInt("testint", 2, -1000, 150 );
-        SERVER_CATEGORY.addEnum("testenum", "bonjour", Set.of("bonjour", "banane", "hi"));
-
-        FOO_CATEGORY.addBoolean("voo","salut tout le monde. j'espere que vous allez bien", false);
-        FOO_CATEGORY.addBoolean("woo","some desc", false);
-        FOO_CATEGORY.addBoolean("xoo","some desc", true);
-        FOO_CATEGORY.addBoolean("zoo","bonjour diane", true);
 
         MOD_CONFIG.addCategories(SERVER_CATEGORY);
-        MOD_CONFIG.addCategories(FOO_CATEGORY);
-        MOD_CONFIG.addCategories(VOO_CATEGORY);
-        MOD_CONFIG.addCategories(WOO_CATEGORY);
-        MOD_CONFIG.addCategories(XOO_CATEGORY);
-        MOD_CONFIG.addCategories(YOO_CATEGORY);
 
         MOD_CONFIG.init();
     }

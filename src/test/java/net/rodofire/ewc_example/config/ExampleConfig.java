@@ -1,16 +1,16 @@
-package net.rodofire.ewc_test.config;
+package net.rodofire.ewc_example.config;
 
 import net.rodofire.easierworldcreator.config.ConfigCategory;
 import net.rodofire.easierworldcreator.config.ModConfig;
-import net.rodofire.ewc_test.EWCExample;
 import net.rodofire.easierworldcreator.config.objects.BooleanConfigObject;
 import net.rodofire.easierworldcreator.config.objects.EnumConfigObject;
 import net.rodofire.easierworldcreator.config.objects.IntegerConfigObject;
+import net.rodofire.ewc_test.EWCTest;
 
 import java.util.Set;
 
 public class ExampleConfig {
-    public static final ModConfig CONFIG = new ModConfig(EWCExample.MOD_ID);
+    public static final ModConfig CONFIG = new ModConfig(EWCTest.MOD_ID);
     public static final ConfigCategory FOO = new ConfigCategory("foo");
 
     public static void registerConfig() {
@@ -36,9 +36,11 @@ public class ExampleConfig {
         FOO.addEnum("newenum", "hello", Set.of("hello", "world"));
 
         CONFIG.addCategory(FOO);
+
+        CONFIG.init();
     }
 
-    public boolean getBool1Test() {
-        return CONFIG.getCategory("foo").bools.get("bool1test").getActualValue();
+    public static boolean getBool1Test() {
+        return CONFIG.getCategory("foo").getBools().get("bool1test").getActualValue();
     }
 }
