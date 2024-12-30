@@ -106,13 +106,12 @@ public class DefaultConfigScreen extends AbstractConfigScreen {
 
         maxScrollY = (short) calculateContentHeight(category, buttonHeight);
 
-
         drawTopCategories(buttonWidth, buttonHeight, startY, centerX);
 
         addElements(category, buttonWidth, buttonHeight, centerX, startY + 27 - scrollY);
 
         drawBottomElements();
-        this.addDrawableChild(new ScrollBarWidget(this.width - 10, 42, this.height - 35, this.width, this.height - 110, scrollY, maxScrollY, button -> System.out.println("hi"), Text.translatable("config.ewc.scroll_bar")));
+        this.addDrawableChild(new ScrollBarWidget(this.width - 10, 40, this.height - 35, scrollY, maxScrollY, button -> System.out.println("hi"), Text.translatable("config.ewc.scroll_bar")));
     }
 
     public void addElements(ConfigCategory category, int buttonWidth, int buttonHeight, int startX, int startY) {
@@ -211,7 +210,7 @@ public class DefaultConfigScreen extends AbstractConfigScreen {
                 this.toDraw(new TextButtonWidget(14 * this.width / 24, startY - scrollY, 3 * this.width / 12, buttonHeight, Text.translatable("config." + modId + "." + obj.getActualValue()), button -> cycleEnum(obj, button)), startY, buttonHeight);
                 this.toDraw(addResetButton(27 * this.width / 32, startY - scrollY, obj), startY, buttonHeight);
 
-                startY += buttonHeight + 5;
+                startY += buttonHeight + 3;
             }
         }
     }
@@ -227,18 +226,18 @@ public class DefaultConfigScreen extends AbstractConfigScreen {
     private int calculateContentHeight(ConfigCategory category, int buttonHeight) {
         int height = -this.height + 75;
         if (!category.getBools().isEmpty()) {
-            height += buttonHeight + 4;
+            height += buttonHeight + 7;
             height += category.getBools().size() * (buttonHeight + 3);
         }
         if (!category.getInts().isEmpty()) {
-            height += buttonHeight + 4;
+            height += buttonHeight + 7;
             height += category.getInts().size() * (buttonHeight + 3);
         }
         if (!category.getEnums().isEmpty()) {
-            height += buttonHeight + 4;
+            height += buttonHeight + 3;
             height += category.getEnums().size() * (buttonHeight + 3);
         }
-        return height;
+        return height/2;
     }
 
     private void drawTopCategories(int buttonWidth, int buttonHeight, int startY, int centerX) {
@@ -351,7 +350,7 @@ public class DefaultConfigScreen extends AbstractConfigScreen {
         int darkRectX = 0;
         int darkRectY = 40;
         int darkRectWidth = this.width;
-        int darkRectHeight = this.height - 80;
+        int darkRectHeight = this.height - 75;
 
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
