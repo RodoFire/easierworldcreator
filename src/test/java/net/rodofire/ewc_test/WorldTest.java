@@ -1,8 +1,8 @@
-package net.rodofire.easierworldcreator;
+package net.rodofire.ewc_test;
 
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.minecraft.world.StructureWorldAccess;
-import net.rodofire.easierworldcreator.placer.block.util.BlockStateUtilTest;
+import net.rodofire.ewc_test.placer.block.util.BlockStateUtilTest;
 
 import java.util.concurrent.atomic.AtomicInteger;
 

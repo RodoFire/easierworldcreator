@@ -1,4 +1,4 @@
-package net.rodofire.easierworldcreator.devtest;
+package net.rodofire.ewc_test.devtest;
 
 import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricDynamicRegistryProvider;

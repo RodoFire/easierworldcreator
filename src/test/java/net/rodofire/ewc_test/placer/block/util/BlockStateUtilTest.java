@@ -1,8 +1,8 @@
-package net.rodofire.easierworldcreator.placer.block.util;
+package net.rodofire.ewc_test.placer.block.util;
 
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.StructureWorldAccess;
-import net.rodofire.easierworldcreator.EWCTest;
+import net.rodofire.ewc_test.EWCTest;
 import net.rodofire.easierworldcreator.util.WorldGenUtil;
 
 import java.time.Duration;

@@ -1,4 +1,4 @@
-package net.rodofire.easierworldcreator.shape.block.gen;
+package net.rodofire.ewc_test.shape.block.gen;
 
 import net.minecraft.world.StructureWorldAccess;
 

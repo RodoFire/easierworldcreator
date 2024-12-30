@@ -1,4 +1,4 @@
-package net.rodofire.easierworldcreator;
+package net.rodofire.ewc_test;
 
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.biome.v1.BiomeModifications;
@@ -6,7 +6,8 @@ import net.fabricmc.fabric.api.biome.v1.BiomeSelectors;
 import net.minecraft.client.resource.language.I18n;
 import net.minecraft.world.biome.BiomeKeys;
 import net.minecraft.world.gen.GenerationStep;
-import net.rodofire.easierworldcreator.devtest.FeaturesRelated;
+import net.rodofire.easierworldcreator.EasierWorldCreator;
+import net.rodofire.ewc_test.devtest.FeaturesRelated;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

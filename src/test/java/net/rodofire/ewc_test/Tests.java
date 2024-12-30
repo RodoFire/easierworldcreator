@@ -1,6 +1,6 @@
-package net.rodofire.easierworldcreator;
+package net.rodofire.ewc_test;
 
-import net.rodofire.easierworldcreator.blockdata.sorter.BlockSortedTest;
+import net.rodofire.ewc_test.blockdata.sorter.BlockSortedTest;
 
 public class Tests {
     public static void registerTests() {

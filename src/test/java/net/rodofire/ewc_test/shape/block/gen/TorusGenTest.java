@@ -1,8 +1,9 @@
-package net.rodofire.easierworldcreator.shape.block.gen;
+package net.rodofire.ewc_test.shape.block.gen;
 
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.StructureWorldAccess;
-import net.rodofire.easierworldcreator.EWCTest;
+import net.rodofire.easierworldcreator.shape.block.gen.TorusGen;
+import net.rodofire.ewc_test.EWCTest;
 import net.rodofire.easierworldcreator.shape.block.instanciator.AbstractBlockShapeBase;
 
 import java.time.Duration;

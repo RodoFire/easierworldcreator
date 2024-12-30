@@ -1,4 +1,4 @@
-package net.rodofire.easierworldcreator.devtest;
+package net.rodofire.ewc_test.devtest;
 
 import com.mojang.serialization.Codec;
 import net.fabricmc.fabric.api.object.builder.v1.block.FabricBlockSettings;
@@ -26,7 +26,7 @@ import net.minecraft.world.gen.placementmodifier.BiomePlacementModifier;
 import net.minecraft.world.gen.placementmodifier.PlacementModifier;
 import net.minecraft.world.gen.placementmodifier.RarityFilterPlacementModifier;
 import net.minecraft.world.gen.placementmodifier.SquarePlacementModifier;
-import net.rodofire.easierworldcreator.EWCTest;
+import net.rodofire.ewc_test.EWCTest;
 import net.rodofire.easierworldcreator.blockdata.sorter.BlockSorter;
 import net.rodofire.easierworldcreator.placer.blocks.animator.StructurePlaceAnimator;
 import net.rodofire.easierworldcreator.structure.NbtPlacer;

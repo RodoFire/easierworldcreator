@@ -1,4 +1,4 @@
-package net.rodofire.easierworldcreator.blockdata.sorter;
+package net.rodofire.ewc_test.blockdata.sorter;
 
 import net.minecraft.util.math.BlockPos;
 import net.rodofire.easierworldcreator.util.WorldGenUtil;
