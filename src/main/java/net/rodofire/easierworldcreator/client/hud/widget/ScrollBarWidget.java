@@ -20,8 +20,8 @@ public class ScrollBarWidget extends PressableWidget {
 
     ScrollBarWidget.PressAction pressAction;
 
-    public ScrollBarWidget(int x, int startY, int endY, int width, int height, short currentScroll, short maxScroll, ScrollBarWidget.PressAction action, Text message) {
-        super(x, startY, width, height, message);
+    public ScrollBarWidget(int x, int startY, int endY, short currentScroll, short maxScroll, ScrollBarWidget.PressAction action, Text message) {
+        super(x, startY, 0, 0, message);
 
         this.endY = endY;
         this.currentScroll = currentScroll;
@@ -29,8 +29,8 @@ public class ScrollBarWidget extends PressableWidget {
         this.pressAction = action;
     }
 
-    public ScrollBarWidget(int x, int startY, int endY, int width, int height, short currentScroll, short maxScroll, ScrollBarWidget.PressAction action, Text message, int buttonColor) {
-        super(x, startY, width, height, message);
+    public ScrollBarWidget(int x, int startY, int endY, short currentScroll, short maxScroll, ScrollBarWidget.PressAction action, Text message, int buttonColor) {
+        super(x, startY, 0, 0, message);
 
         this.endY = endY;
         this.currentScroll = currentScroll;
@@ -47,17 +47,17 @@ public class ScrollBarWidget extends PressableWidget {
     @Override
     protected void renderButton(DrawContext context, int mouseX, int mouseY, float delta) {
         int adjustedHeight = this.endY - this.getY();
-        int adjustedMaxScroll = maxScroll + adjustedHeight;
-        if (adjustedMaxScroll <= adjustedHeight) {
+        int adjustedMaxScroll = adjustedHeight;
+        int adjustedCurrentScroll = (short) (((float) currentScroll / maxScroll) * adjustedHeight);
+        if (maxScroll <= 0) {
             return;
         }
         this.visible = true;
 
         MinecraftClient minecraftClient = MinecraftClient.getInstance();
 
-        height = (short) (((float) (adjustedHeight) / adjustedMaxScroll) * (adjustedHeight));
+        height = (short) (((float) (adjustedHeight) / (maxScroll + adjustedHeight)) * (adjustedHeight));
 
-        int adjustedCurrentScroll = (short) (((float) currentScroll / maxScroll) * adjustedHeight);
 
         context.setShaderColor(
                 (float) ((buttonColor & 0xFF0000) >> 16) / 256,
