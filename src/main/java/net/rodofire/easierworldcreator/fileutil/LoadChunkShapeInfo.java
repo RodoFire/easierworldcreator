@@ -19,8 +19,8 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.StructureWorldAccess;
 import net.minecraft.world.chunk.Chunk;
-import net.rodofire.easierworldcreator.Easierworldcreator;
-import net.rodofire.easierworldcreator.shapeutil.BlockList;
+import net.rodofire.easierworldcreator.EasierWorldCreator;
+import net.rodofire.easierworldcreator.blockdata.blocklist.basic.DefaultBlockList;
 
 import java.io.File;
 import java.io.IOException;
@@ -44,17 +44,22 @@ public class LoadChunkShapeInfo {
      * @param chunkFilePath the path of the shape
      * @return a {@link List} used later to place the BlockStates
      */
-    public static List<BlockList> loadFromJson(StructureWorldAccess world, Path chunkFilePath) throws IOException {
+    public static List<DefaultBlockList> loadFromJson(StructureWorldAccess world, Path chunkFilePath) {
         File file = new File(chunkFilePath.toString());
         if(!file.exists()) return List.of();
-
-        String jsonContent = Files.readString(chunkFilePath);
+        String jsonContent;
+        try {
+            jsonContent = Files.readString(chunkFilePath);
+        } catch (IOException e) {
+            e.fillInStackTrace();
+            return List.of();
+        }
 
         Gson gson = new Gson();
 
         JsonArray jsonArray = gson.fromJson(jsonContent, JsonArray.class);
 
-        List<BlockList> blockLists = new ArrayList<>();
+        List<DefaultBlockList> defaultBlockLists = new ArrayList<>();
         String fileName = chunkFilePath.getFileName().toString();
 
         Pattern pattern = Pattern.compile("\\[(-?\\d+),(-?\\d+)]_.*\\.json");
@@ -87,23 +92,23 @@ public class LoadChunkShapeInfo {
             }
 
             // Create a new BlockList and add it to the set
-            BlockList blockList = new BlockList(posList, blockState);
-            blockLists.add(blockList);
+            DefaultBlockList defaultBlockList = new DefaultBlockList(posList, blockState);
+            defaultBlockLists.add(defaultBlockList);
         }
 
-        return blockLists;
+        return defaultBlockLists;
     }
 
     /**
      * method to place the structure
      *
      * @param world      the world the structure will spawn in
-     * @param blockLists the list of blockList that compose the structure
+     * @param defaultBlockLists the list of blockList that compose the structure
      */
-    public static void placeStructure(StructureWorldAccess world, List<BlockList> blockLists) {
-        for (BlockList blockList : blockLists) {
-            BlockState state = blockList.getBlockstate();
-            for (BlockPos pos : blockList.getPoslist()) {
+    public static void placeStructure(StructureWorldAccess world, List<DefaultBlockList> defaultBlockLists) {
+        for (DefaultBlockList defaultBlockList : defaultBlockLists) {
+            BlockState state = defaultBlockList.getBlockState();
+            for (BlockPos pos : defaultBlockList.getPosList()) {
                 world.setBlockState(pos, state, 3);
             }
         }
@@ -123,7 +128,7 @@ public class LoadChunkShapeInfo {
         Identifier identifier = new Identifier(extractBlockName(stateString.split("\\[")[0]));
         Optional<? extends RegistryEntry<Block>> optional = blockLookup.getOptional(RegistryKey.of(RegistryKeys.BLOCK, identifier));
         if (optional.isEmpty()) {
-            Easierworldcreator.LOGGER.error("error parsing BlockState: " + stateString.split("\\[")[0]);
+            EasierWorldCreator.LOGGER.error("error parsing BlockState: {}", stateString.split("\\[")[0]);
             return Blocks.AIR.getDefaultState();
         }
 
@@ -154,7 +159,7 @@ public class LoadChunkShapeInfo {
      * @param state    the previous states of the {@link BlockState}
      * @param property the property related
      * @param value    the value of the property
-     * @param <T>      the type of the property value, must be Comparable
+     * @param <T>      the type of the property value must be Comparable
      * @return the changed {@link BlockState}
      */
     private static <T extends Comparable<T>> BlockState applyProperty(BlockState state, Property<T> property, String value) {
@@ -195,7 +200,7 @@ public class LoadChunkShapeInfo {
         List<Path> pathList = new ArrayList<>();
         Path generatedPath = Objects.requireNonNull(world.getServer()).getSavePath(WorldSavePath.GENERATED).normalize();
         String chunkDirPrefix = "chunk_" + chunk.x + "_" + chunk.z;  // Prefix to match chunk directories
-        Path directoryPath = generatedPath.resolve(Easierworldcreator.MOD_ID).resolve("structures").resolve(chunkDirPrefix);
+        Path directoryPath = generatedPath.resolve(EasierWorldCreator.MOD_ID).resolve("structures").resolve(chunkDirPrefix);
 
         if (Files.exists(generatedPath) && Files.isDirectory(generatedPath)) {
 
@@ -208,7 +213,7 @@ public class LoadChunkShapeInfo {
                         }
                     });
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    e.fillInStackTrace();
                 }
             }
         }
