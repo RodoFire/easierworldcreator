@@ -1,6 +1,9 @@
 package net.rodofire.easierworldcreator.shape.block.instanciator;
 
 import net.minecraft.block.BlockState;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.text.Text;
 import net.minecraft.util.WorldSavePath;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
@@ -148,7 +151,7 @@ public abstract class AbstractBlockShape extends AbstractBlockShapeRotation {
         if (logWarns)
             EasierWorldCreator.LOGGER.info("placing structure");
 
-        //?? I don't remember why O did this
+        //avoid issue where the method to place the block would not take the last block
         if (this.getLayerPlace() == LayerPlace.NOISE2D || this.getLayerPlace() == LayerPlace.NOISE3D) {
             for (BlockLayer layers : this.getBlockLayer().getLayers()) {
                 layers.addBlockState(layers.getBlockStates().get(layers.getBlockStates().size() - 1));
@@ -157,7 +160,7 @@ public abstract class AbstractBlockShape extends AbstractBlockShapeRotation {
 
         //verify if the shape is larger than a chunk
         //if yes, we have to divide the structure into chunks
-        ExecutorService executorService = Executors.newFixedThreadPool(THREAD_COUNT);
+
         if (this.getPlaceMoment() == PlaceMoment.WORLD_GEN && this.multiChunk && EwcConfig.getMultiChunkFeatures()) {
 
             if (!tryPlaceStructure(posList)) {
@@ -166,7 +169,9 @@ public abstract class AbstractBlockShape extends AbstractBlockShapeRotation {
                 }
                 return;
             }
-            EasierWorldCreator.LOGGER.info("structure bigger than chunk");
+            if (logWarns)
+                EasierWorldCreator.LOGGER.info("structure bigger than chunk");
+
             long randomLong = Random.create().nextLong();
             featureName = "custom_feature_" + randomLong;
 
@@ -175,6 +180,7 @@ public abstract class AbstractBlockShape extends AbstractBlockShapeRotation {
 
             List<Future<?>> creationTasks = new ArrayList<>();
 
+            ExecutorService executorService = Executors.newFixedThreadPool(THREAD_COUNT);
             for (Set<BlockPos> pos : posList.values()) {
                 Future<?> future = executorService.submit(() -> {
                     Optional<BlockPos> opt = pos.stream().findFirst();
@@ -196,11 +202,11 @@ public abstract class AbstractBlockShape extends AbstractBlockShapeRotation {
             }
 
             Set<ChunkPos> chunSet = posList.keySet();
+            //tell the garbage collector that it can free the list of pos
             posList.clear();
 
             if (!moveChunks(chunSet, 5)) return;
             Path generatedPath = Objects.requireNonNull(getWorld().getServer()).getSavePath(WorldSavePath.GENERATED).resolve(EasierWorldCreator.MOD_ID).resolve("structures").normalize();
-            //tell the garbage collector that it can free the list of pos
 
             for (ChunkPos chunkPos : chunSet) {
                 executorService.submit(() -> {
@@ -209,6 +215,7 @@ public abstract class AbstractBlockShape extends AbstractBlockShapeRotation {
                             generatedPath.resolve("chunk_" + (chunkPos.x + offset.getX() / 16) + "_" + (chunkPos.z + offset.getZ() / 16)).resolve("[" + offset.getX() + "," + offset.getZ() + "]_" + featureName + ".json"));
                 });
             }
+            executorService.shutdown();
 
 
             List<Path> path = LoadChunkShapeInfo.verifyFiles(getWorld(), this.getPos());
@@ -221,6 +228,14 @@ public abstract class AbstractBlockShape extends AbstractBlockShapeRotation {
                 animator = new StructurePlaceAnimator(this.getWorld(), new BlockSorter(BlockSorter.BlockSorterType.RANDOM), StructurePlaceAnimator.AnimatorTime.CONSTANT_BLOCKS_PER_TICK);
                 animator.setBlocksPerTick(100);
             }
+            if (this.multiChunk && EwcConfig.getChatWarns()) {
+                MinecraftServer server = getWorld().getServer();
+                if (server != null) {
+                    for (ServerPlayerEntity player : server.getPlayerManager().getPlayerList()) {
+                        player.sendMessage(Text.translatable("ewc.chat_warn"), false);
+                    }
+                }
+            }
             DefaultBlockListComparator comparator = getBlockListWithVerification(posList.values().stream().toList());
             animator.placeFromBlockList(comparator);
         }
@@ -231,14 +246,14 @@ public abstract class AbstractBlockShape extends AbstractBlockShapeRotation {
             }
 
         }
-        executorService.shutdown();
     }
 
     public void placeWBlockList(Map<ChunkPos, Set<DefaultBlockList>> posList) {
         List<Future<?>> creationTasks = new ArrayList<>();
 
         if (!canPos(posList.keySet())) {
-            EasierWorldCreator.LOGGER.info("cannot place structure due to too much chunks generated around the original Pos");
+            if (EwcConfig.getLogWarns())
+                EasierWorldCreator.LOGGER.info("cannot place structure due to too much chunks generated around the original Pos");
             return;
         }
 
@@ -254,6 +269,7 @@ public abstract class AbstractBlockShape extends AbstractBlockShapeRotation {
             });
             creationTasks.add(future);
             executorService.shutdown();
+
         }
 
         for (Future<?> future : creationTasks) {
@@ -271,12 +287,15 @@ public abstract class AbstractBlockShape extends AbstractBlockShapeRotation {
 
 
         for (ChunkPos chunkPos : chunkPosList) {
-            //executorService.submit(() -> {
-            FileUtil.renameFile(
-                    generatedPath.resolve("chunk_" + chunkPos.x + "_" + chunkPos.z).resolve("false_" + featureName + ".json"),
-                    generatedPath.resolve("chunk_" + (chunkPos.x + offset.getX() / 16) + "_" + (chunkPos.z + offset.getZ() / 16)).resolve("[" + offset.getX() + "," + offset.getZ() + "]_" + featureName + ".json"));
+            ExecutorService executorService = Executors.newFixedThreadPool(THREAD_COUNT);
+            executorService.submit(() -> {
+                FileUtil.renameFile(
+                        generatedPath.resolve("chunk_" + chunkPos.x + "_" + chunkPos.z).resolve("false_" + featureName + ".json"),
+                        generatedPath.resolve("chunk_" + (chunkPos.x + offset.getX() / 16) + "_" + (chunkPos.z + offset.getZ() / 16)).resolve("[" + offset.getX() + "," + offset.getZ() + "]_" + featureName + ".json"));
 
-            //});
+            });
+            executorService.shutdown();
+
         }
 
 
@@ -325,7 +344,8 @@ public abstract class AbstractBlockShape extends AbstractBlockShapeRotation {
 
         if (moveChunks(posList.keySet(), maxOffset)) return true;
 
-        EasierWorldCreator.LOGGER.info("can't place the structure");
+        if (EwcConfig.getLogWarns())
+            EasierWorldCreator.LOGGER.info("can't place the structure");
         return false;
     }
 
@@ -373,6 +393,7 @@ public abstract class AbstractBlockShape extends AbstractBlockShapeRotation {
             }
         });
         finalExecutorService.shutdown();
+
         return blockList;
     }
 
