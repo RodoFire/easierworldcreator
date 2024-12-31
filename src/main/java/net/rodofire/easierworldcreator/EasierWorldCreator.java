@@ -35,7 +35,6 @@ public class EasierWorldCreator implements ModInitializer {
         initialized = true;
         EwcConfig.setConfig();
         FastMaths.registerMaths();
-        System.out.println(I18n.translate("config.easierworldcreator.performance_mode"));
 
         LOGGER.info("Starting Easierworldcreator");
     }
