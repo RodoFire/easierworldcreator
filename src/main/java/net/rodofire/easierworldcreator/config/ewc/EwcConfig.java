@@ -1,8 +1,10 @@
 package net.rodofire.easierworldcreator.config.ewc;
 
+import net.minecraft.util.Identifier;
 import net.rodofire.easierworldcreator.EasierWorldCreator;
 import net.rodofire.easierworldcreator.config.ConfigCategory;
 import net.rodofire.easierworldcreator.config.ModConfig;
+import net.rodofire.easierworldcreator.config.client.ConfigScreen;
 import net.rodofire.easierworldcreator.config.objects.BooleanConfigObject;
 
 import java.util.Set;
@@ -22,14 +24,34 @@ public class EwcConfig {
         BooleanConfigObject bool = new BooleanConfigObject(true, "performance_mode");
         bool.requireRestart = true;
         SERVER_CATEGORY.addBoolean(bool);
-        SERVER_CATEGORY.addInt("testint", 2, -1000, 150 );
+        SERVER_CATEGORY.addBoolean(new BooleanConfigObject(true, "multi_chunk_features"));
+        SERVER_CATEGORY.addBoolean(new BooleanConfigObject(true, "chat_warns"));
+        SERVER_CATEGORY.addBoolean(new BooleanConfigObject(true, "log_warns"));
+        SERVER_CATEGORY.addBoolean(new BooleanConfigObject(true, "log_performance_info"));
 
         MOD_CONFIG.addCategories(SERVER_CATEGORY);
+
+        ConfigScreen.setBackgroundScreen(EasierWorldCreator.MOD_ID, new Identifier(EasierWorldCreator.MOD_ID, "textures/gui/config_background.png"), 1920, 1080, 0xAFAFAFFF, 0xD8000000);
 
         MOD_CONFIG.init();
     }
 
     public static boolean getPerformanceConfig() {
         return MOD_CONFIG.getCategory(SERVER).getBools().get("performance_mode").getActualValue();
+    }
+
+    public static boolean getMultiChunkFeatures() {
+        return MOD_CONFIG.getCategory(SERVER).getBools().get("multi_chunk_features").getActualValue();
+    }
+
+    public static boolean getChatWarns() {
+        return MOD_CONFIG.getCategory(SERVER).getBools().get("chat_warns").getActualValue();
+    }
+
+    public static boolean getLogWarns() {
+        return MOD_CONFIG.getCategory(SERVER).getBools().get("log_warns").getActualValue();
+    }
+    public static boolean getLogPerformanceInfo() {
+        return MOD_CONFIG.getCategory(SERVER).getBools().get("log_performance_info").getActualValue();
     }
 }
