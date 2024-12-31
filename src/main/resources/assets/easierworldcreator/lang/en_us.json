@@ -1,6 +1,6 @@
 {
   "config.easierworldcreator.performance_mode": "Performance Mode",
-  "config.easierworldcreator.performance_mode.description": "Uses C++ code allowing better performance (this can however cause some problems and it is only compatible with windows and linux)",
+  "config.easierworldcreator.performance_mode.description": "- not implemented yet -  Uses C++ code allowing better performance (this can however cause some problems and it is only compatible with windows and linux)",
   "config.easierworldcreator.multi_chunk_features": "Multi Chunk Features",
   "config.easierworldcreator.multi_chunk_features.description": "Place features(trees, vines, mushrooms...) where the size is superior to 3x3 chunks",
   "config.easierworldcreator.chat_warns": "chat warnings",

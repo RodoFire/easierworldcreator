@@ -8,7 +8,7 @@
   "config.easierworldcreator.multi_chunk_features": "Features Inter-Chunk",
   "config.easierworldcreator.multi_chunk_features.description": "Place des features(arbres, vignes, champignons...) dont la taille est supérieures à 3x3 chunks",
   "config.easierworldcreator.performance_mode": "Mode de Performance",
-  "config.easierworldcreator.performance_mode.description": "Utilise du code en C++ pour plus de performances (cela peut cependant causer certains problèmes et n'est compatible qu'avec windows et linux)",
+  "config.easierworldcreator.performance_mode.description": "- Pas encore implémenté -  Utilise du code en C++ pour plus de performances (cela peut cependant causer certains problèmes et n'est compatible qu'avec windows et linux)",
   "config.ewc.accept_restart": "Relancher le Jeu",
   "config.ewc.boolean.false": "Faux",
   "config.ewc.boolean.true": "Vrai",
