@@ -66,18 +66,18 @@ public class LineGen extends AbstractBlockShape {
     }
 
     @Override
-    public List<Set<BlockPos>> getBlockPos() {
+    public Map<ChunkPos, Set<BlockPos>> getBlockPos() {
         Direction direction;
         Map<ChunkPos, Set<BlockPos>> chunkMap = new HashMap<>();
         //faster coordinates generation
-        if (!this.biggerThanChunk && WorldGenUtil.isPosAChunkFar(this.secondPos, this.getPos()))
-            this.biggerThanChunk = true;
+        if (!this.multiChunk && WorldGenUtil.isPosAChunkFar(this.secondPos, this.getPos()))
+            this.multiChunk = true;
         if ((direction = WorldGenUtil.getDirection(this.getPos(), secondPos)) != null) {
             this.generateAxisLine(direction, chunkMap);
         } else {
             this.drawLine(chunkMap);
         }
-        return new ArrayList<>(chunkMap.values());
+        return chunkMap;
     }
 
     /**
