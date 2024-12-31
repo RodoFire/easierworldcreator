@@ -26,7 +26,6 @@ public class EWCTest implements ModInitializer {
 
         EasierWorldCreator.init();
         ExampleConfig.registerConfig();
-        System.out.println(ExampleConfig.getBool1Test());
 
         if (Objects.equals(System.getenv("enableTests"), "true")) {
             LOGGER.info("starting tests");
