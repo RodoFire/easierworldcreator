@@ -283,7 +283,7 @@ public class TorusGen extends AbstractFillableBlockShape {
      * @return a list that contain divided BlockPos depending in the chunkPos
      */
     @Override
-    public List<Set<BlockPos>> getBlockPos() {
+    public Map<ChunkPos, Set<BlockPos>> getBlockPos() {
         setTorusFill();
         Map<ChunkPos, Set<BlockPos>> chunkMap = new HashMap<>();
         if (this.getFillingType() == Type.EMPTY) {
@@ -291,7 +291,7 @@ public class TorusGen extends AbstractFillableBlockShape {
         } else {
             this.generateFullTore(chunkMap);
         }
-        return new ArrayList<>(chunkMap.values());
+        return chunkMap;
     }
 
 
@@ -348,8 +348,8 @@ public class TorusGen extends AbstractFillableBlockShape {
                             }*/
                             if (bl) {
                                 BlockPos pos = new BlockPos(this.getPos().getX() + x, this.getPos().getY() + y, this.getPos().getZ() + z);
-                                if (!this.biggerThanChunk && WorldGenUtil.isPosAChunkFar(pos, this.getPos()))
-                                    this.biggerThanChunk = true;
+                                if (!this.multiChunk && WorldGenUtil.isPosAChunkFar(pos, this.getPos()))
+                                    this.multiChunk = true;
                                 WorldGenUtil.modifyChunkMap(pos, chunkMap);
                             }
                         }
@@ -392,8 +392,8 @@ public class TorusGen extends AbstractFillableBlockShape {
                             }*/
                             if (bl) {
                                 BlockPos pos = this.getCoordinatesRotation(x, y, z, this.getPos());
-                                if (!this.biggerThanChunk && WorldGenUtil.isPosAChunkFar(pos, this.getPos()))
-                                    this.biggerThanChunk = true;
+                                if (!this.multiChunk && WorldGenUtil.isPosAChunkFar(pos, this.getPos()))
+                                    this.multiChunk = true;
                                 WorldGenUtil.modifyChunkMap(pos, chunkMap);
                             }
                         }
@@ -420,8 +420,8 @@ public class TorusGen extends AbstractFillableBlockShape {
                 for (int v = 0; v <= this.horizontalTorus * 360; v += 45 / maxInnerRadius) {
                     Vec3d vec = this.getEllipsoidalToreCoordinates(u, v);
                     BlockPos pos = new BlockPos((int) (getPos().getX() + vec.x), (int) (getPos().getY() + vec.y), (int) (getPos().getZ() + vec.z));
-                    if (!this.biggerThanChunk && WorldGenUtil.isPosAChunkFar(pos, this.getPos()))
-                        this.biggerThanChunk = true;
+                    if (!this.multiChunk && WorldGenUtil.isPosAChunkFar(pos, this.getPos()))
+                        this.multiChunk = true;
                     WorldGenUtil.modifyChunkMap(pos, chunkMap);
                 }
             }
@@ -430,8 +430,8 @@ public class TorusGen extends AbstractFillableBlockShape {
                 for (int v = 0; v <= 360 * this.horizontalTorus; v += 45 / maxInnerRadius) {
                     Vec3d vec = this.getEllipsoidalToreCoordinates(u, v);
                     BlockPos pos = this.getCoordinatesRotation((float) vec.x, (float) vec.y, (float) vec.z, this.getPos());
-                    if (!this.biggerThanChunk && WorldGenUtil.isPosAChunkFar(pos, this.getPos()))
-                        this.biggerThanChunk = true;
+                    if (!this.multiChunk && WorldGenUtil.isPosAChunkFar(pos, this.getPos()))
+                        this.multiChunk = true;
                     WorldGenUtil.modifyChunkMap(pos, chunkMap);
                 }
             }

@@ -200,15 +200,16 @@ public class CylinderGen extends AbstractFillableBlockShape {
      * @return the blockPos divided into chunkPos
      */
     @Override
-    public List<Set<BlockPos>> getBlockPos() {
+    public Map<ChunkPos, Set<BlockPos>> getBlockPos() {
         return this.generateCylinder();
     }
 
     /**
      * Method to get the BlockPos of the shape
+     *
      * @return the blockPos divided into chunkPos
      */
-    public List<Set<BlockPos>> generateCylinder() {
+    public Map<ChunkPos, Set<BlockPos>> generateCylinder() {
 
         Map<ChunkPos, Set<BlockPos>> chunkMap = new HashMap<>();
         this.setFill();
@@ -224,11 +225,12 @@ public class CylinderGen extends AbstractFillableBlockShape {
             this.generateFullCylinder(chunkMap);
         }
 
-        return new ArrayList<>(chunkMap.values());
+        return chunkMap;
     }
 
     /**
      * this generates a full cylinder
+     *
      * @param chunkMap the Map of ChunkPos that will be converted into {@code List<Set<BlockPos>>}
      */
     public void generateFullCylinder(Map<ChunkPos, Set<BlockPos>> chunkMap) {
@@ -261,8 +263,8 @@ public class CylinderGen extends AbstractFillableBlockShape {
                             for (float y = 0; y <= this.height; y += 1f) {
 
                                 BlockPos pos = new BlockPos((int) (this.getPos().getX() + x), (int) (this.getPos().getY() + y), (int) (this.getPos().getZ() + z));
-                                if (!this.biggerThanChunk && WorldGenUtil.isPosAChunkFar(pos, this.getPos()))
-                                    this.biggerThanChunk = true;
+                                if (!this.multiChunk && WorldGenUtil.isPosAChunkFar(pos, this.getPos()))
+                                    this.multiChunk = true;
                                 WorldGenUtil.modifyChunkMap(pos, chunkMap);
                             }
                         }
@@ -289,8 +291,8 @@ public class CylinderGen extends AbstractFillableBlockShape {
                             if (xSquared + (z * z) / radiusZSquared <= 1) {
 
                                 BlockPos pos = this.getCoordinatesRotation(x, y, z, this.getPos());
-                                if (!this.biggerThanChunk && WorldGenUtil.isPosAChunkFar(pos, this.getPos()))
-                                    this.biggerThanChunk = true;
+                                if (!this.multiChunk && WorldGenUtil.isPosAChunkFar(pos, this.getPos()))
+                                    this.multiChunk = true;
                                 WorldGenUtil.modifyChunkMap(pos, chunkMap);
 
                             }
@@ -303,6 +305,7 @@ public class CylinderGen extends AbstractFillableBlockShape {
 
     /**
      * this generates a full cylinder.
+     *
      * @param chunkMap the map that will be converted into {@code List<Set>blockPos>>}
      */
     public void generateEmptyCylinder(Map<ChunkPos, Set<BlockPos>> chunkMap) {
@@ -314,8 +317,8 @@ public class CylinderGen extends AbstractFillableBlockShape {
                 float z = radiusZ * FastMaths.getFastSin(u);
                 for (float y = 0; y <= this.height; y += 1f) {
                     BlockPos pos = new BlockPos((int) (this.getPos().getX() + x), this.getPos().getY(), (int) (this.getPos().getZ() + z));
-                    if (!this.biggerThanChunk && WorldGenUtil.isPosAChunkFar(pos, this.getPos()))
-                        this.biggerThanChunk = true;
+                    if (!this.multiChunk && WorldGenUtil.isPosAChunkFar(pos, this.getPos()))
+                        this.multiChunk = true;
                     WorldGenUtil.modifyChunkMap(pos, chunkMap);
                 }
             }
@@ -325,8 +328,8 @@ public class CylinderGen extends AbstractFillableBlockShape {
                 float z = radiusZ * FastMaths.getFastSin(u);
                 for (float y = 0; y <= this.height; y += 0.5f) {
                     BlockPos pos = this.getCoordinatesRotation(x, 0, z, this.getPos());
-                    if (!this.biggerThanChunk && WorldGenUtil.isPosAChunkFar(pos, this.getPos()))
-                        this.biggerThanChunk = true;
+                    if (!this.multiChunk && WorldGenUtil.isPosAChunkFar(pos, this.getPos()))
+                        this.multiChunk = true;
                     WorldGenUtil.modifyChunkMap(pos, chunkMap);
                 }
             }

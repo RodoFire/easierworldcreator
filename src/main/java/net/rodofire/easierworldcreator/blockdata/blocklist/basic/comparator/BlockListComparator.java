@@ -299,4 +299,9 @@ public abstract class BlockListComparator<T extends DefaultBlockList, U, V exten
             blockList.placeAllWithVerificationDeletion(worldAccess);
         }
     }
+
+    @Override
+    public String toString() {
+        return this.blockLists.toString();
+    }
 }

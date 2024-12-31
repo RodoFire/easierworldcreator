@@ -117,28 +117,28 @@ public class SphereGen extends AbstractFillableBlockShape {
     }
 
     /**
-     * Gets the direction of the half sphere. * * @return The direction of the half sphere.
+     * Gets the direction of the half-sphere. * * @return The direction of the half-sphere.
      */
     public Direction getHalfSphereDirection() {
         return direction;
     }
 
     /**
-     * Sets the direction of the half sphere. * * @param direction The direction to set.
+     * Sets the direction of the half-sphere. * * @param direction The direction to set.
      */
     public void setHalfSphereDirection(Direction direction) {
         this.direction = direction;
     }
 
     /**
-     * Checks if it is a half sphere. * * @return The type of the half sphere.
+     * Checks if it is a half sphere. * * @return The type of the half-sphere.
      */
     public SphereType isHalfSphere() {
         return halfSphere;
     }
 
     /**
-     * Sets the half sphere type. * * @param halfSphere The half sphere type to set.
+     * Sets the half-sphere type. * * @param halfSphere The half-sphere type to set.
      */
     public void setHalfSphere(SphereType halfSphere) {
         this.halfSphere = halfSphere;
@@ -187,13 +187,13 @@ public class SphereGen extends AbstractFillableBlockShape {
     }
 
     @Override
-    public List<Set<BlockPos>> getBlockPos() {
+    public Map<ChunkPos, Set<BlockPos>> getBlockPos() {
         return this.getSphereCoordinates();
     }
 
 
     //calculate and return the coordinates
-    public List<Set<BlockPos>> getSphereCoordinates() {
+    public Map<ChunkPos, Set<BlockPos>> getSphereCoordinates() {
         Map<ChunkPos, Set<BlockPos>> chunkMap = new HashMap<>();
 
         //verify if the rotations == 0 to avoid some unnecessary calculations
@@ -210,7 +210,7 @@ public class SphereGen extends AbstractFillableBlockShape {
                 this.generateFullEllipsoid(chunkMap);
             }
         }
-        return new ArrayList<>(chunkMap.values());
+        return chunkMap;
     }
 
 
@@ -252,8 +252,8 @@ public class SphereGen extends AbstractFillableBlockShape {
                     int y = (int) (radiusY * FastMaths.getFastSin(phi));
                     int z = (int) (zSinTheta * cosPhi);
                     BlockPos pos = new BlockPos(this.getPos().getX() + x, this.getPos().getY() + y, this.getPos().getZ() + z);
-                    if (!this.biggerThanChunk && WorldGenUtil.isPosAChunkFar(pos, this.getPos()))
-                        this.biggerThanChunk = true;
+                    if (!this.multiChunk && WorldGenUtil.isPosAChunkFar(pos, this.getPos()))
+                        this.multiChunk = true;
                     WorldGenUtil.modifyChunkMap(pos, chunkMap);
                     System.out.println(x + " " + y + " " + z);
                 }
@@ -271,8 +271,8 @@ public class SphereGen extends AbstractFillableBlockShape {
                     float y = (radiusY * FastMaths.getFastSin(phi));
                     float z = zSinTheta * cosPhi;
                     BlockPos pos = this.getCoordinatesRotation(x, y, z, this.getPos());
-                    if (!this.biggerThanChunk && WorldGenUtil.isPosAChunkFar(pos, this.getPos()))
-                        this.biggerThanChunk = true;
+                    if (!this.multiChunk && WorldGenUtil.isPosAChunkFar(pos, this.getPos()))
+                        this.multiChunk = true;
                     WorldGenUtil.modifyChunkMap(pos, chunkMap);
                 }
             }
@@ -349,8 +349,8 @@ public class SphereGen extends AbstractFillableBlockShape {
                             }
                             if (bl) {
                                 BlockPos pos = new BlockPos((int) (this.getPos().getX() + x), (int) (this.getPos().getY() + y), (int) (this.getPos().getZ() + z));
-                                if (!this.biggerThanChunk && WorldGenUtil.isPosAChunkFar(pos, this.getPos()))
-                                    this.biggerThanChunk = true;
+                                if (!this.multiChunk && WorldGenUtil.isPosAChunkFar(pos, this.getPos()))
+                                    this.multiChunk = true;
                                 WorldGenUtil.modifyChunkMap(pos, chunkMap);
                             }
                         }
@@ -380,8 +380,8 @@ public class SphereGen extends AbstractFillableBlockShape {
                             }
                             if (bl) {
                                 BlockPos pos = this.getCoordinatesRotation(x, y, z, this.getPos());
-                                if (!this.biggerThanChunk && WorldGenUtil.isPosAChunkFar(pos, this.getPos()))
-                                    this.biggerThanChunk = true;
+                                if (!this.multiChunk && WorldGenUtil.isPosAChunkFar(pos, this.getPos()))
+                                    this.multiChunk = true;
                                 WorldGenUtil.modifyChunkMap(pos, chunkMap);
                             }
                         }

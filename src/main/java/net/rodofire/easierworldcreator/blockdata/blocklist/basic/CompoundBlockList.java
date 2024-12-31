@@ -176,7 +176,7 @@ public class CompoundBlockList extends DefaultBlockList {
      * @param world the world the last block will be placed
      */
     public void placeLastWithDeletion(StructureWorldAccess world) {
-        BlockPlaceUtil.placeBlockWithNbt(world, this.getLastPos(), this.getBlockState(), this.tag);
+        BlockPlaceUtil.placeBlockWithNbt(world, this.removeLastPos(), this.getBlockState(), this.tag);
     }
 
     /**

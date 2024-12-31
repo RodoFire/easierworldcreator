@@ -16,6 +16,10 @@ import java.util.*;
 @SuppressWarnings("unused")
 public class WorldGenUtil {
 
+    /**
+     * method to get a random direction no matter the plane
+     * @return a random direction
+     */
     public static Direction getRandomDirection() {
         return switch (Random.create().nextBetween(0, 5)) {
             case 0 -> Direction.WEST;
@@ -27,10 +31,18 @@ public class WorldGenUtil {
         };
     }
 
+    /**
+     * method to get a random direction on the vertical axis
+     * @return a random direction on the vertical axis
+     */
     public static Direction getRandomVerticalDirection() {
-        return Random.create().nextBetween(0,1) == 1 ? Direction.UP : Direction.DOWN;
+        return Random.create().nextBetween(0, 1) == 1 ? Direction.UP : Direction.DOWN;
     }
 
+    /**
+     * method to get a random direction on the horizontal axis
+     * @return a random direction on the horizontal axis
+     */
     public static Direction getRandomHorizontalDirection() {
         return switch (Random.create().nextBetween(0, 3)) {
             case 0 -> Direction.WEST;
@@ -40,11 +52,23 @@ public class WorldGenUtil {
         };
     }
 
-    //return a random int between min height and max height if the chance
+    /**return a random int between min height and max height if the chance
+     *
+     * @param chance the chance at which the result won't be equal to 0
+     * @param maxHeight the maximum height that can be returned
+     * @return a random height
+     */
     public static int getSecondHeight(float chance, int maxHeight) {
         return getSecondHeight(chance, 0, maxHeight);
     }
 
+    /**return a random int between min height and max height if the chance
+     *
+     * @param chance the chance at which the result won't be equal to 0
+     * @param minHeight the minimum height that can be returned in the case the chance allowed a random height
+     * @param maxHeight the maximum height that can be returned
+     * @return a random height
+     */
     public static int getSecondHeight(float chance, int minHeight, int maxHeight) {
         if (Random.create().nextFloat() < chance) {
             return Random.create().nextBetween(minHeight, maxHeight);
@@ -81,8 +105,16 @@ public class WorldGenUtil {
         return FastMaths.getLengthWPrecision(pos1.getX() - pos2.getX(), pos1.getY() - pos2.getY(), pos1.getZ() - pos2.getZ(), precision);
     }
 
+    public static float getDistance(Vec3d pos1, Vec3d pos2) {
+        return FastMaths.getLength((float) (pos1.getX() - pos2.getX()), (float) (pos1.getY() - pos2.getY()), (float) (pos1.getZ() - pos2.getZ()));
+    }
+
+    public static float getDistance(Vec3d pos1, Vec3d pos2, float precision) {
+        return FastMaths.getLengthWPrecision((float) (pos1.getX() - pos2.getX()), (float) (pos1.getY() - pos2.getY()), (float) (pos1.getZ() - pos2.getZ()), precision);
+    }
+
     public static boolean isPosAChunkFar(BlockPos pos1, BlockPos pos2) {
-        if(Math.abs(pos1.getX() - pos2.getX()) > 16) return true;
+        if (Math.abs(pos1.getX() - pos2.getX()) > 16) return true;
         return Math.abs(pos1.getZ() - pos2.getZ()) > 16;
     }
 
@@ -102,15 +134,12 @@ public class WorldGenUtil {
         double B = normal.y;
         double C = normal.z;
 
-        // Find D using a point on the plane
         double D = -(A * pointOnPlane.x + B * pointOnPlane.y + C * pointOnPlane.z);
 
-        // Coordinates of the point
         double x0 = point.x;
         double y0 = point.y;
         double z0 = point.z;
 
-        // Calculate the distance
         double numerator = Math.abs(A * x0 + B * y0 + C * z0 + D);
         double denominator = FastMaths.getFastSqrt((float) (A * A + B * B + C * C), 0.001f);
 
@@ -201,12 +230,13 @@ public class WorldGenUtil {
     /**
      * This method allows you to divide a list of blockPos into chunks.
      * It is used later to put the blocks
+     *
      * @param posList the list of BlockPos that will be divided
      * @return a list of set of BlockPos that represents a list of chunks
      */
-    public static List<Set<BlockPos>> divideBlockPosIntoChunk(List<BlockPos> posList){
+    public static List<Set<BlockPos>> divideBlockPosIntoChunk(List<BlockPos> posList) {
         Map<ChunkPos, Set<BlockPos>> chunkMap = new HashMap<>();
-        for (BlockPos pos : posList){
+        for (BlockPos pos : posList) {
             modifyChunkMap(pos, chunkMap);
         }
         return new ArrayList<>(chunkMap.values());
