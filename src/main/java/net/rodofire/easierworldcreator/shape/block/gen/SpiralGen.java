@@ -314,7 +314,7 @@ public class SpiralGen extends AbstractBlockShape {
 
 
     @Override
-    public List<Set<BlockPos>> getBlockPos() {
+    public Map<ChunkPos, Set<BlockPos>> getBlockPos() {
         this.getFilling();
         Map<ChunkPos, Set<BlockPos>> chunkMap = new HashMap<>();
 
@@ -332,7 +332,7 @@ public class SpiralGen extends AbstractBlockShape {
         } else {
             this.generateHelicoid(chunkMap);
         }
-        return new ArrayList<>(chunkMap.values());
+        return chunkMap;
     }
 
 
@@ -361,8 +361,8 @@ public class SpiralGen extends AbstractBlockShape {
                 int z = (int) (radiusZ * FastMaths.getFastSin(ai));
                 int y = (int) (i / f);
                 BlockPos pos1 = new BlockPos(pos.getX() + x, pos.getY() + y, pos.getZ() + z);
-                if (!this.biggerThanChunk && WorldGenUtil.isPosAChunkFar(pos1, this.getPos()))
-                    this.biggerThanChunk = true;
+                if (!this.multiChunk && WorldGenUtil.isPosAChunkFar(pos1, this.getPos()))
+                    this.multiChunk = true;
                 WorldGenUtil.modifyChunkMap(pos1, chunkMap);
             }
         } else {
@@ -375,8 +375,8 @@ public class SpiralGen extends AbstractBlockShape {
                 float z = radiusZ * FastMaths.getFastSin(ai);
                 float y = i / f;
                 BlockPos pos2 = this.getCoordinatesRotation(x, y, z, pos);
-                if (!this.biggerThanChunk && WorldGenUtil.isPosAChunkFar(pos2, this.getPos()))
-                    this.biggerThanChunk = true;
+                if (!this.multiChunk && WorldGenUtil.isPosAChunkFar(pos2, this.getPos()))
+                    this.multiChunk = true;
                 WorldGenUtil.modifyChunkMap(pos2, chunkMap);
             }
         }
@@ -398,7 +398,7 @@ public class SpiralGen extends AbstractBlockShape {
             double x = outlineRadiusX * FastMaths.getFastCos(i);
             double z = outlineRadiusZ * FastMaths.getFastSin(i);
             BlockPos pos = WorldGenUtil.getCoordinatesRotation((float) x, (float) 0, (float) z, 1, 0, cosY, sinY, 1, 0, this.getPos());
-            if (!this.biggerThanChunk && WorldGenUtil.isPosAChunkFar(pos, this.getPos())) this.biggerThanChunk = true;
+            if (!this.multiChunk && WorldGenUtil.isPosAChunkFar(pos, this.getPos())) this.multiChunk = true;
             this.generateEllipsoidSpiral(pos, chunkMap);
         }
     }
@@ -453,8 +453,8 @@ public class SpiralGen extends AbstractBlockShape {
                     if (bl) {
                         int y = (int) ((int) (i / f) + distance * FastMaths.getFastSin(helicoidAngle));
                         BlockPos pos = new BlockPos(this.getPos().getX() + x, this.getPos().getY() + y, this.getPos().getZ() + z);
-                        if (!this.biggerThanChunk && WorldGenUtil.isPosAChunkFar(pos, this.getPos()))
-                            this.biggerThanChunk = true;
+                        if (!this.multiChunk && WorldGenUtil.isPosAChunkFar(pos, this.getPos()))
+                            this.multiChunk = true;
                         WorldGenUtil.modifyChunkMap(pos, chunkMap);
                     }
                 }
@@ -497,8 +497,8 @@ public class SpiralGen extends AbstractBlockShape {
                     if (bl) {
                         int y = (int) ((int) (i / f) + distance * FastMaths.getFastSin(helicoidAngle));
                         BlockPos pos = this.getCoordinatesRotation(x, y, z, this.getPos());
-                        if (!this.biggerThanChunk && WorldGenUtil.isPosAChunkFar(pos, this.getPos()))
-                            this.biggerThanChunk = true;
+                        if (!this.multiChunk && WorldGenUtil.isPosAChunkFar(pos, this.getPos()))
+                            this.multiChunk = true;
                         WorldGenUtil.modifyChunkMap(pos, chunkMap);
                     }
                 }

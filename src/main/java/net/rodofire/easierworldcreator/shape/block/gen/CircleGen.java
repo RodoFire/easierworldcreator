@@ -39,9 +39,9 @@ import java.util.*;
  * <p>
  * Since 2.1.0, the shape doesn't return a {@link List<BlockPos>} but it returns instead a {@code List<Set<BlockPos>>}
  * Before 2.1.0, the BlockPos list was a simple list.
- * Starting from 2.1.0, the shapes returns a list of {@link ChunkPos} that has a set of {@link BlockPos}
+ * Starting from 2.1.0, the shapes return a list of {@link ChunkPos} that has a set of {@link BlockPos}
  * The change from {@link List} to {@link Set} was done to avoid duplicates BlockPos which resulted in unnecessary calculations.
- * this allow easy multithreading for the Block assignment done in the {@link AbstractBlockShape} which result in better performance;
+ * This allows easy multithreading for the Block assignment done in the {@link AbstractBlockShape} which result in better performance;
  * </p>
  */
 @SuppressWarnings("unused")
@@ -153,7 +153,7 @@ public class CircleGen extends AbstractFillableBlockShape {
      * @return the blockPos of the circle. The List is divided into chunkPos, allowing for parallel modification
      */
     @Override
-    public List<Set<BlockPos>> getBlockPos() {
+    public Map<ChunkPos, Set<BlockPos>> getBlockPos() {
         if (this.getFillingType() == AbstractFillableBlockShape.Type.HALF) {
             this.setCustomFill(0.5f);
         }
@@ -171,7 +171,7 @@ public class CircleGen extends AbstractFillableBlockShape {
      *
      * @return {@code List<Set<BlockPos>>} : set of BlockPos divided into a list of chunks
      */
-    public List<Set<BlockPos>> generateFullOval() {
+    public Map<ChunkPos, Set<BlockPos>> generateFullOval() {
         Map<ChunkPos, Set<BlockPos>> chunkMap = new HashMap<>();
 
         int radiusXSquared = radiusX * radiusX;
@@ -199,8 +199,8 @@ public class CircleGen extends AbstractFillableBlockShape {
                         }
                         if (bl) {
                             BlockPos pos = new BlockPos((int) (this.getPos().getX() + x), this.getPos().getY(), (int) (this.getPos().getZ() + z));
-                            if (!this.biggerThanChunk && WorldGenUtil.isPosAChunkFar(pos, this.getPos()))
-                                this.biggerThanChunk = true;
+                            if (!this.multiChunk && WorldGenUtil.isPosAChunkFar(pos, this.getPos()))
+                                this.multiChunk = true;
                             WorldGenUtil.modifyChunkMap(pos, chunkMap);
                         }
                     }
@@ -224,8 +224,8 @@ public class CircleGen extends AbstractFillableBlockShape {
                         }
                         if (bl) {
                             BlockPos pos = this.getCoordinatesRotation(x, 0, z, this.getPos());
-                            if (!this.biggerThanChunk && WorldGenUtil.isPosAChunkFar(pos, this.getPos()))
-                                this.biggerThanChunk = true;
+                            if (!this.multiChunk && WorldGenUtil.isPosAChunkFar(pos, this.getPos()))
+                                this.multiChunk = true;
                             WorldGenUtil.modifyChunkMap(pos, chunkMap);
                         }
                     }
@@ -233,7 +233,7 @@ public class CircleGen extends AbstractFillableBlockShape {
             }
         }
 
-        return new ArrayList<>(chunkMap.values());
+        return chunkMap;
     }
 
     /**
@@ -241,7 +241,7 @@ public class CircleGen extends AbstractFillableBlockShape {
      *
      * @return {@code List<Set<BlockPos>>} : set of BlockPos divided into a list of chunks
      */
-    public List<Set<BlockPos>> generateEmptyOval() {
+    public Map<ChunkPos, Set<BlockPos>> generateEmptyOval() {
         Map<ChunkPos, Set<BlockPos>> chunkMap = new HashMap<>();
 
         //Rotating a shape requires more blocks.
@@ -251,8 +251,8 @@ public class CircleGen extends AbstractFillableBlockShape {
                 float x = radiusX * FastMaths.getFastCos(u);
                 float z = radiusZ * FastMaths.getFastSin(u);
                 BlockPos pos = new BlockPos((int) (this.getPos().getX() + x), this.getPos().getY(), (int) (this.getPos().getZ() + z));
-                if (!this.biggerThanChunk && WorldGenUtil.isPosAChunkFar(pos, this.getPos()))
-                    this.biggerThanChunk = true;
+                if (!this.multiChunk && WorldGenUtil.isPosAChunkFar(pos, this.getPos()))
+                    this.multiChunk = true;
                 WorldGenUtil.modifyChunkMap(pos, chunkMap);
             }
         } else {
@@ -260,12 +260,12 @@ public class CircleGen extends AbstractFillableBlockShape {
                 float x = radiusX * FastMaths.getFastCos(u);
                 float z = radiusZ * FastMaths.getFastSin(u);
                 BlockPos pos = this.getCoordinatesRotation(x, 0, z, this.getPos());
-                if (!this.biggerThanChunk && WorldGenUtil.isPosAChunkFar(pos, this.getPos()))
-                    this.biggerThanChunk = true;
+                if (!this.multiChunk && WorldGenUtil.isPosAChunkFar(pos, this.getPos()))
+                    this.multiChunk = true;
                 WorldGenUtil.modifyChunkMap(pos, chunkMap);
             }
         }
-        return new ArrayList<>(chunkMap.values());
+        return chunkMap;
     }
 
     /*---------- Algorithm based on Bressan Algorithms for circle ----------*/
@@ -278,15 +278,15 @@ public class CircleGen extends AbstractFillableBlockShape {
      * @param centerX the x coordinate of the center of the circle
      * @param centerZ the z coordinate of the center of the circle
      * @param y       the height of the circle
-     * @return a list of chunk represented by a set of BlockPos
+     * @return a map of chunkPos represented by a set of BlockPos
      */
-    public List<Set<BlockPos>> generateEmptyOval(int centerX, int centerZ, int y) {
+    public Map<ChunkPos, Set<BlockPos>> generateEmptyOval(int centerX, int centerZ, int y) {
         int x = 0;
         int z = this.radiusZ;
         int twoASquare = 2 * this.radiusX * this.radiusX;
         int twoBSquare = 2 * this.radiusZ * this.radiusZ;
         int decision1 = (int) (this.radiusZ * this.radiusZ - this.radiusX * this.radiusX * this.radiusZ + 0.25 * this.radiusX * this.radiusX);
-        int dx = twoBSquare * x;
+        int dx = 0;
         int dz = twoASquare * z;
 
         Map<ChunkPos, Set<BlockPos>> chunkMap = new HashMap<>();
@@ -329,7 +329,7 @@ public class CircleGen extends AbstractFillableBlockShape {
                 decision2 = decision2 + dx - dz + this.radiusX * this.radiusX;
             }
         }
-        return new ArrayList<>(chunkMap.values());
+        return chunkMap;
     }
 
     /**
