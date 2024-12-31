@@ -20,7 +20,6 @@ import net.rodofire.easierworldcreator.client.hud.widget.ScrollBarWidget;
 import net.rodofire.easierworldcreator.client.hud.widget.TextButtonWidget;
 import net.rodofire.easierworldcreator.config.ConfigCategory;
 import net.rodofire.easierworldcreator.config.ModConfig;
-import net.rodofire.easierworldcreator.config.objects.AbstractConfigObject;
 import net.rodofire.easierworldcreator.config.objects.BooleanConfigObject;
 import net.rodofire.easierworldcreator.config.objects.EnumConfigObject;
 import net.rodofire.easierworldcreator.config.objects.IntegerConfigObject;
@@ -33,14 +32,14 @@ public class DefaultConfigScreen extends AbstractConfigScreen {
 
     private int currentCategoryIndex = 0;
     private final int maxCategoriesVisible = 5;
-    private Identifier TEXTURE = new Identifier(EasierWorldCreator.MOD_ID, "textures/gui/config_background.png");
+    private Identifier TEXTURE = Screen.OPTIONS_BACKGROUND_TEXTURE;
 
-    int backgroundHeight = 1080;
-    int backgroundWidth = 1920;
-    int backgroundShaderColor = 0xABABABFF;
-    int backgroundDarkRectangleShaderColor = 0x00000000;
+    int backgroundHeight = 32;
+    int backgroundWidth = 32;
+    int backgroundShaderColor = 0x3F3F3FFF;
+    int backgroundDarkRectangleShaderColor = 0xD8000000;
 
-    private int[] lastDimension = {0, 0};
+    private final int[] lastDimension = {0, 0};
 
     private short scrollY = 0;
     private short maxScrollY = 0;
@@ -58,6 +57,7 @@ public class DefaultConfigScreen extends AbstractConfigScreen {
         super(config, modId);
         this.parent = parent;
         this.categories = config.getCategories();
+        initShaderColors();
     }
 
     public DefaultConfigScreen(Screen parent, ModConfig config, String modId, Identifier background, int backgroundWidth, int backgroundHeight) {
@@ -67,6 +67,7 @@ public class DefaultConfigScreen extends AbstractConfigScreen {
         this.TEXTURE = background;
         this.backgroundWidth = backgroundWidth;
         this.backgroundHeight = backgroundHeight;
+        initShaderColors();
     }
 
     public DefaultConfigScreen(Screen parent, ModConfig config, String modId, Identifier background, int backgroundWidth, int backgroundHeight, int backgroundShaderColor, int backgroundDarkRectangleShaderColor) {
@@ -77,14 +78,16 @@ public class DefaultConfigScreen extends AbstractConfigScreen {
         this.backgroundWidth = backgroundWidth;
         this.backgroundHeight = backgroundHeight;
         this.backgroundShaderColor = backgroundShaderColor;
+        this.backgroundDarkRectangleShaderColor = backgroundDarkRectangleShaderColor;
         initShaderColors();
     }
 
     public void initShaderColors() {
-        this.backgroundShaderRed = (float) ((this.backgroundShaderColor & 0xFF000000) >> 24) / 0xFF;
+        this.backgroundShaderRed = (float) ((this.backgroundShaderColor & 0xFF000000) >>> 24) / 0xFF;
         this.backgroundShaderGreen = (float) ((this.backgroundShaderColor & 0x00FF0000) >> 16) / 0xFF;
         this.backgroundShaderBlue = (float) ((this.backgroundShaderColor & 0x0000FF00) >> 8) / 0xFF;
         this.backgroundShaderAlpha = (float) (this.backgroundShaderColor & 0x0000000FF) / 0xFF;
+        EasierWorldCreator.LOGGER.info("aa {},  {}, {}, {}, {}", backgroundShaderColor, backgroundShaderRed, backgroundShaderGreen, backgroundShaderBlue, backgroundShaderAlpha);
 
     }
 
@@ -108,13 +111,13 @@ public class DefaultConfigScreen extends AbstractConfigScreen {
 
         drawTopCategories(buttonWidth, buttonHeight, startY, centerX);
 
-        addElements(category, buttonWidth, buttonHeight, centerX, startY + 27 - scrollY);
+        addElements(category, buttonHeight, startY + 27 - scrollY);
 
         drawBottomElements();
         this.addDrawableChild(new ScrollBarWidget(this.width - 10, 40, this.height - 35, scrollY, maxScrollY, button -> System.out.println("hi"), Text.translatable("config.ewc.scroll_bar")));
     }
 
-    public void addElements(ConfigCategory category, int buttonWidth, int buttonHeight, int startX, int startY) {
+    public void addElements(ConfigCategory category, int buttonHeight, int startY) {
         boolean bl = false;
         boolean write;
         if (!category.getBools().isEmpty()) {
@@ -237,7 +240,7 @@ public class DefaultConfigScreen extends AbstractConfigScreen {
             height += buttonHeight + 3;
             height += category.getEnums().size() * (buttonHeight + 3);
         }
-        return height/2;
+        return height / 2;
     }
 
     private void drawTopCategories(int buttonWidth, int buttonHeight, int startY, int centerX) {
@@ -294,12 +297,6 @@ public class DefaultConfigScreen extends AbstractConfigScreen {
         }
     }
 
-    private <T extends AbstractConfigObject<U>, U> void reset(T configObject) {
-        configObject.setActualValue(configObject.getDefaultValue());
-        this.clearChildren();
-        this.init();
-    }
-
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
         this.renderBackground(context);
@@ -322,30 +319,38 @@ public class DefaultConfigScreen extends AbstractConfigScreen {
         float screenRatio = (float) this.width / this.height;
 
         int renderWidth, renderHeight, offsetX, offsetY;
-
-        if (screenRatio > textureRatio) {
-            renderWidth = this.width;
-            renderHeight = (int) (this.width / textureRatio);
-            offsetX = 0;
-            offsetY = (renderHeight - this.height) / 2;
+        if (textureRatio == 1) {
+            context.setShaderColor(backgroundShaderRed, backgroundShaderGreen, backgroundShaderBlue, backgroundShaderAlpha);
+            context.drawTexture(
+                    TEXTURE, 0, 0,
+                    0, 0, this.width, this.height, this.backgroundWidth, this.backgroundHeight
+            );
         } else {
-            renderWidth = (int) (this.height * textureRatio);
-            renderHeight = this.height;
-            offsetX = (renderWidth - this.width) / 2;
-            offsetY = 0;
-        }
+            if (screenRatio > textureRatio) {
+                renderWidth = this.width;
+                renderHeight = (int) (this.width / textureRatio);
+                offsetX = 0;
+                offsetY = (renderHeight - this.height) / 2;
+            } else {
+                renderWidth = (int) (this.height * textureRatio);
+                renderHeight = this.height;
+                offsetX = (renderWidth - this.width) / 2;
+                offsetY = 0;
+            }
 
-        context.setShaderColor(backgroundShaderRed, backgroundShaderGreen, backgroundShaderBlue, backgroundShaderAlpha);
-        context.drawTexture(
-                TEXTURE,
-                -offsetX,
-                -offsetY,
-                0, 0,
-                renderWidth,
-                renderHeight,
-                renderWidth,
-                renderHeight
-        );
+
+            context.setShaderColor(backgroundShaderRed, backgroundShaderGreen, backgroundShaderBlue, backgroundShaderAlpha);
+            context.drawTexture(
+                    TEXTURE,
+                    -offsetX,
+                    -offsetY,
+                    0, 0,
+                    renderWidth,
+                    renderHeight,
+                    renderWidth,
+                    renderHeight
+            );
+        }
 
         int darkRectX = 0;
         int darkRectY = 40;
@@ -354,13 +359,18 @@ public class DefaultConfigScreen extends AbstractConfigScreen {
 
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
-        context.setShaderColor(0.0F, 0.0F, 0.0F, 0.85F);
+        context.setShaderColor(
+                (float) (this.backgroundDarkRectangleShaderColor & 0x00FF0000 >> 16) / 256,
+                (float) (this.backgroundDarkRectangleShaderColor & 0x0000FF00 >> 8) / 256,
+                (float) (this.backgroundDarkRectangleShaderColor & 0x000000FF) / 256,
+                (float) (this.backgroundDarkRectangleShaderColor >>> 24) / 256
+        );
         context.fill(
                 darkRectX,
                 darkRectY,
                 darkRectX + darkRectWidth,
                 darkRectY + darkRectHeight,
-                0xD8000000
+                this.backgroundDarkRectangleShaderColor
         );
 
         context.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);

@@ -5,6 +5,7 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.Pair;
 import net.rodofire.easierworldcreator.EasierWorldCreator;
 import net.rodofire.easierworldcreator.config.ModConfig;
 
@@ -15,10 +16,17 @@ import java.util.Map;
 public class ConfigScreen {
     private static final Map<String, Screen> screen = new HashMap<>();
     private static Map<String, ModConfig> modId = new HashMap<>();
+    private static Map<String, Pair<Identifier, Pair<Integer, Integer>>> backgrounds = new HashMap<>();
+    private static Map<String, Pair<Integer, Integer>> backgroundsShader = new HashMap<>();
 
     public static Screen getScreen(Screen parent, String modId) {
         if (screen.containsKey(modId)) {
             return screen.get(modId);
+        }
+        if (backgrounds.containsKey(modId) && backgroundsShader.containsKey(modId)) {
+            return getDefaultScreen(parent, modId, ConfigScreen.modId.get(modId), backgrounds.get(modId).getLeft(), backgrounds.get(modId).getRight().getLeft(), backgrounds.get(modId).getRight().getRight(), backgroundsShader.get(modId).getLeft(), backgroundsShader.get(modId).getRight());
+        } else if (backgrounds.containsKey(modId)) {
+            return getDefaultScreen(parent, modId, ConfigScreen.modId.get(modId), backgrounds.get(modId).getLeft(), backgrounds.get(modId).getRight().getLeft(), backgrounds.get(modId).getRight().getRight());
         }
         return getDefaultScreen(parent, modId, ConfigScreen.modId.get(modId));
     }
@@ -27,10 +35,11 @@ public class ConfigScreen {
         ConfigScreen.screen.put(modId, screen);
     }
 
+
     public static Map<String, ConfigScreenFactory<?>> getScreenMap() {
         Map<String, ConfigScreenFactory<?>> map = new HashMap<>();
         for (Map.Entry<String, ModConfig> entry : modId.entrySet()) {
-            map.put(entry.getKey(), par -> getDefaultScreen(par, entry.getKey(), entry.getValue()));
+            map.put(entry.getKey(), par -> getScreen(par, entry.getKey()));
         }
         return map;
     }
@@ -44,12 +53,35 @@ public class ConfigScreen {
             return;
         }
 
-        DefaultConfigScreen screen1 = new DefaultConfigScreen(parent, modConfig, modId, new Identifier(EasierWorldCreator.MOD_ID, "textures/gui/config_background.png"), 1920, 1080);
+        DefaultConfigScreen screen1 = new DefaultConfigScreen(parent, modConfig, modId);
         screen.put(modId, screen1);
+    }
+
+    public static void setBackgroundScreen(String modId, Identifier image, int width, int height) {
+        if (backgrounds.containsKey(modId)) {
+            return;
+        }
+        backgrounds.put(modId, new Pair<>(image, new Pair<>(width, height)));
+    }
+
+    public static void setBackgroundScreen(String modId, Identifier image, int width, int height, int backgroundShader, int darkRectangleShader) {
+        setBackgroundScreen(modId, image, width, height);
+        if(backgroundsShader.containsKey(modId)) {
+            return;
+        }
+        ConfigScreen.backgroundsShader.put(modId, new Pair<>(backgroundShader, darkRectangleShader));
     }
 
     public static Screen getDefaultScreen(Screen parent, String modId, ModConfig modConfig) {
         return new DefaultConfigScreen(parent, modConfig, modId);
+    }
+
+    public static Screen getDefaultScreen(Screen parent, String modId, ModConfig modConfig, Identifier image, int width, int height) {
+        return new DefaultConfigScreen(parent, modConfig, modId, image, width, height);
+    }
+
+    public static Screen getDefaultScreen(Screen parent, String modId, ModConfig modConfig, Identifier image, int width, int height, int backgroundShaderColor, int darkbackgroundShaderColor) {
+        return new DefaultConfigScreen(parent, modConfig, modId, image, width, height, backgroundShaderColor, darkbackgroundShaderColor);
     }
 
 
