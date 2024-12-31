@@ -87,8 +87,6 @@ public class DefaultConfigScreen extends AbstractConfigScreen {
         this.backgroundShaderGreen = (float) ((this.backgroundShaderColor & 0x00FF0000) >> 16) / 0xFF;
         this.backgroundShaderBlue = (float) ((this.backgroundShaderColor & 0x0000FF00) >> 8) / 0xFF;
         this.backgroundShaderAlpha = (float) (this.backgroundShaderColor & 0x0000000FF) / 0xFF;
-        EasierWorldCreator.LOGGER.info("aa {},  {}, {}, {}, {}", backgroundShaderColor, backgroundShaderRed, backgroundShaderGreen, backgroundShaderBlue, backgroundShaderAlpha);
-
     }
 
 
