@@ -1,121 +1,102 @@
-plugins {
-    id 'fabric-loom' version '1.8-SNAPSHOT'
-    id 'maven-publish'
-    id "me.modmuss50.mod-publish-plugin" version "0.8.1"
+plugins {id 'fabric-loom' version '1.9-SNAPSHOT'
+	id 'maven-publish'
+	id "me.modmuss50.mod-publish-plugin" version "0.8.1"
 }
+
 version = project.mod_version
 group = project.maven_group
 
 base {
-    archivesName = project.archives_base_name
+	archivesName = project.archives_base_name
 }
 
-
 repositories {
-    maven { url "https://maven.terraformersmc.com/releases/" }
-    mavenCentral()
+	maven {
+		url "https://maven.terraformersmc.com/releases/"
+	}
+	mavenCentral()
 }
 
 fabricApi {
-    //configureDataGeneration()
-}
-sourceSets {
-    main {
-        java {
-            srcDirs = ['src/main/java']
-            exclude(['src/main/generated/**'])
-        }
-    }
-}
-
-tasks.test {
-    enabled = false
+	configureDataGeneration()
 }
 
 dependencies {
-    minecraft "com.mojang:minecraft:${project.minecraft_version}"
-    mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
-    modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+	// To change the versions see the gradle.properties file
+	minecraft "com.mojang:minecraft:${project.minecraft_version}"
+	mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
+	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
 
-    modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+	// Fabric API. This is technically optional, but you probably want it anyway.
+	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 
-    modApi "com.terraformersmc:modmenu:7.2.2"
-    testImplementation 'org.junit.jupiter:junit-jupiter:5.10.0'
-    implementation 'com.moandjiezana.toml:toml4j:0.7.2'
+
+	modApi "com.terraformersmc:modmenu:9.0.0"
+	implementation 'com.moandjiezana.toml:toml4j:0.7.2'
 }
 
 processResources {
-    inputs.property "version", project.version
+	inputs.property "version", project.version
 
-    filesMatching("fabric.mod.json") {
-        expand "version": project.version
-    }
+	filesMatching("fabric.mod.json") {
+		expand "version": project.version
+	}
 }
 
 tasks.withType(JavaCompile).configureEach {
-    it.options.release = 17
+	it.options.release = 17
 }
 
 java {
-    withSourcesJar()
-    withJavadocJar()
+	// Loom will automatically attach sourcesJar to a RemapSourcesJar task and to the "build" task
+	// if it is present.
+	// If you remove this line, sources will not be generated.
+	withSourcesJar()
+	withJavadocJar()
 
-    sourceCompatibility = JavaVersion.VERSION_17
-    targetCompatibility = JavaVersion.VERSION_17
+	sourceCompatibility = JavaVersion.VERSION_17
+	targetCompatibility = JavaVersion.VERSION_17
 }
 
 jar {
-    from("LICENSE") {
-        rename { "${it}_${project.base.archivesName.get()}" }
-    }
-}
-
-static def getApiKey() {
-    def Properties props = new Properties()
-    props.load(new FileInputStream(new File('api.properties')))
-    return props
+	from("LICENSE") {
+		rename { "${it}_${project.base.archivesName.get()}"}
+	}
 }
 
 publishMods {
-    file = remapJar.archiveFile
-    additionalFiles.from(remapSourcesJar.archiveFile, javadocJar.archiveFile)
+	file = remapJar.archiveFile
+	additionalFiles.from(remapSourcesJar.archiveFile, javadocJar.archiveFile)
 
-    changelog = file("changelog.md").text
-    type = STABLE
-    modLoaders.add("fabric")
-    modLoaders.add("quilt")
-    curseforge {
-        accessToken = getApiKey()["CURSEFORGE_API_KEY"]
-        projectId = "1069458"
-        minecraftVersionRange {
-            start = "1.20.1"
-            end = "1.20.4"
-        }
-        javaVersions.add(JavaVersion.VERSION_17)
-        serverRequired = true
-        requires("fabric-api")
-        changelogType = "markdown"
-    }
+	changelog = file("changelog.md").text
+	type = STABLE
+	modLoaders.add("fabric")
+	modLoaders.add("quilt")
+	curseforge {
+		accessToken = getApiKey()["CURSEFORGE_API_KEY"]
+		projectId = "1069458"
+		minecraftVersionRange {
+			start = "1.20.1"
+			end = "1.20.4"
+		}
+		javaVersions.add(JavaVersion.VERSION_17)
+		serverRequired = true
+		requires("fabric-api")
+		changelogType = "markdown"
+	}
 
-    modrinth {
-        accessToken = getApiKey()["MODRINTH_API_KEY"]
-        projectId = "Ut6vTr1q"
-        minecraftVersionRange {
-            start = "1.20.1"
-            end = "1.20.4"
-        }
-        requires("fabric-api")
-    }
+	modrinth {
+		accessToken = getApiKey()["MODRINTH_API_KEY"]
+		projectId = "Ut6vTr1q"
+		minecraftVersionRange {
+			start = "1.20.1"
+			end = "1.20.4"
+		}
+		requires("fabric-api")
+	}
 }
-
-publishing {
-    publications {
-        create("mavenJava", MavenPublication) {
-            artifactId = project.archives_base_name
-            from components.java
-        }
-    }
-
-    repositories {
-    }
+static def getApiKey() {
+	def Properties props = new Properties()
+	props.load(new FileInputStream(new File('api.properties')))
+	return props
 }

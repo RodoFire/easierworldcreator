@@ -5,9 +5,11 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.gui.screen.ButtonTextures;
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
 import net.minecraft.client.gui.widget.PressableWidget;
 import net.minecraft.text.Text;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.math.MathHelper;
 
 @SuppressWarnings("unused")
@@ -19,6 +21,10 @@ public class ScrollBarWidget extends PressableWidget {
     int buttonColor = 0xFFFFFF;
 
     ScrollBarWidget.PressAction pressAction;
+
+    private static final ButtonTextures TEXTURES = new ButtonTextures(
+            new Identifier("widget/button"), new Identifier("widget/button_disabled"), new Identifier("widget/button_highlighted")
+    );
 
     public ScrollBarWidget(int x, int startY, int endY, short currentScroll, short maxScroll, ScrollBarWidget.PressAction action, Text message) {
         super(x, startY, 0, 0, message);
@@ -45,7 +51,7 @@ public class ScrollBarWidget extends PressableWidget {
     }
 
     @Override
-    protected void renderButton(DrawContext context, int mouseX, int mouseY, float delta) {
+    protected void renderWidget(DrawContext context, int mouseX, int mouseY, float delta) {
         int adjustedHeight = this.endY - this.getY();
         int adjustedMaxScroll = adjustedHeight;
         int adjustedCurrentScroll = (short) (((float) currentScroll / maxScroll) * adjustedHeight);
@@ -70,28 +76,19 @@ public class ScrollBarWidget extends PressableWidget {
 
         int currentPos = (int) (this.getY() + (float) adjustedCurrentScroll / adjustedMaxScroll * (adjustedHeight - height));
 
-        context.drawNineSlicedTexture(WIDGETS_TEXTURE, this.getX(), currentPos, 10, this.height, 20, 4, 200, 20, 0, this.getTextureY());
+        context.drawGuiTexture(TEXTURES.get(this.active, this.isSelected()), this.getX(), currentPos, 10, this.height, 20, 4, 200, 20, 0);
 
 
         int i = this.active ? 16777215 : 10526880;
         this.drawMessage(context, minecraftClient.textRenderer, i | MathHelper.ceil(this.alpha * 255.0F) << 24);
     }
 
+
     @Override
     protected void appendClickableNarrations(NarrationMessageBuilder builder) {
         this.appendDefaultNarrations(builder);
     }
 
-    private int getTextureY() {
-        int i = 1;
-        if (!this.active) {
-            i = 0;
-        } else if (this.isSelected()) {
-            i = 2;
-        }
-
-        return 46 + i * 20;
-    }
 
 
     @Environment(EnvType.CLIENT)

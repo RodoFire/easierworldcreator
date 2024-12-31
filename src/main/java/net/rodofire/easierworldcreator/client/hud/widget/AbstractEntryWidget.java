@@ -405,7 +405,7 @@ public abstract class AbstractEntryWidget extends ClickableWidget implements Dra
     }
 
     @Override
-    public void renderButton(DrawContext context, int mouseX, int mouseY, float delta) {
+    protected void renderWidget(DrawContext context, int mouseX, int mouseY, float delta) {
         if (this.isVisible()) {
             if (this.drawsBackground()) {
                 int i = this.isFocused() ? -1 : -6250336;

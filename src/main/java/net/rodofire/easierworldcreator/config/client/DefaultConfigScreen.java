@@ -388,9 +388,9 @@ public class DefaultConfigScreen extends AbstractConfigScreen {
     }
 
     @Override
-    public boolean mouseScrolled(double mouseX, double mouseY, double amount) {
+    public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount, double verticalAmount) {
         if (maxScrollY > 0) {
-            scrollY = (short) Math.max(0, Math.min(maxScrollY, scrollY - (int) (amount * 10)));
+            scrollY = (short) Math.max(0, Math.min(maxScrollY, scrollY - (int) (verticalAmount * 10)));
             this.clearChildren();
             this.init();
             return true;
@@ -398,7 +398,7 @@ public class DefaultConfigScreen extends AbstractConfigScreen {
         if (scrollY > 0) {
             scrollY = 0;
         }
-        super.mouseScrolled(mouseX, mouseY, amount);
+        super.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount);
         return true;
     }
 
