@@ -11,6 +11,7 @@ import net.rodofire.easierworldcreator.blockdata.blocklist.basic.DefaultBlockLis
 import net.rodofire.easierworldcreator.blockdata.blocklist.basic.comparator.DefaultBlockListComparator;
 import net.rodofire.easierworldcreator.blockdata.layer.BlockLayer;
 import net.rodofire.easierworldcreator.blockdata.sorter.BlockSorter;
+import net.rodofire.easierworldcreator.config.ewc.EwcConfig;
 import net.rodofire.easierworldcreator.fileutil.FileUtil;
 import net.rodofire.easierworldcreator.fileutil.LoadChunkShapeInfo;
 import net.rodofire.easierworldcreator.fileutil.SaveChunkShapeInfo;
@@ -123,10 +124,12 @@ public abstract class AbstractBlockShape extends AbstractBlockShapeRotation {
             return;
         }
         long start = System.nanoTime();
-        List<Set<BlockPos>> posList = this.getBlockPos();
+        Map<ChunkPos, Set<BlockPos>> posList = this.getBlockPos();
         long end = System.nanoTime();
         long diff = end - start;
-        EasierWorldCreator.LOGGER.info("Shape coordinate calculations took : {}ms", ((double) (diff / 1000)) / 1000);
+        if (EwcConfig.getLogWarns()) {
+            EasierWorldCreator.LOGGER.info("Shape coordinate calculations took : {}ms", ((double) (diff / 1000)) / 1000);
+        }
         place(posList);
     }
 
@@ -135,12 +138,17 @@ public abstract class AbstractBlockShape extends AbstractBlockShapeRotation {
      *
      * @param posList the {@link List} of {@link Set} of {@link BlockPos} calculated before, that will be placed
      */
-    public void place(List<Set<BlockPos>> posList) {
+    public void place(Map<ChunkPos, Set<BlockPos>> posList) {
+        boolean logWarns = EwcConfig.getLogWarns();
         if (posList == null || posList.isEmpty()) {
-            EasierWorldCreator.LOGGER.warn("shape not placed, no BlockPos present");
+            if (logWarns)
+                EasierWorldCreator.LOGGER.warn("shape not placed, no BlockPos present");
             return;
         }
-        EasierWorldCreator.LOGGER.info("placing structure");
+        if (logWarns)
+            EasierWorldCreator.LOGGER.info("placing structure");
+
+        //?? I don't remember why O did this
         if (this.getLayerPlace() == LayerPlace.NOISE2D || this.getLayerPlace() == LayerPlace.NOISE3D) {
             for (BlockLayer layers : this.getBlockLayer().getLayers()) {
                 layers.addBlockState(layers.getBlockStates().get(layers.getBlockStates().size() - 1));
@@ -150,10 +158,12 @@ public abstract class AbstractBlockShape extends AbstractBlockShapeRotation {
         //verify if the shape is larger than a chunk
         //if yes, we have to divide the structure into chunks
         ExecutorService executorService = Executors.newFixedThreadPool(THREAD_COUNT);
-        if (this.getPlaceMoment() == PlaceMoment.WORLD_GEN && this.biggerThanChunk) {
+        if (this.getPlaceMoment() == PlaceMoment.WORLD_GEN && this.multiChunk && EwcConfig.getMultiChunkFeatures()) {
 
             if (!tryPlaceStructure(posList)) {
-                EasierWorldCreator.LOGGER.info("cannot place structure due to too much chunks generated around the original Pos");
+                if (logWarns) {
+                    EasierWorldCreator.LOGGER.info("cannot place structure due to too much chunks generated around the original Pos");
+                }
                 return;
             }
             EasierWorldCreator.LOGGER.info("structure bigger than chunk");
@@ -165,7 +175,7 @@ public abstract class AbstractBlockShape extends AbstractBlockShapeRotation {
 
             List<Future<?>> creationTasks = new ArrayList<>();
 
-            for (Set<BlockPos> pos : posList) {
+            for (Set<BlockPos> pos : posList.values()) {
                 Future<?> future = executorService.submit(() -> {
                     Optional<BlockPos> opt = pos.stream().findFirst();
                     if (opt.isPresent()) {
@@ -185,18 +195,14 @@ public abstract class AbstractBlockShape extends AbstractBlockShapeRotation {
                 }
             }
 
-            List<ChunkPos> chunkPosList = new ArrayList<>();
-            for (Set<BlockPos> pos : posList) {
-                pos.stream().findFirst().ifPresent(blockPos -> chunkPosList.add(new ChunkPos(blockPos.add(offset))));
-            }
-
-            if (!moveChunks(chunkPosList, 5)) return;
-            Path generatedPath = Objects.requireNonNull(getWorld().getServer()).getSavePath(WorldSavePath.GENERATED).resolve(EasierWorldCreator.MOD_ID).resolve("structures").normalize();
-
-            //tell the garbage collector that it can free the list of pos
+            Set<ChunkPos> chunSet = posList.keySet();
             posList.clear();
 
-            for (ChunkPos chunkPos : chunkPosList) {
+            if (!moveChunks(chunSet, 5)) return;
+            Path generatedPath = Objects.requireNonNull(getWorld().getServer()).getSavePath(WorldSavePath.GENERATED).resolve(EasierWorldCreator.MOD_ID).resolve("structures").normalize();
+            //tell the garbage collector that it can free the list of pos
+
+            for (ChunkPos chunkPos : chunSet) {
                 executorService.submit(() -> {
                     FileUtil.renameFile(
                             generatedPath.resolve("chunk_" + chunkPos.x + "_" + chunkPos.z).resolve("false_" + featureName + ".json"),
@@ -215,12 +221,12 @@ public abstract class AbstractBlockShape extends AbstractBlockShapeRotation {
                 animator = new StructurePlaceAnimator(this.getWorld(), new BlockSorter(BlockSorter.BlockSorterType.RANDOM), StructurePlaceAnimator.AnimatorTime.CONSTANT_BLOCKS_PER_TICK);
                 animator.setBlocksPerTick(100);
             }
-            DefaultBlockListComparator comparator = getBlockListWithVerification(posList);
+            DefaultBlockListComparator comparator = getBlockListWithVerification(posList.values().stream().toList());
             animator.placeFromBlockList(comparator);
         }
         //In the case our structure isn't place during world gen, or it is less than a chunk large
         else {
-            for (Set<BlockPos> pos : posList) {
+            for (Set<BlockPos> pos : posList.values()) {
                 this.placeLayers(pos);
             }
 
@@ -228,21 +234,15 @@ public abstract class AbstractBlockShape extends AbstractBlockShapeRotation {
         executorService.shutdown();
     }
 
-    public void placeWBlockList(List<Set<DefaultBlockList>> posList) {
-        List<Set<BlockPos>> convertedList = new ArrayList<>();
-        for (Set<DefaultBlockList> set : posList) {
-            Set<BlockPos> convertedSet = new HashSet<>();
-            set.stream().findFirst().ifPresent(blockList -> convertedSet.add(blockList.getPosList().get(0)));
-            convertedList.add(convertedSet);
-        }
+    public void placeWBlockList(Map<ChunkPos, Set<DefaultBlockList>> posList) {
         List<Future<?>> creationTasks = new ArrayList<>();
 
-        if (!tryPlaceStructure(convertedList)) {
+        if (!canPos(posList.keySet())) {
             EasierWorldCreator.LOGGER.info("cannot place structure due to too much chunks generated around the original Pos");
             return;
         }
 
-        for (Set<DefaultBlockList> defaultBlockList : posList) {
+        for (Set<DefaultBlockList> defaultBlockList : posList.values()) {
             ExecutorService executorService = Executors.newFixedThreadPool(THREAD_COUNT);
             Future<?> future = executorService.submit(() -> {
                 try {
@@ -264,11 +264,8 @@ public abstract class AbstractBlockShape extends AbstractBlockShapeRotation {
             }
         }
 
-        List<ChunkPos> chunkPosList = new ArrayList<>();
-        for (Set<BlockPos> pos : convertedList) {
-            pos.stream().findFirst().ifPresent(blockPos -> chunkPosList.add(new ChunkPos(blockPos.add(offset))));
-        }
-
+        Set<ChunkPos> chunkPosList = posList.keySet();
+        posList.clear();
         if (!moveChunks(chunkPosList, 5)) return;
         Path generatedPath = Objects.requireNonNull(getWorld().getServer()).getSavePath(WorldSavePath.GENERATED).resolve(EasierWorldCreator.MOD_ID).resolve("structures").normalize();
 
@@ -293,9 +290,9 @@ public abstract class AbstractBlockShape extends AbstractBlockShapeRotation {
     /**
      * method to get the coordinates that will be placed later
      *
-     * @return a list of blockPos for every shape
+     * @return a map of ChunkPos of blockPos for every shape
      */
-    public abstract List<Set<BlockPos>> getBlockPos();
+    public abstract Map<ChunkPos, Set<BlockPos>> getBlockPos();
 
 
     /*---------- Place Structure ----------*/
@@ -322,26 +319,17 @@ public abstract class AbstractBlockShape extends AbstractBlockShapeRotation {
      *
      * @return {@link Boolean} that determines if the shape can be placed
      */
-    private boolean tryPlaceStructure(List<Set<BlockPos>> posList) {
+    private boolean tryPlaceStructure(Map<ChunkPos, Set<BlockPos>> posList) {
         int maxOffset = 5;
         List<ChunkPos> chunkList = new ArrayList<>();
 
-        for (Set<BlockPos> pos : posList) {
-            Optional<BlockPos> pos1 = pos.stream().findFirst();
-            pos1.ifPresent(blockPos -> chunkList.add(new ChunkPos(blockPos)));
-        }
-
-        if (chunkList.isEmpty()) {
-            return false;
-        }
-
-        if (moveChunks(chunkList, maxOffset)) return true;
+        if (moveChunks(posList.keySet(), maxOffset)) return true;
 
         EasierWorldCreator.LOGGER.info("can't place the structure");
         return false;
     }
 
-    private boolean moveChunks(List<ChunkPos> chunkList, int maxStep) {
+    private boolean moveChunks(Set<ChunkPos> chunkList, int maxStep) {
         for (int step = 0; step <= maxStep; step++) {
             for (int xOffset = -step; xOffset <= step; xOffset++) {
                 for (int zOffset = -step; zOffset <= step; zOffset++) {
@@ -378,7 +366,7 @@ public abstract class AbstractBlockShape extends AbstractBlockShapeRotation {
 
         result.forEach(future -> {
             try {
-                DefaultBlockListComparator comp = future.get(); // Récupération du résultat du CompletableFuture
+                DefaultBlockListComparator comp = future.get();
                 blockList.put(comp.get());
             } catch (Exception e) {
                 e.fillInStackTrace();
@@ -393,7 +381,7 @@ public abstract class AbstractBlockShape extends AbstractBlockShapeRotation {
      *
      * @param pos the center pos
      */
-    protected Set<ChunkPos> getChunkCovered(BlockPos pos, List<ChunkPos> chunks) {
+    protected Set<ChunkPos> getChunkCovered(BlockPos pos, Set<ChunkPos> chunks) {
         Set<ChunkPos> newChunks = new HashSet<>();
         for (ChunkPos chunk : chunks) {
             newChunks.add(new ChunkPos(chunk.getStartPos().add(pos)));
