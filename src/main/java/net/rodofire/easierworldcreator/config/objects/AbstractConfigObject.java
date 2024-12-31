@@ -1,5 +1,6 @@
 package net.rodofire.easierworldcreator.config.objects;
 
+@SuppressWarnings("unused")
 public abstract class AbstractConfigObject<T> {
     /**
      * the key of the name used in the screen.
@@ -73,7 +74,7 @@ public abstract class AbstractConfigObject<T> {
     }
 
     public String getDefaultDescription(String modId) {
-        return description == null ? ("# Possible Values:\n") : getDescriptionKey(modId) + ("\n# Possible Values:\n");
+        return description == null ? ("# Possible Values:\n") : "#" + description + ("\n# Possible Values:\n");
     }
 
     public T getPreviousValue() {
@@ -130,9 +131,6 @@ public abstract class AbstractConfigObject<T> {
         if (description != null && other.description != null)
             return false;
 
-        if (!(other.description == null && description == null))
-            return false;
-
-        return true;
+        return other.description == null && description == null;
     }
 }
