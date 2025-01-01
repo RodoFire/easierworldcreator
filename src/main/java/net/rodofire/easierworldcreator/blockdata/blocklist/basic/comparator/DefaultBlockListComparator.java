@@ -1,10 +1,16 @@
 package net.rodofire.easierworldcreator.blockdata.blocklist.basic.comparator;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 import net.minecraft.block.BlockState;
 import net.minecraft.util.math.BlockPos;
 import net.rodofire.easierworldcreator.blockdata.blocklist.basic.DefaultBlockList;
 import net.rodofire.easierworldcreator.blockdata.blocklist.ordered.comparator.DefaultOrderedBlockListComparator;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -126,5 +132,37 @@ public class DefaultBlockListComparator extends BlockListComparator<DefaultBlock
             comparator.put(blockList.getBlockState(), blockList.getPosList());
         }
         return comparator;
+    }
+
+    public void toJson(Path path, BlockPos offset) {
+        Gson gson = new Gson();
+        JsonArray jsonArray = new JsonArray();
+
+        JsonObject jsonObject;
+
+        int offsetX = offset.getX();
+        int offsetY = offset.getY();
+        int offsetZ = offset.getZ();
+
+        for (DefaultBlockList defaultBlockList : this.blockLists) {
+            jsonObject = new JsonObject();
+            jsonObject.addProperty("state", defaultBlockList.getBlockState().toString());
+
+            JsonArray positions = new JsonArray();
+            for (BlockPos pos : defaultBlockList.getPosList()) {
+                JsonObject posObject = new JsonObject();
+                posObject.addProperty("x", pos.getX() + offsetX);
+                posObject.addProperty("y", pos.getY());
+                posObject.addProperty("z", pos.getZ() + offsetZ);
+                positions.add(posObject);
+            }
+            jsonObject.add("positions", positions);
+            jsonArray.add(jsonObject);
+        }
+        try {
+            Files.writeString(path, gson.toJson(jsonArray));
+        } catch (IOException e) {
+            e.fillInStackTrace();
+        }
     }
 }

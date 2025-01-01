@@ -1,6 +1,7 @@
 package net.rodofire.easierworldcreator.shape.block.gen;
 
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.StructureWorldAccess;
 import net.rodofire.easierworldcreator.blockdata.blocklist.basic.DefaultBlockList;
 import net.rodofire.easierworldcreator.blockdata.layer.BlockLayer;
@@ -8,6 +9,7 @@ import net.rodofire.easierworldcreator.shape.block.instanciator.AbstractBlockSha
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 
@@ -46,7 +48,7 @@ public class DefaultBlockShapeGen extends AbstractBlockShape {
     }
 
     @Override
-    public List<Set<BlockPos>> getBlockPos() {
-        return List.of();
+    public Map<ChunkPos, Set<BlockPos>> getBlockPos() {
+        return Map.of();
     }
 }

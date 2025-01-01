@@ -17,10 +17,10 @@
   "environment": "*",
   "entrypoints": {
     "main": [
-      "net.rodofire.easierworldcreator.EWCTest"
+      "net.rodofire.ewc_test.EWCTest"
     ],
     "fabric-datagen": [
-      "net.rodofire.easierworldcreator.EWCDataGenerator"
+      "net.rodofire.ewc_test.EWCDataGenerator"
     ]
   },
   "depends": {

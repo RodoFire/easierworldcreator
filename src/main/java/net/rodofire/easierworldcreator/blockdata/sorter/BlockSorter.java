@@ -5,8 +5,10 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.random.Random;
 import net.rodofire.easierworldcreator.blockdata.blocklist.basic.DefaultBlockList;
 import net.rodofire.easierworldcreator.blockdata.blocklist.ordered.comparator.OrderedBlockListComparator;
+import net.rodofire.easierworldcreator.util.ListUtil;
 import net.rodofire.easierworldcreator.util.WorldGenUtil;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -93,6 +95,102 @@ public class BlockSorter {
         if (this.type == BlockSorterType.ALONG_AXIS) {
             this.axisDirection = new Vec3d(2 * Random.create().nextFloat() - 1, 2 * Random.create().nextFloat() - 1, 2 * Random.create().nextFloat() - 1);
         }
+    }
+
+    /**
+     * Method to sort the list depending on the {@code animatorType}.
+     *
+     * @param posList the list of BlockPos that will be sorted
+     * @return the sorted list
+     */
+    public List<BlockPos> sortBlockPos(List<BlockPos> posList) {
+        return switch (this.type) {
+            case FROM_POINT -> {
+                if (posList == null || posList.isEmpty() || posList.size() == 1)
+                    yield posList;
+                yield posList.parallelStream().sorted(Comparator.comparingDouble((pos) -> -WorldGenUtil.getDistance(centerPoint, pos))).collect(Collectors.toList());
+            }
+            case FROM_POINT_INVERTED -> {
+                if (posList == null || posList.isEmpty() || posList.size() == 1)
+                    yield posList;
+                yield posList.parallelStream().sorted(Comparator.comparingDouble((pos) -> WorldGenUtil.getDistance(centerPoint, pos))).collect(Collectors.toList());
+            }
+            case FROM_RANDOM_POINT -> {
+                this.centerPoint = ListUtil.getRandomElement(posList);
+                yield posList.parallelStream().sorted(
+                        Comparator.comparingDouble((pos) -> -WorldGenUtil.getDistance(centerPoint, pos)
+                        )).collect(Collectors.toList());
+            }
+            case FROM_RANDOM_POINT_INVERTED -> {
+                this.centerPoint = ListUtil.getRandomElement(posList);
+                yield posList.parallelStream().sorted(
+                        Comparator.comparingDouble((pos) -> WorldGenUtil.getDistance(centerPoint, pos)
+                        )).collect(Collectors.toList());
+            }
+            case RANDOM -> {
+                List<BlockPos> copy = new ArrayList<>(posList);
+                Collections.shuffle(copy);
+                yield copy;
+            }
+            case ALONG_AXIS -> {
+                if (posList == null || posList.isEmpty() || posList.size() == 1)
+                    yield posList;
+                Vec3d direction = this.axisDirection.normalize();
+                yield posList.parallelStream().sorted(Comparator.comparingDouble(
+                                (pos) -> pos.getX() * direction.x + pos.getY() * direction.y + pos.getZ() * direction.z))
+                        .toList();
+            }
+            case RADIAL_AXIS -> {
+                if (posList == null || posList.isEmpty() || posList.size() == 1)
+                    yield posList;
+                yield posList.parallelStream().sorted(Comparator.comparingDouble((pos) -> {
+                    Vec3d axisPoint = this.centerPoint.toCenterPos();
+                    Vec3d axisDirection = this.axisDirection.normalize();
+                    Vec3d blockPosition = new Vec3d(pos.getX(), pos.getY(), pos.getZ());
+
+                    Vec3d pointToBlock = blockPosition.subtract(axisPoint);
+                    double projectionLength = pointToBlock.dotProduct(axisDirection);
+                    Vec3d closestPointOnAxis = axisPoint.add(axisDirection.multiply(projectionLength));
+                    return -WorldGenUtil.getDistance(BlockPos.ofFloored(closestPointOnAxis), BlockPos.ofFloored(axisPoint));
+                })).collect(Collectors.toList());
+            }
+            case FROM_LIST -> {
+                yield posList;
+            }
+            case INVERSE -> {
+                List<BlockPos> copy = new ArrayList<>(posList);
+                Collections.reverse(copy);
+                yield copy;
+            }
+
+            case FROM_PLANE -> {
+                Vec3d axisPoint = this.centerPoint.toCenterPos();
+                Vec3d axisDirection = this.axisDirection.normalize();
+                if (posList == null || posList.isEmpty() || posList.size() == 1)
+                    yield posList;
+                yield posList.parallelStream().sorted(Comparator.comparingDouble((pos) -> {
+                    Vec3d blockVec = new Vec3d(pos.getX(), pos.getY(), pos.getZ());
+
+                    double distance = blockVec.subtract(axisPoint).dotProduct(axisDirection);
+
+                    return -Math.abs(distance);
+                })).toList();
+            }
+            case FROM_PLANE_INVERTED -> {
+                Vec3d axisPoint = this.centerPoint.toCenterPos();
+                Vec3d axisDirection = this.axisDirection.normalize();
+                if (posList == null || posList.isEmpty() || posList.size() == 1)
+                    yield posList;
+                yield posList.parallelStream().sorted(Comparator.comparingDouble((pos) -> {
+                    Vec3d blockVec = new Vec3d(pos.getX(), pos.getY(), pos.getZ());
+
+                    double distance = blockVec.subtract(axisPoint).dotProduct(axisDirection);
+
+                    return Math.abs(distance);
+                })).toList();
+            }
+            default -> throw new IllegalStateException("Unexpected sorter value: " + this.type);
+        };
     }
 
 
@@ -188,6 +286,42 @@ public class BlockSorter {
             case INVERSE -> {
                 for (T blockList : blockListShapeManager) {
                     Collections.reverse(blockList.getPosList());
+                }
+            }
+            case FROM_PLANE -> {
+                Vec3d axisPoint = this.centerPoint.toCenterPos();
+                Vec3d axisDirection = this.axisDirection.normalize();
+                for (T blockList : blockListShapeManager) {
+                    List<BlockPos> posList = blockList.getPosList();
+                    if (posList == null || posList.isEmpty() || posList.size() == 1)
+                        continue;
+                    blockList.setPosList(
+                            posList.parallelStream().sorted(Comparator.comparingDouble((pos) -> {
+                                Vec3d blockVec = new Vec3d(pos.getX(), pos.getY(), pos.getZ());
+
+                                double distance = blockVec.subtract(axisPoint).dotProduct(axisDirection);
+
+                                return -Math.abs(distance);
+                            })).toList()
+                    );
+                }
+            }
+            case FROM_PLANE_INVERTED -> {
+                Vec3d axisPoint = this.centerPoint.toCenterPos();
+                Vec3d axisDirection = this.axisDirection.normalize();
+                for (T blockList : blockListShapeManager) {
+                    List<BlockPos> posList = blockList.getPosList();
+                    if (posList == null || posList.isEmpty() || posList.size() == 1)
+                        continue;
+                    blockList.setPosList(
+                            posList.parallelStream().sorted(Comparator.comparingDouble((pos) -> {
+                                Vec3d blockVec = new Vec3d(pos.getX(), pos.getY(), pos.getZ());
+
+                                double distance = blockVec.subtract(axisPoint).dotProduct(axisDirection);
+
+                                return Math.abs(distance);
+                            })).toList()
+                    );
                 }
             }
             default -> throw new IllegalStateException("Unexpected sorter value: " + this.type);

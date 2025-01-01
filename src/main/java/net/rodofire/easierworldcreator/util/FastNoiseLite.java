@@ -56,9 +56,10 @@ package net.rodofire.easierworldcreator.util;
 // /*FNLfloat*/ double
 
 import net.minecraft.util.math.BlockPos;
+import net.rodofire.easierworldcreator.placer.blocks.util.BlockPlaceUtil;
 
 /**
- * Noise to generate perlin noise. It is a powerful class to add "randomness" to build. It can also be used to chose a Block {@link net.rodofire.easierworldcreator.placer.blocks.util.BlockPlaceUtil}
+ * Noise to generate perlin noise. It is a powerful class to add "randomness" to build. It can also be used to chose a Block {@link BlockPlaceUtil}
  */
 @SuppressWarnings({"all", "javadoc"})
 public class FastNoiseLite {
