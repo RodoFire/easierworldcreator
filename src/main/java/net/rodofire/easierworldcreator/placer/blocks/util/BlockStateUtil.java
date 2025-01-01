@@ -4,6 +4,7 @@ import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.registry.DynamicRegistryManager;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.tag.TagKey;
 import net.minecraft.util.Pair;
@@ -57,7 +58,8 @@ public class BlockStateUtil {
                 BlockState blockState = world.getBlockState(blockPos);
                 BlockEntity entity = world.getBlockEntity(blockPos);
                 if (entity != null) {
-                    NbtCompound nbtCompound = entity.createNbt();
+                    DynamicRegistryManager registry = world.getRegistryManager();
+                    NbtCompound nbtCompound = entity.createNbtWithIdentifyingData(registry);
                     comparator.put(new Pair<>(blockState, nbtCompound), blockPos);
                 } else {
                     comparator.put(new Pair<>(blockState, null), blockPos);
@@ -78,16 +80,17 @@ public class BlockStateUtil {
         return comparator;
     }
 
-    public static Set<Block> convertBlockTagToBlockList(TagKey<Block> blockTag){
+    public static Set<Block> convertBlockTagToBlockList(TagKey<Block> blockTag) {
         Set<Block> blocks = new HashSet<>();
         Registries.BLOCK.iterateEntries(blockTag).forEach(block -> {
             blocks.add(block.value());
         });
         return blocks;
     }
-    public static Set<Block> convertBlockTagToBlockList(List<TagKey<Block>> blockTags){
+
+    public static Set<Block> convertBlockTagToBlockList(List<TagKey<Block>> blockTags) {
         Set<Block> blocks = new HashSet<>();
-        for(TagKey<Block> blockTag : blockTags){
+        for (TagKey<Block> blockTag : blockTags) {
             blocks.addAll(convertBlockTagToBlockList(blockTag));
         }
         return blocks;

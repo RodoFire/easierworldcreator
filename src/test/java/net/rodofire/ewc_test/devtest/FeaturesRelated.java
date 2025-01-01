@@ -47,7 +47,7 @@ public class FeaturesRelated {
             BlockPos pos = context.getOrigin();
 
             long startTimeCartesian = System.nanoTime();
-            //NbtPlacer placer = new NbtPlacer(world, new Identifier("village/plains/houses/plains_accessory_1"));
+            //NbtPlacer placer = new NbtPlacer(world, Identifier.of("village/plains/houses/plains_accessory_1"));
             /*SphereGen sphereGen = new SphereGen(world, pos, AbstractBlockShapeBase.PlaceMoment.ANIMATED_OTHER, 32);
             TorusGen torusGen = new TorusGen(world, pos, AbstractBlockShapeBase.PlaceMoment.ANIMATED_OTHER, 20, 50);
             BlockSorter sorter = new BlockSorter(BlockSorter.BlockSorterType.ALONG_AXIS);
@@ -63,7 +63,7 @@ public class FeaturesRelated {
             torusGen.setSecondYRotation(30);
             torusGen.place();*/
 
-            NbtPlacer placer = new NbtPlacer(world, new Identifier("village/plains/houses/plains_medium_house_2"));
+            NbtPlacer placer = new NbtPlacer(world, Identifier.of("village/plains/houses/plains_medium_house_2"));
             BlockSorter sorter = new BlockSorter(BlockSorter.BlockSorterType.FROM_PLANE);
             sorter.setCenterPoint(pos.up(3));
             sorter.setAxisDirection(new Vec3d(0, -1, 0));
@@ -90,7 +90,7 @@ public class FeaturesRelated {
 
 
         public static RegistryKey<ConfiguredFeature<?, ?>> registerKey(String name) {
-            return RegistryKey.of(RegistryKeys.CONFIGURED_FEATURE, new Identifier(EWCTest.MOD_ID, name));
+            return RegistryKey.of(RegistryKeys.CONFIGURED_FEATURE, Identifier.of(EWCTest.MOD_ID, name));
         }
 
         private static <FC extends FeatureConfig, F extends Feature<FC>> void register(Registerable<ConfiguredFeature<?, ?>> context,
@@ -124,7 +124,7 @@ public class FeaturesRelated {
         }
 
         public static RegistryKey<PlacedFeature> registerKey(String name) {
-            return RegistryKey.of(RegistryKeys.PLACED_FEATURE, new Identifier(EWCTest.MOD_ID, name));
+            return RegistryKey.of(RegistryKeys.PLACED_FEATURE, Identifier.of(EWCTest.MOD_ID, name));
         }
 
         private static void register(Registerable<PlacedFeature> context, RegistryKey<PlacedFeature> key, RegistryEntry<ConfiguredFeature<?, ?>> configuration,
@@ -140,7 +140,7 @@ public class FeaturesRelated {
     }
 
     public static class ModBlocks {
-        public static final Block FEATURETESTER = Registry.register(Registries.BLOCK, new Identifier(EWCTest.MOD_ID, "featuretester"), new FeatureBlock(FabricBlockSettings.copyOf(Blocks.OAK_SAPLING), FeaturesRelated.ModConfiguredFeatures.FEATURE_TESTER_KEY));
+        public static final Block FEATURETESTER = Registry.register(Registries.BLOCK, Identifier.of(EWCTest.MOD_ID, "featuretester"), new FeatureBlock(FabricBlockSettings.copyOf(Blocks.OAK_SAPLING), FeaturesRelated.ModConfiguredFeatures.FEATURE_TESTER_KEY));
 
         public static void registerModBlocks() {
             EWCTest.LOGGER.info("Registering ModBlocks");
@@ -148,7 +148,7 @@ public class FeaturesRelated {
     }
 
     public static class ModItems {
-        public static final Item FEATURETESTER = Registry.register(Registries.ITEM, new Identifier(EWCTest.MOD_ID, "feature_tester"), new AliasedBlockItem(ModBlocks.FEATURETESTER, new Item.Settings()));
+        public static final Item FEATURETESTER = Registry.register(Registries.ITEM, Identifier.of(EWCTest.MOD_ID, "feature_tester"), new AliasedBlockItem(ModBlocks.FEATURETESTER, new Item.Settings()));
 
         public static void registerModItems() {
             EWCTest.LOGGER.info("Registering ModItems");
@@ -164,7 +164,7 @@ public class FeaturesRelated {
         }
 
         @Override
-        public boolean isFertilizable(WorldView world, BlockPos pos, BlockState state, boolean isClient) {
+        public boolean isFertilizable(WorldView world, BlockPos pos, BlockState state) {
             return true;
         }
 
