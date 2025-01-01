@@ -442,7 +442,7 @@ public abstract class OrderedBlockListComparator<T> {
      * Retrieves the first BlockPos in the position map.
      *
      * @return the first BlockPos
-     * @throws java.util.NoSuchElementException if the position map is empty
+     * @throws NoSuchElementException if the position map is empty
      */
     public BlockPos getFirstBlockPos() {
         return posList.get(0);
@@ -452,7 +452,7 @@ public abstract class OrderedBlockListComparator<T> {
      * Retrieves the last BlockPos in the position map.
      *
      * @return the last BlockPos
-     * @throws java.util.NoSuchElementException if the position map is empty
+     * @throws NoSuchElementException if the position map is empty
      */
     public BlockPos getLastBlockPos() {
         return posList.get(posSize() - 1);

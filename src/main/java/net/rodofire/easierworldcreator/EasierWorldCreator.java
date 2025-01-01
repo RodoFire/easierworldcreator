@@ -1,7 +1,6 @@
 package net.rodofire.easierworldcreator;
 
 import net.fabricmc.api.ModInitializer;
-import net.minecraft.client.resource.language.I18n;
 import net.rodofire.easierworldcreator.config.ewc.EwcConfig;
 import net.rodofire.easierworldcreator.maths.FastMaths;
 import org.slf4j.Logger;

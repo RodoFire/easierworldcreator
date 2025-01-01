@@ -16,7 +16,7 @@ import java.util.*;
 @SuppressWarnings("unused")
 public abstract class AbstractBlockShapeLayer extends AbstractBlockShapePlaceType {
     //enums to define how the structure is defined
-    private AbstractBlockShape.LayersType layersType = AbstractBlockShape.LayersType.SURFACE;
+    private LayersType layersType = LayersType.SURFACE;
 
 
     //Only required if layerType == LayerType.ALONG_DIRECTION
@@ -173,7 +173,7 @@ public abstract class AbstractBlockShapeLayer extends AbstractBlockShapePlaceTyp
     }
 
     /**
-     * place the layers of the structure depending on the {@link AbstractBlockShape.LayersType}
+     * place the layers of the structure depending on the {@link LayersType}
      *
      * @param firstPosList list of the BlockPos that compose the structure
      */

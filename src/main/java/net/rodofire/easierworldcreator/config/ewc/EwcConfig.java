@@ -7,8 +7,6 @@ import net.rodofire.easierworldcreator.config.ModConfig;
 import net.rodofire.easierworldcreator.config.client.ConfigScreen;
 import net.rodofire.easierworldcreator.config.objects.BooleanConfigObject;
 
-import java.util.Set;
-
 public class EwcConfig {
     public static final ModConfig MOD_CONFIG = new ModConfig(EasierWorldCreator.MOD_ID);
     static final ConfigCategory SERVER_CATEGORY = new ConfigCategory("server");
@@ -31,7 +29,7 @@ public class EwcConfig {
 
         MOD_CONFIG.addCategories(SERVER_CATEGORY);
 
-        ConfigScreen.setBackgroundScreen(EasierWorldCreator.MOD_ID, new Identifier(EasierWorldCreator.MOD_ID, "textures/gui/config_background.png"), 1920, 1080, 0xAFAFAFFF, 0xD8000000);
+        ConfigScreen.setBackgroundScreen(EasierWorldCreator.MOD_ID, Identifier.of(EasierWorldCreator.MOD_ID, "textures/gui/config_background.png"), 1920, 1080, 0xAFAFAFFF, 0xD8000000);
 
         MOD_CONFIG.init();
     }

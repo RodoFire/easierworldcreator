@@ -11,8 +11,10 @@ import net.minecraft.client.gui.Selectable;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.tooltip.Tooltip;
 import net.minecraft.client.gui.widget.TextWidget;
+import net.minecraft.client.render.RenderLayer;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.math.ColorHelper;
 import net.rodofire.easierworldcreator.EasierWorldCreator;
 import net.rodofire.easierworldcreator.client.hud.widget.ImageButtonWidget;
 import net.rodofire.easierworldcreator.client.hud.widget.IntegerEntryWidget;
@@ -32,12 +34,12 @@ public class DefaultConfigScreen extends AbstractConfigScreen {
 
     private int currentCategoryIndex = 0;
     private final int maxCategoriesVisible = 5;
-    private Identifier TEXTURE = Screen.OPTIONS_BACKGROUND_TEXTURE;
+    private Identifier TEXTURE = Screen.MENU_BACKGROUND_TEXTURE;
 
     int backgroundHeight = 32;
     int backgroundWidth = 32;
     int backgroundShaderColor = 0x3F3F3FFF;
-    int backgroundDarkRectangleShaderColor = 0xD8000000;
+    int backgroundDarkRectangleShaderColor = 0xA8FFFFFF;
 
     private final int[] lastDimension = {0, 0};
 
@@ -120,7 +122,7 @@ public class DefaultConfigScreen extends AbstractConfigScreen {
         boolean write;
         if (!category.getBools().isEmpty()) {
 
-            if (this.toDraw(new TextWidget(this.width / 12, startY - scrollY, 2 * this.width / 12, buttonHeight, Text.translatable("config.ewc.boolean_category"), this.textRenderer), startY, buttonHeight)) {
+            if (this.toDraw(new TextWidget(0, startY - scrollY, 4 * this.width / 12, buttonHeight, Text.translatable("config.ewc.boolean_category"), this.textRenderer), startY, buttonHeight)) {
                 bl = true;
             }
             startY += buttonHeight + 3;
@@ -152,7 +154,7 @@ public class DefaultConfigScreen extends AbstractConfigScreen {
             startY += 4;
         }
         if (!category.getInts().isEmpty()) {
-            write = this.toDraw(new TextWidget(this.width / 12, startY - scrollY, 2 * this.width / 12, buttonHeight, Text.translatable("config.ewc.integer_category"), this.textRenderer), startY, buttonHeight);
+            write = this.toDraw(new TextWidget(0, startY - scrollY, 4 * this.width / 12, buttonHeight, Text.translatable("config.ewc.integer_category"), this.textRenderer), startY, buttonHeight);
             if (!write && bl)
                 return;
             else if (write && !bl) {
@@ -191,7 +193,7 @@ public class DefaultConfigScreen extends AbstractConfigScreen {
         }
 
         if (!category.getEnums().isEmpty()) {
-            write = this.toDraw(new TextWidget(this.width / 12, startY - scrollY, 2 * this.width / 12, buttonHeight, Text.translatable("config.ewc.enum_category"), this.textRenderer), startY, buttonHeight);
+            write = this.toDraw(new TextWidget(0, startY - scrollY, 4 * this.width / 12, buttonHeight, Text.translatable("config.ewc.enum_category"), this.textRenderer), startY, buttonHeight);
             if (!write && bl)
                 return;
             else if (write && !bl) {
@@ -261,10 +263,10 @@ public class DefaultConfigScreen extends AbstractConfigScreen {
         }
         if (categories.size() > maxCategoriesVisible) {
             if (currentCategoryIndex > 0) {
-                this.addDrawableChild(new ImageButtonWidget(centerX - 10 - (maxCategoriesVisible * buttonWidth / 2 + 15), startY, 20, buttonHeight, new Identifier(EasierWorldCreator.MOD_ID, "textures/gui/before_button.png"), button -> scrollCategories(-1)));
+                this.addDrawableChild(new ImageButtonWidget(centerX - 10 - (maxCategoriesVisible * buttonWidth / 2 + 15), startY, 20, buttonHeight, Identifier.of(EasierWorldCreator.MOD_ID, "textures/gui/before_button.png"), button -> scrollCategories(-1)));
             }
             if (this.categories.size() - currentCategoryIndex > 5) {
-                this.addDrawableChild(new ImageButtonWidget(centerX - 10 + (maxCategoriesVisible * buttonWidth / 2 + 15), startY, 20, buttonHeight, new Identifier(EasierWorldCreator.MOD_ID, "textures/gui/after_button.png"), button -> scrollCategories(1)));
+                this.addDrawableChild(new ImageButtonWidget(centerX - 10 + (maxCategoriesVisible * buttonWidth / 2 + 15), startY, 20, buttonHeight, Identifier.of(EasierWorldCreator.MOD_ID, "textures/gui/after_button.png"), button -> scrollCategories(1)));
             }
         }
     }
@@ -301,6 +303,19 @@ public class DefaultConfigScreen extends AbstractConfigScreen {
         super.render(context, mouseX, mouseY, delta);
     }
 
+    @Override
+    public void renderBackground(DrawContext context, int mouseX, int mouseY, float delta) {
+        if (TEXTURE.equals(Screen.MENU_BACKGROUND_TEXTURE)) {
+            super.renderBackground(context, mouseX, mouseY, delta);
+        } else {
+            assert this.client != null;
+            if (this.client.world != null) {
+                context.fillGradient(0, 0, this.width, this.height, -1072689136, -804253680);
+            } else {
+                this.renderBackgroundTexture(context);
+            }
+        }
+    }
 
     public void renderBackground(DrawContext context) {
         assert this.client != null;
@@ -311,17 +326,29 @@ public class DefaultConfigScreen extends AbstractConfigScreen {
         }
     }
 
-    @Override
     public void renderBackgroundTexture(DrawContext context) {
         float textureRatio = (float) this.backgroundWidth / this.backgroundHeight;
         float screenRatio = (float) this.width / this.height;
 
         int renderWidth, renderHeight, offsetX, offsetY;
         if (textureRatio == 1) {
-            context.setShaderColor(backgroundShaderRed, backgroundShaderGreen, backgroundShaderBlue, backgroundShaderAlpha);
             context.drawTexture(
-                    TEXTURE, 0, 0,
-                    0, 0, this.width, this.height, this.backgroundWidth, this.backgroundHeight
+                    RenderLayer::getGuiTextured,
+                    TEXTURE,
+                    0,
+                    0,
+                    0,
+                    0,
+                    this.width,
+                    this.height,
+                    this.backgroundWidth,
+                    this.backgroundHeight,
+                    ColorHelper.fromFloats(
+                            backgroundShaderAlpha,
+                            backgroundShaderRed,
+                            backgroundShaderGreen,
+                            backgroundShaderBlue
+                    )
             );
         } else {
             if (screenRatio > textureRatio) {
@@ -337,16 +364,23 @@ public class DefaultConfigScreen extends AbstractConfigScreen {
             }
 
 
-            context.setShaderColor(backgroundShaderRed, backgroundShaderGreen, backgroundShaderBlue, backgroundShaderAlpha);
             context.drawTexture(
+                    RenderLayer::getGuiTextured,
                     TEXTURE,
                     -offsetX,
                     -offsetY,
-                    0, 0,
+                    0,
+                    0,
                     renderWidth,
                     renderHeight,
                     renderWidth,
-                    renderHeight
+                    renderHeight,
+                    ColorHelper.fromFloats(
+                            backgroundShaderAlpha,
+                            backgroundShaderRed,
+                            backgroundShaderGreen,
+                            backgroundShaderBlue
+                    )
             );
         }
 
@@ -357,12 +391,6 @@ public class DefaultConfigScreen extends AbstractConfigScreen {
 
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
-        context.setShaderColor(
-                (float) (this.backgroundDarkRectangleShaderColor & 0x00FF0000 >> 16) / 256,
-                (float) (this.backgroundDarkRectangleShaderColor & 0x0000FF00 >> 8) / 256,
-                (float) (this.backgroundDarkRectangleShaderColor & 0x000000FF) / 256,
-                (float) (this.backgroundDarkRectangleShaderColor >>> 24) / 256
-        );
         context.fill(
                 darkRectX,
                 darkRectY,
@@ -370,8 +398,6 @@ public class DefaultConfigScreen extends AbstractConfigScreen {
                 darkRectY + darkRectHeight,
                 this.backgroundDarkRectangleShaderColor
         );
-
-        context.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
     }
 
     public void saveExit() {
@@ -388,9 +414,9 @@ public class DefaultConfigScreen extends AbstractConfigScreen {
     }
 
     @Override
-    public boolean mouseScrolled(double mouseX, double mouseY, double amount) {
+    public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount, double verticalAmount) {
         if (maxScrollY > 0) {
-            scrollY = (short) Math.max(0, Math.min(maxScrollY, scrollY - (int) (amount * 10)));
+            scrollY = (short) Math.max(0, Math.min(maxScrollY, scrollY - (int) (verticalAmount * 10)));
             this.clearChildren();
             this.init();
             return true;
@@ -398,7 +424,7 @@ public class DefaultConfigScreen extends AbstractConfigScreen {
         if (scrollY > 0) {
             scrollY = 0;
         }
-        super.mouseScrolled(mouseX, mouseY, amount);
+        super.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount);
         return true;
     }
 

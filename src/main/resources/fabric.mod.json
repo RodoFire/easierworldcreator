@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "id": "easierworldcreator",
-  "version": "2.4.0-1.20.1",
+  "version": "2.4.0-1.21.4",
   "name": "Easier-World-Creator",
   "description": "Mod To help creating Features",
   "authors": [
@@ -28,17 +28,12 @@
   ],
   "depends": {
     "fabricloader": ">=0.15.11",
-    "minecraft": [
-      "1.20.1",
-      "1.20.2",
-      "1.20.3",
-      "1.20.4"
-    ],
-    "java": ">=17",
+    "minecraft": "1.21.4",
+    "java": ">=21",
     "fabric-api": "*"
   },
   "breaks": {
-    "mushrooomsmod": "<=0.0.16-1.20.4"
+    "mushrooomsmod": "*"
   },
   "suggests": {
     "another-mod": "*"
@@ -47,8 +42,7 @@
     "modmenu": {
       "links": {
         "discord": "https://discord.gg/bAQRUxNyFj"
-      },
-      "update_checker": true
+      }
     }
   }
 }

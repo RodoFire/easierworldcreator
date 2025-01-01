@@ -108,8 +108,8 @@ public class JumpVerification {
     private Set<BlockPos> getOccupiedBlocks(Vec3d pos) {
         Set<BlockPos> blocks = new HashSet<>();
 
-        double halfWidth = dimensions.width / 2.0;
-        double height = dimensions.height;
+        double halfWidth = dimensions.getBoxAt(pos).getLengthX() / 2.0;
+        double height = dimensions.getBoxAt(pos).getLengthY();
 
         int minX = (int) Math.floor(pos.x - halfWidth);
         int maxX = (int) Math.ceil(pos.x + halfWidth);

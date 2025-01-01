@@ -176,7 +176,7 @@ public abstract class BlockListComparator<T extends DefaultBlockList, U, V exten
      * @return a random DefaultBlockList of the list
      */
     public T getRandom() {
-        return this.blockLists.get(net.minecraft.util.math.random.Random.create().nextInt(size() - 1));
+        return this.blockLists.get(Random.create().nextInt(size() - 1));
     }
 
     /**

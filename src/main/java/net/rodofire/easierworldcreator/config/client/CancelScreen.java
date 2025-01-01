@@ -22,7 +22,7 @@ public class CancelScreen extends Screen {
 
     @Override
     protected void init() {
-        this.addDrawableChild(new TextButtonWidget(this.width / 2 - this.width / 3, 2 * this.height / 3, this.width / 3 - 10, 25, Text.translatable("config.ewc.cancel"), button -> {
+        this.addDrawableChild(new TextButtonWidget( this.width / 2 - this.width / 3, 2 * this.height / 3, this.width / 3 - 10, 25, Text.translatable("config.ewc.cancel"), button -> {
             this.clearChildren();
             this.close();
             MinecraftClient.getInstance().setScreen(base);
@@ -41,7 +41,7 @@ public class CancelScreen extends Screen {
 
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
-        this.renderBackground(context);
+        this.renderBackground(context, mouseX, mouseY, delta);
         super.render(context, mouseX, mouseY, delta);
         MultilineText.create(textRenderer, Text.translatable("config.ewc.wanna_quit"), 2 * this.width / 3).drawCenterWithShadow(context, this.width / 2, this.height / 4, 30, 0xFFFFFF);
 

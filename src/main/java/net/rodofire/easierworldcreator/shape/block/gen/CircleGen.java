@@ -10,7 +10,10 @@ import net.rodofire.easierworldcreator.shape.block.instanciator.AbstractFillable
 import net.rodofire.easierworldcreator.util.WorldGenUtil;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 /*
 
 
@@ -154,13 +157,13 @@ public class CircleGen extends AbstractFillableBlockShape {
      */
     @Override
     public Map<ChunkPos, Set<BlockPos>> getBlockPos() {
-        if (this.getFillingType() == AbstractFillableBlockShape.Type.HALF) {
+        if (this.getFillingType() == Type.HALF) {
             this.setCustomFill(0.5f);
         }
         if (this.getCustomFill() > 1f) this.setCustomFill(1f);
         if (this.getCustomFill() < 0f) this.setCustomFill(0f);
 
-        if (this.getFillingType() == AbstractFillableBlockShape.Type.EMPTY) {
+        if (this.getFillingType() == Type.EMPTY) {
             return this.generateEmptyOval();
         }
         return this.generateFullOval();
