@@ -11,10 +11,10 @@ import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.EmptyBlockView;
 import net.minecraft.world.StructureWorldAccess;
 import net.minecraft.world.chunk.Chunk;
-import net.rodofire.easierworldcreator.Easierworldcreator;
+import net.rodofire.easierworldcreator.EasierWorldCreator;
+import net.rodofire.easierworldcreator.blockdata.blocklist.basic.DefaultBlockList;
 import net.rodofire.easierworldcreator.mixin.PalettedBlockInfoListMixin;
 import net.rodofire.easierworldcreator.mixin.StructureTemplateMixin;
-import net.rodofire.easierworldcreator.shapeutil.BlockList;
 import org.spongepowered.asm.mixin.Unique;
 
 import java.io.IOException;
@@ -37,22 +37,22 @@ public class SaveNbt {
      * <p>
      * The methods receive a list of blockList.
      * The list represents all the blocks of the generated structure.
-     * for every BlockPos and BlockStates, the method verify the chunk it belongs to and add it to the Map chunkBlockInfoMap.
+     * For every BlockPos and BlockStates, the method verify the chunk it belongs to and add it to the Map chunkBlockInfoMap.
      * This divides the structure into chunks that will be saved just after converting the first list into a {@link StructureTemplate.PalettedBlockInfoList}
      * The Structure will be located in the following path : [save_name]/generated/easierworldcreator/[chunk.x-chunk.z]/custom_feature_[Random long]
      * </p>
      *
-     * @param blockLists a list of BlockList to save it into the nbt file
+     * @param defaultBlockLists a list of BlockList to save it into the nbt file
      */
     @SuppressWarnings("UnreachableCode")
-    public static void saveNbtDuringWorldGen(StructureWorldAccess world, List<BlockList> blockLists, String featureName) {
+    public static void saveNbtDuringWorldGen(StructureWorldAccess world, List<DefaultBlockList> defaultBlockLists, String featureName) {
         Map<ChunkPos, List<StructureTemplate.StructureBlockInfo>> chunkBlockInfoMap = new HashMap<>();
 
         List<StructureTemplate.StructureBlockInfo> list = Lists.newArrayList();
         List<StructureTemplate.StructureBlockInfo> list2 = Lists.newArrayList();
         List<StructureTemplate.StructureBlockInfo> list3 = Lists.newArrayList();
 
-        for (BlockList blocks : blockLists) {
+        for (DefaultBlockList blocks : defaultBlockLists) {
             BlockState blockState = blocks.getBlockState();
             for (BlockPos pos : blocks.getPosList()) {
                 StructureTemplate.StructureBlockInfo structureBlockInfo = new StructureTemplate.StructureBlockInfo(pos, blockState, null);
@@ -78,7 +78,7 @@ public class SaveNbt {
             StructureTemplate.PalettedBlockInfoList palettedBlockInfoList = createPalettedBlockInfoList(combinedList);
             blockInfoLists.add(palettedBlockInfoList);
 
-            Identifier templateName = Identifier.of(Easierworldcreator.MOD_ID,
+            Identifier templateName = new Identifier(EasierWorldCreator.MOD_ID,
                     chunkPos.x + "-" + chunkPos.z + "/" + featureName);
 
             StructureTemplate structureTemplate;
@@ -142,13 +142,13 @@ public class SaveNbt {
      */
     public static List<Identifier> loadNBTFiles(ChunkPos chunk) {
         List<Identifier> nbtList = new ArrayList<>();
-        String chunkFolderPath = Identifier.of(Easierworldcreator.MOD_ID, "generated/structures/" + chunk.x + "_" + chunk.z + "/").getPath();
+        String chunkFolderPath = new Identifier(EasierWorldCreator.MOD_ID, "generated/structures/" + chunk.x + "_" + chunk.z + "/").getPath();
         try {
             Path path = Path.of(chunkFolderPath);
             if (Files.exists(path) && Files.isDirectory(path)) {
                 Files.list(path).forEach(filePath -> {
                     if (filePath.toString().endsWith(".nbt")) {
-                        nbtList.add(Identifier.of(Easierworldcreator.MOD_ID, chunk.x + "_" + chunk.z + "/" + filePath.getFileName().toString()));
+                        nbtList.add(new Identifier(EasierWorldCreator.MOD_ID, chunk.x + "_" + chunk.z + "/" + filePath.getFileName().toString()));
                     }
                 });
             }
