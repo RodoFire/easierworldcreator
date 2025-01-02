@@ -10,7 +10,7 @@ import net.minecraft.util.math.random.Random;
 import net.minecraft.world.StructureWorldAccess;
 import net.rodofire.easierworldcreator.EasierWorldCreator;
 import net.rodofire.easierworldcreator.blockdata.blocklist.basic.DefaultBlockList;
-import net.rodofire.easierworldcreator.blockdata.blocklist.basic.comparator.BlockListComparator;
+import net.rodofire.easierworldcreator.blockdata.blocklist.basic.comparator.AbstractBlockListComparator;
 import net.rodofire.easierworldcreator.blockdata.blocklist.ordered.comparator.CompoundOrderedBlockListComparator;
 import net.rodofire.easierworldcreator.blockdata.blocklist.ordered.comparator.DefaultOrderedBlockListComparator;
 import net.rodofire.easierworldcreator.blockdata.blocklist.ordered.comparator.OrderedBlockListComparator;
@@ -269,7 +269,7 @@ public class StructurePlaceAnimator {
      *
      * @param comparator the comparator that will be placed
      */
-    public <T extends BlockListComparator<U, V, W, X>, U extends DefaultBlockList, V, W extends OrderedBlockListComparator<X>, X> void placeFromBlockList(T comparator) {
+    public <T extends AbstractBlockListComparator<U, V, W, X>, U extends DefaultBlockList, V, W extends OrderedBlockListComparator<X>, X> void placeFromBlockList(T comparator) {
         if (blockListVerification(comparator.get())) return;
         Instant start = Instant.now();
         W sortedBlockList = comparator.getOrderedSorted(this.blockSorter);
