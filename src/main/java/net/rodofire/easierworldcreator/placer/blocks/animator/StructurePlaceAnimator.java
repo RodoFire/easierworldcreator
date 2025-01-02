@@ -13,7 +13,7 @@ import net.rodofire.easierworldcreator.blockdata.blocklist.basic.DefaultBlockLis
 import net.rodofire.easierworldcreator.blockdata.blocklist.basic.comparator.AbstractBlockListComparator;
 import net.rodofire.easierworldcreator.blockdata.blocklist.ordered.comparator.CompoundOrderedBlockListComparator;
 import net.rodofire.easierworldcreator.blockdata.blocklist.ordered.comparator.DefaultOrderedBlockListComparator;
-import net.rodofire.easierworldcreator.blockdata.blocklist.ordered.comparator.OrderedBlockListComparator;
+import net.rodofire.easierworldcreator.blockdata.blocklist.ordered.comparator.AbstractOrderedBlockListComparator;
 import net.rodofire.easierworldcreator.blockdata.sorter.BlockSorter;
 import net.rodofire.easierworldcreator.maths.equation.CubicEquation;
 import net.rodofire.easierworldcreator.maths.equation.QuadraticEquation;
@@ -269,7 +269,7 @@ public class StructurePlaceAnimator {
      *
      * @param comparator the comparator that will be placed
      */
-    public <T extends AbstractBlockListComparator<U, V, W, X>, U extends DefaultBlockList, V, W extends OrderedBlockListComparator<X>, X> void placeFromBlockList(T comparator) {
+    public <T extends AbstractBlockListComparator<U, V, W, X>, U extends DefaultBlockList, V, W extends AbstractOrderedBlockListComparator<X>, X> void placeFromBlockList(T comparator) {
         if (blockListVerification(comparator.get())) return;
         Instant start = Instant.now();
         W sortedBlockList = comparator.getOrderedSorted(this.blockSorter);
@@ -304,7 +304,7 @@ public class StructurePlaceAnimator {
      *
      * @param comparator the {@code List<Pair<>>} that will be placed.
      */
-    public <T extends OrderedBlockListComparator<U>, U> void place(T comparator) {
+    public <T extends AbstractOrderedBlockListComparator<U>, U> void place(T comparator) {
         List<Integer> randomBlocks = new ArrayList<>();
         int totalBlocks = comparator.posSize();
         AtomicReference<Float> soundPlayed = new AtomicReference<>((float) 0);

@@ -35,6 +35,14 @@ import java.util.Set;
 @SuppressWarnings("unused")
 public class ForceOrderedBlockListComparator extends DefaultOrderedBlockListComparator {
     private BiMap<Short, Pair<Boolean, Set<Block>>> forceBlocks;
+    /**
+     * constructor to init a {@link FullOrderedBlockListComparator}.
+     *
+     * @param comparator the comparator to be fused
+     */
+    public ForceOrderedBlockListComparator(ForceOrderedBlockListComparator comparator){
+        super(comparator);
+    }
 
     /**
      * init a force ordered blockList comparator
