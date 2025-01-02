@@ -24,11 +24,17 @@ import net.rodofire.easierworldcreator.config.objects.BooleanConfigObject;
 import net.rodofire.easierworldcreator.config.objects.EnumConfigObject;
 import net.rodofire.easierworldcreator.config.objects.IntegerConfigObject;
 
-import java.util.Iterator;
+import java.util.*;
 
 @Environment(EnvType.CLIENT)
 public class DefaultConfigScreen extends AbstractConfigScreen {
     private final Screen parent;
+
+    /**
+     * used to knox where the mouse is and how we should put the "hole"
+     */
+    int mouseY = 0;
+    boolean bl = false;
 
     private int currentCategoryIndex = 0;
     private final int maxCategoriesVisible = 5;
@@ -48,10 +54,16 @@ public class DefaultConfigScreen extends AbstractConfigScreen {
     private boolean restartScreen = false;
 
 
+    /**
+     * precalculated shader color values
+     */
     private float backgroundShaderGreen = 0.67f;
     private float backgroundShaderRed = 0.67f;
     private float backgroundShaderBlue = 0.67f;
     private float backgroundShaderAlpha = 0.67f;
+
+    List<Short> heights = new ArrayList<>();
+    Map<Short, Boolean> widths = new LinkedHashMap<>();
 
     public DefaultConfigScreen(Screen parent, ModConfig config, String modId) {
         super(config, modId);
@@ -82,6 +94,9 @@ public class DefaultConfigScreen extends AbstractConfigScreen {
         initShaderColors();
     }
 
+    /**
+     * precalculates the shader colors
+     */
     public void initShaderColors() {
         this.backgroundShaderRed = (float) ((this.backgroundShaderColor & 0xFF000000) >>> 24) / 0xFF;
         this.backgroundShaderGreen = (float) ((this.backgroundShaderColor & 0x00FF0000) >> 16) / 0xFF;
@@ -115,16 +130,26 @@ public class DefaultConfigScreen extends AbstractConfigScreen {
         this.addDrawableChild(new ScrollBarWidget(this.width - 10, 40, this.height - 35, scrollY, maxScrollY, button -> System.out.println("hi"), Text.translatable("config.ewc.scroll_bar")));
     }
 
+    /**
+     * we add the config elements (booleans, integer and enums)
+     * @param category the category to choose from
+     * @param buttonHeight the height of the buttons
+     * @param startY the start of the buttons
+     */
     public void addElements(ConfigCategory category, int buttonHeight, int startY) {
         boolean bl = false;
         boolean write;
         if (!category.getBools().isEmpty()) {
 
-            if (this.toDraw(new TextWidget(this.width / 12, startY - scrollY, 2 * this.width / 12, buttonHeight, Text.translatable("config.ewc.boolean_category"), this.textRenderer), startY, buttonHeight)) {
+            heights.add((short) (startY - scrollY - 1));
+            widths.put((short) (startY - scrollY - 1), true);
+            if (this.toDraw(new TextWidget(0, startY - scrollY, 4 * this.width / 12, buttonHeight, Text.translatable("config.ewc.boolean_category"), this.textRenderer), startY, buttonHeight)) {
                 bl = true;
             }
             startY += buttonHeight + 3;
             for (BooleanConfigObject obj : category.getBools().values()) {
+                heights.add((short) (startY - scrollY - 1));
+                widths.put((short) (startY - scrollY - 1), false);
                 TextWidget textWidget = new TextWidget(5 * this.width / 24, startY - scrollY, 7 * this.width / 24, buttonHeight, Text.translatable("config." + modId + "." + obj.getKey()), this.textRenderer);
                 textWidget.setTooltip(Tooltip.of(Text.translatable(obj.getDescriptionKey(modId))));
 
@@ -152,7 +177,9 @@ public class DefaultConfigScreen extends AbstractConfigScreen {
             startY += 4;
         }
         if (!category.getInts().isEmpty()) {
-            write = this.toDraw(new TextWidget(this.width / 12, startY - scrollY, 2 * this.width / 12, buttonHeight, Text.translatable("config.ewc.integer_category"), this.textRenderer), startY, buttonHeight);
+            heights.add((short) (startY - scrollY - 1));
+            widths.put((short) (startY - scrollY - 1), true);
+            write = this.toDraw(new TextWidget(0, startY - scrollY, 4 * this.width / 12, buttonHeight, Text.translatable("config.ewc.integer_category"), this.textRenderer), startY, buttonHeight);
             if (!write && bl)
                 return;
             else if (write && !bl) {
@@ -161,6 +188,8 @@ public class DefaultConfigScreen extends AbstractConfigScreen {
             startY += buttonHeight + 3;
 
             for (IntegerConfigObject obj : category.getInts().values()) {
+                heights.add((short) (startY - scrollY - 1));
+                widths.put((short) (startY - scrollY - 1), false);
                 TextWidget textWidget = new TextWidget(5 * this.width / 24, startY - scrollY, 7 * this.width / 24, buttonHeight, Text.translatable("config." + modId + "." + obj.getKey()), this.textRenderer);
                 textWidget.setTooltip(Tooltip.of(Text.translatable(obj.getDescriptionKey(modId))));
                 write = this.toDraw(textWidget, startY, buttonHeight);
@@ -191,7 +220,9 @@ public class DefaultConfigScreen extends AbstractConfigScreen {
         }
 
         if (!category.getEnums().isEmpty()) {
-            write = this.toDraw(new TextWidget(this.width / 12, startY - scrollY, 2 * this.width / 12, buttonHeight, Text.translatable("config.ewc.enum_category"), this.textRenderer), startY, buttonHeight);
+            heights.add((short) (startY - scrollY - 1));
+            widths.put((short) (startY - scrollY - 1), true);
+            write = this.toDraw(new TextWidget(0, startY - scrollY, 4 * this.width / 12, buttonHeight, Text.translatable("config.ewc.enum_category"), this.textRenderer), startY, buttonHeight);
             if (!write && bl)
                 return;
             else if (write && !bl) {
@@ -199,6 +230,8 @@ public class DefaultConfigScreen extends AbstractConfigScreen {
             }
             startY += buttonHeight + 3;
             for (EnumConfigObject obj : category.getEnums().values()) {
+                heights.add((short) (startY - scrollY - 1));
+                widths.put((short) (startY - scrollY - 1), false);
                 TextWidget textWidget = new TextWidget(5 * this.width / 24, startY - scrollY, 7 * this.width / 24, buttonHeight, Text.translatable("config." + modId + "." + obj.getKey()), this.textRenderer);
                 textWidget.setTooltip(Tooltip.of(Text.translatable(obj.getDescriptionKey(modId))));
                 write = this.toDraw(textWidget, startY, buttonHeight);
@@ -358,18 +391,25 @@ public class DefaultConfigScreen extends AbstractConfigScreen {
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
         context.setShaderColor(
-                (float) (this.backgroundDarkRectangleShaderColor & 0x00FF0000 >> 16) / 256,
-                (float) (this.backgroundDarkRectangleShaderColor & 0x0000FF00 >> 8) / 256,
+                (float) ((this.backgroundDarkRectangleShaderColor & 0x00FF0000) >> 16) / 256,
+                (float) ((this.backgroundDarkRectangleShaderColor & 0x0000FF00) >> 8) / 256,
                 (float) (this.backgroundDarkRectangleShaderColor & 0x000000FF) / 256,
                 (float) (this.backgroundDarkRectangleShaderColor >>> 24) / 256
         );
-        context.fill(
-                darkRectX,
-                darkRectY,
-                darkRectX + darkRectWidth,
-                darkRectY + darkRectHeight,
-                this.backgroundDarkRectangleShaderColor
-        );
+        // Coordonnes du trou (zone transparente)
+        int holeY = getStartY(mouseY);
+        int holeX = getStartX();
+        int holeEndX = getEndX();
+        int holeEndY = getEndY();
+        if (holeY > darkRectY) {
+            context.fill(darkRectX, darkRectY, darkRectX + darkRectWidth, holeY, this.backgroundDarkRectangleShaderColor);
+            context.fill(holeEndX, holeY, darkRectX + darkRectWidth, holeY + holeEndY, this.backgroundDarkRectangleShaderColor);
+        } else {
+
+            context.fill(holeEndX, darkRectY, darkRectX + darkRectWidth, holeY + holeEndY, this.backgroundDarkRectangleShaderColor);
+        }
+        context.fill(darkRectX, holeY + holeEndY, darkRectX + darkRectWidth, darkRectY + darkRectHeight, this.backgroundDarkRectangleShaderColor);
+        context.fill(darkRectX, holeY, holeX, holeY + holeEndY, this.backgroundDarkRectangleShaderColor);
 
         context.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
     }
@@ -412,5 +452,45 @@ public class DefaultConfigScreen extends AbstractConfigScreen {
         } else {
             MinecraftClient.getInstance().setScreen(this.parent);
         }
+    }
+
+    @Override
+    public void mouseMoved(double mouseX, double mouseY) {
+        this.mouseY = (int) mouseY;
+    }
+
+    private int getStartY(int y) {
+        int i = 0;
+        int size = heights.size();
+        while (i < size && heights.get(i) < y) {
+            i++;
+        }
+        short yp = heights.get(i == 0 ? 0 : i - 1);
+        bl = widths.get(yp);
+        return yp;
+    }
+
+    /**
+     * get the end pos of the "hole"
+     * @return the end pos
+     */
+    private int getEndY() {
+        return bl ? 23 : 22;
+    }
+
+    /**
+     * get the start pos of the "hole"
+     * @return the start pos
+     */
+    private int getStartX() {
+        return bl ? 0 : 4 * this.width / 24 - 2;
+    }
+
+    /**
+     * get the end pos of the "hole"
+     * @return the end pos
+     */
+    private int getEndX() {
+        return bl ? 6 * this.width / 12 + 2 : 28 * this.width / 32 + 22;
     }
 }

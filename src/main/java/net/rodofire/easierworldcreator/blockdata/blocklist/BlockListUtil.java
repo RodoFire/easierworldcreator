@@ -33,7 +33,6 @@ public class BlockListUtil {
         }
     }
 
-
     public static List<DefaultBlockList> unDivideBlockList(List<Set<DefaultBlockList>> blockList) {
         List<DefaultBlockList> combinedDefaultBlockList = new ArrayList<>();
 

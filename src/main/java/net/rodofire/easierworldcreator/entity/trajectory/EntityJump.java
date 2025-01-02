@@ -7,8 +7,8 @@ import net.rodofire.easierworldcreator.entity.EntityUtil;
 
 /**
  * based on equations given by Minecraft Parkour Wiki:
- * <li> <a href="https://www.mcpk.wiki/wiki/Horizontal_Movement_Formulas">horizontal-movement</a>
- * <li> <a href="https://www.mcpk.wiki/wiki/Vertical_Movement_Formulas">vertical-movement</a>
+ * <p> <a href="https://www.mcpk.wiki/wiki/Horizontal_Movement_Formulas">horizontal-movement</a>
+ * <p> <a href="https://www.mcpk.wiki/wiki/Vertical_Movement_Formulas">vertical-movement</a>
  * <p> licensed under <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>
  */
 @SuppressWarnings("unused")
