@@ -43,7 +43,7 @@ import java.util.*;
  *            Copy and paste the object that is required to the related {@link OrderedBlockListComparator}
  */
 @SuppressWarnings("unused")
-public abstract class BlockListComparator<T extends DefaultBlockList, U, V extends OrderedBlockListComparator<W>, W> {
+public abstract class AbstractBlockListComparator<T extends DefaultBlockList, U, V extends OrderedBlockListComparator<W>, W> {
     /**
      * the List of BlockList that are managed
      */
@@ -61,12 +61,17 @@ public abstract class BlockListComparator<T extends DefaultBlockList, U, V exten
      */
     protected final Map<BlockState, U> indexes = new HashMap<>();
 
+    public AbstractBlockListComparator(AbstractBlockListComparator<T,U,V,W> comparator){
+        blockLists.addAll(comparator.blockLists);
+        indexes.putAll(comparator.indexes);
+    }
+
     /**
      * init a comparator
      *
      * @param blockLists the list of blockList that will be indexed
      */
-    public BlockListComparator(List<T> blockLists) {
+    public AbstractBlockListComparator(List<T> blockLists) {
         List<T> cleanedList = getCleaned(blockLists);
         this.blockLists = new ArrayList<>(cleanedList);
         initIndexes();
@@ -77,7 +82,7 @@ public abstract class BlockListComparator<T extends DefaultBlockList, U, V exten
      *
      * @param blockList a blockList that will be indexed
      */
-    public BlockListComparator(T blockList) {
+    public AbstractBlockListComparator(T blockList) {
         this.blockLists = new ArrayList<>(Collections.singletonList(blockList));
         initIndexes();
     }
@@ -85,13 +90,23 @@ public abstract class BlockListComparator<T extends DefaultBlockList, U, V exten
     /**
      * init an empty comparator
      */
-    public BlockListComparator() {
+    public AbstractBlockListComparator() {
     }
 
     /**
      * method tu initialize the indexes.
      */
     protected abstract void initIndexes();
+
+
+    /**
+     * method to combine a comparator
+     * @param comparator
+     */
+    public void put(AbstractBlockListComparator<T,U,V,W> comparator){
+        this.blockLists.addAll(comparator.blockLists);
+        this.indexes.putAll(comparator.indexes);
+    }
 
     /**
      * method to combine a number of {@code List<T>}
