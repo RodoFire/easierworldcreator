@@ -30,8 +30,10 @@ import java.util.*;
 public class DefaultConfigScreen extends AbstractConfigScreen {
     private final Screen parent;
 
+    /**
+     * used to knox where the mouse is and how we should put the "hole"
+     */
     int mouseY = 0;
-
     boolean bl = false;
 
     private int currentCategoryIndex = 0;
@@ -52,6 +54,9 @@ public class DefaultConfigScreen extends AbstractConfigScreen {
     private boolean restartScreen = false;
 
 
+    /**
+     * precalculated shader color values
+     */
     private float backgroundShaderGreen = 0.67f;
     private float backgroundShaderRed = 0.67f;
     private float backgroundShaderBlue = 0.67f;
@@ -89,6 +94,9 @@ public class DefaultConfigScreen extends AbstractConfigScreen {
         initShaderColors();
     }
 
+    /**
+     * precalculates the shader colors
+     */
     public void initShaderColors() {
         this.backgroundShaderRed = (float) ((this.backgroundShaderColor & 0xFF000000) >>> 24) / 0xFF;
         this.backgroundShaderGreen = (float) ((this.backgroundShaderColor & 0x00FF0000) >> 16) / 0xFF;
@@ -122,6 +130,12 @@ public class DefaultConfigScreen extends AbstractConfigScreen {
         this.addDrawableChild(new ScrollBarWidget(this.width - 10, 40, this.height - 35, scrollY, maxScrollY, button -> System.out.println("hi"), Text.translatable("config.ewc.scroll_bar")));
     }
 
+    /**
+     * we add the config elements (booleans, integer and enums)
+     * @param category the category to choose from
+     * @param buttonHeight the height of the buttons
+     * @param startY the start of the buttons
+     */
     public void addElements(ConfigCategory category, int buttonHeight, int startY) {
         boolean bl = false;
         boolean write;
@@ -385,7 +399,7 @@ public class DefaultConfigScreen extends AbstractConfigScreen {
         // Coordonnes du trou (zone transparente)
         int holeY = getStartY(mouseY);
         int holeX = getStartX();
-        int holeEndX = getEndX(); // Par exemple
+        int holeEndX = getEndX();
         int holeEndY = getEndY();
         if (holeY > darkRectY) {
             context.fill(darkRectX, darkRectY, darkRectX + darkRectWidth, holeY, this.backgroundDarkRectangleShaderColor);
@@ -456,14 +470,26 @@ public class DefaultConfigScreen extends AbstractConfigScreen {
         return yp;
     }
 
+    /**
+     * get the end pos of the "hole"
+     * @return the end pos
+     */
     private int getEndY() {
         return bl ? 23 : 22;
     }
 
+    /**
+     * get the start pos of the "hole"
+     * @return the start pos
+     */
     private int getStartX() {
         return bl ? 0 : 4 * this.width / 24 - 2;
     }
 
+    /**
+     * get the end pos of the "hole"
+     * @return the end pos
+     */
     private int getEndX() {
         return bl ? 6 * this.width / 12 + 2 : 28 * this.width / 32 + 22;
     }
