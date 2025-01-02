@@ -13,10 +13,10 @@ import net.minecraft.world.StructureWorldAccess;
 import net.rodofire.easierworldcreator.blockdata.blocklist.basic.CompoundBlockList;
 import net.rodofire.easierworldcreator.blockdata.blocklist.basic.DefaultBlockList;
 import net.rodofire.easierworldcreator.blockdata.blocklist.basic.FullBlockList;
-import net.rodofire.easierworldcreator.blockdata.blocklist.basic.comparator.BlockListComparator;
+import net.rodofire.easierworldcreator.blockdata.blocklist.basic.comparator.AbstractBlockListComparator;
 import net.rodofire.easierworldcreator.blockdata.blocklist.basic.comparator.CompoundBlockListComparator;
 import net.rodofire.easierworldcreator.blockdata.blocklist.basic.comparator.FullBlockListComparator;
-import net.rodofire.easierworldcreator.blockdata.blocklist.ordered.comparator.OrderedBlockListComparator;
+import net.rodofire.easierworldcreator.blockdata.blocklist.ordered.comparator.AbstractOrderedBlockListComparator;
 import net.rodofire.easierworldcreator.maths.MathUtil;
 import net.rodofire.easierworldcreator.mixin.StructureTemplateMixin;
 import net.rodofire.easierworldcreator.placer.blocks.animator.StructurePlaceAnimator;
@@ -104,7 +104,7 @@ public class StructureUtil {
     }
 
 
-    public static <T extends BlockListComparator<U, V, W, X>, U extends DefaultBlockList, V, W extends OrderedBlockListComparator<X>, X> void place(StructureWorldAccess world, StructurePlaceAnimator animator, T comparator, BlockPos block, boolean force, Set<Block> blockToForce, Set<Block> blockToSkip, float integrity) {
+    public static <T extends AbstractBlockListComparator<U, V, W, X>, U extends DefaultBlockList, V, W extends AbstractOrderedBlockListComparator<X>, X> void place(StructureWorldAccess world, StructurePlaceAnimator animator, T comparator, BlockPos block, boolean force, Set<Block> blockToForce, Set<Block> blockToSkip, float integrity) {
         //avoid errors due to aberrant values
         if (integrity < 0) integrity = 0;
         if (integrity > 1) integrity = 1;

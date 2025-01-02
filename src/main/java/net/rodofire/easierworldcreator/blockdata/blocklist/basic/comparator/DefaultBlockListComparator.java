@@ -18,8 +18,14 @@ import java.util.List;
  * class to manage a list of DefaultBlockList automatically
  */
 @SuppressWarnings("unused")
-public class DefaultBlockListComparator extends BlockListComparator<DefaultBlockList, Integer, DefaultOrderedBlockListComparator, BlockState> {
-
+public class DefaultBlockListComparator extends AbstractBlockListComparator<DefaultBlockList, Integer, DefaultOrderedBlockListComparator, BlockState> {
+    /**
+     * init a comparator
+     * @param comparator the comparator that will be fused
+     */
+    public DefaultBlockListComparator(DefaultBlockListComparator comparator){
+        super(comparator);
+    }
     /**
      * init a comparator
      *

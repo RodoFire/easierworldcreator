@@ -7,7 +7,7 @@ import net.minecraft.util.math.random.Random;
 import net.minecraft.world.StructureWorldAccess;
 import net.rodofire.easierworldcreator.blockdata.blocklist.basic.BlockListManager;
 import net.rodofire.easierworldcreator.blockdata.blocklist.basic.DefaultBlockList;
-import net.rodofire.easierworldcreator.blockdata.blocklist.ordered.comparator.OrderedBlockListComparator;
+import net.rodofire.easierworldcreator.blockdata.blocklist.ordered.comparator.AbstractOrderedBlockListComparator;
 import net.rodofire.easierworldcreator.blockdata.sorter.BlockSorter;
 
 import java.util.*;
@@ -28,22 +28,22 @@ import java.util.*;
  * (that can be pretty annoying or counterproductive
  * as well as having a performance impact in the case where a lot {@link BlockState} are duplicated).
  * <li> ability to sort each {@link BlockPos} related to one {@code T}
- * <li> convert this {@link BlockListManager} into a {@link OrderedBlockListComparator}
+ * <li> convert this {@link BlockListManager} into a {@link AbstractOrderedBlockListComparator}
  * that would allow for more flexibility on how are the BlockPos kept
  * <li> provides some custom getters.</ul>
  *
  * @param <T> The type of the {@link BlockListManager} that will be managed by the comparator
  * @param <U> The type of the {@code BlockData}. This represents everything to describe the {@link Block}.
  *            Usually, it would be {@link BlockState}. But there are some cases that require more data like NbtCompounds.
- * @param <V> The type of the {@link OrderedBlockListComparator}
+ * @param <V> The type of the {@link AbstractOrderedBlockListComparator}
  *            (class to manage BlockList where the {@link BlockPos} are ordered no matter the {@code BlockData},
  *            contrary to this class where each {@link BlockPos} are organized depending on the {@code BlockData}),
  *            related to the object so that no data is lost, or no incompatibilities are present
- * @param <W> The type of the {@code BlockData}, like {@code <U>}, but for the {@link OrderedBlockListComparator}.
- *            Copy and paste the object that is required to the related {@link OrderedBlockListComparator}
+ * @param <W> The type of the {@code BlockData}, like {@code <U>}, but for the {@link AbstractOrderedBlockListComparator}.
+ *            Copy and paste the object that is required to the related {@link AbstractOrderedBlockListComparator}
  */
 @SuppressWarnings("unused")
-public abstract class BlockListComparator<T extends DefaultBlockList, U, V extends OrderedBlockListComparator<W>, W> {
+public abstract class AbstractBlockListComparator<T extends DefaultBlockList, U, V extends AbstractOrderedBlockListComparator<W>, W> {
     /**
      * the List of BlockList that are managed
      */
@@ -61,12 +61,17 @@ public abstract class BlockListComparator<T extends DefaultBlockList, U, V exten
      */
     protected final Map<BlockState, U> indexes = new HashMap<>();
 
+    public AbstractBlockListComparator(AbstractBlockListComparator<T,U,V,W> comparator){
+        blockLists.addAll(comparator.blockLists);
+        indexes.putAll(comparator.indexes);
+    }
+
     /**
      * init a comparator
      *
      * @param blockLists the list of blockList that will be indexed
      */
-    public BlockListComparator(List<T> blockLists) {
+    public AbstractBlockListComparator(List<T> blockLists) {
         List<T> cleanedList = getCleaned(blockLists);
         this.blockLists = new ArrayList<>(cleanedList);
         initIndexes();
@@ -77,7 +82,7 @@ public abstract class BlockListComparator<T extends DefaultBlockList, U, V exten
      *
      * @param blockList a blockList that will be indexed
      */
-    public BlockListComparator(T blockList) {
+    public AbstractBlockListComparator(T blockList) {
         this.blockLists = new ArrayList<>(Collections.singletonList(blockList));
         initIndexes();
     }
@@ -85,13 +90,23 @@ public abstract class BlockListComparator<T extends DefaultBlockList, U, V exten
     /**
      * init an empty comparator
      */
-    public BlockListComparator() {
+    public AbstractBlockListComparator() {
     }
 
     /**
      * method tu initialize the indexes.
      */
     protected abstract void initIndexes();
+
+
+    /**
+     * method to combine a comparator
+     * @param comparator
+     */
+    public void put(AbstractBlockListComparator<T,U,V,W> comparator){
+        this.blockLists.addAll(comparator.blockLists);
+        this.indexes.putAll(comparator.indexes);
+    }
 
     /**
      * method to combine a number of {@code List<T>}

@@ -31,8 +31,6 @@ public class EwcConfig {
 
         MOD_CONFIG.addCategories(SERVER_CATEGORY);
 
-        ConfigScreen.setBackgroundScreen(EasierWorldCreator.MOD_ID, new Identifier(EasierWorldCreator.MOD_ID, "textures/gui/config_background.png"), 1920, 1080, 0xAFAFAFFF, 0xD8000000);
-
         MOD_CONFIG.init();
     }
 
