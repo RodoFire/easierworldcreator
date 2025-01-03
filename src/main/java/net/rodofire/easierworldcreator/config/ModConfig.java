@@ -67,10 +67,15 @@ public class ModConfig {
     }
 
     public boolean shouldRestart() {
-        return this.categories.stream()
-                .anyMatch(
-                        configCategory -> configCategory.getBools().values().stream().anyMatch(AbstractConfigObject::shouldRestart)
-                );
+        return this.categories.stream().anyMatch(
+                configCategory -> configCategory.getBools().values().stream().anyMatch(AbstractConfigObject::shouldRestart)
+        )
+                || this.categories.stream().anyMatch(
+                configCategory -> configCategory.getInts().values().stream().anyMatch(AbstractConfigObject::shouldRestart)
+        )
+                || this.categories.stream().anyMatch(
+                configCategory -> configCategory.getEnums().values().stream().anyMatch(AbstractConfigObject::shouldRestart)
+        );
     }
 
     public void init() {
