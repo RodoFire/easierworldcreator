@@ -38,12 +38,12 @@ public class DefaultConfigScreen extends AbstractConfigScreen {
 
     private int currentCategoryIndex = 0;
     private final int maxCategoriesVisible = 5;
-    private Identifier TEXTURE = Screen.OPTIONS_BACKGROUND_TEXTURE;
+    private Identifier TEXTURE = Screen.MENU_BACKGROUND_TEXTURE;
 
     int backgroundHeight = 32;
     int backgroundWidth = 32;
     int backgroundShaderColor = 0x3F3F3FFF;
-    int backgroundDarkRectangleShaderColor = 0xD8000000;
+    int backgroundDarkRectangleShaderColor = 0xA8FFFFFF;
 
     private final int[] lastDimension = {0, 0};
 
@@ -141,8 +141,10 @@ public class DefaultConfigScreen extends AbstractConfigScreen {
         boolean write;
         if (!category.getBools().isEmpty()) {
 
+
             heights.add((short) (startY - scrollY - 1));
             widths.put((short) (startY - scrollY - 1), true);
+
             if (this.toDraw(new TextWidget(0, startY - scrollY, 4 * this.width / 12, buttonHeight, Text.translatable("config.ewc.boolean_category"), this.textRenderer), startY, buttonHeight)) {
                 bl = true;
             }
@@ -177,8 +179,10 @@ public class DefaultConfigScreen extends AbstractConfigScreen {
             startY += 4;
         }
         if (!category.getInts().isEmpty()) {
+
             heights.add((short) (startY - scrollY - 1));
             widths.put((short) (startY - scrollY - 1), true);
+
             write = this.toDraw(new TextWidget(0, startY - scrollY, 4 * this.width / 12, buttonHeight, Text.translatable("config.ewc.integer_category"), this.textRenderer), startY, buttonHeight);
             if (!write && bl)
                 return;
@@ -220,8 +224,10 @@ public class DefaultConfigScreen extends AbstractConfigScreen {
         }
 
         if (!category.getEnums().isEmpty()) {
+
             heights.add((short) (startY - scrollY - 1));
             widths.put((short) (startY - scrollY - 1), true);
+
             write = this.toDraw(new TextWidget(0, startY - scrollY, 4 * this.width / 12, buttonHeight, Text.translatable("config.ewc.enum_category"), this.textRenderer), startY, buttonHeight);
             if (!write && bl)
                 return;
@@ -294,10 +300,10 @@ public class DefaultConfigScreen extends AbstractConfigScreen {
         }
         if (categories.size() > maxCategoriesVisible) {
             if (currentCategoryIndex > 0) {
-                this.addDrawableChild(new ImageButtonWidget(centerX - 10 - (maxCategoriesVisible * buttonWidth / 2 + 15), startY, 20, buttonHeight, new Identifier(EasierWorldCreator.MOD_ID, "textures/gui/before_button.png"), button -> scrollCategories(-1)));
+                this.addDrawableChild(new ImageButtonWidget(centerX - 10 - (maxCategoriesVisible * buttonWidth / 2 + 15), startY, 20, buttonHeight, Identifier.of(EasierWorldCreator.MOD_ID, "textures/gui/before_button.png"), button -> scrollCategories(-1)));
             }
             if (this.categories.size() - currentCategoryIndex > 5) {
-                this.addDrawableChild(new ImageButtonWidget(centerX - 10 + (maxCategoriesVisible * buttonWidth / 2 + 15), startY, 20, buttonHeight, new Identifier(EasierWorldCreator.MOD_ID, "textures/gui/after_button.png"), button -> scrollCategories(1)));
+                this.addDrawableChild(new ImageButtonWidget(centerX - 10 + (maxCategoriesVisible * buttonWidth / 2 + 15), startY, 20, buttonHeight, Identifier.of(EasierWorldCreator.MOD_ID, "textures/gui/after_button.png"), button -> scrollCategories(1)));
             }
         }
     }
@@ -334,6 +340,19 @@ public class DefaultConfigScreen extends AbstractConfigScreen {
         super.render(context, mouseX, mouseY, delta);
     }
 
+    @Override
+    public void renderBackground(DrawContext context, int mouseX, int mouseY, float delta) {
+        if (TEXTURE.equals(Screen.MENU_BACKGROUND_TEXTURE)) {
+            super.renderBackground(context, mouseX, mouseY, delta);
+        } else {
+            assert this.client != null;
+            if (this.client.world != null) {
+                context.fillGradient(0, 0, this.width, this.height, -1072689136, -804253680);
+            } else {
+                this.renderBackgroundTexture(context);
+            }
+        }
+    }
 
     public void renderBackground(DrawContext context) {
         assert this.client != null;
@@ -344,7 +363,6 @@ public class DefaultConfigScreen extends AbstractConfigScreen {
         }
     }
 
-    @Override
     public void renderBackgroundTexture(DrawContext context) {
         float textureRatio = (float) this.backgroundWidth / this.backgroundHeight;
         float screenRatio = (float) this.width / this.height;
@@ -428,9 +446,9 @@ public class DefaultConfigScreen extends AbstractConfigScreen {
     }
 
     @Override
-    public boolean mouseScrolled(double mouseX, double mouseY, double amount) {
+    public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount, double verticalAmount) {
         if (maxScrollY > 0) {
-            scrollY = (short) Math.max(0, Math.min(maxScrollY, scrollY - (int) (amount * 10)));
+            scrollY = (short) Math.max(0, Math.min(maxScrollY, scrollY - (int) (verticalAmount * 10)));
             this.clearChildren();
             this.init();
             return true;
@@ -438,7 +456,7 @@ public class DefaultConfigScreen extends AbstractConfigScreen {
         if (scrollY > 0) {
             scrollY = 0;
         }
-        super.mouseScrolled(mouseX, mouseY, amount);
+        super.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount);
         return true;
     }
 
