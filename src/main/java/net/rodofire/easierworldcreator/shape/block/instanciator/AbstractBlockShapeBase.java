@@ -1,9 +1,14 @@
 package net.rodofire.easierworldcreator.shape.block.instanciator;
 
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.StructureWorldAccess;
 import net.rodofire.easierworldcreator.blockdata.layer.BlockLayerComparator;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Basic Class for Block Shape generation. This includes the basic needs for the shape generation.
@@ -24,7 +29,7 @@ public abstract class AbstractBlockShapeBase {
     /**
      * boolean used to determine if we have to use the custom chunk building provided by the mod or not
      */
-    protected boolean biggerThanChunk = false;
+    protected boolean multiChunk = false;
 
     /**
      * get the number of availible threads
@@ -119,6 +124,16 @@ public abstract class AbstractBlockShapeBase {
      */
     public void setPlaceMoment(@NotNull PlaceMoment placeMoment) {
         this.placeMoment = placeMoment;
+    }
+
+    /**
+     * method to get the list of a set of blockPos based on a Map with chunkPos
+     *
+     * @param posSetMap the map that will be converted
+     * @return the converted collection
+     */
+    public List<Set<BlockPos>> getBlockPosList(Map<ChunkPos, Set<BlockPos>> posSetMap) {
+        return posSetMap.values().stream().toList();
     }
 
 
