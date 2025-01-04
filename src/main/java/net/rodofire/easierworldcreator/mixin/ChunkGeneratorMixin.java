@@ -12,7 +12,6 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
 
@@ -35,7 +34,7 @@ public abstract class ChunkGeneratorMixin {
      * @param ci                unused parameters that need to be there in order for the mixin to work
      */
     @Inject(method = "generateFeatures", at = @At(value = "INVOKE", target = "Ljava/util/Set;iterator()Ljava/util/Iterator;"))
-    private void onGenerateFeatures(StructureWorldAccess world, Chunk chunk, StructureAccessor structureAccessor, CallbackInfo ci) throws IOException {
+    private void onGenerateFeatures(StructureWorldAccess world, Chunk chunk, StructureAccessor structureAccessor, CallbackInfo ci) {
         List<Path> pathlist = LoadChunkShapeInfo.verifyFiles(world, chunk);
         if (!pathlist.isEmpty()) {
             for (Path path : pathlist) {

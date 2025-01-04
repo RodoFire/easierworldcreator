@@ -32,6 +32,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 /**
  * class to load JSON files related to multi-chunk features
@@ -46,7 +47,7 @@ public class LoadChunkShapeInfo {
      */
     public static List<DefaultBlockList> loadFromJson(StructureWorldAccess world, Path chunkFilePath) {
         File file = new File(chunkFilePath.toString());
-        if(!file.exists()) return List.of();
+        if (!file.exists()) return List.of();
         String jsonContent;
         try {
             jsonContent = Files.readString(chunkFilePath);
@@ -102,7 +103,7 @@ public class LoadChunkShapeInfo {
     /**
      * method to place the structure
      *
-     * @param world      the world the structure will spawn in
+     * @param world             the world the structure will spawn in
      * @param defaultBlockLists the list of blockList that compose the structure
      */
     public static void placeStructure(StructureWorldAccess world, List<DefaultBlockList> defaultBlockLists) {
@@ -199,7 +200,27 @@ public class LoadChunkShapeInfo {
     public static List<Path> verifyFiles(StructureWorldAccess world, ChunkPos chunk) {
         List<Path> pathList = new ArrayList<>();
         Path generatedPath = Objects.requireNonNull(world.getServer()).getSavePath(WorldSavePath.GENERATED).normalize();
-        String chunkDirPrefix = "chunk_" + chunk.x + "_" + chunk.z;  // Prefix to match chunk directories
+        for (int i = -1; i <= 1; i++) {
+            for (int j = -1; j <= 1; j++) {
+                int chunkX = chunk.x + i;
+                int chunkZ = chunk.z + j;
+                String chunkDirPrefix = "chunk_" + chunkX + "_" + chunkZ;
+                getPathFromChunk(generatedPath, pathList, chunkDirPrefix);
+            }
+        }
+
+
+        return pathList;
+    }
+
+    /**
+     * method to get all multi-chunk JSON files of a block
+     *
+     * @param generatedPath  the path of generated/ewc/
+     * @param pathList       the other resolved paths
+     * @param chunkDirPrefix the chunk folder where we're going to get the JSON files
+     */
+    private static void getPathFromChunk(Path generatedPath, List<Path> pathList, String chunkDirPrefix) {
         Path directoryPath = generatedPath.resolve(EasierWorldCreator.MOD_ID).resolve("structures").resolve(chunkDirPrefix);
 
         if (Files.exists(generatedPath) && Files.isDirectory(generatedPath)) {
@@ -207,18 +228,18 @@ public class LoadChunkShapeInfo {
             // List all directories in the generated path
             if (Files.exists(directoryPath) && Files.isDirectory(directoryPath)) {
                 try {
-                    Files.list(directoryPath).forEach(filePath -> {
-                        if (filePath.toString().endsWith(".json") && !filePath.getFileName().toString().startsWith("false")) {
-                            pathList.add(filePath);
-                        }
-                    });
+                    try (Stream<Path> paths = Files.list(directoryPath)) {
+                        paths.forEach(filePath -> {
+                            if (filePath.toString().endsWith(".json") && !filePath.getFileName().toString().startsWith("false")) {
+                                pathList.add(filePath);
+                            }
+                        });
+                    }
                 } catch (IOException e) {
                     e.fillInStackTrace();
                 }
             }
         }
-
-        return pathList;
     }
 
     /**
