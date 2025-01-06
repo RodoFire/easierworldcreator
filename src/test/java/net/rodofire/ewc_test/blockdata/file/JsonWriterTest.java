@@ -5,6 +5,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
+import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -15,6 +16,7 @@ import java.util.*;
 
 public class JsonWriterTest {
     public static Map<ChunkPos, Set<BlockPos>> blockPosList = getBlockPosList();
+    public static List<BlockPos> minorBlockPosList = getMinorBlockPosList();
 
 
     @Test
@@ -38,7 +40,7 @@ public class JsonWriterTest {
     }
 
     @Test
-    public void comparePerformance() {
+    public void compareCoordinateReductionPerformance() {
         long startWithReduction = System.nanoTime();
         testWithCoordinatesReduction();
         long elapsedWithReduction = System.nanoTime() - startWithReduction;
@@ -54,13 +56,11 @@ public class JsonWriterTest {
                 "Coordinate reduction should be faster than non-reduction");
     }
 
-
     /**
      * based on test, the method is 70-75% faster than the other
      */
     @Test
     public void testWithCoordinatesReduction() {
-
         Gson gson = new Gson();
         JsonArray jsonArray = new JsonArray();
 
@@ -104,6 +104,43 @@ public class JsonWriterTest {
     }
 
     @Test
+    public void testPrimitiveArray() {
+        int offsetX = 0;
+        int offsetY = 0;
+        int offsetZ = 0;
+        int chunkOffsetX = offsetX % 16; // Précalcule le décalage pour le chunk
+        int chunkOffsetZ = offsetZ % 16;
+        for(int i = 0; i<100; i++){
+        withoutPrimitiveArray(chunkOffsetX, chunkOffsetZ);
+        withPrimitiveArray(chunkOffsetX, chunkOffsetZ);
+        }
+    }
+
+    private static @NotNull List<Integer> withoutPrimitiveArray(int chunkOffsetX, int chunkOffsetZ) {
+        List<Integer> compactPositions = new ArrayList<>();
+
+        for (BlockPos pos : minorBlockPosList) {
+                char posX = (char) Math.floorMod(pos.getX() + chunkOffsetX, 16);
+                char posZ = (char) Math.floorMod(pos.getZ() + chunkOffsetZ, 16);
+                int compactPos = (posX << 24) | ((short) pos.getY() << 8) | posZ;
+                compactPositions.add(compactPos);
+        }
+        return compactPositions;
+    }
+
+    private void withPrimitiveArray(int chunkOffsetX, int chunkOffsetZ) {
+        int size = minorBlockPosList.size();
+        int[] compactPositions = new int[size];
+        for (int i = 0; i < size; i++) {
+            BlockPos pos = minorBlockPosList.get(i);
+            char posX = (char) Math.floorMod(pos.getX() + chunkOffsetX, 16);
+            char posZ = (char) Math.floorMod(pos.getZ() + chunkOffsetZ, 16);
+            int compactPos = (posX << 24) | ((short) pos.getY() << 8) | posZ;
+            compactPositions[i] = compactPos;
+        }
+    }
+
+    @Test
     public void testWithoutCoordinatesReduction() {
 
         Gson gson = new Gson();
@@ -127,7 +164,6 @@ public class JsonWriterTest {
                 posObject.addProperty("z", pos.getZ() + offsetZ);
                 positions.add(posObject);
             }
-
         }
         jsonObject.add("positions", positions);
         jsonArray.add(jsonObject);
@@ -151,6 +187,18 @@ public class JsonWriterTest {
                     blockPosSet.add(new BlockPos(i, k, j));
                 }
                 blockPosList.put(chunkPos, blockPosSet);
+            }
+        }
+        return blockPosList;
+    }
+
+    private static List<BlockPos> getMinorBlockPosList() {
+        List<BlockPos> blockPosList = new ArrayList<>();
+        for (int i = -0; i < 50; i++) {
+            for (int j = -0; j < 80; j++) {
+                for (int k = -0; k < 100; k++) {
+                    blockPosList.add(new BlockPos(i, k, j));
+                }
             }
         }
         return blockPosList;
