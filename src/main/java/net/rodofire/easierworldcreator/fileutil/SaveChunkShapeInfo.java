@@ -240,7 +240,7 @@ public class SaveChunkShapeInfo {
         Path var;
         if(server != null) {
             Path generatedPath = server.getSavePath(WorldSavePath.GENERATED).normalize();
-            var = createFolders(generatedPath).resolve("chunk" + chunkPos.x + "_" + chunkPos.z);
+            var = createFolders(generatedPath).resolve("chunk_" + chunkPos.x + "_" + chunkPos.z);
             try {
                 Files.createDirectories(var);
             } catch (IOException e) {

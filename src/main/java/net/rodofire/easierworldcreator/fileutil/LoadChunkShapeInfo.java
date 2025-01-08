@@ -21,6 +21,7 @@ import net.minecraft.world.StructureWorldAccess;
 import net.minecraft.world.chunk.Chunk;
 import net.rodofire.easierworldcreator.EasierWorldCreator;
 import net.rodofire.easierworldcreator.blockdata.blocklist.basic.DefaultBlockList;
+import net.rodofire.easierworldcreator.config.ewc.EwcConfig;
 
 import java.io.File;
 import java.io.IOException;
@@ -30,6 +31,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
@@ -61,34 +63,34 @@ public class LoadChunkShapeInfo {
         JsonArray jsonArray = gson.fromJson(jsonContent, JsonArray.class);
 
         List<DefaultBlockList> defaultBlockLists = new ArrayList<>();
-        String fileName = chunkFilePath.getFileName().toString();
-
-        Pattern pattern = Pattern.compile("\\[(-?\\d+),(-?\\d+)]_.*\\.json");
+        String fileName = chunkFilePath.getParent().getFileName().toString();
+        Pattern pattern = Pattern.compile("chunk_(-?\\d+)_(-?\\d+)$");
         Matcher matcher = pattern.matcher(fileName);
-        int offsetX = 0, offsetZ = 0;
+        int chunkX = 0;
+        int chunkZ = 0;
 
+        // Vérifier si la chaîne correspond au pattern
         if (matcher.matches()) {
-            offsetX = Integer.parseInt(matcher.group(1));
-            offsetZ = Integer.parseInt(matcher.group(2));
+            chunkX = Integer.parseInt(matcher.group(1));
+            chunkZ = Integer.parseInt(matcher.group(2));
         }
-
 
         for (JsonElement element : jsonArray) {
             JsonObject jsonObject = element.getAsJsonObject();
 
             // Get the block state
             String stateString = jsonObject.get("state").getAsString();
-            BlockState blockState = parseBlockState(world, stateString);  // You need to implement this method
+            BlockState blockState = parseBlockState(world, stateString);
 
             // Get the positions
             List<BlockPos> posList = new ArrayList<>();
             JsonArray positionsArray = jsonObject.getAsJsonArray("positions");
 
             for (JsonElement posElement : positionsArray) {
-                JsonObject posObject = posElement.getAsJsonObject();
-                int x = posObject.get("x").getAsInt() + offsetX;
-                int y = posObject.get("y").getAsInt();
-                int z = posObject.get("z").getAsInt() + offsetZ;
+                int value = posElement.getAsInt();
+                int x = chunkX * 16 + (value >> 24);
+                int y = (value & 0x00FFFF00) >> 8;
+                int z = chunkZ * 16 + (value & 0x000000FF);
                 posList.add(new BlockPos(x, y, z));
             }
 
@@ -199,16 +201,22 @@ public class LoadChunkShapeInfo {
      */
     public static List<Path> verifyFiles(StructureWorldAccess world, ChunkPos chunk) {
         List<Path> pathList = new ArrayList<>();
+        int distance = EwcConfig.getFeaturesChunkDistance();
         Path generatedPath = Objects.requireNonNull(world.getServer()).getSavePath(WorldSavePath.GENERATED).normalize();
-        for (int i = -1; i <= 1; i++) {
-            for (int j = -1; j <= 1; j++) {
-                int chunkX = chunk.x + i;
-                int chunkZ = chunk.z + j;
-                String chunkDirPrefix = "chunk_" + chunkX + "_" + chunkZ;
-                getPathFromChunk(generatedPath, pathList, chunkDirPrefix);
+        if (Files.exists(generatedPath) && Files.isDirectory(generatedPath)) {
+            generatedPath = generatedPath.resolve(EasierWorldCreator.MOD_ID).resolve("structures");
+            if (Files.exists(generatedPath) && Files.isDirectory(generatedPath)) {
+                for (int i = distance; i <= distance; i++) {
+                    for (int j = -distance; j <= distance; j++) {
+                        int chunkX = chunk.x + i;
+                        int chunkZ = chunk.z + j;
+                        String chunkDirPrefix = "chunk_" + chunkX + "_" + chunkZ;
+                        Path newPath = generatedPath.resolve(chunkDirPrefix);
+                        getPathFromChunk(newPath, pathList);
+                    }
+                }
             }
         }
-
 
         return pathList;
     }
@@ -216,30 +224,24 @@ public class LoadChunkShapeInfo {
     /**
      * method to get all multi-chunk JSON files of a block
      *
-     * @param generatedPath  the path of generated/ewc/
-     * @param pathList       the other resolved paths
-     * @param chunkDirPrefix the chunk folder where we're going to get the JSON files
+     * @param generatedPath the path of generated/ewc/chunk_[chunk.x]_[chunk.z]
+     * @param pathList      the other resolved paths
      */
-    private static void getPathFromChunk(Path generatedPath, List<Path> pathList, String chunkDirPrefix) {
-        Path directoryPath = generatedPath.resolve(EasierWorldCreator.MOD_ID).resolve("structures").resolve(chunkDirPrefix);
-
+    private static void getPathFromChunk(Path generatedPath, List<Path> pathList) {
         if (Files.exists(generatedPath) && Files.isDirectory(generatedPath)) {
-
-            // List all directories in the generated path
-            if (Files.exists(directoryPath) && Files.isDirectory(directoryPath)) {
-                try {
-                    try (Stream<Path> paths = Files.list(directoryPath)) {
-                        paths.forEach(filePath -> {
-                            if (filePath.toString().endsWith(".json") && !filePath.getFileName().toString().startsWith("false")) {
-                                pathList.add(filePath);
-                            }
-                        });
-                    }
-                } catch (IOException e) {
-                    e.fillInStackTrace();
+            try {
+                try (Stream<Path> paths = Files.list(generatedPath)) {
+                    paths.forEach(filePath -> {
+                        if (filePath.toString().endsWith(".json") && !filePath.getFileName().toString().startsWith("false")) {
+                            pathList.add(filePath);
+                        }
+                    });
                 }
+            } catch (IOException e) {
+                e.fillInStackTrace();
             }
         }
+
     }
 
     /**
