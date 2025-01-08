@@ -17,7 +17,7 @@ public class ChunkUtil {
      * @param chunkPos the chunk that will be tested
      * @return <p>- true if the features of the chunk were generated. <p>- false if not
      */
-    public static boolean isChunkGenerated(StructureWorldAccess world, ChunkPos chunkPos ) {
+    public static boolean isFeaturesGenerated(StructureWorldAccess world, ChunkPos chunkPos ) {
         Chunk chunk = world.getChunk(chunkPos.x, chunkPos.z, ChunkStatus.FEATURES, false);
         return chunk!= null;
     }
