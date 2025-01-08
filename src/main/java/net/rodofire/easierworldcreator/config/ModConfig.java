@@ -35,7 +35,7 @@ public class ModConfig {
         if (cat == null) {
             return null;
         }
-        if (protectedConfig) {
+        if (!protectedConfig) {
             ReadableConfig reader = new ReadableConfig(MOD_ID);
             reader.refresh(cat);
         }
