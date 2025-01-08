@@ -4,6 +4,7 @@ import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.StructureWorldAccess;
 import net.rodofire.easierworldcreator.config.ewc.EwcConfig;
 import net.rodofire.easierworldcreator.util.ChunkUtil;
+import net.rodofire.easierworldcreator.util.WorldGenUtil;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collections;
@@ -127,13 +128,18 @@ public class ChunkPosManager {
      * @param chunks the set to be verified
      * @return true if every chunk can be placed, false if not
      */
-    public boolean canGenerate(Set<ChunkPos> chunks) {
-        return chunks.parallelStream().noneMatch(chunk -> {
-            if (!containsChunk(chunk)) {
-                put(chunk);
+    public boolean canGenerate(Set<ChunkPos> chunks, int xOffset, int zOffset) {
+        boolean bl = true;
+        for(ChunkPos chunkPos : chunks) {
+            ChunkPos newChunkPos = WorldGenUtil.addChunkPos(chunkPos, xOffset, zOffset);
+            if(!containsChunk(newChunkPos)) {
+                put(newChunkPos);
             }
-            return unAllowedChunks.contains(chunk);
-        });
+            if(unAllowedChunks.contains(newChunkPos)) {
+                bl = false;
+            }
+        }
+        return bl;
     }
 
 }
