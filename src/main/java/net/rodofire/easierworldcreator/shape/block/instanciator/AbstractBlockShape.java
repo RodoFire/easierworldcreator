@@ -4,7 +4,6 @@ import net.minecraft.block.BlockState;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
-import net.minecraft.util.WorldSavePath;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.random.Random;
@@ -15,12 +14,11 @@ import net.rodofire.easierworldcreator.blockdata.blocklist.basic.comparator.Defa
 import net.rodofire.easierworldcreator.blockdata.layer.BlockLayer;
 import net.rodofire.easierworldcreator.blockdata.sorter.BlockSorter;
 import net.rodofire.easierworldcreator.config.ewc.EwcConfig;
-import net.rodofire.easierworldcreator.fileutil.FileUtil;
 import net.rodofire.easierworldcreator.fileutil.LoadChunkShapeInfo;
 import net.rodofire.easierworldcreator.fileutil.SaveChunkShapeInfo;
 import net.rodofire.easierworldcreator.placer.blocks.animator.StructurePlaceAnimator;
 import net.rodofire.easierworldcreator.placer.blocks.util.BlockStateUtil;
-import net.rodofire.easierworldcreator.util.ChunkUtil;
+import net.rodofire.easierworldcreator.util.WorldGenUtil;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
@@ -39,8 +37,6 @@ import java.util.concurrent.*;
  */
 @SuppressWarnings("unused")
 public abstract class AbstractBlockShape extends AbstractBlockShapeRotation {
-    private BlockPos offset = new BlockPos(0, 0, 0);
-
     private String featureName;
 
     private StructurePlaceAnimator animator;
@@ -103,20 +99,6 @@ public abstract class AbstractBlockShape extends AbstractBlockShapeRotation {
         this.featureName = featureName;
     }
 
-    public BlockPos getOffset() {
-        return offset;
-    }
-
-    /**
-     * method to set an offset
-     *
-     * @param offset the offset of the entire structure
-     */
-    public void setOffset(BlockPos offset) {
-        this.offset = offset;
-    }
-
-
     /**
      * This method allows you to place the structure in the world.
      * Any changes done after this moment will not be taken in count except if you place another shape later
@@ -160,10 +142,8 @@ public abstract class AbstractBlockShape extends AbstractBlockShapeRotation {
 
         //verify if the shape is larger than a chunk
         //if yes, we have to divide the structure into chunks
-
-        if (this.getPlaceMoment() == PlaceMoment.WORLD_GEN && this.multiChunk && EwcConfig.getMultiChunkFeatures()) {
-
-            if (!tryPlaceStructure(posList)) {
+        if (this.getPlaceMoment() == PlaceMoment.WORLD_GEN && this.isMultiChunk(posList) && EwcConfig.getMultiChunkFeatures()) {
+            if (!canPlaceMultiChunk(posList.keySet())) {
                 if (logWarns) {
                     EasierWorldCreator.LOGGER.info("cannot place structure due to too much chunks generated around the original Pos");
                 }
@@ -181,13 +161,12 @@ public abstract class AbstractBlockShape extends AbstractBlockShapeRotation {
             List<Future<?>> creationTasks = new ArrayList<>();
 
             ExecutorService executorService = Executors.newFixedThreadPool(THREAD_COUNT);
-            for (Set<BlockPos> pos : posList.values()) {
+            for (Map.Entry<ChunkPos, Set<BlockPos>> pos : posList.entrySet()) {
                 Future<?> future = executorService.submit(() -> {
-                    Optional<BlockPos> opt = pos.stream().findFirst();
-                    if (opt.isPresent()) {
-                        DefaultBlockListComparator comparator = this.getLayers(pos);
-                        Path generatedPath = SaveChunkShapeInfo.getMultiChunkPath(getWorld(), new ChunkPos(opt.get()));
-                        comparator.toJson(generatedPath, offset);
+                    DefaultBlockListComparator comparator = this.getLayers(pos.getValue());
+                    Path generatedPath = SaveChunkShapeInfo.getMultiChunkPath(getWorld(), WorldGenUtil.addChunkPos(pos.getKey(), this.getOffset()));
+                    if (generatedPath != null) {
+                        comparator.toJson(generatedPath.resolve(this.featureName + ".json"), this.getOffset());
                     }
                 });
                 creationTasks.add(future);
@@ -200,24 +179,9 @@ public abstract class AbstractBlockShape extends AbstractBlockShapeRotation {
                     e.fillInStackTrace();
                 }
             }
-
-            Set<ChunkPos> chunSet = posList.keySet();
             //tell the garbage collector that it can free the list of pos
             posList.clear();
-
-            if (!moveChunks(chunSet, 5)) return;
-            Path generatedPath = Objects.requireNonNull(getWorld().getServer()).getSavePath(WorldSavePath.GENERATED).resolve(EasierWorldCreator.MOD_ID).resolve("structures").normalize();
-
-            for (ChunkPos chunkPos : chunSet) {
-                executorService.submit(() -> {
-                    FileUtil.renameFile(
-                            generatedPath.resolve("chunk_" + chunkPos.x + "_" + chunkPos.z).resolve("false_" + featureName + ".json"),
-                            generatedPath.resolve("chunk_" + (chunkPos.x + offset.getX() / 16) + "_" + (chunkPos.z + offset.getZ() / 16)).resolve("[" + offset.getX() + "," + offset.getZ() + "]_" + featureName + ".json"));
-                });
-            }
             executorService.shutdown();
-
-
             List<Path> path = LoadChunkShapeInfo.verifyFiles(getWorld(), this.getPos());
             for (Path path1 : path) {
                 List<DefaultBlockList> defaultBlockLists = LoadChunkShapeInfo.loadFromJson(getWorld(), path1);
@@ -251,7 +215,7 @@ public abstract class AbstractBlockShape extends AbstractBlockShapeRotation {
     public void placeWBlockList(Map<ChunkPos, Set<DefaultBlockList>> posList) {
         List<Future<?>> creationTasks = new ArrayList<>();
 
-        if (!canPos(posList.keySet())) {
+        if (!canPlaceMultiChunk(posList.keySet())) {
             if (EwcConfig.getLogWarns())
                 EasierWorldCreator.LOGGER.info("cannot place structure due to too much chunks generated around the original Pos");
             return;
@@ -261,7 +225,7 @@ public abstract class AbstractBlockShape extends AbstractBlockShapeRotation {
             ExecutorService executorService = Executors.newFixedThreadPool(THREAD_COUNT);
             Future<?> future = executorService.submit(() -> {
                 try {
-                    SaveChunkShapeInfo.saveChunkWorldGen(defaultBlockList, getWorld(), "false_" + featureName, offset);
+                    SaveChunkShapeInfo.saveChunkWorldGen(defaultBlockList, getWorld(), featureName, this.getOffset());
 
                 } catch (IOException e) {
                     e.fillInStackTrace();
@@ -282,22 +246,6 @@ public abstract class AbstractBlockShape extends AbstractBlockShapeRotation {
 
         Set<ChunkPos> chunkPosList = posList.keySet();
         posList.clear();
-        if (!moveChunks(chunkPosList, 5)) return;
-        Path generatedPath = Objects.requireNonNull(getWorld().getServer()).getSavePath(WorldSavePath.GENERATED).resolve(EasierWorldCreator.MOD_ID).resolve("structures").normalize();
-
-
-        for (ChunkPos chunkPos : chunkPosList) {
-            ExecutorService executorService = Executors.newFixedThreadPool(THREAD_COUNT);
-            executorService.submit(() -> {
-                FileUtil.renameFile(
-                        generatedPath.resolve("chunk_" + chunkPos.x + "_" + chunkPos.z).resolve("false_" + featureName + ".json"),
-                        generatedPath.resolve("chunk_" + (chunkPos.x + offset.getX() / 16) + "_" + (chunkPos.z + offset.getZ() / 16)).resolve("[" + offset.getX() + "," + offset.getZ() + "]_" + featureName + ".json"));
-
-            });
-            executorService.shutdown();
-
-        }
-
 
         List<Path> path = LoadChunkShapeInfo.verifyFiles(getWorld(), this.getPos());
         for (Path path1 : path) {
@@ -315,63 +263,6 @@ public abstract class AbstractBlockShape extends AbstractBlockShapeRotation {
 
 
     /*---------- Place Structure ----------*/
-
-    /**
-     * verify for a set of chunks if every chunk wasn't generated.
-     *
-     * @param chunks the list of chunks that would be placed
-     * @return true if it can pos, false if it can't
-     */
-    private boolean canPos(Set<ChunkPos> chunks) {
-        for (ChunkPos chunk : chunks) {
-            if (ChunkUtil.isChunkGenerated(getWorld(), chunk)) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    /**
-     * <p>Method to try placing the structure.
-     * <p>It will try to see if the structure can be placed in the near chunks.
-     * <p>If yes, it will set an offset that will be used when creating the files.
-     *
-     * @return {@link Boolean} that determines if the shape can be placed
-     */
-    private boolean tryPlaceStructure(Map<ChunkPos, Set<BlockPos>> posList) {
-        int maxOffset = 5;
-        List<ChunkPos> chunkList = new ArrayList<>();
-
-        if (moveChunks(posList.keySet(), maxOffset)) return true;
-
-        if (EwcConfig.getLogWarns())
-            EasierWorldCreator.LOGGER.info("can't place the structure");
-        return false;
-    }
-
-    private boolean moveChunks(Set<ChunkPos> chunkList, int maxStep) {
-        for (int step = 0; step <= maxStep; step++) {
-            for (int xOffset = -step; xOffset <= step; xOffset++) {
-                for (int zOffset = -step; zOffset <= step; zOffset++) {
-
-                    if (Math.abs(xOffset) + Math.abs(zOffset) == step) {
-
-                        BlockPos newPos = new BlockPos(xOffset * 16, 0, zOffset * 16);
-                        Set<ChunkPos> coveredChunks = this.getChunkCovered(newPos, chunkList);
-
-
-                        if (canPos(coveredChunks)) {
-                            List<ChunkPos> region = new ArrayList<>();
-                            this.offset = newPos;
-                            return true;
-                        }
-                    }
-                }
-            }
-        }
-        return false;
-    }
-
     public DefaultBlockListComparator getBlockListWithVerification(List<Set<BlockPos>> posList) {
         DefaultBlockListComparator blockList = new DefaultBlockListComparator();
         Map<BlockPos, BlockState> blockStateMap = new HashMap<>();
@@ -395,18 +286,5 @@ public abstract class AbstractBlockShape extends AbstractBlockShapeRotation {
         finalExecutorService.shutdown();
 
         return blockList;
-    }
-
-    /**
-     * Method to get a chunk list to know if the structure can be placed during worldGen;
-     *
-     * @param pos the center pos
-     */
-    protected Set<ChunkPos> getChunkCovered(BlockPos pos, Set<ChunkPos> chunks) {
-        Set<ChunkPos> newChunks = new HashSet<>();
-        for (ChunkPos chunk : chunks) {
-            newChunks.add(new ChunkPos(chunk.getStartPos().add(pos)));
-        }
-        return newChunks;
     }
 }
