@@ -18,6 +18,7 @@ public class WorldGenUtil {
 
     /**
      * method to get a random direction no matter the plane
+     *
      * @return a random direction
      */
     public static Direction getRandomDirection() {
@@ -33,6 +34,7 @@ public class WorldGenUtil {
 
     /**
      * method to get a random direction on the vertical axis
+     *
      * @return a random direction on the vertical axis
      */
     public static Direction getRandomVerticalDirection() {
@@ -41,6 +43,7 @@ public class WorldGenUtil {
 
     /**
      * method to get a random direction on the horizontal axis
+     *
      * @return a random direction on the horizontal axis
      */
     public static Direction getRandomHorizontalDirection() {
@@ -52,9 +55,10 @@ public class WorldGenUtil {
         };
     }
 
-    /**return a random int between min height and max height if the chance
+    /**
+     * return a random int between min height and max height if the chance
      *
-     * @param chance the chance at which the result won't be equal to 0
+     * @param chance    the chance at which the result won't be equal to 0
      * @param maxHeight the maximum height that can be returned
      * @return a random height
      */
@@ -62,9 +66,10 @@ public class WorldGenUtil {
         return getSecondHeight(chance, 0, maxHeight);
     }
 
-    /**return a random int between min height and max height if the chance
+    /**
+     * return a random int between min height and max height if the chance
      *
-     * @param chance the chance at which the result won't be equal to 0
+     * @param chance    the chance at which the result won't be equal to 0
      * @param minHeight the minimum height that can be returned in the case the chance allowed a random height
      * @param maxHeight the maximum height that can be returned
      * @return a random height
@@ -246,5 +251,17 @@ public class WorldGenUtil {
         ChunkPos chunkPos = new ChunkPos(pos);
         Set<BlockPos> blockPosInChunk = chunkMap.computeIfAbsent(chunkPos, k -> new HashSet<>());
         blockPosInChunk.add(pos);
+    }
+
+    public static ChunkPos addChunkPos(ChunkPos pos1, ChunkPos pos2) {
+        return new ChunkPos(pos1.getStartPos().add(pos2.getStartPos()));
+    }
+
+    public static ChunkPos addChunkPos(ChunkPos pos1, int x, int z) {
+        return new ChunkPos(pos1.getStartPos().add(new ChunkPos(x, z).getStartPos()));
+    }
+
+    public static ChunkPos addChunkPos(ChunkPos pos1, BlockPos pos2) {
+        return new ChunkPos(pos1.getStartPos().add(pos2));
     }
 }
