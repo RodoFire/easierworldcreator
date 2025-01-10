@@ -15,6 +15,8 @@ public class EwcConfig {
     static final ConfigCategory SERVER_CATEGORY = new ConfigCategory("server");
     static String SERVER = "server";
 
+    private static int distance;
+
 
     public static void setConfig() {
         BooleanConfigObject bool = new BooleanConfigObject(true, "performance_mode");
@@ -32,6 +34,11 @@ public class EwcConfig {
         MOD_CONFIG.addCategories(SERVER_CATEGORY);
 
         MOD_CONFIG.init();
+        initValues();
+    }
+
+    private static void initValues(){
+        distance = getFeaturesChunkDistance();
     }
 
     public static boolean getPerformanceConfig() {
@@ -55,6 +62,9 @@ public class EwcConfig {
     }
 
     public static int getFeaturesChunkDistance() {
-        return MOD_CONFIG.getCategory(SERVER).getInts().get("features_chunk_distance").getActualValue();
+        if (MOD_CONFIG.isConfigProtected())
+            return distance;
+        distance = MOD_CONFIG.getCategory(SERVER).getInts().get("features_chunk_distance").getActualValue();
+        return distance;
     }
 }
