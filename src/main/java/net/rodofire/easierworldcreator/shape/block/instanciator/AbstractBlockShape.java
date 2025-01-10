@@ -18,7 +18,6 @@ import net.rodofire.easierworldcreator.fileutil.LoadChunkShapeInfo;
 import net.rodofire.easierworldcreator.fileutil.SaveChunkShapeInfo;
 import net.rodofire.easierworldcreator.placer.blocks.animator.StructurePlaceAnimator;
 import net.rodofire.easierworldcreator.placer.blocks.util.BlockStateUtil;
-import net.rodofire.easierworldcreator.util.ChunkUtil;
 import net.rodofire.easierworldcreator.util.WorldGenUtil;
 import org.jetbrains.annotations.NotNull;
 
@@ -182,7 +181,7 @@ public abstract class AbstractBlockShape extends AbstractBlockShapeRotation {
             //tell the garbage collector that it can free the list of pos
             posList.clear();
             executorService.shutdown();
-            List<Path> path = LoadChunkShapeInfo.verifyFiles(getWorld(), this.getPos());
+            List<Path> path = LoadChunkShapeInfo.getWorldGenFiles(getWorld(), this.getPos());
             for (Path path1 : path) {
                 DefaultBlockListComparator defaultBlockLists = LoadChunkShapeInfo.loadFromJson(getWorld(), path1);
                 LoadChunkShapeInfo.placeStructure(getWorld(), defaultBlockLists);
@@ -247,7 +246,7 @@ public abstract class AbstractBlockShape extends AbstractBlockShapeRotation {
         Set<ChunkPos> chunkPosList = posList.keySet();
         posList.clear();
 
-        List<Path> path = LoadChunkShapeInfo.verifyFiles(getWorld(), this.getPos());
+        List<Path> path = LoadChunkShapeInfo.getWorldGenFiles(getWorld(), this.getPos());
         for (Path path1 : path) {
             DefaultBlockListComparator defaultBlockLists = LoadChunkShapeInfo.loadFromJson(getWorld(), path1);
             LoadChunkShapeInfo.placeStructure(getWorld(), defaultBlockLists);

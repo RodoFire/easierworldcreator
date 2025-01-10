@@ -106,7 +106,7 @@ public class LoadChunkShapeInfo {
      * @param defaultBlockLists the list of blockList that compose the structure
      */
     public static void placeStructure(StructureWorldAccess world, DefaultBlockListComparator defaultBlockLists) {
-        defaultBlockLists.placeAllWithVerificationDeletion(world);
+        defaultBlockLists.placeAllWithVerification(world);
     }
 
     /**
@@ -169,8 +169,8 @@ public class LoadChunkShapeInfo {
      * @param chunk the chunk that will be converted into a {@link ChunkPos}
      * @return the list of the structure path to be placed later
      */
-    public static List<Path> verifyFiles(StructureWorldAccess world, Chunk chunk) {
-        return verifyFiles(world, chunk.getPos());
+    public static List<Path> getWorldGenFiles(StructureWorldAccess world, Chunk chunk) {
+        return getWorldGenFiles(world, chunk.getPos());
     }
 
     /**
@@ -180,8 +180,8 @@ public class LoadChunkShapeInfo {
      * @param pos   the {@link BlockPos} that will be converted into a {@link ChunkPos}
      * @return the list of the structure path to be placed later
      */
-    public static List<Path> verifyFiles(StructureWorldAccess world, BlockPos pos) {
-        return verifyFiles(world, new ChunkPos(pos));
+    public static List<Path> getWorldGenFiles(StructureWorldAccess world, BlockPos pos) {
+        return getWorldGenFiles(world, new ChunkPos(pos));
     }
 
     /**
@@ -191,7 +191,7 @@ public class LoadChunkShapeInfo {
      * @param chunk the chunk that needs to be verified
      * @return the list of the structure path to be placed later
      */
-    public static List<Path> verifyFiles(StructureWorldAccess world, ChunkPos chunk) {
+    public static List<Path> getWorldGenFiles(StructureWorldAccess world, ChunkPos chunk) {
         List<Path> pathList = new ArrayList<>();
         int distance = EwcConfig.getFeaturesChunkDistance();
         Path generatedPath = Objects.requireNonNull(world.getServer()).getSavePath(WorldSavePath.GENERATED).normalize();
@@ -220,7 +220,7 @@ public class LoadChunkShapeInfo {
      * @param pathList      the other resolved paths
      */
     private static void getPathFromChunk(Path generatedPath, List<Path> pathList) {
-        if (Files.exists(generatedPath) && Files.isDirectory(generatedPath)) {
+        if (/*Files.exists(generatedPath) && */Files.isDirectory(generatedPath)) {
             try {
                 try (Stream<Path> paths = Files.list(generatedPath)) {
                     paths.forEach(filePath -> {
@@ -233,7 +233,6 @@ public class LoadChunkShapeInfo {
                 e.fillInStackTrace();
             }
         }
-
     }
 
     /**
