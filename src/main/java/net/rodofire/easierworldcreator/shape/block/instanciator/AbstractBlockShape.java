@@ -113,7 +113,7 @@ public abstract class AbstractBlockShape extends AbstractBlockShapeRotation {
         Map<ChunkPos, Set<BlockPos>> posList = this.getBlockPos();
         long end = System.nanoTime();
         long diff = end - start;
-        if (EwcConfig.getLogWarns()) {
+        if (EwcConfig.getLogPerformanceInfo()) {
             EasierWorldCreator.LOGGER.info("Shape coordinate calculations took : {}ms", ((double) (diff / 1000)) / 1000);
         }
         place(posList);
@@ -152,7 +152,6 @@ public abstract class AbstractBlockShape extends AbstractBlockShapeRotation {
             }
             if (logWarns)
                 EasierWorldCreator.LOGGER.info("structure bigger than chunk");
-            System.out.println(this.getOffset());
             long randomLong = Random.create().nextLong();
             featureName = "custom_feature_" + randomLong;
 
@@ -166,8 +165,7 @@ public abstract class AbstractBlockShape extends AbstractBlockShapeRotation {
                 Future<?> future = executorService.submit(() -> {
                     DefaultBlockListComparator comparator = this.getLayers(pos.getValue());
                     Path generatedPath = SaveChunkShapeInfo.getMultiChunkPath(getWorld(), WorldGenUtil.addChunkPos(pos.getKey(), this.getOffset()));
-                    System.out.println("base: " + pos.getKey() + ", modified: " + WorldGenUtil.addChunkPos(pos.getKey(), this.getOffset()) + "  " + ChunkUtil.areNearbyFeaturesUnGenerated(getWorld(), WorldGenUtil.addChunkPos(pos.getKey(), this.getOffset())) + ", unGenerated: " + ! ChunkUtil.isFeaturesGenerated(getWorld(), WorldGenUtil.addChunkPos(pos.getKey(), this.getOffset())));
-                    if (generatedPath != null) {
+                     if (generatedPath != null) {
                         comparator.toJson(generatedPath.resolve(this.featureName + ".json"), this.getOffset());
                     }
                 });
