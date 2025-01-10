@@ -1,5 +1,6 @@
 package net.rodofire.easierworldcreator.world.chunk;
 
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.StructureWorldAccess;
 import net.rodofire.easierworldcreator.config.ewc.EwcConfig;
@@ -7,15 +8,15 @@ import net.rodofire.easierworldcreator.util.ChunkUtil;
 import net.rodofire.easierworldcreator.util.WorldGenUtil;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
 @SuppressWarnings("unused")
 public class ChunkPosManager {
-    private final Set<ChunkPos> unGeneratedChunks = Collections.synchronizedSet(new HashSet<>());
-    private final Set<ChunkPos> allowedChunks = Collections.synchronizedSet(new HashSet<>());
-    private final Set<ChunkPos> unAllowedChunks = Collections.synchronizedSet(new HashSet<>());
+    private final Set<ChunkPos> unGeneratedChunks = new HashSet<>();
+    private final Set<ChunkPos> allowedChunks = new HashSet<>();
+    private final Set<ChunkPos> unAllowedChunks = new HashSet<>();
+    private BlockPos offset = new BlockPos(0, 0, 0);
 
     private final @NotNull StructureWorldAccess world;
 
@@ -87,6 +88,7 @@ public class ChunkPosManager {
 
     /**
      * method to know if a chunk can be placed
+     *
      * @param chunkPos the pos of the chunk to be tested
      * @return true if the chunk
      */
@@ -130,12 +132,12 @@ public class ChunkPosManager {
      */
     public boolean canGenerate(Set<ChunkPos> chunks, int xOffset, int zOffset) {
         boolean bl = true;
-        for(ChunkPos chunkPos : chunks) {
+        for (ChunkPos chunkPos : chunks) {
             ChunkPos newChunkPos = WorldGenUtil.addChunkPos(chunkPos, xOffset, zOffset);
-            if(!containsChunk(newChunkPos)) {
+            if (!containsChunk(newChunkPos)) {
                 put(newChunkPos);
             }
-            if(unAllowedChunks.contains(newChunkPos)) {
+            if (unAllowedChunks.contains(newChunkPos)) {
                 bl = false;
             }
         }

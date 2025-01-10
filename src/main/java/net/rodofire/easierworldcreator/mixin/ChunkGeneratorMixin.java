@@ -1,11 +1,9 @@
 package net.rodofire.easierworldcreator.mixin;
 
-import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.StructureWorldAccess;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.gen.StructureAccessor;
 import net.minecraft.world.gen.chunk.ChunkGenerator;
-import net.rodofire.easierworldcreator.blockdata.blocklist.basic.DefaultBlockList;
 import net.rodofire.easierworldcreator.blockdata.blocklist.basic.comparator.DefaultBlockListComparator;
 import net.rodofire.easierworldcreator.fileutil.FileUtil;
 import net.rodofire.easierworldcreator.fileutil.LoadChunkShapeInfo;
@@ -37,20 +35,6 @@ public abstract class ChunkGeneratorMixin {
      */
     @Inject(method = "generateFeatures", at = @At(value = "INVOKE", target = "Ljava/util/Set;iterator()Ljava/util/Iterator;"))
     private void onGenerateFeatures(StructureWorldAccess world, Chunk chunk, StructureAccessor structureAccessor, CallbackInfo ci) {
-        System.out.println(chunk.getPos());
-        List<Path> pathlist = LoadChunkShapeInfo.verifyFiles(world, chunk);
-        if (!pathlist.isEmpty()) {
-            for (Path path : pathlist) {
-                DefaultBlockListComparator comparator = LoadChunkShapeInfo.loadFromJson(world, path);
-                LoadChunkShapeInfo.placeStructure(world, comparator);
-                FileUtil.removeFile(path);
-            }
-        }
-        FileUtil.removeGeneratedChunkDirectory(chunk, world);
-    }
-
-    @Inject(method = "generateFeatures", at = @At(value = "INVOKE", target = "Ljava/util/Set;iterator()Ljava/util/Iterator;"))
-    private void verifyEmpty(StructureWorldAccess world, Chunk chunk, StructureAccessor structureAccessor, CallbackInfo ci) {
         List<Path> pathlist = LoadChunkShapeInfo.verifyFiles(world, chunk);
         if (!pathlist.isEmpty()) {
             for (Path path : pathlist) {

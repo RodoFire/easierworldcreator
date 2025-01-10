@@ -18,6 +18,7 @@ import net.rodofire.easierworldcreator.fileutil.LoadChunkShapeInfo;
 import net.rodofire.easierworldcreator.fileutil.SaveChunkShapeInfo;
 import net.rodofire.easierworldcreator.placer.blocks.animator.StructurePlaceAnimator;
 import net.rodofire.easierworldcreator.placer.blocks.util.BlockStateUtil;
+import net.rodofire.easierworldcreator.util.ChunkUtil;
 import net.rodofire.easierworldcreator.util.WorldGenUtil;
 import org.jetbrains.annotations.NotNull;
 
@@ -151,7 +152,7 @@ public abstract class AbstractBlockShape extends AbstractBlockShapeRotation {
             }
             if (logWarns)
                 EasierWorldCreator.LOGGER.info("structure bigger than chunk");
-
+            System.out.println(this.getOffset());
             long randomLong = Random.create().nextLong();
             featureName = "custom_feature_" + randomLong;
 
@@ -165,6 +166,7 @@ public abstract class AbstractBlockShape extends AbstractBlockShapeRotation {
                 Future<?> future = executorService.submit(() -> {
                     DefaultBlockListComparator comparator = this.getLayers(pos.getValue());
                     Path generatedPath = SaveChunkShapeInfo.getMultiChunkPath(getWorld(), WorldGenUtil.addChunkPos(pos.getKey(), this.getOffset()));
+                    System.out.println("base: " + pos.getKey() + ", modified: " + WorldGenUtil.addChunkPos(pos.getKey(), this.getOffset()) + "  " + ChunkUtil.areNearbyFeaturesUnGenerated(getWorld(), WorldGenUtil.addChunkPos(pos.getKey(), this.getOffset())) + ", unGenerated: " + ! ChunkUtil.isFeaturesGenerated(getWorld(), WorldGenUtil.addChunkPos(pos.getKey(), this.getOffset())));
                     if (generatedPath != null) {
                         comparator.toJson(generatedPath.resolve(this.featureName + ".json"), this.getOffset());
                     }
@@ -184,7 +186,7 @@ public abstract class AbstractBlockShape extends AbstractBlockShapeRotation {
             executorService.shutdown();
             List<Path> path = LoadChunkShapeInfo.verifyFiles(getWorld(), this.getPos());
             for (Path path1 : path) {
-                List<DefaultBlockList> defaultBlockLists = LoadChunkShapeInfo.loadFromJson(getWorld(), path1);
+                DefaultBlockListComparator defaultBlockLists = LoadChunkShapeInfo.loadFromJson(getWorld(), path1);
                 LoadChunkShapeInfo.placeStructure(getWorld(), defaultBlockLists);
             }
         } else if (this.getPlaceMoment() == PlaceMoment.ANIMATED_OTHER) {
@@ -249,7 +251,7 @@ public abstract class AbstractBlockShape extends AbstractBlockShapeRotation {
 
         List<Path> path = LoadChunkShapeInfo.verifyFiles(getWorld(), this.getPos());
         for (Path path1 : path) {
-            List<DefaultBlockList> defaultBlockLists = LoadChunkShapeInfo.loadFromJson(getWorld(), path1);
+            DefaultBlockListComparator defaultBlockLists = LoadChunkShapeInfo.loadFromJson(getWorld(), path1);
             LoadChunkShapeInfo.placeStructure(getWorld(), defaultBlockLists);
         }
     }

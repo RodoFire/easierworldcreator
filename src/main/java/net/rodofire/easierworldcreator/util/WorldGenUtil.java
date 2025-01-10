@@ -254,14 +254,15 @@ public class WorldGenUtil {
     }
 
     public static ChunkPos addChunkPos(ChunkPos pos1, ChunkPos pos2) {
-        return new ChunkPos(pos1.getStartPos().add(pos2.getStartPos()));
+        return new ChunkPos(pos1.x + pos2.x, pos1.z + pos2.z);
     }
 
     public static ChunkPos addChunkPos(ChunkPos pos1, int x, int z) {
-        return new ChunkPos(pos1.getStartPos().add(new ChunkPos(x, z).getStartPos()));
+        return new ChunkPos(pos1.x + x, pos1.z + z);
     }
 
     public static ChunkPos addChunkPos(ChunkPos pos1, BlockPos pos2) {
-        return new ChunkPos(pos1.getStartPos().add(pos2));
+        ChunkPos pos = new ChunkPos(pos2);
+        return new ChunkPos(pos1.x + pos.x, pos1.z + pos.z);
     }
 }
