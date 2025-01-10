@@ -21,6 +21,7 @@ import net.minecraft.world.StructureWorldAccess;
 import net.minecraft.world.chunk.Chunk;
 import net.rodofire.easierworldcreator.EasierWorldCreator;
 import net.rodofire.easierworldcreator.blockdata.blocklist.basic.DefaultBlockList;
+import net.rodofire.easierworldcreator.blockdata.blocklist.basic.comparator.DefaultBlockListComparator;
 import net.rodofire.easierworldcreator.config.ewc.EwcConfig;
 
 import java.io.File;
@@ -31,7 +32,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
@@ -47,29 +47,27 @@ public class LoadChunkShapeInfo {
      * @param chunkFilePath the path of the shape
      * @return a {@link List} used later to place the BlockStates
      */
-    public static List<DefaultBlockList> loadFromJson(StructureWorldAccess world, Path chunkFilePath) {
+    public static DefaultBlockListComparator loadFromJson(StructureWorldAccess world, Path chunkFilePath) {
         File file = new File(chunkFilePath.toString());
-        if (!file.exists()) return List.of();
+        if (!file.exists()) return new DefaultBlockListComparator();
         String jsonContent;
         try {
             jsonContent = Files.readString(chunkFilePath);
         } catch (IOException e) {
             e.fillInStackTrace();
-            return List.of();
+            return new DefaultBlockListComparator();
         }
 
         Gson gson = new Gson();
 
         JsonArray jsonArray = gson.fromJson(jsonContent, JsonArray.class);
-
-        List<DefaultBlockList> defaultBlockLists = new ArrayList<>();
+        DefaultBlockListComparator comparator = new DefaultBlockListComparator();
         String fileName = chunkFilePath.getParent().getFileName().toString();
         Pattern pattern = Pattern.compile("chunk_(-?\\d+)_(-?\\d+)$");
         Matcher matcher = pattern.matcher(fileName);
         int chunkX = 0;
         int chunkZ = 0;
 
-        // Vérifier si la chaîne correspond au pattern
         if (matcher.matches()) {
             chunkX = Integer.parseInt(matcher.group(1));
             chunkZ = Integer.parseInt(matcher.group(2));
@@ -96,10 +94,9 @@ public class LoadChunkShapeInfo {
 
             // Create a new BlockList and add it to the set
             DefaultBlockList defaultBlockList = new DefaultBlockList(posList, blockState);
-            defaultBlockLists.add(defaultBlockList);
+            comparator.put(defaultBlockList);
         }
-
-        return defaultBlockLists;
+        return comparator;
     }
 
     /**
@@ -108,13 +105,8 @@ public class LoadChunkShapeInfo {
      * @param world             the world the structure will spawn in
      * @param defaultBlockLists the list of blockList that compose the structure
      */
-    public static void placeStructure(StructureWorldAccess world, List<DefaultBlockList> defaultBlockLists) {
-        for (DefaultBlockList defaultBlockList : defaultBlockLists) {
-            BlockState state = defaultBlockList.getBlockState();
-            for (BlockPos pos : defaultBlockList.getPosList()) {
-                world.setBlockState(pos, state, 3);
-            }
-        }
+    public static void placeStructure(StructureWorldAccess world, DefaultBlockListComparator defaultBlockLists) {
+        defaultBlockLists.placeAllWithVerificationDeletion(world);
     }
 
     /**
@@ -206,7 +198,7 @@ public class LoadChunkShapeInfo {
         if (Files.exists(generatedPath) && Files.isDirectory(generatedPath)) {
             generatedPath = generatedPath.resolve(EasierWorldCreator.MOD_ID).resolve("structures");
             if (Files.exists(generatedPath) && Files.isDirectory(generatedPath)) {
-                for (int i = distance; i <= distance; i++) {
+                for (int i = -distance; i <= distance; i++) {
                     for (int j = -distance; j <= distance; j++) {
                         int chunkX = chunk.x + i;
                         int chunkZ = chunk.z + j;
