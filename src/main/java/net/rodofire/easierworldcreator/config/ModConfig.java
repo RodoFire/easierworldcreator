@@ -18,6 +18,10 @@ public class ModConfig {
         this.MOD_ID = modID;
     }
 
+    public boolean isConfigProtected() {
+        return protectedConfig;
+    }
+
     public void addCategory(ConfigCategory category) {
         categories.add(category);
     }
