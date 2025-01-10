@@ -8,6 +8,7 @@ import net.rodofire.easierworldcreator.blockdata.blocklist.basic.comparator.Defa
 import net.rodofire.easierworldcreator.fileutil.FileUtil;
 import net.rodofire.easierworldcreator.fileutil.LoadChunkShapeInfo;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -20,6 +21,9 @@ import java.util.List;
  */
 @Mixin(ChunkGenerator.class)
 public abstract class ChunkGeneratorMixin {
+    @Unique
+    boolean bl = true;
+
     /**
      * <p>The method verifies
      * if there are some files under {@code [save name]/generated/easierworldcreator/structures/chunk_[chunk.x]_[chunk.z].}
@@ -33,9 +37,38 @@ public abstract class ChunkGeneratorMixin {
      * @param structureAccessor unused parameters that need to be there in order for the mixin to work
      * @param ci                unused parameters that need to be there in order for the mixin to work
      */
-    @Inject(method = "generateFeatures", at = @At(value = "INVOKE", target = "Ljava/util/Set;iterator()Ljava/util/Iterator;"))
+    @Inject(method = "generateFeatures", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/StructureWorldAccess;setCurrentlyGeneratingStructureName(Ljava/util/function/Supplier;)V", ordinal = 1))
     private void onGenerateFeatures(StructureWorldAccess world, Chunk chunk, StructureAccessor structureAccessor, CallbackInfo ci) {
-        List<Path> pathlist = LoadChunkShapeInfo.verifyFiles(world, chunk);
+        if (bl) {
+            bl = false;
+            List<Path> pathlist = LoadChunkShapeInfo.getWorldGenFiles(world, chunk);
+
+            if (!pathlist.isEmpty()) {
+                for (Path path : pathlist) {
+                    world.setCurrentlyGeneratingStructureName(() -> "ewc multi-chunk feature generating: " + path.getFileName());
+                    DefaultBlockListComparator comparator = LoadChunkShapeInfo.loadFromJson(world, path);
+                    LoadChunkShapeInfo.placeStructure(world, comparator);
+                    FileUtil.removeFile(path);
+                }
+            }
+            FileUtil.removeGeneratedChunkDirectory(chunk, world);
+        }
+    }
+
+    /**
+     * At then end, with the fact that multi chunk are multithreaded, some files might not have been placed,
+     * that's why we add this mixin at the end of the method to make sure that all the files were placed
+     *
+     * @param world             the world of the chunk
+     * @param chunk             the chunk generated
+     * @param structureAccessor unused parameters that need to be there in order for the mixin to work
+     * @param ci                unused parameters that need to be there in order for the mixin to work
+     */
+    @Inject(method = "generateFeatures", at = @At(value = "TAIL"))
+    private void endGeneration(StructureWorldAccess world, Chunk chunk, StructureAccessor structureAccessor, CallbackInfo ci) {
+
+        List<Path> pathlist = LoadChunkShapeInfo.getWorldGenFiles(world, chunk);
+
         if (!pathlist.isEmpty()) {
             for (Path path : pathlist) {
                 DefaultBlockListComparator comparator = LoadChunkShapeInfo.loadFromJson(world, path);
@@ -44,5 +77,6 @@ public abstract class ChunkGeneratorMixin {
             }
         }
         FileUtil.removeGeneratedChunkDirectory(chunk, world);
+
     }
 }
