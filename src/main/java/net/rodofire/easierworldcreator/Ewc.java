@@ -1,7 +1,7 @@
 package net.rodofire.easierworldcreator;
 
+import net.fabricmc.api.DedicatedServerModInitializer;
 import net.fabricmc.api.ModInitializer;
-import net.minecraft.client.resource.language.I18n;
 import net.rodofire.easierworldcreator.config.ewc.EwcConfig;
 import net.rodofire.easierworldcreator.maths.FastMaths;
 import org.slf4j.Logger;
@@ -10,7 +10,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Class related to the basics of the mod
  */
-public class EasierWorldCreator implements ModInitializer {
+public class Ewc implements DedicatedServerModInitializer {
     /**
      * Mod id of the mod
      */
@@ -20,12 +20,6 @@ public class EasierWorldCreator implements ModInitializer {
      */
     public static final Logger LOGGER = LoggerFactory.getLogger("easierworldcreator");
     private static boolean initialized = false;
-
-    @Override
-    public void onInitialize() {
-        if (!initialized)
-            init();
-    }
 
     /**
      * Method to init the mod before if needed.
@@ -37,5 +31,12 @@ public class EasierWorldCreator implements ModInitializer {
         FastMaths.registerMaths();
 
         LOGGER.info("Starting Easierworldcreator");
+    }
+
+    @Override
+    public void onInitializeServer() {
+        if (!initialized)
+            init();
+
     }
 }

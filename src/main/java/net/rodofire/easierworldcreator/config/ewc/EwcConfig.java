@@ -1,17 +1,14 @@
 package net.rodofire.easierworldcreator.config.ewc;
 
-import net.minecraft.util.Identifier;
-import net.rodofire.easierworldcreator.EasierWorldCreator;
+import net.rodofire.easierworldcreator.Ewc;
 import net.rodofire.easierworldcreator.config.ConfigCategory;
 import net.rodofire.easierworldcreator.config.ModConfig;
-import net.rodofire.easierworldcreator.config.client.ConfigScreen;
+import net.rodofire.easierworldcreator.config.ewc.screen.MultiChunkInfoScreen;
 import net.rodofire.easierworldcreator.config.objects.BooleanConfigObject;
 import net.rodofire.easierworldcreator.config.objects.IntegerConfigObject;
 
-import java.util.Set;
-
 public class EwcConfig {
-    public static final ModConfig MOD_CONFIG = new ModConfig(EasierWorldCreator.MOD_ID);
+    public static final ModConfig MOD_CONFIG = new ModConfig(Ewc.MOD_ID);
     static final ConfigCategory SERVER_CATEGORY = new ConfigCategory("server");
     static String SERVER = "server";
 
@@ -22,7 +19,10 @@ public class EwcConfig {
         BooleanConfigObject bool = new BooleanConfigObject(true, "performance_mode");
         bool.requireRestart = true;
         SERVER_CATEGORY.addBoolean(bool);
-        SERVER_CATEGORY.addBoolean(new BooleanConfigObject(true, "multi_chunk_features"));
+
+        BooleanConfigObject bool2 = new BooleanConfigObject(true, "multi_chunk_features");
+        bool2.setInfoScreen(new MultiChunkInfoScreen());
+        SERVER_CATEGORY.addBoolean(bool2);
         SERVER_CATEGORY.addBoolean(new BooleanConfigObject(true, "chat_warns"));
         SERVER_CATEGORY.addBoolean(new BooleanConfigObject(true, "log_warns"));
         SERVER_CATEGORY.addBoolean(new BooleanConfigObject(true, "log_performance_info"));
@@ -37,7 +37,7 @@ public class EwcConfig {
         initValues();
     }
 
-    private static void initValues(){
+    private static void initValues() {
         distance = getFeaturesChunkDistance();
     }
 

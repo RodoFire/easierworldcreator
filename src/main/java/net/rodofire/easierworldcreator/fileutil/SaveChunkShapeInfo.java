@@ -9,7 +9,7 @@ import net.minecraft.util.WorldSavePath;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.StructureWorldAccess;
-import net.rodofire.easierworldcreator.EasierWorldCreator;
+import net.rodofire.easierworldcreator.Ewc;
 import net.rodofire.easierworldcreator.blockdata.blocklist.basic.DefaultBlockList;
 
 import java.io.IOException;
@@ -220,7 +220,7 @@ public class SaveChunkShapeInfo {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        path = path.resolve(EasierWorldCreator.MOD_ID);
+        path = path.resolve(Ewc.MOD_ID);
         try {
             Files.createDirectories(path);
         } catch (IOException e) {

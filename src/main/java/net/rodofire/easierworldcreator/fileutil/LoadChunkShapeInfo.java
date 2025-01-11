@@ -19,7 +19,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.StructureWorldAccess;
 import net.minecraft.world.chunk.Chunk;
-import net.rodofire.easierworldcreator.EasierWorldCreator;
+import net.rodofire.easierworldcreator.Ewc;
 import net.rodofire.easierworldcreator.blockdata.blocklist.basic.DefaultBlockList;
 import net.rodofire.easierworldcreator.blockdata.blocklist.basic.comparator.DefaultBlockListComparator;
 import net.rodofire.easierworldcreator.config.ewc.EwcConfig;
@@ -123,7 +123,7 @@ public class LoadChunkShapeInfo {
         Identifier identifier = new Identifier(extractBlockName(stateString.split("\\[")[0]));
         Optional<? extends RegistryEntry<Block>> optional = blockLookup.getOptional(RegistryKey.of(RegistryKeys.BLOCK, identifier));
         if (optional.isEmpty()) {
-            EasierWorldCreator.LOGGER.error("error parsing BlockState: {}", stateString.split("\\[")[0]);
+            Ewc.LOGGER.error("error parsing BlockState: {}", stateString.split("\\[")[0]);
             return Blocks.AIR.getDefaultState();
         }
 
@@ -196,7 +196,7 @@ public class LoadChunkShapeInfo {
         int distance = EwcConfig.getFeaturesChunkDistance();
         Path generatedPath = Objects.requireNonNull(world.getServer()).getSavePath(WorldSavePath.GENERATED).normalize();
         if (Files.exists(generatedPath) && Files.isDirectory(generatedPath)) {
-            generatedPath = generatedPath.resolve(EasierWorldCreator.MOD_ID).resolve("structures");
+            generatedPath = generatedPath.resolve(Ewc.MOD_ID).resolve("structures");
             if (Files.exists(generatedPath) && Files.isDirectory(generatedPath)) {
                 for (int i = -distance; i <= distance; i++) {
                     for (int j = -distance; j <= distance; j++) {

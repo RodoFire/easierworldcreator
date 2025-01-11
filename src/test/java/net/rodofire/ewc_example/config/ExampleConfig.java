@@ -42,6 +42,10 @@ public class ExampleConfig {
         CONFIG.init();
     }
 
+    public static void registerClientConfig() {
+
+    }
+
     public static boolean getBool1Test() {
         return CONFIG.getCategory("foo").getBools().get("bool1test").getActualValue();
     }
