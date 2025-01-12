@@ -86,6 +86,7 @@ public class ScrollBarWidget extends PressableWidget {
     public void refresh(int x, int startY, int endY, int maxScroll) {
         this.maxScroll = (short) maxScroll;
         this.setX(x);
+        this.startY = startY;
         this.setY(startY);
         this.endY = endY;
     }
