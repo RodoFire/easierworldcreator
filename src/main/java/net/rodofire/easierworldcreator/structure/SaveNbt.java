@@ -13,8 +13,8 @@ import net.minecraft.world.StructureWorldAccess;
 import net.minecraft.world.chunk.Chunk;
 import net.rodofire.easierworldcreator.Ewc;
 import net.rodofire.easierworldcreator.blockdata.blocklist.basic.DefaultBlockList;
-import net.rodofire.easierworldcreator.mixin.PalettedBlockInfoListMixin;
-import net.rodofire.easierworldcreator.mixin.StructureTemplateMixin;
+import net.rodofire.easierworldcreator.mixin.world.structure.PalettedBlockInfoListMixin;
+import net.rodofire.easierworldcreator.mixin.world.structure.StructureTemplateMixin;
 import org.spongepowered.asm.mixin.Unique;
 
 import java.io.IOException;
