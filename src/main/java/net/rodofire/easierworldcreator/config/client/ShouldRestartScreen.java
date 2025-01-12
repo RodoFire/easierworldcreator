@@ -25,7 +25,7 @@ public class ShouldRestartScreen extends Screen {
 
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
-        this.renderBackground(context);
+        this.renderBackground(context, mouseX, mouseY, delta);
         super.render(context, mouseX, mouseY, delta);
         MultilineText.create(textRenderer, Text.translatable("config.ewc.restart_message"), 2 * this.width / 3).drawCenterWithShadow(context, this.width / 2, this.height / 3, 30, 0xFFFFFF);
 

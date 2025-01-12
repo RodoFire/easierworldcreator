@@ -5,9 +5,11 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.gui.screen.ButtonTextures;
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
 import net.minecraft.client.gui.widget.PressableWidget;
 import net.minecraft.text.Text;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.math.MathHelper;
 
 @SuppressWarnings("unused")
@@ -21,7 +23,17 @@ public class ScrollBarWidget extends PressableWidget {
 
     boolean bl = false;
 
-    ScrollBarWidget.PressAction pressAction;
+
+    PressAction pressAction;
+
+    private static final ButtonTextures TEXTURES = new ButtonTextures(
+            Identifier.of("widget/button"), Identifier.of("widget/button_disabled"), Identifier.of("widget/button_highlighted")
+    );
+
+    public ScrollBarWidget(int x, int startY, int endY, short currentScroll, short maxScroll, PressAction action, Text message) {
+        super(x, startY, 0, 0, message);
+      this.startY = startY;
+    }
 
     public ScrollBarWidget(int x, int startY, int endY, short maxScroll, ScrollBarWidget.PressAction action, Text message) {
         super(x - 2, startY, 14, endY - startY, message);
@@ -34,6 +46,7 @@ public class ScrollBarWidget extends PressableWidget {
     public ScrollBarWidget(int x, int startY, int endY, short maxScroll, ScrollBarWidget.PressAction action, Text message, int buttonColor) {
         super(x, startY, 10, endY - startY, message);
         this.startY = startY;
+
         this.endY = endY;
         this.maxScroll = maxScroll;
         this.buttonColor = buttonColor;
@@ -91,9 +104,10 @@ public class ScrollBarWidget extends PressableWidget {
         this.endY = endY;
     }
 
-    @Override
-    protected void renderButton(DrawContext context, int mouseX, int mouseY, float delta) {
-        int adjustedHeight = this.endY - this.startY;
+    @Override        
+    protected void renderWidget(DrawContext context, int mouseX, int mouseY, float delta) {
+  int adjustedHeight = this.endY - this.startY;
+        
         int adjustedMaxScroll = adjustedHeight;
         int adjustedCurrentScroll = (short) (((float) currentScroll / maxScroll) * adjustedHeight);
         if (maxScroll <= 0) {
@@ -119,28 +133,21 @@ public class ScrollBarWidget extends PressableWidget {
 
         this.setY(currentPos);
         this.height = this.scrollHeight;
-        context.drawNineSlicedTexture(WIDGETS_TEXTURE, this.getX(), this.getY(), 10, this.height, 20, 4, 200, 20, 0, this.getTextureY());
+        
+        context.drawGuiTexture(TEXTURES.get(this.active, this.isSelected()), this.getX(), this.getY(), 10, this.height, 20, 4, 200, 20, 0);
+
 
 
         int i = this.active ? 16777215 : 10526880;
         this.drawMessage(context, minecraftClient.textRenderer, i | MathHelper.ceil(this.alpha * 255.0F) << 24);
     }
 
+
     @Override
     protected void appendClickableNarrations(NarrationMessageBuilder builder) {
         this.appendDefaultNarrations(builder);
     }
 
-    private int getTextureY() {
-        int i = 1;
-        if (!this.active) {
-            i = 0;
-        } else if (this.isSelected()) {
-            i = 2;
-        }
-
-        return 46 + i * 20;
-    }
 
 
     @Environment(EnvType.CLIENT)

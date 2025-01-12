@@ -13,7 +13,7 @@ public class IntegerEntryWidget extends AbstractEntryWidget {
                               int x, int y, int width, int height,
                               @Nullable AbstractEntryWidget copyFrom,
                               Text text, String defaultText,
-                              AbstractEntryWidget.PressAction pressAction, AbstractEntryWidget.TypeAction typeAction
+                              PressAction pressAction, TypeAction typeAction
     ) {
         super(textRenderer, x, y, width, height, copyFrom, text, defaultText, pressAction, typeAction);
     }

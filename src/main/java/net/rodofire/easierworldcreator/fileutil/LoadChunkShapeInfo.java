@@ -120,7 +120,7 @@ public class LoadChunkShapeInfo {
         RegistryEntryLookup<Block> blockLookup = world.createCommandRegistryWrapper(RegistryKeys.BLOCK);
 
         //Identifier identifier = new Identifier(stateString.split("\\[")[0]);
-        Identifier identifier = new Identifier(extractBlockName(stateString.split("\\[")[0]));
+        Identifier identifier = Identifier.of(extractBlockName(stateString.split("\\[")[0]));
         Optional<? extends RegistryEntry<Block>> optional = blockLookup.getOptional(RegistryKey.of(RegistryKeys.BLOCK, identifier));
         if (optional.isEmpty()) {
             Ewc.LOGGER.error("error parsing BlockState: {}", stateString.split("\\[")[0]);

@@ -46,6 +46,7 @@ public class DefaultConfigScreen extends AbstractConfigScreen {
     protected int currentCategoryIndex = 0;
     protected final int maxCategoriesVisible = 5;
 
+
     protected short maxScrollY = 0;
 
     protected boolean cancelScreen = false;
@@ -112,6 +113,15 @@ public class DefaultConfigScreen extends AbstractConfigScreen {
             widths.put((short) (startY - scrollbar.getScroll() - 1), true);
             this.addElementChild(new TextWidget(0, startY - scrollbar.getScroll(), 4 * this.width / 12, buttonHeight, Text.translatable("config.ewc.boolean_category"), this.textRenderer));
 
+//44
+            heights.add((short) (startY - scrollY - 1));
+            widths.put((short) (startY - scrollY - 1), true);
+
+            if (this.toDraw(new TextWidget(0, startY - scrollY, 4 * this.width / 12, buttonHeight, Text.translatable("config.ewc.boolean_category"), this.textRenderer), startY, buttonHeight)) {
+                bl = true;
+            }
+          
+          //44
             startY += buttonHeight + 3;
             for (BooleanConfigObject obj : category.getBools().values()) {
                 heights.add((short) (startY - scrollbar.getScroll() - 1));
@@ -141,6 +151,7 @@ public class DefaultConfigScreen extends AbstractConfigScreen {
             widths.put((short) (startY - scrollbar.getScroll() - 1), true);
             this.addElementChild(new TextWidget(0, startY - scrollbar.getScroll(), 4 * this.width / 12, buttonHeight, Text.translatable("config.ewc.integer_category"), this.textRenderer));
 
+*
             startY += buttonHeight + 3;
 
             for (IntegerConfigObject obj : category.getInts().values()) {
@@ -242,10 +253,12 @@ public class DefaultConfigScreen extends AbstractConfigScreen {
         }
         if (categories.size() > maxCategoriesVisible) {
             if (currentCategoryIndex > 0) {
-                this.addDrawableChild(new ImageButtonWidget(centerX - 10 - (maxCategoriesVisible * buttonWidth / 2 + 15), startY, 20, buttonHeight, new Identifier(Ewc.MOD_ID, "textures/gui/before_button.png"), button -> scrollCategories(-1)));
+
+                this.addDrawableChild(new ImageButtonWidget(centerX - 10 - (maxCategoriesVisible * buttonWidth / 2 + 15), startY, 20, buttonHeight, Identifier.of(EasierWorldCreator.MOD_ID, "textures/gui/before_button.png"), button -> scrollCategories(-1)));
             }
             if (this.categories.size() - currentCategoryIndex > 5) {
-                this.addDrawableChild(new ImageButtonWidget(centerX - 10 + (maxCategoriesVisible * buttonWidth / 2 + 15), startY, 20, buttonHeight, new Identifier(Ewc.MOD_ID, "textures/gui/after_button.png"), button -> scrollCategories(1)));
+                this.addDrawableChild(new ImageButtonWidget(centerX - 10 + (maxCategoriesVisible * buttonWidth / 2 + 15), startY, 20, buttonHeight, Identifier.of(EasierWorldCreator.MOD_ID, "textures/gui/after_button.png"), button -> scrollCategories(1)));
+
             }
         }
     }
@@ -295,6 +308,7 @@ public class DefaultConfigScreen extends AbstractConfigScreen {
     @Override
     public void renderOverBackground(DrawContext context, int mouseX, int mouseY, float delta) {
         super.renderOverBackground(context, mouseX, mouseY, delta);
+
     }
 
     public void renderBackground(DrawContext context) {
@@ -306,7 +320,6 @@ public class DefaultConfigScreen extends AbstractConfigScreen {
         }
     }
 
-    @Override
     public void renderBackgroundTexture(DrawContext context) {
         super.renderBackgroundTexture(context);
         int darkRectX = 0;
@@ -363,6 +376,7 @@ public class DefaultConfigScreen extends AbstractConfigScreen {
         this.clearChildren();
         this.init();
         return scrollbar.mouseDragged(mouseX, mouseY, button, deltaX, deltaY, this.height);
+
     }
 
     @Override

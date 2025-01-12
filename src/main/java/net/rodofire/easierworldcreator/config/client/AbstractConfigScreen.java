@@ -69,7 +69,9 @@ public abstract class AbstractConfigScreen extends BackgroundScreen {
     protected abstract void init(ConfigCategory category);
 
     public <T extends AbstractConfigObject<U>, U> ImageButtonWidget addResetButton(int startX, int yOffset, T obj) {
-        ImageButtonWidget buttonWidget = new ImageButtonWidget(startX, yOffset, 20, 20, new Identifier(Ewc.MOD_ID, "textures/gui/reset_button.png"), press -> reset(obj));
+
+        ImageButtonWidget buttonWidget = new ImageButtonWidget(startX, yOffset, 20, 20, Identifier.of(EasierWorldCreator.MOD_ID, "textures/gui/reset_button.png"), press -> reset(obj));
+
         buttonWidget.setTooltip(Tooltip.of(Text.translatable("config.ewc.reset")));
         return buttonWidget;
     }
