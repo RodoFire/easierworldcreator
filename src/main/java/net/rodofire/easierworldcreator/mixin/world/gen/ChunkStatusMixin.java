@@ -1,4 +1,4 @@
-package net.rodofire.easierworldcreator.mixin;
+package net.rodofire.easierworldcreator.mixin.world.gen;
 
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.world.ChunkRegion;
@@ -6,7 +6,6 @@ import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.ChunkStatus;
 import net.minecraft.world.gen.chunk.Blender;
 import net.minecraft.world.gen.chunk.ChunkGenerator;
-import net.rodofire.easierworldcreator.config.ModConfig;
 import net.rodofire.easierworldcreator.config.ewc.EwcConfig;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;

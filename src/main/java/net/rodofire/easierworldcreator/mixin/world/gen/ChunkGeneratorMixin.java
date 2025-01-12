@@ -1,4 +1,4 @@
-package net.rodofire.easierworldcreator.mixin;
+package net.rodofire.easierworldcreator.mixin.world.gen;
 
 import net.minecraft.world.StructureWorldAccess;
 import net.minecraft.world.chunk.Chunk;
