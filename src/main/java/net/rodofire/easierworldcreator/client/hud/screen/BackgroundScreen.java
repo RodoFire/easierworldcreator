@@ -17,19 +17,30 @@ public abstract class BackgroundScreen extends Screen {
     protected BackgroundScreen(Text title) {
         super(title);
     }
-    protected BackgroundScreen(Text title,Identifier background, int backgroundWidth, int backgroundHeight) {
+
+    protected BackgroundScreen(Text title, Identifier background, int backgroundWidth, int backgroundHeight) {
         super(title);
         this.TEXTURE = background;
         this.backgroundHeight = backgroundHeight;
         this.backgroundWidth = backgroundWidth;
     }
 
-    protected BackgroundScreen(Text title,Identifier background, int backgroundWidth, int backgroundHeight, int backgroundShaderColor) {
+    protected BackgroundScreen(Text title, Identifier background, int backgroundWidth, int backgroundHeight, int backgroundShaderColor) {
         super(title);
         this.TEXTURE = background;
         this.backgroundHeight = backgroundHeight;
         this.backgroundWidth = backgroundWidth;
         this.backgroundShaderColor = backgroundShaderColor;
+    }
+
+    @Override
+    public void render(DrawContext context, int mouseX, int mouseY, float delta) {
+        renderBackground(context);
+        renderOverBackground(context, mouseX, mouseY, delta);
+        super.render(context, mouseX, mouseY, delta);
+    }
+
+    public void renderOverBackground(DrawContext context, int mouseX, int mouseY, float delta) {
     }
 
     @Override
@@ -92,5 +103,7 @@ public abstract class BackgroundScreen extends Screen {
                 (float) (color >>> 24) / 256
         );
         context.fill(x, y, x2, y2, color);
+        context.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+        RenderSystem.disableBlend();
     }
 }
