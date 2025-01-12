@@ -8,7 +8,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.random.Random;
 import net.minecraft.world.StructureWorldAccess;
-import net.rodofire.easierworldcreator.EasierWorldCreator;
+import net.rodofire.easierworldcreator.Ewc;
 import net.rodofire.easierworldcreator.blockdata.blocklist.basic.DefaultBlockList;
 import net.rodofire.easierworldcreator.blockdata.blocklist.basic.comparator.DefaultBlockListComparator;
 import net.rodofire.easierworldcreator.blockdata.layer.BlockLayer;
@@ -105,7 +105,7 @@ public abstract class AbstractBlockShape extends AbstractBlockShapeRotation {
      */
     public void place() {
         if (this.getBlockLayer() == null || this.getBlockLayer().isEmpty()) {
-            EasierWorldCreator.LOGGER.warn("shape not placed, no BlockLayer present");
+            Ewc.LOGGER.warn("shape not placed, no BlockLayer present");
             return;
         }
         long start = System.nanoTime();
@@ -113,7 +113,7 @@ public abstract class AbstractBlockShape extends AbstractBlockShapeRotation {
         long end = System.nanoTime();
         long diff = end - start;
         if (EwcConfig.getLogPerformanceInfo()) {
-            EasierWorldCreator.LOGGER.info("Shape coordinate calculations took : {}ms", ((double) (diff / 1000)) / 1000);
+            Ewc.LOGGER.info("Shape coordinate calculations took : {}ms", ((double) (diff / 1000)) / 1000);
         }
         place(posList);
     }
@@ -124,14 +124,17 @@ public abstract class AbstractBlockShape extends AbstractBlockShapeRotation {
      * @param posList the {@link List} of {@link Set} of {@link BlockPos} calculated before, that will be placed
      */
     public void place(Map<ChunkPos, Set<BlockPos>> posList) {
+        if(this.isMultiChunk(posList) && !EwcConfig.getMultiChunkFeatures() && this.getPlaceMoment() == PlaceMoment.WORLD_GEN){
+            return;
+        }
         boolean logWarns = EwcConfig.getLogWarns();
         if (posList == null || posList.isEmpty()) {
             if (logWarns)
-                EasierWorldCreator.LOGGER.warn("shape not placed, no BlockPos present");
+                Ewc.LOGGER.warn("shape not placed, no BlockPos present");
             return;
         }
         if (logWarns)
-            EasierWorldCreator.LOGGER.info("placing structure");
+            Ewc.LOGGER.info("placing structure");
 
         //avoid issue where the method to place the block would not take the last block
         if (this.getLayerPlace() == LayerPlace.NOISE2D || this.getLayerPlace() == LayerPlace.NOISE3D) {
@@ -145,12 +148,12 @@ public abstract class AbstractBlockShape extends AbstractBlockShapeRotation {
         if (this.getPlaceMoment() == PlaceMoment.WORLD_GEN && this.isMultiChunk(posList) && EwcConfig.getMultiChunkFeatures()) {
             if (!canPlaceMultiChunk(posList.keySet())) {
                 if (logWarns) {
-                    EasierWorldCreator.LOGGER.info("cannot place structure due to too much chunks generated around the original Pos");
+                    Ewc.LOGGER.info("cannot place structure due to too much chunks generated around the original Pos");
                 }
                 return;
             }
             if (logWarns)
-                EasierWorldCreator.LOGGER.info("structure bigger than chunk");
+                Ewc.LOGGER.info("structure bigger than chunk");
             long randomLong = Random.create().nextLong();
             featureName = "custom_feature_" + randomLong;
 
@@ -216,7 +219,7 @@ public abstract class AbstractBlockShape extends AbstractBlockShapeRotation {
 
         if (!canPlaceMultiChunk(posList.keySet())) {
             if (EwcConfig.getLogWarns())
-                EasierWorldCreator.LOGGER.info("cannot place structure due to too much chunks generated around the original Pos");
+                Ewc.LOGGER.info("cannot place structure due to too much chunks generated around the original Pos");
             return;
         }
 
