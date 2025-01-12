@@ -11,10 +11,10 @@ import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.EmptyBlockView;
 import net.minecraft.world.StructureWorldAccess;
 import net.minecraft.world.chunk.Chunk;
-import net.rodofire.easierworldcreator.EasierWorldCreator;
+import net.rodofire.easierworldcreator.Ewc;
 import net.rodofire.easierworldcreator.blockdata.blocklist.basic.DefaultBlockList;
-import net.rodofire.easierworldcreator.mixin.PalettedBlockInfoListMixin;
-import net.rodofire.easierworldcreator.mixin.StructureTemplateMixin;
+import net.rodofire.easierworldcreator.mixin.world.structure.PalettedBlockInfoListMixin;
+import net.rodofire.easierworldcreator.mixin.world.structure.StructureTemplateMixin;
 import org.spongepowered.asm.mixin.Unique;
 
 import java.io.IOException;
@@ -78,8 +78,10 @@ public class SaveNbt {
             StructureTemplate.PalettedBlockInfoList palettedBlockInfoList = createPalettedBlockInfoList(combinedList);
             blockInfoLists.add(palettedBlockInfoList);
 
+
             Identifier templateName = Identifier.of(EasierWorldCreator.MOD_ID,
-                    chunkPos.x + "-" + chunkPos.z + "/" + featureName);
+
+            chunkPos.x + "-" + chunkPos.z + "/" + featureName);
 
             StructureTemplate structureTemplate;
 
@@ -142,13 +144,17 @@ public class SaveNbt {
      */
     public static List<Identifier> loadNBTFiles(ChunkPos chunk) {
         List<Identifier> nbtList = new ArrayList<>();
+
         String chunkFolderPath = Identifier.of(EasierWorldCreator.MOD_ID, "generated/structures/" + chunk.x + "_" + chunk.z + "/").getPath();
+
         try {
             Path path = Path.of(chunkFolderPath);
             if (Files.exists(path) && Files.isDirectory(path)) {
                 Files.list(path).forEach(filePath -> {
                     if (filePath.toString().endsWith(".nbt")) {
+
                         nbtList.add(Identifier.of(EasierWorldCreator.MOD_ID, chunk.x + "_" + chunk.z + "/" + filePath.getFileName().toString()));
+
                     }
                 });
             }

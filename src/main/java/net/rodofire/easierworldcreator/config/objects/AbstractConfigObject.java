@@ -1,5 +1,11 @@
 package net.rodofire.easierworldcreator.config.objects;
 
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+import net.rodofire.easierworldcreator.client.hud.screen.AbstractInfoScreen;
+
+import java.util.Optional;
+
 @SuppressWarnings("unused")
 public abstract class AbstractConfigObject<T> {
     /**
@@ -25,6 +31,9 @@ public abstract class AbstractConfigObject<T> {
     T previousValue;
     public boolean requireRestart = false;
     boolean restart = false;
+
+    @Environment(EnvType.CLIENT)
+    private AbstractInfoScreen infoScreen = null;
 
     public AbstractConfigObject(String description, String name, T defaultValue) {
         this.description = description;
@@ -108,6 +117,17 @@ public abstract class AbstractConfigObject<T> {
     public T getDefaultValue() {
         return defaultValue;
     }
+
+    @Environment(EnvType.CLIENT)
+    public Optional<AbstractInfoScreen> getInfoScreen() {
+        return Optional.ofNullable(infoScreen);
+    }
+
+    @Environment(EnvType.CLIENT)
+    public void setInfoScreen(AbstractInfoScreen infoScreen) {
+        this.infoScreen = infoScreen;
+    }
+
 
     public boolean equals(AbstractConfigObject<T> other) {
         if (name != null && other.name != null)

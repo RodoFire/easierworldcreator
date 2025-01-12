@@ -55,5 +55,6 @@ public class TextButtonWidget extends ButtonWidget {
         );
         int i = this.active ? 16777215 : 10526880;
         this.drawMessage(context, client.textRenderer, i | MathHelper.ceil(this.alpha * 255.0F) << 24);
+        context.setShaderColor(1.0f,1.0f,1.0f,1.0f);
     }
 }
