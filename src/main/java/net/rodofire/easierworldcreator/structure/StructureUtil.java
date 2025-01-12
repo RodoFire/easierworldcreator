@@ -18,7 +18,7 @@ import net.rodofire.easierworldcreator.blockdata.blocklist.basic.comparator.Comp
 import net.rodofire.easierworldcreator.blockdata.blocklist.basic.comparator.FullBlockListComparator;
 import net.rodofire.easierworldcreator.blockdata.blocklist.ordered.comparator.AbstractOrderedBlockListComparator;
 import net.rodofire.easierworldcreator.maths.MathUtil;
-import net.rodofire.easierworldcreator.mixin.StructureTemplateMixin;
+import net.rodofire.easierworldcreator.mixin.world.structure.StructureTemplateMixin;
 import net.rodofire.easierworldcreator.placer.blocks.animator.StructurePlaceAnimator;
 import net.rodofire.easierworldcreator.placer.blocks.util.BlockPlaceUtil;
 

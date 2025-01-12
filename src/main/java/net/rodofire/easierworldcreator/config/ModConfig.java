@@ -1,6 +1,7 @@
 package net.rodofire.easierworldcreator.config;
 
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerWorldEvents;
+import net.minecraft.client.MinecraftClient;
 import net.rodofire.easierworldcreator.config.client.ConfigScreen;
 import net.rodofire.easierworldcreator.config.objects.AbstractConfigObject;
 
@@ -13,9 +14,14 @@ public class ModConfig {
     boolean protectedConfig = false;
     private final String MOD_ID;
     Set<ConfigCategory> categories = new LinkedHashSet<>();
+    private boolean serverInit = false;
 
     public ModConfig(String modID) {
         this.MOD_ID = modID;
+    }
+
+    public boolean isConfigProtected() {
+        return protectedConfig;
     }
 
     public void addCategory(ConfigCategory category) {
@@ -30,12 +36,19 @@ public class ModConfig {
         this.categories.addAll(Arrays.stream(categories).collect(Collectors.toSet()));
     }
 
+
+    /**
+     * method to get a category of the config
+     *
+     * @param name the name of the category
+     * @return the category related to the name
+     */
     public ConfigCategory getCategory(String name) {
         ConfigCategory cat = categories.stream().filter(c -> c.getName().equals(name)).findFirst().orElse(null);
         if (cat == null) {
             return null;
         }
-        if (protectedConfig) {
+        if (!protectedConfig) {
             ReadableConfig reader = new ReadableConfig(MOD_ID);
             reader.refresh(cat);
         }
@@ -67,22 +80,27 @@ public class ModConfig {
     }
 
     public boolean shouldRestart() {
-        return this.categories.stream()
-                .anyMatch(
-                        configCategory -> configCategory.getBools().values().stream().anyMatch(AbstractConfigObject::shouldRestart)
-                );
+        return this.categories.stream().anyMatch(
+                configCategory -> configCategory.getBools().values().stream().anyMatch(AbstractConfigObject::shouldRestart)
+        )
+                || this.categories.stream().anyMatch(
+                configCategory -> configCategory.getInts().values().stream().anyMatch(AbstractConfigObject::shouldRestart)
+        )
+                || this.categories.stream().anyMatch(
+                configCategory -> configCategory.getEnums().values().stream().anyMatch(AbstractConfigObject::shouldRestart)
+        );
     }
-
     public void init() {
+        serverInit = true;
         List<ConfigCategory> caterories = shouldWrite();
         if (!caterories.isEmpty()) {
             writeConfigs(caterories);
         }
         repair();
         refreshValues();
-        ConfigScreen.putModId(MOD_ID, this);
         ServerWorldEvents.LOAD.register((minecraftServer, world) -> this.protectedConfig = true);
         ServerWorldEvents.UNLOAD.register((minecraftServer, world) -> this.protectedConfig = false);
+        if(MinecraftClient.getInstance() != null) {ConfigScreen.putModId(MOD_ID, this);}
     }
 
     public Path getCategoryPath(String name) {

@@ -14,7 +14,7 @@ public class CancelScreen extends Screen {
     private Screen parent;
     private Screen base;
 
-    protected CancelScreen(Screen parent, Screen base) {
+    public CancelScreen(Screen parent, Screen base) {
         super(Text.translatable("config.ewc.cancel"));
         this.parent = parent;
         this.base = base;
