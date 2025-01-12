@@ -19,6 +19,21 @@ import java.util.Set;
 @SuppressWarnings("unused")
 public class FullOrderedBlockListComparator extends CompoundOrderedBlockListComparator {
     private BiMap<Short, Pair<Boolean, Set<Block>>> forceBlocks = HashBiMap.create();
+    /**
+     * constructor to init a {@link FullOrderedBlockListComparator}.
+     *
+     * @param comparator the comparator to be fused
+     */
+    public FullOrderedBlockListComparator(FullOrderedBlockListComparator comparator){
+        super(comparator);
+    }
+    /**
+     * constructor to init a {@link AbstractOrderedBlockListComparator}.
+     *
+     */
+    public FullOrderedBlockListComparator() {
+
+    }
 
     /**
      * Method to put some states and some blockPos in the comparator

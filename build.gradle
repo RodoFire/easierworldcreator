@@ -13,6 +13,7 @@ base {
 
 repositories {
     maven { url "https://maven.terraformersmc.com/releases/" }
+    mavenCentral()
 }
 
 fabricApi {
@@ -40,6 +41,7 @@ dependencies {
 
     modApi "com.terraformersmc:modmenu:7.2.2"
     testImplementation 'org.junit.jupiter:junit-jupiter:5.10.0'
+    implementation 'com.moandjiezana.toml:toml4j:0.7.2'
 }
 
 processResources {
@@ -68,6 +70,12 @@ jar {
     }
 }
 
+static def getApiKey() {
+    def Properties props = new Properties()
+    props.load(new FileInputStream(new File('api.properties')))
+    return props
+}
+
 publishMods {
     file = remapJar.archiveFile
     additionalFiles.from(remapSourcesJar.archiveFile, javadocJar.archiveFile)
@@ -77,7 +85,7 @@ publishMods {
     modLoaders.add("fabric")
     modLoaders.add("quilt")
     curseforge {
-        accessToken = providers.gradleProperty("CURSEFORGE_API_KEY")
+        accessToken = getApiKey()["CURSEFORGE_API_KEY"]
         projectId = "1069458"
         minecraftVersionRange {
             start = "1.20.1"
@@ -90,7 +98,7 @@ publishMods {
     }
 
     modrinth {
-        accessToken = providers.gradleProperty("MODRINTH_API_KEY")
+        accessToken = getApiKey()["MODRINTH_API_KEY"]
         projectId = "Ut6vTr1q"
         minecraftVersionRange {
             start = "1.20.1"

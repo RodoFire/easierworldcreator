@@ -3,12 +3,13 @@ package net.rodofire.easierworldcreator.fileutil;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.structure.StructureTemplate;
 import net.minecraft.util.WorldSavePath;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.StructureWorldAccess;
-import net.rodofire.easierworldcreator.EasierWorldCreator;
+import net.rodofire.easierworldcreator.Ewc;
 import net.rodofire.easierworldcreator.blockdata.blocklist.basic.DefaultBlockList;
 
 import java.io.IOException;
@@ -49,8 +50,8 @@ public class SaveChunkShapeInfo {
      * Since that the structure is divided into chunks, we can multithreading the generation of files
      * </p>
      *
-     * @param defaultBlockLists  the list to divide into chunks and then saving it into JSON files
-     * @param worldAccess the world the structure will spawn in
+     * @param defaultBlockLists the list to divide into chunks and then saving it into JSON files
+     * @param worldAccess       the world the structure will spawn in
      * @throws IOException avoid errors
      */
     public static void saveDuringWorldGen(Set<DefaultBlockList> defaultBlockLists, StructureWorldAccess worldAccess, String name, BlockPos offset) throws IOException {
@@ -78,8 +79,8 @@ public class SaveChunkShapeInfo {
      * Since that the structure is divided into chunks, we can multithreading the generation of files
      * </p>
      *
-     * @param defaultBlockLists  the list to divide into chunks and then saving it into JSON files
-     * @param worldAccess the world the structure will spawn in
+     * @param defaultBlockLists the list to divide into chunks and then saving it into JSON files
+     * @param worldAccess       the world the structure will spawn in
      */
     public static void saveChunkWorldGen(Set<DefaultBlockList> defaultBlockLists, StructureWorldAccess worldAccess, String name, BlockPos offset) throws IOException {
         Path generatedPath = Objects.requireNonNull(worldAccess.getServer()).getSavePath(WorldSavePath.GENERATED).normalize();
@@ -209,16 +210,45 @@ public class SaveChunkShapeInfo {
 
     /**
      * this method allows the creation of the generated and related folders
+     *
      * @param path the base path
      * @return the generated Path
      */
-    public static Path createFolders(Path path) throws IOException {
-        Files.createDirectories(path);
-        path = path.resolve(EasierWorldCreator.MOD_ID);
-        Files.createDirectories(path);
+    public static Path createFolders(Path path) {
+        try {
+            Files.createDirectories(path);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        path = path.resolve(Ewc.MOD_ID);
+        try {
+            Files.createDirectories(path);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
         path = path.resolve("structures");
-        Files.createDirectories(path);
+        try {
+            Files.createDirectories(path);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
         return path;
+    }
+
+    public static Path getMultiChunkPath(StructureWorldAccess worldAccess, ChunkPos chunkPos) {
+        MinecraftServer server = worldAccess.getServer();
+        Path var;
+        if(server != null) {
+            Path generatedPath = server.getSavePath(WorldSavePath.GENERATED).normalize();
+            var = createFolders(generatedPath).resolve("chunk_" + chunkPos.x + "_" + chunkPos.z);
+            try {
+                Files.createDirectories(var);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+            return var;
+        }
+        return null;
     }
 
 

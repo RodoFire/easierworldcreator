@@ -7,7 +7,7 @@ import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.random.Random;
-import net.rodofire.easierworldcreator.EasierWorldCreator;
+import net.rodofire.easierworldcreator.Ewc;
 import net.rodofire.easierworldcreator.blockdata.layer.BlockLayer;
 import net.rodofire.easierworldcreator.maths.FastMaths;
 
@@ -16,6 +16,11 @@ import java.util.*;
 @SuppressWarnings("unused")
 public class WorldGenUtil {
 
+    /**
+     * method to get a random direction no matter the plane
+     *
+     * @return a random direction
+     */
     public static Direction getRandomDirection() {
         return switch (Random.create().nextBetween(0, 5)) {
             case 0 -> Direction.WEST;
@@ -27,10 +32,20 @@ public class WorldGenUtil {
         };
     }
 
+    /**
+     * method to get a random direction on the vertical axis
+     *
+     * @return a random direction on the vertical axis
+     */
     public static Direction getRandomVerticalDirection() {
-        return Random.create().nextBetween(0,1) == 1 ? Direction.UP : Direction.DOWN;
+        return Random.create().nextBetween(0, 1) == 1 ? Direction.UP : Direction.DOWN;
     }
 
+    /**
+     * method to get a random direction on the horizontal axis
+     *
+     * @return a random direction on the horizontal axis
+     */
     public static Direction getRandomHorizontalDirection() {
         return switch (Random.create().nextBetween(0, 3)) {
             case 0 -> Direction.WEST;
@@ -40,11 +55,25 @@ public class WorldGenUtil {
         };
     }
 
-    //return a random int between min height and max height if the chance
+    /**
+     * return a random int between min height and max height if the chance
+     *
+     * @param chance    the chance at which the result won't be equal to 0
+     * @param maxHeight the maximum height that can be returned
+     * @return a random height
+     */
     public static int getSecondHeight(float chance, int maxHeight) {
         return getSecondHeight(chance, 0, maxHeight);
     }
 
+    /**
+     * return a random int between min height and max height if the chance
+     *
+     * @param chance    the chance at which the result won't be equal to 0
+     * @param minHeight the minimum height that can be returned in the case the chance allowed a random height
+     * @param maxHeight the maximum height that can be returned
+     * @return a random height
+     */
     public static int getSecondHeight(float chance, int minHeight, int maxHeight) {
         if (Random.create().nextFloat() < chance) {
             return Random.create().nextBetween(minHeight, maxHeight);
@@ -81,8 +110,16 @@ public class WorldGenUtil {
         return FastMaths.getLengthWPrecision(pos1.getX() - pos2.getX(), pos1.getY() - pos2.getY(), pos1.getZ() - pos2.getZ(), precision);
     }
 
+    public static float getDistance(Vec3d pos1, Vec3d pos2) {
+        return FastMaths.getLength((float) (pos1.getX() - pos2.getX()), (float) (pos1.getY() - pos2.getY()), (float) (pos1.getZ() - pos2.getZ()));
+    }
+
+    public static float getDistance(Vec3d pos1, Vec3d pos2, float precision) {
+        return FastMaths.getLengthWPrecision((float) (pos1.getX() - pos2.getX()), (float) (pos1.getY() - pos2.getY()), (float) (pos1.getZ() - pos2.getZ()), precision);
+    }
+
     public static boolean isPosAChunkFar(BlockPos pos1, BlockPos pos2) {
-        if(Math.abs(pos1.getX() - pos2.getX()) > 16) return true;
+        if (Math.abs(pos1.getX() - pos2.getX()) > 16) return true;
         return Math.abs(pos1.getZ() - pos2.getZ()) > 16;
     }
 
@@ -102,15 +139,12 @@ public class WorldGenUtil {
         double B = normal.y;
         double C = normal.z;
 
-        // Find D using a point on the plane
         double D = -(A * pointOnPlane.x + B * pointOnPlane.y + C * pointOnPlane.z);
 
-        // Coordinates of the point
         double x0 = point.x;
         double y0 = point.y;
         double z0 = point.z;
 
-        // Calculate the distance
         double numerator = Math.abs(A * x0 + B * y0 + C * z0 + D);
         double denominator = FastMaths.getFastSqrt((float) (A * A + B * B + C * C), 0.001f);
 
@@ -128,7 +162,7 @@ public class WorldGenUtil {
     public static int getBlockLayerDepth(List<BlockLayer> layers, int index) {
         int i = 0;
         if (index >= layers.size()) {
-            EasierWorldCreator.LOGGER.error("int index >= blockLayer size");
+            Ewc.LOGGER.error("int index >= blockLayer size");
             throw new IndexOutOfBoundsException("Index: " + index + ", Size: " + layers.size());
         }
         for (int a = 0; a <= index; a++) {
@@ -140,15 +174,15 @@ public class WorldGenUtil {
     public static int getBlockLayerDepth(List<BlockLayer> layers, int startIndex, int endIndex) {
         int i = 0;
         if (startIndex >= layers.size()) {
-            EasierWorldCreator.LOGGER.error("int startIndex >= blockLayer size");
+            Ewc.LOGGER.error("int startIndex >= blockLayer size");
             throw new IndexOutOfBoundsException("Index: " + startIndex + ", Size: " + layers.size());
         }
         if (endIndex >= layers.size()) {
-            EasierWorldCreator.LOGGER.error("int endIndex >= blockLayer size");
+            Ewc.LOGGER.error("int endIndex >= blockLayer size");
             throw new IndexOutOfBoundsException("Index: " + endIndex + ", Size: " + layers.size());
         }
         if (endIndex < startIndex) {
-            EasierWorldCreator.LOGGER.error("int firstIndex > endIndex");
+            Ewc.LOGGER.error("int firstIndex > endIndex");
             return 0;
         }
         for (int a = startIndex; a <= endIndex; a++) {
@@ -201,12 +235,13 @@ public class WorldGenUtil {
     /**
      * This method allows you to divide a list of blockPos into chunks.
      * It is used later to put the blocks
+     *
      * @param posList the list of BlockPos that will be divided
      * @return a list of set of BlockPos that represents a list of chunks
      */
-    public static List<Set<BlockPos>> divideBlockPosIntoChunk(List<BlockPos> posList){
+    public static List<Set<BlockPos>> divideBlockPosIntoChunk(List<BlockPos> posList) {
         Map<ChunkPos, Set<BlockPos>> chunkMap = new HashMap<>();
-        for (BlockPos pos : posList){
+        for (BlockPos pos : posList) {
             modifyChunkMap(pos, chunkMap);
         }
         return new ArrayList<>(chunkMap.values());
@@ -216,5 +251,18 @@ public class WorldGenUtil {
         ChunkPos chunkPos = new ChunkPos(pos);
         Set<BlockPos> blockPosInChunk = chunkMap.computeIfAbsent(chunkPos, k -> new HashSet<>());
         blockPosInChunk.add(pos);
+    }
+
+    public static ChunkPos addChunkPos(ChunkPos pos1, ChunkPos pos2) {
+        return new ChunkPos(pos1.x + pos2.x, pos1.z + pos2.z);
+    }
+
+    public static ChunkPos addChunkPos(ChunkPos pos1, int x, int z) {
+        return new ChunkPos(pos1.x + x, pos1.z + z);
+    }
+
+    public static ChunkPos addChunkPos(ChunkPos pos1, BlockPos pos2) {
+        ChunkPos pos = new ChunkPos(pos2);
+        return new ChunkPos(pos1.x + pos.x, pos1.z + pos.z);
     }
 }

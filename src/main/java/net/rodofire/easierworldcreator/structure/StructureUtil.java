@@ -13,12 +13,12 @@ import net.minecraft.world.StructureWorldAccess;
 import net.rodofire.easierworldcreator.blockdata.blocklist.basic.CompoundBlockList;
 import net.rodofire.easierworldcreator.blockdata.blocklist.basic.DefaultBlockList;
 import net.rodofire.easierworldcreator.blockdata.blocklist.basic.FullBlockList;
-import net.rodofire.easierworldcreator.blockdata.blocklist.basic.comparator.BlockListComparator;
+import net.rodofire.easierworldcreator.blockdata.blocklist.basic.comparator.AbstractBlockListComparator;
 import net.rodofire.easierworldcreator.blockdata.blocklist.basic.comparator.CompoundBlockListComparator;
 import net.rodofire.easierworldcreator.blockdata.blocklist.basic.comparator.FullBlockListComparator;
-import net.rodofire.easierworldcreator.blockdata.blocklist.ordered.comparator.OrderedBlockListComparator;
+import net.rodofire.easierworldcreator.blockdata.blocklist.ordered.comparator.AbstractOrderedBlockListComparator;
 import net.rodofire.easierworldcreator.maths.MathUtil;
-import net.rodofire.easierworldcreator.mixin.StructureTemplateMixin;
+import net.rodofire.easierworldcreator.mixin.world.structure.StructureTemplateMixin;
 import net.rodofire.easierworldcreator.placer.blocks.animator.StructurePlaceAnimator;
 import net.rodofire.easierworldcreator.placer.blocks.util.BlockPlaceUtil;
 
@@ -104,7 +104,7 @@ public class StructureUtil {
     }
 
 
-    public static <T extends BlockListComparator<U, V, W, X>, U extends DefaultBlockList, V, W extends OrderedBlockListComparator<X>, X> void place(StructureWorldAccess world, StructurePlaceAnimator animator, T comparator, BlockPos block, boolean force, Set<Block> blockToForce, Set<Block> blockToSkip, float integrity) {
+    public static <T extends AbstractBlockListComparator<U, V, W, X>, U extends DefaultBlockList, V, W extends AbstractOrderedBlockListComparator<X>, X> void place(StructureWorldAccess world, StructurePlaceAnimator animator, T comparator, BlockPos block, boolean force, Set<Block> blockToForce, Set<Block> blockToSkip, float integrity) {
         //avoid errors due to aberrant values
         if (integrity < 0) integrity = 0;
         if (integrity > 1) integrity = 1;
@@ -139,37 +139,9 @@ public class StructureUtil {
             }
 
         }
-        //we remove or not the pos of the list
-        /*for (BlockList blockList : blockLists) {
-            BlockState blockState = blockList.getBlockState();
-            if (blockState.isOf(Blocks.JIGSAW))
-                continue;
-
-            if (blockToSkip != null && !blockToSkip.isEmpty())
-                if (blockToSkip.contains(blockState.getBlock()))
-                    continue;
-
-            NbtCompound tag = blockList.getTag();
-
-            boolean bl1 = blockToForce == null || blockToForce.isEmpty();
-            for (BlockPos pos : blockList.getPosList()) {
-                blockList.replaceBlockPos(pos, pos.add(block));
-                if (!bl1 || force) {
-                    if (integrity < 1f) {
-                        if (MathUtil.getRandomBoolean(integrity)) {
-                            blockList.removeBlockPos(pos);
-                        }
-                    }
-                    if (!BlockPlaceUtil.verifyBlock(world, force, blockToForce, pos.add(block))) {
-                        blockList.removeBlockPos(pos);
-                    }
-                }
-            }
-        }*/
         //we place the structure depending on if the animator is present or not
         if (animator != null) {
             animator.placeFromBlockList(comparator);
-            System.out.println(comparator);
         } else {
             for (U blockList : comparator.get()) {
                 BlockState blockState = blockList.getBlockState();

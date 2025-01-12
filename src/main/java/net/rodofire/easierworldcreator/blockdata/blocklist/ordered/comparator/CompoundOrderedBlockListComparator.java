@@ -16,7 +16,15 @@ import java.util.Set;
  * CompoundOrderedBlockListComparator. The class provides the ability to add Nbt Compounds to the order blockList comparator
  */
 @SuppressWarnings("unused")
-public class CompoundOrderedBlockListComparator extends OrderedBlockListComparator<Pair<BlockState, NbtCompound>> {
+public class CompoundOrderedBlockListComparator extends AbstractOrderedBlockListComparator<Pair<BlockState, NbtCompound>> {
+    /**
+     * constructor to init a {@link CompoundOrderedBlockListComparator}.
+     *
+     * @param comparator the comparator to be fused
+     */
+    public CompoundOrderedBlockListComparator(CompoundOrderedBlockListComparator comparator) {
+        super(comparator);
+    }
 
     /**
      * init a default ordered blockList comparator
