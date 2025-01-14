@@ -91,9 +91,9 @@ public class DefaultConfigScreen extends AbstractConfigScreen {
 
         drawTopCategories(buttonWidth, buttonHeight, startY, centerX);
 
+        drawBottomElements();
         addElements(category, buttonHeight, startY + 27 - scrollbar.getScroll());
 
-        drawBottomElements();
 
         scrollbar.refresh(this.width - 10, UP_PADDING, this.height - DOWN_PADDING, maxScrollY);
         this.addDrawableChild(scrollbar);
@@ -345,24 +345,28 @@ public class DefaultConfigScreen extends AbstractConfigScreen {
     }
 
     @Override
-    public boolean mouseScrolled(double mouseX, double mouseY, double amount) {
+    public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount) {
+        boolean bl = super.mouseScrolled(mouseX, mouseY, horizontalAmount);
+        scrollbar.mouseScrolled(mouseX, mouseY, horizontalAmount);
         this.clearChildren();
         this.init();
-        return scrollbar.mouseScrolled(mouseX, mouseY, amount);
+        return bl;
     }
 
     @Override
     public boolean mouseReleased(double mouseX, double mouseY, int button) {
-        this.clearChildren();
-        this.init();
-        return scrollbar.mouseReleased(mouseX, mouseY, button);
+        boolean bl = super.mouseReleased(mouseX, mouseY, button);
+        scrollbar.mouseReleased(mouseX, mouseY, button);
+        return bl;
     }
 
     @Override
     public boolean mouseDragged(double mouseX, double mouseY, int button, double deltaX, double deltaY) {
+        boolean bl = super.mouseDragged(mouseX, mouseY, button, deltaX, deltaY);
+        scrollbar.mouseDragged(mouseX, mouseY, button, deltaX, deltaY, this.height);
         this.clearChildren();
         this.init();
-        return scrollbar.mouseDragged(mouseX, mouseY, button, deltaX, deltaY, this.height);
+        return bl;
     }
 
     @Override
