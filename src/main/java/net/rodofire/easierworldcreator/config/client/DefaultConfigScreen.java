@@ -19,12 +19,11 @@ import net.rodofire.easierworldcreator.client.hud.widget.IntegerEntryWidget;
 import net.rodofire.easierworldcreator.client.hud.widget.ScrollBarWidget;
 import net.rodofire.easierworldcreator.client.hud.widget.TextButtonWidget;
 import net.rodofire.easierworldcreator.config.ConfigCategory;
-import net.rodofire.easierworldcreator.config.ModConfig;
+import net.rodofire.easierworldcreator.config.ModClientConfig;
 import net.rodofire.easierworldcreator.config.objects.AbstractConfigObject;
 import net.rodofire.easierworldcreator.config.objects.BooleanConfigObject;
 import net.rodofire.easierworldcreator.config.objects.EnumConfigObject;
 import net.rodofire.easierworldcreator.config.objects.IntegerConfigObject;
-import org.apache.commons.lang3.tuple.Triple;
 
 import java.util.*;
 
@@ -59,22 +58,19 @@ public class DefaultConfigScreen extends AbstractConfigScreen {
     ScrollBarWidget scrollbar = new ScrollBarWidget(0, 0, 0, (short) 0, button -> {
     }, Text.of(""));
 
-    public DefaultConfigScreen(Screen parent, ModConfig config, String modId) {
+    public DefaultConfigScreen(Screen parent, ModClientConfig config, String modId) {
         super(config, modId);
         this.parent = parent;
-        this.categories = config.getCategories();
     }
 
-    public DefaultConfigScreen(Screen parent, ModConfig config, String modId, Identifier background, int backgroundWidth, int backgroundHeight) {
+    public DefaultConfigScreen(Screen parent, ModClientConfig config, String modId, Identifier background, int backgroundWidth, int backgroundHeight) {
         super(background, backgroundWidth, backgroundHeight, config, modId);
         this.parent = parent;
-        this.categories = config.getCategories();
     }
 
-    public DefaultConfigScreen(Screen parent, ModConfig config, String modId, Identifier background, int backgroundWidth, int backgroundHeight, int backgroundShaderColor, int backgroundDarkRectangleShaderColor) {
+    public DefaultConfigScreen(Screen parent, ModClientConfig config, String modId, Identifier background, int backgroundWidth, int backgroundHeight, int backgroundShaderColor, int backgroundDarkRectangleShaderColor) {
         super(background, backgroundWidth, backgroundHeight, config, modId);
         this.parent = parent;
-        this.categories = config.getCategories();
         this.backgroundDarkRectangleShaderColor = backgroundDarkRectangleShaderColor;
     }
 
@@ -193,8 +189,8 @@ public class DefaultConfigScreen extends AbstractConfigScreen {
 
     private <T extends AbstractConfigObject<U>, U> void addSideButtons(int buttonHeight, int startY, T obj) {
         this.addElementChild(addResetButton(27 * this.width / 32, startY - scrollbar.getScroll(), obj));
-        if (obj.getInfoScreen().isPresent()) {
-            AbstractInfoScreen screen = obj.getInfoScreen().get();
+        if (hasInfoScreen(obj)) {
+            AbstractInfoScreen screen = getInfoScreen(obj);
             screen.setParent(this);
             this.addElementChild(addInfoButton(27 * this.width / 32 + 22, startY - scrollbar.getScroll(), screen));
         }

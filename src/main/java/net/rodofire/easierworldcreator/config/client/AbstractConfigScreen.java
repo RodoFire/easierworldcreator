@@ -12,6 +12,7 @@ import net.rodofire.easierworldcreator.client.hud.widget.ImageButtonWidget;
 import net.rodofire.easierworldcreator.client.hud.widget.InfoButtonWidget;
 import net.rodofire.easierworldcreator.client.hud.widget.TextButtonWidget;
 import net.rodofire.easierworldcreator.config.ConfigCategory;
+import net.rodofire.easierworldcreator.config.ModClientConfig;
 import net.rodofire.easierworldcreator.config.ModConfig;
 import net.rodofire.easierworldcreator.config.objects.AbstractConfigObject;
 import net.rodofire.easierworldcreator.config.objects.BooleanConfigObject;
@@ -27,6 +28,7 @@ public abstract class AbstractConfigScreen extends BackgroundScreen {
 
     protected final String modId;
 
+    ModClientConfig clientConfig;
     private final ModConfig config;
     private final ModConfig copy;
 
@@ -34,32 +36,35 @@ public abstract class AbstractConfigScreen extends BackgroundScreen {
     ConfigCategory category;
     protected final BiMap<String, Integer> indexes = HashBiMap.create();
 
-    protected AbstractConfigScreen(ModConfig config, String modId) {
+    protected AbstractConfigScreen(ModClientConfig config, String modId) {
         super(Text.translatable("config.screen." + modId + ".title"));
+        this.clientConfig = config;
         this.modId = modId;
-        this.config = config;
-        this.copy = config.copy();
-        this.categories = config.getCategories();
+        this.config = config.getConfig();
+        this.copy = config.getConfig().copy();
+        this.categories = config.getConfig().getCategories();
         this.initIndexes();
         renitCategory();
     }
 
-    public AbstractConfigScreen(Identifier background, int backgroundWidth, int backgroundHeight, ModConfig config, String modId) {
+    public AbstractConfigScreen(Identifier background, int backgroundWidth, int backgroundHeight, ModClientConfig config, String modId) {
         super(Text.translatable("config.screen." + modId + ".title"), background, backgroundWidth, backgroundHeight);
-        this.config = config;
+        this.clientConfig = config;
+        this.config = config.getConfig();
         this.modId = modId;
-        this.copy = config.copy();
-        this.categories = config.getCategories();
+        this.copy = config.getConfig().copy();
+        this.categories = config.getConfig().getCategories();
         this.initIndexes();
         renitCategory();
     }
 
-    public AbstractConfigScreen(Identifier background, int backgroundWidth, int backgroundHeight, int backgroundShaderColor, ModConfig config, String modId) {
+    public AbstractConfigScreen(Identifier background, int backgroundWidth, int backgroundHeight, int backgroundShaderColor, ModClientConfig config, String modId) {
         super(Text.translatable("config.screen." + modId + ".title"), background, backgroundWidth, backgroundHeight, backgroundShaderColor);
-        this.config = config;
+        this.clientConfig = config;
+        this.config = config.getConfig();
         this.modId = modId;
-        this.copy = config.copy();
-        this.categories = config.getCategories();
+        this.copy = config.getConfig().copy();
+        this.categories = config.getConfig().getCategories();
         this.initIndexes();
         renitCategory();
     }
@@ -93,6 +98,14 @@ public abstract class AbstractConfigScreen extends BackgroundScreen {
             indexes.put(category.getName(), i);
             i++;
         }
+    }
+
+    protected boolean hasInfoScreen(AbstractConfigObject<?> category) {
+        return clientConfig.getCategoryScreens(this.category.getName()).containsKey(category);
+    }
+
+    protected AbstractInfoScreen getInfoScreen(AbstractConfigObject<?> category) {
+        return clientConfig.getCategoryScreens(this.category.getName()).get(category);
     }
 
     protected void toggleBoolean(BooleanConfigObject configObject, ButtonWidget button) {

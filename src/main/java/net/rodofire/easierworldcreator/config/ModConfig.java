@@ -1,9 +1,14 @@
 package net.rodofire.easierworldcreator.config;
 
+import net.fabricmc.api.EnvType;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerWorldEvents;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.MinecraftClient;
 import net.rodofire.easierworldcreator.config.client.ConfigScreen;
 import net.rodofire.easierworldcreator.config.objects.AbstractConfigObject;
+import net.rodofire.easierworldcreator.config.objects.BooleanConfigObject;
+import net.rodofire.easierworldcreator.config.objects.EnumConfigObject;
+import net.rodofire.easierworldcreator.config.objects.IntegerConfigObject;
 
 import java.nio.file.Path;
 import java.util.*;
@@ -41,6 +46,10 @@ public class ModConfig {
         this.categories.putAll(categoryMap);
     }
 
+
+    public String getMOD_ID() {
+        return MOD_ID;
+    }
 
     /**
      * method to get a category of the config
@@ -117,9 +126,6 @@ public class ModConfig {
             this.protectedConfig = true;
         });
         ServerWorldEvents.UNLOAD.register((minecraftServer, world) -> this.protectedConfig = false);
-        if (MinecraftClient.getInstance() != null) {
-            ConfigScreen.putModId(MOD_ID, this);
-        }
     }
 
     public Path getCategoryPath(String name) {
@@ -159,6 +165,22 @@ public class ModConfig {
         config.categories = new LinkedHashMap<>(categories);
         config.protectedConfig = this.protectedConfig;
         return config;
+    }
+
+    public boolean contains(String name) {
+        return categories.containsKey(name);
+    }
+
+    public <T extends AbstractConfigObject<U>, U> boolean contains(String name, T category) {
+        boolean bl = false;
+        if(categories.containsKey(name)) {
+            if(category instanceof BooleanConfigObject && categories.get(name).getBools().containsValue(category))
+                return true;
+            if(category instanceof EnumConfigObject && categories.get(name).getEnums().containsValue(category))
+                return true;
+            return category instanceof IntegerConfigObject && categories.get(name).getInts().containsValue(category);
+        }
+        return false;
     }
 
     public void apply(ModConfig config) {
