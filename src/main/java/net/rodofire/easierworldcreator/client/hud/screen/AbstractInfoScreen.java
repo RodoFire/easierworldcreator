@@ -1,11 +1,14 @@
 package net.rodofire.easierworldcreator.client.hud.screen;
 
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.rodofire.easierworldcreator.client.hud.widget.TextButtonWidget;
 
+@Environment(EnvType.CLIENT)
 public abstract class AbstractInfoScreen extends BackgroundScreen {
     Screen parent;
 
