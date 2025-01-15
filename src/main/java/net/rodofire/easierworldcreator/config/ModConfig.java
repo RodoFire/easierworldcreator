@@ -1,10 +1,6 @@
 package net.rodofire.easierworldcreator.config;
 
-import net.fabricmc.api.EnvType;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerWorldEvents;
-import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.client.MinecraftClient;
-import net.rodofire.easierworldcreator.config.client.ConfigScreen;
 import net.rodofire.easierworldcreator.config.objects.AbstractConfigObject;
 import net.rodofire.easierworldcreator.config.objects.BooleanConfigObject;
 import net.rodofire.easierworldcreator.config.objects.EnumConfigObject;
@@ -19,7 +15,6 @@ public class ModConfig {
     boolean protectedConfig = false;
     private final String MOD_ID;
     Map<String, ConfigCategory> categories = new LinkedHashMap<>();
-    private boolean serverInit = false;
 
     public ModConfig(String modID) {
         this.MOD_ID = modID;
@@ -115,7 +110,6 @@ public class ModConfig {
     }
 
     public void init() {
-        serverInit = true;
         List<ConfigCategory> caterories = shouldWrite();
         if (!caterories.isEmpty()) {
             writeConfigs(caterories);

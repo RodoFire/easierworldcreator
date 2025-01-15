@@ -11,6 +11,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
 
+@SuppressWarnings("unused")
 @Environment(EnvType.CLIENT)
 public class ModClientConfig {
     private final ModConfig config;
