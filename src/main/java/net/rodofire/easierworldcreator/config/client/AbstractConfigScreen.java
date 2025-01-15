@@ -21,6 +21,7 @@ import net.rodofire.easierworldcreator.config.objects.IntegerConfigObject;
 import org.spongepowered.include.com.google.common.collect.BiMap;
 import org.spongepowered.include.com.google.common.collect.HashBiMap;
 
+import java.util.Map;
 import java.util.Set;
 
 public abstract class AbstractConfigScreen extends BackgroundScreen {
@@ -101,7 +102,8 @@ public abstract class AbstractConfigScreen extends BackgroundScreen {
     }
 
     protected boolean hasInfoScreen(AbstractConfigObject<?> category) {
-        return clientConfig.getCategoryScreens(this.category.getName()).containsKey(category);
+        Map<AbstractConfigObject<?>, AbstractInfoScreen> a = clientConfig.getCategoryScreens(this.category.getName());
+        return a != null && a.containsKey(category);
     }
 
     protected AbstractInfoScreen getInfoScreen(AbstractConfigObject<?> category) {
