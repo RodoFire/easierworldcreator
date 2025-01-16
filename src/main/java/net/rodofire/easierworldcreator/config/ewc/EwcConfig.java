@@ -3,7 +3,6 @@ package net.rodofire.easierworldcreator.config.ewc;
 import net.rodofire.easierworldcreator.Ewc;
 import net.rodofire.easierworldcreator.config.ConfigCategory;
 import net.rodofire.easierworldcreator.config.ModConfig;
-import net.rodofire.easierworldcreator.config.ewc.screen.MultiChunkInfoScreen;
 import net.rodofire.easierworldcreator.config.objects.BooleanConfigObject;
 import net.rodofire.easierworldcreator.config.objects.IntegerConfigObject;
 
@@ -21,7 +20,7 @@ public class EwcConfig {
         SERVER_CATEGORY.addBoolean(bool);
 
         BooleanConfigObject bool2 = new BooleanConfigObject(true, "multi_chunk_features");
-        bool2.setInfoScreen(new MultiChunkInfoScreen());
+
         SERVER_CATEGORY.addBoolean(bool2);
         SERVER_CATEGORY.addBoolean(new BooleanConfigObject(true, "chat_warns"));
         SERVER_CATEGORY.addBoolean(new BooleanConfigObject(true, "log_warns"));
