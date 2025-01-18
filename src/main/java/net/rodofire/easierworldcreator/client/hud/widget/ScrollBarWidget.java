@@ -32,7 +32,7 @@ public class ScrollBarWidget extends PressableWidget {
 
     public ScrollBarWidget(int x, int startY, int endY, short currentScroll, short maxScroll, PressAction action, Text message) {
         super(x, startY, 0, 0, message);
-      this.startY = startY;
+        this.startY = startY;
     }
 
     public ScrollBarWidget(int x, int startY, int endY, short maxScroll, ScrollBarWidget.PressAction action, Text message) {
@@ -87,13 +87,14 @@ public class ScrollBarWidget extends PressableWidget {
         return currentScroll;
     }
 
+
     @Override
-    public boolean mouseScrolled(double mouseX, double mouseY, double amount) {
-        if (amount != 0) {
-            currentScroll = (short) Math.max(0, Math.min(currentScroll - (int) (amount * 10), maxScroll));
+    public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount, double verticalAmount) {
+        if (verticalAmount != 0) {
+            currentScroll = (short) Math.max(0, Math.min(currentScroll - (int) (verticalAmount * 10), maxScroll));
             return true;
         }
-        return super.mouseScrolled(mouseX, mouseY, amount);
+        return super.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount);
     }
 
     public void refresh(int x, int startY, int endY, int maxScroll) {
@@ -104,10 +105,10 @@ public class ScrollBarWidget extends PressableWidget {
         this.endY = endY;
     }
 
-    @Override        
+    @Override
     protected void renderWidget(DrawContext context, int mouseX, int mouseY, float delta) {
-  int adjustedHeight = this.endY - this.startY;
-        
+        int adjustedHeight = this.endY - this.startY;
+
         int adjustedMaxScroll = adjustedHeight;
         int adjustedCurrentScroll = (short) (((float) currentScroll / maxScroll) * adjustedHeight);
         if (maxScroll <= 0) {
@@ -124,7 +125,8 @@ public class ScrollBarWidget extends PressableWidget {
                 (float) ((buttonColor & 0xFF0000) >> 16) / 256,
                 (float) ((buttonColor & 0xFF00) >> 8) / 256,
                 (float) (buttonColor & 0xFF) / 256,
-                this.alpha);
+                this.alpha
+        );
 
         RenderSystem.enableBlend();
         RenderSystem.enableDepthTest();
@@ -133,13 +135,15 @@ public class ScrollBarWidget extends PressableWidget {
 
         this.setY(currentPos);
         this.height = this.scrollHeight;
-        
-        context.drawGuiTexture(TEXTURES.get(this.active, this.isSelected()), this.getX(), this.getY(), 10, this.height, 20, 4, 200, 20, 0);
 
+
+        context.drawGuiTexture(TEXTURES.get(this.active, this.isSelected()), this.getX()-2, this.getY(), 10, this.height);
 
 
         int i = this.active ? 16777215 : 10526880;
         this.drawMessage(context, minecraftClient.textRenderer, i | MathHelper.ceil(this.alpha * 255.0F) << 24);
+        context.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
+        super.renderWidget(context, mouseX, mouseY, delta);
     }
 
 
@@ -147,7 +151,6 @@ public class ScrollBarWidget extends PressableWidget {
     protected void appendClickableNarrations(NarrationMessageBuilder builder) {
         this.appendDefaultNarrations(builder);
     }
-
 
 
     @Environment(EnvType.CLIENT)

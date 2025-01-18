@@ -31,6 +31,7 @@ public abstract class AbstractConfigScreen extends BackgroundScreen {
     private final ModConfig copy;
 
     Set<ConfigCategory> categories;
+    ConfigCategory category;
     protected final BiMap<String, Integer> indexes = HashBiMap.create();
 
     protected AbstractConfigScreen(ModConfig config, String modId) {
@@ -40,6 +41,7 @@ public abstract class AbstractConfigScreen extends BackgroundScreen {
         this.copy = config.copy();
         this.categories = config.getCategories();
         this.initIndexes();
+        renitCategory();
     }
 
     public AbstractConfigScreen(Identifier background, int backgroundWidth, int backgroundHeight, ModConfig config, String modId) {
@@ -49,6 +51,7 @@ public abstract class AbstractConfigScreen extends BackgroundScreen {
         this.copy = config.copy();
         this.categories = config.getCategories();
         this.initIndexes();
+        renitCategory();
     }
 
     public AbstractConfigScreen(Identifier background, int backgroundWidth, int backgroundHeight, int backgroundShaderColor, ModConfig config, String modId) {
@@ -58,26 +61,32 @@ public abstract class AbstractConfigScreen extends BackgroundScreen {
         this.copy = config.copy();
         this.categories = config.getCategories();
         this.initIndexes();
+        renitCategory();
     }
 
     @Override
     protected void init() {
-        ConfigCategory category = copy.getCategory(indexes.inverse().get(selected));
+        copy.apply(category);
+        renitCategory();
         this.init(category);
+    }
+
+    private void renitCategory() {
+        category = copy.getTemporaryCategory(indexes.inverse().get(selected));
     }
 
     protected abstract void init(ConfigCategory category);
 
     public <T extends AbstractConfigObject<U>, U> ImageButtonWidget addResetButton(int startX, int yOffset, T obj) {
 
-        ImageButtonWidget buttonWidget = new ImageButtonWidget(startX, yOffset, 20, 20, Identifier.of(EasierWorldCreator.MOD_ID, "textures/gui/reset_button.png"), press -> reset(obj));
+        ImageButtonWidget buttonWidget = new ImageButtonWidget(startX, yOffset, 20, 20, Identifier.of(Ewc.MOD_ID, "textures/gui/reset_button.png"), press -> reset(obj));
 
         buttonWidget.setTooltip(Tooltip.of(Text.translatable("config.ewc.reset")));
         return buttonWidget;
     }
 
     public <T extends AbstractInfoScreen> InfoButtonWidget addInfoButton(int startX, int yOffset, T obj) {
-        return new InfoButtonWidget(startX, yOffset, 20, 20,  obj);
+        return new InfoButtonWidget(startX, yOffset, 20, 20, obj);
     }
 
     private void initIndexes() {

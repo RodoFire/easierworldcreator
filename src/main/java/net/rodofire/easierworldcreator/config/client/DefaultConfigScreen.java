@@ -92,12 +92,13 @@ public class DefaultConfigScreen extends AbstractConfigScreen {
 
         drawTopCategories(buttonWidth, buttonHeight, startY, centerX);
 
-        addElements(category, buttonHeight, startY + 27 - scrollbar.getScroll());
 
         drawBottomElements();
+        addElements(category, buttonHeight, startY + 27 - scrollbar.getScroll());
 
         scrollbar.refresh(this.width - 10, UP_PADDING, this.height - DOWN_PADDING, maxScrollY);
         this.addDrawableChild(scrollbar);
+
     }
 
     /**
@@ -113,15 +114,6 @@ public class DefaultConfigScreen extends AbstractConfigScreen {
             widths.put((short) (startY - scrollbar.getScroll() - 1), true);
             this.addElementChild(new TextWidget(0, startY - scrollbar.getScroll(), 4 * this.width / 12, buttonHeight, Text.translatable("config.ewc.boolean_category"), this.textRenderer));
 
-//44
-            heights.add((short) (startY - scrollY - 1));
-            widths.put((short) (startY - scrollY - 1), true);
-
-            if (this.toDraw(new TextWidget(0, startY - scrollY, 4 * this.width / 12, buttonHeight, Text.translatable("config.ewc.boolean_category"), this.textRenderer), startY, buttonHeight)) {
-                bl = true;
-            }
-          
-          //44
             startY += buttonHeight + 3;
             for (BooleanConfigObject obj : category.getBools().values()) {
                 heights.add((short) (startY - scrollbar.getScroll() - 1));
@@ -151,7 +143,6 @@ public class DefaultConfigScreen extends AbstractConfigScreen {
             widths.put((short) (startY - scrollbar.getScroll() - 1), true);
             this.addElementChild(new TextWidget(0, startY - scrollbar.getScroll(), 4 * this.width / 12, buttonHeight, Text.translatable("config.ewc.integer_category"), this.textRenderer));
 
-*
             startY += buttonHeight + 3;
 
             for (IntegerConfigObject obj : category.getInts().values()) {
@@ -254,10 +245,10 @@ public class DefaultConfigScreen extends AbstractConfigScreen {
         if (categories.size() > maxCategoriesVisible) {
             if (currentCategoryIndex > 0) {
 
-                this.addDrawableChild(new ImageButtonWidget(centerX - 10 - (maxCategoriesVisible * buttonWidth / 2 + 15), startY, 20, buttonHeight, Identifier.of(EasierWorldCreator.MOD_ID, "textures/gui/before_button.png"), button -> scrollCategories(-1)));
+                this.addDrawableChild(new ImageButtonWidget(centerX - 10 - (maxCategoriesVisible * buttonWidth / 2 + 15), startY, 20, buttonHeight, Identifier.of(Ewc.MOD_ID, "textures/gui/before_button.png"), button -> scrollCategories(-1)));
             }
             if (this.categories.size() - currentCategoryIndex > 5) {
-                this.addDrawableChild(new ImageButtonWidget(centerX - 10 + (maxCategoriesVisible * buttonWidth / 2 + 15), startY, 20, buttonHeight, Identifier.of(EasierWorldCreator.MOD_ID, "textures/gui/after_button.png"), button -> scrollCategories(1)));
+                this.addDrawableChild(new ImageButtonWidget(centerX - 10 + (maxCategoriesVisible * buttonWidth / 2 + 15), startY, 20, buttonHeight, Identifier.of(Ewc.MOD_ID, "textures/gui/after_button.png"), button -> scrollCategories(1)));
 
             }
         }
@@ -296,7 +287,6 @@ public class DefaultConfigScreen extends AbstractConfigScreen {
 
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
-        this.renderBackground(context);
         super.render(context, mouseX, mouseY, delta);
         context.enableScissor(0, UP_PADDING, this.width, this.height - DOWN_PADDING);
         for (Drawable drawable : this.elements) {
@@ -306,42 +296,30 @@ public class DefaultConfigScreen extends AbstractConfigScreen {
     }
 
     @Override
-    public void renderOverBackground(DrawContext context, int mouseX, int mouseY, float delta) {
-        super.renderOverBackground(context, mouseX, mouseY, delta);
+    public void renderBackgroundTexture(DrawContext context, int mouseX, int mouseY, float delta) {
+        super.renderBackgroundTexture(context, mouseX, mouseY, delta);
+        if (TEXTURE != null) {
+            int darkRectX = 0;
+            int darkRectY = 40;
+            int darkRectWidth = this.width;
+            int darkRectHeight = this.height - 75;
+            // Coordonnes du trou (zone transparente)
+            int holeY = getStartY(mouseY);
+            int holeX = getStartX();
+            int holeEndX = getEndX();
+            int holeEndY = getEndY();
+            if (holeY > darkRectY) {
+                this.renderDarkRectangle(context, darkRectX, darkRectY, darkRectX + darkRectWidth, holeY, this.backgroundDarkRectangleShaderColor);
+                this.renderDarkRectangle(context, holeEndX, holeY, darkRectX + darkRectWidth, holeY + holeEndY, this.backgroundDarkRectangleShaderColor);
+            } else {
 
-    }
+                this.renderDarkRectangle(context, holeEndX, darkRectY, darkRectX + darkRectWidth, holeY + holeEndY, this.backgroundDarkRectangleShaderColor);
+            }
+            this.renderDarkRectangle(context, darkRectX, holeY + holeEndY, darkRectX + darkRectWidth, darkRectY + darkRectHeight, this.backgroundDarkRectangleShaderColor);
+            this.renderDarkRectangle(context, darkRectX, holeY, holeX, holeY + holeEndY, this.backgroundDarkRectangleShaderColor);
 
-    public void renderBackground(DrawContext context) {
-        assert this.client != null;
-        if (this.client.world != null) {
-            context.fillGradient(0, 0, this.width, this.height, -1072689136, -804253680);
-        } else {
-            this.renderBackgroundTexture(context);
+            context.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
         }
-    }
-
-    public void renderBackgroundTexture(DrawContext context) {
-        super.renderBackgroundTexture(context);
-        int darkRectX = 0;
-        int darkRectY = 40;
-        int darkRectWidth = this.width;
-        int darkRectHeight = this.height - 75;
-        // Coordonnes du trou (zone transparente)
-        int holeY = getStartY(mouseY);
-        int holeX = getStartX();
-        int holeEndX = getEndX();
-        int holeEndY = getEndY();
-        if (holeY > darkRectY) {
-            this.renderDarkRectangle(context, darkRectX, darkRectY, darkRectX + darkRectWidth, holeY, this.backgroundDarkRectangleShaderColor);
-            this.renderDarkRectangle(context, holeEndX, holeY, darkRectX + darkRectWidth, holeY + holeEndY, this.backgroundDarkRectangleShaderColor);
-        } else {
-
-            this.renderDarkRectangle(context, holeEndX, darkRectY, darkRectX + darkRectWidth, holeY + holeEndY, this.backgroundDarkRectangleShaderColor);
-        }
-        this.renderDarkRectangle(context, darkRectX, holeY + holeEndY, darkRectX + darkRectWidth, darkRectY + darkRectHeight, this.backgroundDarkRectangleShaderColor);
-        this.renderDarkRectangle(context, darkRectX, holeY, holeX, holeY + holeEndY, this.backgroundDarkRectangleShaderColor);
-
-        context.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
     }
 
     public void saveExit() {
@@ -358,25 +336,28 @@ public class DefaultConfigScreen extends AbstractConfigScreen {
     }
 
     @Override
-    public boolean mouseScrolled(double mouseX, double mouseY, double amount) {
+    public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount, double verticalAmount) {
+        boolean bl = super.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount);
+        scrollbar.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount);
         this.clearChildren();
         this.init();
-        return scrollbar.mouseScrolled(mouseX, mouseY, amount);
+        return bl;
     }
 
     @Override
     public boolean mouseReleased(double mouseX, double mouseY, int button) {
-        this.clearChildren();
-        this.init();
-        return scrollbar.mouseReleased(mouseX, mouseY, button);
+        boolean bl = super.mouseReleased(mouseX, mouseY, button);
+        scrollbar.mouseReleased(mouseX, mouseY, button);
+        return bl;
     }
 
     @Override
     public boolean mouseDragged(double mouseX, double mouseY, int button, double deltaX, double deltaY) {
+        boolean bl = super.mouseDragged(mouseX, mouseY, button, deltaX, deltaY);
+        scrollbar.mouseDragged(mouseX, mouseY, button, deltaX, deltaY, this.height);
         this.clearChildren();
         this.init();
-        return scrollbar.mouseDragged(mouseX, mouseY, button, deltaX, deltaY, this.height);
-
+        return bl;
     }
 
     @Override

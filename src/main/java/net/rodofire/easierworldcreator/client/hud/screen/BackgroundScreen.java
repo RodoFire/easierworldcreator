@@ -35,21 +35,24 @@ public abstract class BackgroundScreen extends Screen {
 
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
-        renderBackground(context);
+        renderBackgroundTexture(context, mouseX, mouseY, delta);
         renderOverBackground(context, mouseX, mouseY, delta);
         super.render(context, mouseX, mouseY, delta);
+
     }
 
     public void renderOverBackground(DrawContext context, int mouseX, int mouseY, float delta) {
     }
 
     @Override
-    public void renderBackgroundTexture(DrawContext context) {
+    public void renderBackground(DrawContext context, int mouseX, int mouseY, float delta) {
+    }
+
+    public void renderBackgroundTexture(DrawContext context, int mouseX, int mouseY, float delta) {
         if (TEXTURE == null) {
-            super.renderBackgroundTexture(context);
+            super.renderBackground(context, mouseX, mouseY, delta);
             return;
         }
-
         float textureRatio = (float) this.backgroundWidth / this.backgroundHeight;
         float screenRatio = (float) this.width / this.height;
 

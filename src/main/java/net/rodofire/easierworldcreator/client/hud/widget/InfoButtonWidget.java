@@ -12,7 +12,7 @@ import net.rodofire.easierworldcreator.client.hud.screen.AbstractInfoScreen;
  */
 public class InfoButtonWidget extends ImageButtonWidget {
     public <T extends AbstractInfoScreen> InfoButtonWidget(int x, int y, int width, int height, T screen) {
-        super(x, y, width, height, new Identifier(Ewc.MOD_ID, "textures/gui/info_button.png"), button -> MinecraftClient.getInstance().setScreen(screen));
+        super(x, y, width, height, Identifier.of(Ewc.MOD_ID, "textures/gui/info_button.png"), button -> MinecraftClient.getInstance().setScreen(screen));
         this.setTooltip(Tooltip.of(Text.translatable("config.ewc.info")));
     }
 }
