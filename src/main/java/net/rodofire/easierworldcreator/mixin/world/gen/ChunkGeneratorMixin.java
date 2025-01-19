@@ -1,5 +1,6 @@
 package net.rodofire.easierworldcreator.mixin.world.gen;
 
+import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.StructureWorldAccess;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.gen.StructureAccessor;
@@ -66,11 +67,10 @@ public abstract class ChunkGeneratorMixin {
      */
     @Inject(method = "generateFeatures", at = @At(value = "TAIL"))
     private void endGeneration(StructureWorldAccess world, Chunk chunk, StructureAccessor structureAccessor, CallbackInfo ci) {
-
         List<Path> pathlist = LoadChunkShapeInfo.getWorldGenFiles(world, chunk);
-
         if (!pathlist.isEmpty()) {
             for (Path path : pathlist) {
+                world.setCurrentlyGeneratingStructureName(() -> "ewc multi-chunk feature generating: " + path.getFileName());
                 DefaultBlockListComparator comparator = LoadChunkShapeInfo.loadFromJson(world, path);
                 LoadChunkShapeInfo.placeStructure(world, comparator);
                 FileUtil.removeFile(path);

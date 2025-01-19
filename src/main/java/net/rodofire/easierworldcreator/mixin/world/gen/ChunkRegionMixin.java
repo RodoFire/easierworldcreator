@@ -5,22 +5,15 @@ import net.minecraft.util.crash.CrashCallable;
 import net.minecraft.util.crash.CrashException;
 import net.minecraft.util.crash.CrashReport;
 import net.minecraft.util.crash.CrashReportSection;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.ChunkRegion;
 import net.minecraft.world.chunk.AbstractChunkHolder;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.ChunkGenerationStep;
 import net.minecraft.world.chunk.ChunkStatus;
-import net.rodofire.easierworldcreator.blockdata.blocklist.basic.DefaultBlockList;
-import net.rodofire.easierworldcreator.blockdata.blocklist.basic.comparator.AbstractBlockListComparator;
-import net.rodofire.easierworldcreator.blockdata.blocklist.ordered.comparator.AbstractOrderedBlockListComparator;
-import net.rodofire.easierworldcreator.util.ChunkRegionUtil;
+import net.rodofire.easierworldcreator.world.chunk.ChunkRegionUtil;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.Locale;
 
@@ -63,15 +56,17 @@ public class ChunkRegionMixin implements ChunkRegionUtil {
         );
         CrashReportSection crashReportSection = crashReport.addElement("Chunk request details");
         crashReportSection.add("Requested chunk", String.format(Locale.ROOT, "%d, %d", chunkX, chunkZ));
-        crashReportSection.add("Generating status", (CrashCallable<String>)(() -> this.generationStep.targetStatus().getId()));
+        crashReportSection.add("Generating status", (CrashCallable<String>) (() -> this.generationStep.targetStatus().getId()));
         crashReportSection.add("Requested status", leastStatus::getId);
         crashReportSection.add(
-                "Actual status", (CrashCallable<String>)(() -> abstractChunkHolder == null ? "[out of cache bounds]" : abstractChunkHolder.getActualStatus().getId())
+                "Actual status", (CrashCallable<String>) (() -> abstractChunkHolder == null ? "[out of cache bounds]" : abstractChunkHolder.getActualStatus().getId())
         );
-        crashReportSection.add("Maximum allowed status", (CrashCallable<String>)(() -> chunkStatus == null ? "null" : chunkStatus.getId()));
+        crashReportSection.add("Maximum allowed status", (CrashCallable<String>) (() -> chunkStatus == null ? "null" : chunkStatus.getId()));
         crashReportSection.add("Dependencies", this.generationStep.directDependencies()::toString);
         crashReportSection.add("Requested distance", i);
         crashReportSection.add("Generating chunk", this.centerPos.getPos()::toString);
         throw new CrashException(crashReport);
     }
+
+
 }

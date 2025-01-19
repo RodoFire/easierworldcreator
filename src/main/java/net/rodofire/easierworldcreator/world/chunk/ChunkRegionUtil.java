@@ -1,4 +1,4 @@
-package net.rodofire.easierworldcreator.util;
+package net.rodofire.easierworldcreator.world.chunk;
 
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.ChunkStatus;
