@@ -79,9 +79,7 @@ public class SaveNbt {
             blockInfoLists.add(palettedBlockInfoList);
 
 
-            Identifier templateName = Identifier.of(EasierWorldCreator.MOD_ID,
-
-            chunkPos.x + "-" + chunkPos.z + "/" + featureName);
+            Identifier templateName = Identifier.of(Ewc.MOD_ID, chunkPos.x + "-" + chunkPos.z + "/" + featureName);
 
             StructureTemplate structureTemplate;
 
@@ -145,7 +143,7 @@ public class SaveNbt {
     public static List<Identifier> loadNBTFiles(ChunkPos chunk) {
         List<Identifier> nbtList = new ArrayList<>();
 
-        String chunkFolderPath = Identifier.of(EasierWorldCreator.MOD_ID, "generated/structures/" + chunk.x + "_" + chunk.z + "/").getPath();
+        String chunkFolderPath = Identifier.of(Ewc.MOD_ID, "generated/structures/" + chunk.x + "_" + chunk.z + "/").getPath();
 
         try {
             Path path = Path.of(chunkFolderPath);
@@ -153,7 +151,7 @@ public class SaveNbt {
                 Files.list(path).forEach(filePath -> {
                     if (filePath.toString().endsWith(".nbt")) {
 
-                        nbtList.add(Identifier.of(EasierWorldCreator.MOD_ID, chunk.x + "_" + chunk.z + "/" + filePath.getFileName().toString()));
+                        nbtList.add(Identifier.of(Ewc.MOD_ID, chunk.x + "_" + chunk.z + "/" + filePath.getFileName().toString()));
 
                     }
                 });
