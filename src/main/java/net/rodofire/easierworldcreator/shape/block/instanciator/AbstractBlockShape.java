@@ -124,7 +124,7 @@ public abstract class AbstractBlockShape extends AbstractBlockShapeRotation {
      * @param posList the {@link List} of {@link Set} of {@link BlockPos} calculated before, that will be placed
      */
     public void place(Map<ChunkPos, Set<BlockPos>> posList) {
-        if(this.isMultiChunk(posList) && !EwcConfig.getMultiChunkFeatures() && this.getPlaceMoment() == PlaceMoment.WORLD_GEN){
+        if (this.isMultiChunk(posList) && !EwcConfig.getMultiChunkFeatures() && this.getPlaceMoment() == PlaceMoment.WORLD_GEN) {
             return;
         }
         boolean logWarns = EwcConfig.getLogWarns();
@@ -165,9 +165,10 @@ public abstract class AbstractBlockShape extends AbstractBlockShapeRotation {
             ExecutorService executorService = Executors.newFixedThreadPool(THREAD_COUNT);
             for (Map.Entry<ChunkPos, Set<BlockPos>> pos : posList.entrySet()) {
                 Future<?> future = executorService.submit(() -> {
+                    System.out.println(pos.getKey() + "   " + WorldGenUtil.addChunkPos(pos.getKey(), this.getOffset()));
                     DefaultBlockListComparator comparator = this.getLayers(pos.getValue());
                     Path generatedPath = SaveChunkShapeInfo.getMultiChunkPath(getWorld(), WorldGenUtil.addChunkPos(pos.getKey(), this.getOffset()));
-                     if (generatedPath != null) {
+                    if (generatedPath != null) {
                         comparator.toJson(generatedPath.resolve(this.featureName + ".json"), this.getOffset());
                     }
                 });
@@ -186,6 +187,7 @@ public abstract class AbstractBlockShape extends AbstractBlockShapeRotation {
             executorService.shutdown();
             List<Path> path = LoadChunkShapeInfo.getWorldGenFiles(getWorld(), this.getPos());
             for (Path path1 : path) {
+                System.out.println(path1.getParent().getFileName());
                 DefaultBlockListComparator defaultBlockLists = LoadChunkShapeInfo.loadFromJson(getWorld(), path1);
                 LoadChunkShapeInfo.placeStructure(getWorld(), defaultBlockLists);
             }
@@ -207,6 +209,7 @@ public abstract class AbstractBlockShape extends AbstractBlockShapeRotation {
         }
         //In the case our structure isn't place during world gen, or it is less than a chunk large
         else {
+            System.out.println(posList.keySet());
             for (Set<BlockPos> pos : posList.values()) {
                 this.placeLayers(pos);
             }
