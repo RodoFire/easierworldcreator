@@ -1,13 +1,12 @@
 package net.rodofire.easierworldcreator.config.ewc.screen;
 
-import com.mojang.blaze3d.systems.RenderSystem;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.MultilineText;
-import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.ConfirmLinkScreen;
 import net.minecraft.client.gui.tooltip.Tooltip;
-import net.minecraft.client.gui.widget.TextWidget;
 import net.minecraft.text.*;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
@@ -16,10 +15,10 @@ import net.rodofire.easierworldcreator.Ewc;
 import net.rodofire.easierworldcreator.client.hud.screen.AbstractInfoScreen;
 import net.rodofire.easierworldcreator.client.hud.widget.ImageButtonWidget;
 import net.rodofire.easierworldcreator.client.hud.widget.ScrollBarWidget;
-import net.rodofire.easierworldcreator.client.hud.widget.TextButtonWidget;
 
 import java.util.List;
 
+@Environment(EnvType.CLIENT)
 public class MultiChunkInfoScreen extends AbstractInfoScreen {
     private int maxScroll = 0;
     private static final int PADDING = 30;
