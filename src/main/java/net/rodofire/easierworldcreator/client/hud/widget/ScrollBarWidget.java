@@ -13,6 +13,7 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.math.MathHelper;
 
 @SuppressWarnings("unused")
+@Environment(EnvType.CLIENT)
 public class ScrollBarWidget extends PressableWidget {
     short currentScroll = 0;
     short maxScroll = 0;

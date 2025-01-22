@@ -1,12 +1,15 @@
 package net.rodofire.easierworldcreator.client.hud.screen;
 
 import com.mojang.blaze3d.systems.RenderSystem;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 
 @SuppressWarnings("unused")
+@Environment(EnvType.CLIENT)
 public abstract class BackgroundScreen extends Screen {
     protected Identifier TEXTURE = null;
     int backgroundHeight = 32;

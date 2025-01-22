@@ -1,5 +1,7 @@
 package net.rodofire.easierworldcreator.config.ewc.screen;
 
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.ConfirmLinkScreen;
 import net.minecraft.client.gui.screen.Screen;
@@ -8,13 +10,14 @@ import net.minecraft.util.Util;
 import net.rodofire.easierworldcreator.Ewc;
 import net.rodofire.easierworldcreator.client.hud.widget.ImageButtonWidget;
 import net.rodofire.easierworldcreator.config.ConfigCategory;
-import net.rodofire.easierworldcreator.config.ModConfig;
+import net.rodofire.easierworldcreator.config.ModClientConfig;
 import net.rodofire.easierworldcreator.config.client.DefaultConfigScreen;
 import org.spongepowered.asm.mixin.Unique;
 
 import java.util.ArrayList;
 import java.util.List;
 
+@Environment(EnvType.CLIENT)
 public class EwcConfigScreen extends DefaultConfigScreen {
     //*/icons
     private static final Identifier DISCORD_ICON = Identifier.of(Ewc.MOD_ID, "textures/gui/discord.png");

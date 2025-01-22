@@ -1,6 +1,8 @@
 package net.rodofire.easierworldcreator.client.hud.widget;
 
 import com.mojang.blaze3d.systems.RenderSystem;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.ButtonTextures;
@@ -10,6 +12,7 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.math.MathHelper;
 
 @SuppressWarnings("unused")
+@Environment(EnvType.CLIENT)
 public class TextButtonWidget extends ButtonWidget {
     int textColor = 0xFFFFFF;
     int buttonColor = 0xFFFFFF;
