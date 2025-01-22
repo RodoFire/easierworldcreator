@@ -18,18 +18,18 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public class ChunkLoaderMixin {
     @Inject(method = "create", at = @At(value = "HEAD"))
     private static void print(ChunkLoadingManager chunkLoadingManager, ChunkStatus targetStatus, ChunkPos pos, CallbackInfoReturnable<ChunkLoader> cir) {
-        if (!targetStatus.isAtMost(ChunkStatus.FEATURES))
+        /*if (!targetStatus.isAtMost(ChunkStatus.FEATURES))
             return;
-        System.out.println(targetStatus + " :  " + ChunkGenerationSteps.GENERATION.get(targetStatus).getAdditionalLevel(ChunkStatus.EMPTY));
+        System.out.println(targetStatus + " :  " + ChunkGenerationSteps.GENERATION.get(targetStatus).getAdditionalLevel(ChunkStatus.EMPTY));*/
     }
 
     @Inject(method = "<init>", at = @At("TAIL"))
     private void init(ChunkLoadingManager chunkLoadingManager, ChunkStatus targetStatus, ChunkPos pos, BoundedRegionArray<AbstractChunkHolder> chunks, CallbackInfo ci) {
-        if (!targetStatus.isAtMost(ChunkStatus.FEATURES))
+        /*if (!targetStatus.isAtMost(ChunkStatus.FEATURES))
             return;
         var a = Thread.currentThread().getStackTrace();
         for (var b : a) {
             Ewc.LOGGER.info(b.toString());
-        }
+        }*/
     }
 }

@@ -27,9 +27,9 @@ public class EwcConfig {
         SERVER_CATEGORY.addBoolean(new BooleanConfigObject(true, "log_warns"));
         SERVER_CATEGORY.addBoolean(new BooleanConfigObject(true, "log_performance_info"));
 
-        IntegerConfigObject integerConfigObject = new IntegerConfigObject(1, 1, 4, "features_chunk_distance", "define how much chunks can be acced by feature generation");
+        /*IntegerConfigObject integerConfigObject = new IntegerConfigObject(1, 1, 4, "features_chunk_distance", "define how much chunks can be acced by feature generation");
         integerConfigObject.requireRestart = true;
-        SERVER_CATEGORY.addInt(integerConfigObject);
+        SERVER_CATEGORY.addInt(integerConfigObject);*/
 
         MOD_CONFIG.addCategories(SERVER_CATEGORY);
 
@@ -62,9 +62,10 @@ public class EwcConfig {
     }
 
     public static int getFeaturesChunkDistance() {
-        if (MOD_CONFIG.isConfigProtected())
+        /*if (MOD_CONFIG.isConfigProtected())
             return distance;
         distance = MOD_CONFIG.getCategory(SERVER).getInts().get("features_chunk_distance").getActualValue();
-        return distance;
+        return distance;*/
+        return 1;
     }
 }
