@@ -6,7 +6,6 @@ import net.fabricmc.api.Environment;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Pair;
-import net.rodofire.easierworldcreator.EasierWorldCreator;
 import net.rodofire.easierworldcreator.config.ModConfig;
 
 import java.util.HashMap;

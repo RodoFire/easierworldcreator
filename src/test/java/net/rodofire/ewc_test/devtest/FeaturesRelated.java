@@ -26,6 +26,10 @@ import net.minecraft.world.gen.placementmodifier.BiomePlacementModifier;
 import net.minecraft.world.gen.placementmodifier.PlacementModifier;
 import net.minecraft.world.gen.placementmodifier.RarityFilterPlacementModifier;
 import net.minecraft.world.gen.placementmodifier.SquarePlacementModifier;
+import net.rodofire.easierworldcreator.blockdata.layer.BlockLayer;
+import net.rodofire.easierworldcreator.blockdata.layer.BlockLayerComparator;
+import net.rodofire.easierworldcreator.shape.block.gen.SphereGen;
+import net.rodofire.easierworldcreator.shape.block.instanciator.AbstractBlockShapeBase;
 import net.rodofire.ewc_test.EWCTest;
 import net.rodofire.easierworldcreator.blockdata.sorter.BlockSorter;
 import net.rodofire.easierworldcreator.placer.blocks.animator.StructurePlaceAnimator;
@@ -63,14 +67,11 @@ public class FeaturesRelated {
             torusGen.setSecondYRotation(30);
             torusGen.place();*/
 
-            NbtPlacer placer = new NbtPlacer(world, Identifier.of("village/plains/houses/plains_medium_house_2"));
-            BlockSorter sorter = new BlockSorter(BlockSorter.BlockSorterType.FROM_PLANE);
-            sorter.setCenterPoint(pos.up(3));
-            sorter.setAxisDirection(new Vec3d(0, -1, 0));
-            StructurePlaceAnimator animator = new StructurePlaceAnimator(world, sorter, StructurePlaceAnimator.AnimatorTime.CONSTANT_BLOCKS_PER_TICK);
-            animator.setBlocksPerTick(1);
-            placer.setAnimator(animator);
-            placer.place(1.0f, pos, new BlockPos(-3, 0, -7), BlockMirror.NONE, BlockRotation.NONE, true);
+
+            SphereGen sphereGen = new SphereGen(world, pos, AbstractBlockShapeBase.PlaceMoment.WORLD_GEN, 48);
+            sphereGen.setBlockLayer(new BlockLayerComparator(new BlockLayer(Blocks.REDSTONE_BLOCK.getDefaultState())));
+            sphereGen.place();
+
 
 
 

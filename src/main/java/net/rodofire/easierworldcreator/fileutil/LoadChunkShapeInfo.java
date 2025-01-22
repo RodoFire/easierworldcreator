@@ -19,8 +19,10 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.StructureWorldAccess;
 import net.minecraft.world.chunk.Chunk;
-import net.rodofire.easierworldcreator.EasierWorldCreator;
+import net.rodofire.easierworldcreator.Ewc;
 import net.rodofire.easierworldcreator.blockdata.blocklist.basic.DefaultBlockList;
+import net.rodofire.easierworldcreator.blockdata.blocklist.basic.comparator.DefaultBlockListComparator;
+import net.rodofire.easierworldcreator.config.ewc.EwcConfig;
 
 import java.io.File;
 import java.io.IOException;
@@ -32,6 +34,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 /**
  * class to load JSON files related to multi-chunk features
@@ -44,74 +47,66 @@ public class LoadChunkShapeInfo {
      * @param chunkFilePath the path of the shape
      * @return a {@link List} used later to place the BlockStates
      */
-    public static List<DefaultBlockList> loadFromJson(StructureWorldAccess world, Path chunkFilePath) {
+    public static DefaultBlockListComparator loadFromJson(StructureWorldAccess world, Path chunkFilePath) {
         File file = new File(chunkFilePath.toString());
-        if(!file.exists()) return List.of();
+        if (!file.exists()) return new DefaultBlockListComparator();
         String jsonContent;
         try {
             jsonContent = Files.readString(chunkFilePath);
         } catch (IOException e) {
             e.fillInStackTrace();
-            return List.of();
+            return new DefaultBlockListComparator();
         }
 
         Gson gson = new Gson();
 
         JsonArray jsonArray = gson.fromJson(jsonContent, JsonArray.class);
-
-        List<DefaultBlockList> defaultBlockLists = new ArrayList<>();
-        String fileName = chunkFilePath.getFileName().toString();
-
-        Pattern pattern = Pattern.compile("\\[(-?\\d+),(-?\\d+)]_.*\\.json");
+        DefaultBlockListComparator comparator = new DefaultBlockListComparator();
+        String fileName = chunkFilePath.getParent().getFileName().toString();
+        Pattern pattern = Pattern.compile("chunk_(-?\\d+)_(-?\\d+)$");
         Matcher matcher = pattern.matcher(fileName);
-        int offsetX = 0, offsetZ = 0;
+        int chunkX = 0;
+        int chunkZ = 0;
 
         if (matcher.matches()) {
-            offsetX = Integer.parseInt(matcher.group(1));
-            offsetZ = Integer.parseInt(matcher.group(2));
+            chunkX = Integer.parseInt(matcher.group(1));
+            chunkZ = Integer.parseInt(matcher.group(2));
         }
-
 
         for (JsonElement element : jsonArray) {
             JsonObject jsonObject = element.getAsJsonObject();
 
             // Get the block state
             String stateString = jsonObject.get("state").getAsString();
-            BlockState blockState = parseBlockState(world, stateString);  // You need to implement this method
+            BlockState blockState = parseBlockState(world, stateString);
 
             // Get the positions
             List<BlockPos> posList = new ArrayList<>();
             JsonArray positionsArray = jsonObject.getAsJsonArray("positions");
 
             for (JsonElement posElement : positionsArray) {
-                JsonObject posObject = posElement.getAsJsonObject();
-                int x = posObject.get("x").getAsInt() + offsetX;
-                int y = posObject.get("y").getAsInt();
-                int z = posObject.get("z").getAsInt() + offsetZ;
+                int value = posElement.getAsInt();
+                int x = chunkX * 16 + (value >> 24);
+                int y = (value & 0x00FFFF00) >> 8;
+                int z = chunkZ * 16 + (value & 0x000000FF);
                 posList.add(new BlockPos(x, y, z));
             }
 
             // Create a new BlockList and add it to the set
             DefaultBlockList defaultBlockList = new DefaultBlockList(posList, blockState);
-            defaultBlockLists.add(defaultBlockList);
+            comparator.put(defaultBlockList);
         }
-
-        return defaultBlockLists;
+        return comparator;
     }
 
     /**
      * method to place the structure
      *
-     * @param world      the world the structure will spawn in
+     * @param world             the world the structure will spawn in
      * @param defaultBlockLists the list of blockList that compose the structure
      */
-    public static void placeStructure(StructureWorldAccess world, List<DefaultBlockList> defaultBlockLists) {
-        for (DefaultBlockList defaultBlockList : defaultBlockLists) {
-            BlockState state = defaultBlockList.getBlockState();
-            for (BlockPos pos : defaultBlockList.getPosList()) {
-                world.setBlockState(pos, state, 3);
-            }
-        }
+    public static void placeStructure(StructureWorldAccess world, DefaultBlockListComparator defaultBlockLists) {
+        defaultBlockLists.placeAllWithVerification(world);
     }
 
     /**
@@ -128,7 +123,7 @@ public class LoadChunkShapeInfo {
         Identifier identifier = Identifier.of(extractBlockName(stateString.split("\\[")[0]));
         Optional<? extends RegistryEntry<Block>> optional = blockLookup.getOptional(RegistryKey.of(RegistryKeys.BLOCK, identifier));
         if (optional.isEmpty()) {
-            EasierWorldCreator.LOGGER.error("error parsing BlockState: {}", stateString.split("\\[")[0]);
+            Ewc.LOGGER.error("error parsing BlockState: {}", stateString.split("\\[")[0]);
             return Blocks.AIR.getDefaultState();
         }
 
@@ -174,8 +169,8 @@ public class LoadChunkShapeInfo {
      * @param chunk the chunk that will be converted into a {@link ChunkPos}
      * @return the list of the structure path to be placed later
      */
-    public static List<Path> verifyFiles(StructureWorldAccess world, Chunk chunk) {
-        return verifyFiles(world, chunk.getPos());
+    public static List<Path> getWorldGenFiles(StructureWorldAccess world, Chunk chunk) {
+        return getWorldGenFiles(world, chunk.getPos());
     }
 
     /**
@@ -185,8 +180,8 @@ public class LoadChunkShapeInfo {
      * @param pos   the {@link BlockPos} that will be converted into a {@link ChunkPos}
      * @return the list of the structure path to be placed later
      */
-    public static List<Path> verifyFiles(StructureWorldAccess world, BlockPos pos) {
-        return verifyFiles(world, new ChunkPos(pos));
+    public static List<Path> getWorldGenFiles(StructureWorldAccess world, BlockPos pos) {
+        return getWorldGenFiles(world, new ChunkPos(pos));
     }
 
     /**
@@ -196,29 +191,48 @@ public class LoadChunkShapeInfo {
      * @param chunk the chunk that needs to be verified
      * @return the list of the structure path to be placed later
      */
-    public static List<Path> verifyFiles(StructureWorldAccess world, ChunkPos chunk) {
+    public static List<Path> getWorldGenFiles(StructureWorldAccess world, ChunkPos chunk) {
         List<Path> pathList = new ArrayList<>();
+        int distance = EwcConfig.getFeaturesChunkDistance();
         Path generatedPath = Objects.requireNonNull(world.getServer()).getSavePath(WorldSavePath.GENERATED).normalize();
-        String chunkDirPrefix = "chunk_" + chunk.x + "_" + chunk.z;  // Prefix to match chunk directories
-        Path directoryPath = generatedPath.resolve(EasierWorldCreator.MOD_ID).resolve("structures").resolve(chunkDirPrefix);
-
         if (Files.exists(generatedPath) && Files.isDirectory(generatedPath)) {
-
-            // List all directories in the generated path
-            if (Files.exists(directoryPath) && Files.isDirectory(directoryPath)) {
-                try {
-                    Files.list(directoryPath).forEach(filePath -> {
-                        if (filePath.toString().endsWith(".json") && !filePath.getFileName().toString().startsWith("false")) {
-                            pathList.add(filePath);
-                        }
-                    });
-                } catch (IOException e) {
-                    e.fillInStackTrace();
+            generatedPath = generatedPath.resolve(Ewc.MOD_ID).resolve("structures");
+            if (Files.exists(generatedPath) && Files.isDirectory(generatedPath)) {
+                for (int i = -distance; i <= distance; i++) {
+                    for (int j = -distance; j <= distance; j++) {
+                        int chunkX = chunk.x + i;
+                        int chunkZ = chunk.z + j;
+                        String chunkDirPrefix = "chunk_" + chunkX + "_" + chunkZ;
+                        Path newPath = generatedPath.resolve(chunkDirPrefix);
+                        getPathFromChunk(newPath, pathList);
+                    }
                 }
             }
         }
 
         return pathList;
+    }
+
+    /**
+     * method to get all multi-chunk JSON files of a block
+     *
+     * @param generatedPath the path of generated/ewc/chunk_[chunk.x]_[chunk.z]
+     * @param pathList      the other resolved paths
+     */
+    private static void getPathFromChunk(Path generatedPath, List<Path> pathList) {
+        if (/*Files.exists(generatedPath) && */Files.isDirectory(generatedPath)) {
+            try {
+                try (Stream<Path> paths = Files.list(generatedPath)) {
+                    paths.forEach(filePath -> {
+                        if (filePath.toString().endsWith(".json") && !filePath.getFileName().toString().startsWith("false")) {
+                            pathList.add(filePath);
+                        }
+                    });
+                }
+            } catch (IOException e) {
+                e.fillInStackTrace();
+            }
+        }
     }
 
     /**
