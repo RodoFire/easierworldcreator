@@ -17,7 +17,14 @@ import java.util.Set;
  * class to manage a list of FullBlockList automatically
  */
 @SuppressWarnings("unused")
-public class FullBlockListComparator extends BlockListComparator<FullBlockList, Pair<NbtCompound, Integer>, FullOrderedBlockListComparator, Pair<BlockState, NbtCompound>> {
+public class FullBlockListComparator extends AbstractBlockListComparator<FullBlockList, Pair<NbtCompound, Integer>, FullOrderedBlockListComparator, Pair<BlockState, NbtCompound>> {
+    /**
+     * init a comparator
+     * @param comparator the comparator that will be fused
+     */
+    public FullBlockListComparator(FullBlockListComparator comparator){
+        super(comparator);
+    }
     /**
      * init a comparator
      *

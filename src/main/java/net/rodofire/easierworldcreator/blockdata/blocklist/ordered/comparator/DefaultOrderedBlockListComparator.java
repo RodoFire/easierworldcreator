@@ -4,6 +4,7 @@ import net.minecraft.block.BlockState;
 import net.minecraft.util.Pair;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.StructureWorldAccess;
+import net.rodofire.easierworldcreator.blockdata.blocklist.basic.comparator.DefaultBlockListComparator;
 import net.rodofire.easierworldcreator.placer.blocks.util.BlockPlaceUtil;
 
 import java.util.List;
@@ -13,7 +14,15 @@ import java.util.Map;
  * Default Ordered BlockList comparator. The class provides the basic related to order blockList comparator
  */
 @SuppressWarnings("unused")
-public class DefaultOrderedBlockListComparator extends OrderedBlockListComparator<BlockState> {
+public class DefaultOrderedBlockListComparator extends AbstractOrderedBlockListComparator<BlockState> {
+    /**
+     * constructor to init a {@link DefaultOrderedBlockListComparator}.
+     *
+     * @param comparator the comparator to be fused
+     */
+    public DefaultOrderedBlockListComparator(DefaultOrderedBlockListComparator comparator){
+        super(comparator);
+    }
     /**
      * init a default ordered blockList comparator
      *

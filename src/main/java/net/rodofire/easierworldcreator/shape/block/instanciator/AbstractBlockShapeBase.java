@@ -4,6 +4,9 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.StructureWorldAccess;
 import net.rodofire.easierworldcreator.blockdata.layer.BlockLayerComparator;
+import net.rodofire.easierworldcreator.config.ewc.EwcConfig;
+import net.rodofire.easierworldcreator.maths.MathUtil;
+import net.rodofire.easierworldcreator.world.chunk.ChunkPosManager;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
@@ -31,11 +34,14 @@ public abstract class AbstractBlockShapeBase {
      */
     protected boolean multiChunk = false;
 
+
+    private BlockPos chunkOffset = new BlockPos(Integer.MAX_VALUE, Integer.MAX_VALUE, Integer.MAX_VALUE);
+    private ChunkPosManager chunkPosManager;
+
     /**
      * get the number of availible threads
      */
     protected static final int THREAD_COUNT = Runtime.getRuntime().availableProcessors();
-
 
     /**
      * init the ShapeBase
@@ -48,6 +54,20 @@ public abstract class AbstractBlockShapeBase {
         this.world = world;
         this.pos = pos;
         this.placeMoment = placeMoment;
+        this.chunkPosManager = new ChunkPosManager(world);
+    }
+
+    public BlockPos getOffset() {
+        return chunkOffset;
+    }
+
+    /**
+     * method to set an offset
+     *
+     * @param offset the offset of the entire structure
+     */
+    public void setOffset(BlockPos offset) {
+        this.chunkOffset = offset;
     }
 
 
@@ -134,6 +154,40 @@ public abstract class AbstractBlockShapeBase {
      */
     public List<Set<BlockPos>> getBlockPosList(Map<ChunkPos, Set<BlockPos>> posSetMap) {
         return posSetMap.values().stream().toList();
+    }
+
+    /**
+     * method to know if the shape should use multi-chunk feature
+     *
+     * @param posSetMap the map that will determine if the shape is multi-chunk
+     * @return true if it is, false if not
+     */
+    public boolean isMultiChunk(Map<ChunkPos, Set<BlockPos>> posSetMap) {
+        if (posSetMap.size() > Math.pow(2 * EwcConfig.getFeaturesChunkDistance() + 1, 2))
+            return true;
+        for (ChunkPos set : posSetMap.keySet()) {
+            if (Math.abs(set.x) > EwcConfig.getFeaturesChunkDistance() + Math.abs(new ChunkPos(this.pos).x))
+                return true;
+            if (Math.abs(set.z) > EwcConfig.getFeaturesChunkDistance() + Math.abs(new ChunkPos(this.pos).z))
+                return true;
+        }
+        return false;
+    }
+
+    protected boolean canPlaceMultiChunk(Set<ChunkPos> chunkPosSet) {
+        int minOffset = Integer.MAX_VALUE;
+        for (int x = -5; x <= 5; x++) {
+            for (int z = -5; z <= 5; z++) {
+                if (chunkPosManager.canGenerate(chunkPosSet, x, z)) {
+                    int offset = MathUtil.absDistance(x, z);
+                    if (offset < minOffset) {
+                        minOffset = offset;
+                        this.chunkOffset = new BlockPos(16 * x, 0, 16 * z);
+                    }
+                }
+            }
+        }
+        return minOffset != Integer.MAX_VALUE;
     }
 
 

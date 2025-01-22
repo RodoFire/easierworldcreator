@@ -12,6 +12,7 @@ import java.util.Set;
 public class ExampleConfig {
     public static final ModConfig CONFIG = new ModConfig(EWCTest.MOD_ID);
     public static final ConfigCategory FOO = new ConfigCategory("foo");
+    public static final ConfigCategory DOO = new ConfigCategory("doo");
 
     public static void registerConfig() {
         //booleans
@@ -36,11 +37,20 @@ public class ExampleConfig {
         FOO.addEnum("newenum", "hello", Set.of("hello", "world"));
 
         CONFIG.addCategory(FOO);
+        CONFIG.addCategory(DOO);
 
         CONFIG.init();
     }
 
+    public static void registerClientConfig() {
+
+    }
+
     public static boolean getBool1Test() {
         return CONFIG.getCategory("foo").getBools().get("bool1test").getActualValue();
+    }
+
+    public static int getInt1Test() {
+        return CONFIG.getCategory("foo").getInts().get("int1test").getActualValue();
     }
 }

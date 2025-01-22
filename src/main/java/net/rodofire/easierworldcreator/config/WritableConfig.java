@@ -42,6 +42,7 @@ public class WritableConfig {
         }
     }
 
+    @SuppressWarnings("unchecked")
     private <T extends AbstractConfigObject<U>, U> void writeEntries(BufferedWriter writer, Map<String, T> configObject) throws IOException {
         Optional<T> opt = configObject.values().stream().findFirst();
         if (opt.isPresent()) {
@@ -54,8 +55,7 @@ public class WritableConfig {
                 String key = obj.getKey();
                 U value = obj.getValue().getActualValue();
                 if (value instanceof String str) {
-                    str = "\"" + str + "\"";
-                    value = (U) str;
+                    value = (U) ("\"" + str + "\"");
                 }
 
                 writer.write(obj.getValue().getDefaultDescription(this.modId));
@@ -173,12 +173,10 @@ public class WritableConfig {
 
         if (configValue instanceof BooleanConfigObject && value instanceof Boolean) {
             return true;
-        } else if (configValue instanceof IntegerConfigObject && value instanceof Integer) {
+        } else if (configValue instanceof IntegerConfigObject intConfig && value instanceof Integer) {
             int intValue = (Integer) value;
-            IntegerConfigObject intConfig = (IntegerConfigObject) configValue;
             return intValue >= intConfig.getMinValue() && intValue <= intConfig.getMaxValue();
-        } else if (configValue instanceof EnumConfigObject && value instanceof String) {
-            EnumConfigObject enumConfig = (EnumConfigObject) configValue;
+        } else if (configValue instanceof EnumConfigObject enumConfig && value instanceof String) {
             return enumConfig.getPossibleValues().contains(value.toString());
         }
 

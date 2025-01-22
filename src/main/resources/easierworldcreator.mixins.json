@@ -3,11 +3,12 @@
   "package": "net.rodofire.easierworldcreator.mixin",
   "compatibilityLevel": "JAVA_17",
   "mixins": [
-    "ChunkGeneratorMixin",
-    "PalettedBlockInfoListMixin",
-    "StructureTemplateMixin"
+    "world.gen.ChunkGeneratorMixin",
+    "world.gen.ChunkStatusMixin",
+    "world.structure.PalettedBlockInfoListMixin",
+    "world.structure.StructureTemplateMixin"
   ],
   "injectors": {
     "defaultRequire": 1
-	}
+  }
 }

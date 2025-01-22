@@ -4,7 +4,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.world.StructureWorldAccess;
-import net.rodofire.easierworldcreator.EasierWorldCreator;
+import net.rodofire.easierworldcreator.Ewc;
 import net.rodofire.easierworldcreator.blockdata.layer.BlockLayer;
 import net.rodofire.easierworldcreator.maths.FastMaths;
 import net.rodofire.easierworldcreator.shape.block.instanciator.AbstractBlockShape;
@@ -324,7 +324,7 @@ public class SphereGen extends AbstractFillableBlockShape {
 
 
         if (radiusX > 32 || radiusY > 32 || radiusZ > 32) {
-            EasierWorldCreator.LOGGER.warn("generating huge sphere (diameter > 64)");
+            Ewc.LOGGER.warn("generating huge sphere (diameter > 64)");
         }
         if (this.getYRotation() % 180 == 0 && this.getZRotation() % 180 == 0 && this.getSecondYRotation() % 180 == 0) {
             for (float x = minX; x <= maxX; x++) {

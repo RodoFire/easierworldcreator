@@ -6,6 +6,7 @@ import net.minecraft.util.Pair;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.random.Random;
 import net.minecraft.world.StructureWorldAccess;
+import net.rodofire.easierworldcreator.blockdata.blocklist.basic.comparator.AbstractBlockListComparator;
 
 import java.util.*;
 
@@ -35,7 +36,7 @@ import java.util.*;
  *            uses a {@code Pair<BlockState, NbtCompound>} to connect Nbt to a BlockState
  */
 @SuppressWarnings({"unused", "UnusedReturnValue"})
-public abstract class OrderedBlockListComparator<T> {
+public abstract class AbstractOrderedBlockListComparator<T> {
     /**
      * we're using BiMap to be able to get the short from the T objects and the other way around
      */
@@ -48,24 +49,32 @@ public abstract class OrderedBlockListComparator<T> {
 
     List<BlockPos> posList = new ArrayList<>();
 
+    /**
+     * constructor to init a {@link AbstractOrderedBlockListComparator}.
+     *
+     * @param comparator the comparator to be fused
+     */
+    public AbstractOrderedBlockListComparator(AbstractOrderedBlockListComparator<T> comparator) {
+        this.put(comparator);
+    }
 
     /**
-     * constructor to init a {@link OrderedBlockListComparator}.
+     * constructor to init a {@link AbstractOrderedBlockListComparator}.
      *
      * @param states  the {@code T} object that will init the {@code stateMap}.
      * @param posList the BlockPos List related to the {@code states} that will init the {@code posMap}
      */
-    public OrderedBlockListComparator(T states, List<BlockPos> posList) {
+    public AbstractOrderedBlockListComparator(T states, List<BlockPos> posList) {
         put(states, posList);
     }
 
     /**
-     * constructor to init a {@link OrderedBlockListComparator}.
+     * constructor to init a {@link AbstractOrderedBlockListComparator}.
      *
      * @param info a map that provides a list of BlockPos and the {@code T} objects related to them.
      *             <p>That will be used to initialize the {@code posMap} as well as the {@code stateMap}.
      */
-    public OrderedBlockListComparator(Map<T, List<BlockPos>> info) {
+    public AbstractOrderedBlockListComparator(Map<T, List<BlockPos>> info) {
         List<T> states = info.keySet().stream().toList();
         List<List<BlockPos>> pos = info.values().stream().toList();
         for (int i = 0; i < info.size(); i++) {
@@ -74,9 +83,9 @@ public abstract class OrderedBlockListComparator<T> {
     }
 
     /**
-     * Constructor to init an empty {@link OrderedBlockListComparator}.
+     * Constructor to init an empty {@link AbstractOrderedBlockListComparator}.
      */
-    public OrderedBlockListComparator() {
+    public AbstractOrderedBlockListComparator() {
 
     }
 
@@ -114,7 +123,7 @@ public abstract class OrderedBlockListComparator<T> {
     }
 
 
-    protected <U extends OrderedBlockListComparator<T>> void put(U comparator) {
+    protected <U extends AbstractOrderedBlockListComparator<T>> void put(U comparator) {
         //map to convert old indexes to new indexes
         Map<Short, Short> states = new HashMap<>();
 

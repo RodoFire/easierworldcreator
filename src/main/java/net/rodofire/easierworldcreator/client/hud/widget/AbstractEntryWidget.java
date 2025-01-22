@@ -2,6 +2,7 @@ package net.rodofire.easierworldcreator.client.hud.widget;
 
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
+import net.minecraft.SharedConstants;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
@@ -160,10 +161,12 @@ public abstract class AbstractEntryWidget extends ClickableWidget implements Dra
 
             String string2 = new StringBuilder(this.text).replace(i, j, string).toString();
             if (this.textPredicate.test(string2)) {
-                this.text = string2;
+                if (!this.customWrite(text, this.text))
+                    this.text = string2;
                 this.setSelectionStart(i + l);
                 this.setSelectionEnd(this.selectionStart);
                 this.onChanged(this.text);
+                this.onType(this.text);
             }
         }
     }

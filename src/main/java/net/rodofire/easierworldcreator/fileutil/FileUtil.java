@@ -3,7 +3,7 @@ package net.rodofire.easierworldcreator.fileutil;
 import net.minecraft.util.WorldSavePath;
 import net.minecraft.world.StructureWorldAccess;
 import net.minecraft.world.chunk.Chunk;
-import net.rodofire.easierworldcreator.EasierWorldCreator;
+import net.rodofire.easierworldcreator.Ewc;
 
 import java.io.File;
 import java.io.IOException;
@@ -33,12 +33,12 @@ public class FileUtil {
                 Files.move(oldPath, newPath);
 
             } catch (IOException e) {
-                EasierWorldCreator.LOGGER.warn("Failed to rename file. oldPath: {} newPath: {}", oldPath, newPath, e);
+                Ewc.LOGGER.warn("Failed to rename file. oldPath: {} newPath: {}", oldPath, newPath, e);
             } catch (SecurityException e) {
-                EasierWorldCreator.LOGGER.warn("Insufficient permissions to rename file. oldPath: {} newPath: {}", oldPath, newPath, e);
+                Ewc.LOGGER.warn("Insufficient permissions to rename file. oldPath: {} newPath: {}", oldPath, newPath, e);
             }
         } else {
-            EasierWorldCreator.LOGGER.warn("Renaming file failed, file doesn't exist: {}", oldPath);
+            Ewc.LOGGER.warn("Renaming file failed, file doesn't exist: {}", oldPath);
         }
     }
 
@@ -62,7 +62,7 @@ public class FileUtil {
     public static Path getGeneratedChunkDirectory(Chunk chunk, StructureWorldAccess world) {
         Path generatedPath = Objects.requireNonNull(world.getServer()).getSavePath(WorldSavePath.GENERATED).normalize();
         String chunkDirPrefix = "chunk_" + chunk.getPos().x + "_" + chunk.getPos().z;
-        return generatedPath.resolve(EasierWorldCreator.MOD_ID).resolve("structures").resolve(chunkDirPrefix);
+        return generatedPath.resolve(Ewc.MOD_ID).resolve("structures").resolve(chunkDirPrefix);
     }
 
     /**

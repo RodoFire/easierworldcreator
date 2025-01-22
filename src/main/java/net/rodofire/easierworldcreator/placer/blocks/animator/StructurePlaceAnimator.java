@@ -8,12 +8,12 @@ import net.minecraft.util.Pair;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.random.Random;
 import net.minecraft.world.StructureWorldAccess;
-import net.rodofire.easierworldcreator.EasierWorldCreator;
+import net.rodofire.easierworldcreator.Ewc;
 import net.rodofire.easierworldcreator.blockdata.blocklist.basic.DefaultBlockList;
-import net.rodofire.easierworldcreator.blockdata.blocklist.basic.comparator.BlockListComparator;
+import net.rodofire.easierworldcreator.blockdata.blocklist.basic.comparator.AbstractBlockListComparator;
 import net.rodofire.easierworldcreator.blockdata.blocklist.ordered.comparator.CompoundOrderedBlockListComparator;
 import net.rodofire.easierworldcreator.blockdata.blocklist.ordered.comparator.DefaultOrderedBlockListComparator;
-import net.rodofire.easierworldcreator.blockdata.blocklist.ordered.comparator.OrderedBlockListComparator;
+import net.rodofire.easierworldcreator.blockdata.blocklist.ordered.comparator.AbstractOrderedBlockListComparator;
 import net.rodofire.easierworldcreator.blockdata.sorter.BlockSorter;
 import net.rodofire.easierworldcreator.maths.equation.CubicEquation;
 import net.rodofire.easierworldcreator.maths.equation.QuadraticEquation;
@@ -269,13 +269,13 @@ public class StructurePlaceAnimator {
      *
      * @param comparator the comparator that will be placed
      */
-    public <T extends BlockListComparator<U, V, W, X>, U extends DefaultBlockList, V, W extends OrderedBlockListComparator<X>, X> void placeFromBlockList(T comparator) {
+    public <T extends AbstractBlockListComparator<U, V, W, X>, U extends DefaultBlockList, V, W extends AbstractOrderedBlockListComparator<X>, X> void placeFromBlockList(T comparator) {
         if (blockListVerification(comparator.get())) return;
         Instant start = Instant.now();
         W sortedBlockList = comparator.getOrderedSorted(this.blockSorter);
         Instant end = Instant.now();
         Duration timeElapsed = Duration.between(start, end);
-        EasierWorldCreator.LOGGER.info("Shape sorted list calculations took : {}ms", timeElapsed.toMillis());
+        Ewc.LOGGER.info("Shape sorted list calculations took : {}ms", timeElapsed.toMillis());
         this.place(sortedBlockList);
     }
 
@@ -288,7 +288,7 @@ public class StructurePlaceAnimator {
      */
     private static <T> boolean blockListVerification(List<T> blockList) {
         if (blockList == null || blockList.isEmpty()) {
-            EasierWorldCreator.LOGGER.warn("StructureBlockAnimator: blockList is null or empty");
+            Ewc.LOGGER.warn("StructureBlockAnimator: blockList is null or empty");
             return true;
         }
         return false;
@@ -304,7 +304,7 @@ public class StructurePlaceAnimator {
      *
      * @param comparator the {@code List<Pair<>>} that will be placed.
      */
-    public <T extends OrderedBlockListComparator<U>, U> void place(T comparator) {
+    public <T extends AbstractOrderedBlockListComparator<U>, U> void place(T comparator) {
         List<Integer> randomBlocks = new ArrayList<>();
         int totalBlocks = comparator.posSize();
         AtomicReference<Float> soundPlayed = new AtomicReference<>((float) 0);
@@ -358,7 +358,7 @@ public class StructurePlaceAnimator {
 
             if (ticksPassed == this.ticks && !comparator.isPosEmpty()) {
                 int left = comparator.posSize();
-                EasierWorldCreator.LOGGER.info("All ticks completed, but {} blocks are still unplaced. Placing remaining blocks in final tick.", left);
+                Ewc.LOGGER.info("All ticks completed, but {} blocks are still unplaced. Placing remaining blocks in final tick.", left);
                 for (int i = 0; i < left; i++) {
                     comparator.placeLastWithDeletion(world);
                 }
@@ -445,7 +445,7 @@ public class StructurePlaceAnimator {
             }
             case CONSTANT_BLOCKS_PER_TICK -> {
                 if (blocksPerTick <= 0) {
-                    EasierWorldCreator.LOGGER.error("StructureBlockAnimator: blocksPerTick is zero or negative");
+                    Ewc.LOGGER.error("StructureBlockAnimator: blocksPerTick is zero or negative");
                     throw new IllegalStateException();
                 }
                 this.c = blocksPerTick;
@@ -453,7 +453,7 @@ public class StructurePlaceAnimator {
             }
             case LINEAR_BLOCK_PER_TICK -> {
                 if (blocksPerTick <= 0) {
-                    EasierWorldCreator.LOGGER.error("StructureBlockAnimator: blocksPerTick is zero or negative");
+                    Ewc.LOGGER.error("StructureBlockAnimator: blocksPerTick is zero or negative");
                     throw new IllegalStateException();
                 }
 
@@ -478,7 +478,7 @@ public class StructurePlaceAnimator {
             }
             case QUADRATIC_BLOCK_PER_TICK -> {
                 if (blocksPerTick <= 0) {
-                    EasierWorldCreator.LOGGER.error("StructureBlockAnimator: blocksPerTick is zero or negative");
+                    Ewc.LOGGER.error("StructureBlockAnimator: blocksPerTick is zero or negative");
                     throw new IllegalStateException();
                 }
 

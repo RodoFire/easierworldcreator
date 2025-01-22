@@ -18,7 +18,15 @@ import java.util.List;
  * class to manage a list of DefaultBlockList automatically
  */
 @SuppressWarnings("unused")
-public class DefaultBlockListComparator extends BlockListComparator<DefaultBlockList, Integer, DefaultOrderedBlockListComparator, BlockState> {
+public class DefaultBlockListComparator extends AbstractBlockListComparator<DefaultBlockList, Integer, DefaultOrderedBlockListComparator, BlockState> {
+    /**
+     * init a comparator
+     *
+     * @param comparator the comparator that will be fused
+     */
+    public DefaultBlockListComparator(DefaultBlockListComparator comparator) {
+        super(comparator);
+    }
 
     /**
      * init a comparator
@@ -138,25 +146,29 @@ public class DefaultBlockListComparator extends BlockListComparator<DefaultBlock
         Gson gson = new Gson();
         JsonArray jsonArray = new JsonArray();
 
-        JsonObject jsonObject;
+        JsonObject jsonObject = new JsonObject();
 
         int offsetX = offset.getX();
         int offsetY = offset.getY();
         int offsetZ = offset.getZ();
+        char chunkOffsetX = (char) (offsetX % 16);
+        char chunkOffsetZ = (char) (offsetZ % 16);
 
         for (DefaultBlockList defaultBlockList : this.blockLists) {
-            jsonObject = new JsonObject();
             jsonObject.addProperty("state", defaultBlockList.getBlockState().toString());
-
-            JsonArray positions = new JsonArray();
-            for (BlockPos pos : defaultBlockList.getPosList()) {
-                JsonObject posObject = new JsonObject();
-                posObject.addProperty("x", pos.getX() + offsetX);
-                posObject.addProperty("y", pos.getY());
-                posObject.addProperty("z", pos.getZ() + offsetZ);
-                positions.add(posObject);
+            int size = defaultBlockList.getPosList().size();
+            int[] compactPositions = new int[size];
+            for (int i = 0; i < size; i++) {
+                BlockPos pos = defaultBlockList.getPosList().get(i);
+                char posX = (char) Math.floorMod(pos.getX() + chunkOffsetX, 16);
+                char posZ = (char) Math.floorMod(pos.getZ() + chunkOffsetZ, 16);
+                int compactPos = (posX << 24) | ((short) pos.getY() << 8) | posZ;
+                compactPositions[i] = compactPos;
             }
-            jsonObject.add("positions", positions);
+
+            // Ajout toutes les données en une seule fois sous forme de JsonArray
+            JsonArray compactJsonPositions = gson.toJsonTree(compactPositions).getAsJsonArray();
+            jsonObject.add("positions", compactJsonPositions);
             jsonArray.add(jsonObject);
         }
         try {

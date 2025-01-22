@@ -15,7 +15,15 @@ import java.util.List;
  * class to manage a list of Compound BlockList automatically
  */
 @SuppressWarnings("unused")
-public class CompoundBlockListComparator extends BlockListComparator<CompoundBlockList, Pair<NbtCompound, Integer>, CompoundOrderedBlockListComparator, Pair<BlockState, NbtCompound>> {
+public class CompoundBlockListComparator extends AbstractBlockListComparator<CompoundBlockList, Pair<NbtCompound, Integer>, CompoundOrderedBlockListComparator, Pair<BlockState, NbtCompound>> {
+
+    /**
+     * init a comparator
+     * @param comparator the comparator that will be fused
+     */
+    public CompoundBlockListComparator(CompoundBlockListComparator comparator){
+        super(comparator);
+    }
     /**
      * init a comparator
      *

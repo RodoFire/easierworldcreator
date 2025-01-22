@@ -1,9 +1,12 @@
 package net.rodofire.easierworldcreator.client.hud.widget;
 
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.text.Text;
 import org.jetbrains.annotations.Nullable;
 
+@Environment(EnvType.CLIENT)
 public class IntegerEntryWidget extends AbstractEntryWidget {
     public IntegerEntryWidget(TextRenderer textRenderer, int x, int y, int width, int height, Text text) {
         super(textRenderer, x, y, width, height, text);

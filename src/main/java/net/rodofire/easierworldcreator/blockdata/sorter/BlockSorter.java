@@ -4,7 +4,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.random.Random;
 import net.rodofire.easierworldcreator.blockdata.blocklist.basic.DefaultBlockList;
-import net.rodofire.easierworldcreator.blockdata.blocklist.ordered.comparator.OrderedBlockListComparator;
+import net.rodofire.easierworldcreator.blockdata.blocklist.ordered.comparator.AbstractOrderedBlockListComparator;
 import net.rodofire.easierworldcreator.util.ListUtil;
 import net.rodofire.easierworldcreator.util.WorldGenUtil;
 
@@ -336,7 +336,7 @@ public class BlockSorter {
      * @param <W>              the object related to the orderedBlockListComparator
      * @return a list of W of BlockStates and BlockPos
      */
-    public <W extends OrderedBlockListComparator<U>, U> W sortBlockList(W defaultBlockList) {
+    public <W extends AbstractOrderedBlockListComparator<U>, U> W sortBlockList(W defaultBlockList) {
 
         return switch (this.type) {
             case ALONG_AXIS -> {

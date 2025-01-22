@@ -1,4 +1,4 @@
-package net.rodofire.easierworldcreator.mixin;
+package net.rodofire.easierworldcreator.mixin.world.structure;
 
 import net.minecraft.structure.StructureTemplate;
 import org.spongepowered.asm.mixin.Mixin;
