@@ -5,9 +5,10 @@ import net.minecraft.client.gui.screen.ConfirmLinkScreen;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Util;
-import net.rodofire.easierworldcreator.EasierWorldCreator;
+import net.rodofire.easierworldcreator.Ewc;
 import net.rodofire.easierworldcreator.client.hud.widget.ImageButtonWidget;
 import net.rodofire.easierworldcreator.config.ConfigCategory;
+import net.rodofire.easierworldcreator.config.ModClientConfig;
 import net.rodofire.easierworldcreator.config.ModConfig;
 import net.rodofire.easierworldcreator.config.client.DefaultConfigScreen;
 import org.spongepowered.asm.mixin.Unique;
@@ -17,11 +18,11 @@ import java.util.List;
 
 public class EwcConfigScreen extends DefaultConfigScreen {
     //*/icons
-    private static final Identifier DISCORD_ICON = Identifier.of(EasierWorldCreator.MOD_ID, "textures/gui/discord.png");
-    private static final Identifier GITHUB_ICON = Identifier.of(EasierWorldCreator.MOD_ID, "textures/gui/github.png");
-    private static final Identifier KOFI_ICON = Identifier.of(EasierWorldCreator.MOD_ID, "textures/gui/kofi.png");
-    private static final Identifier CURSEFORGE_ICON = Identifier.of(EasierWorldCreator.MOD_ID, "textures/gui/curseforge.png");
-    private static final Identifier MODRINTH_ICON = Identifier.of(EasierWorldCreator.MOD_ID, "textures/gui/modrinth.png");
+    private static final Identifier DISCORD_ICON = Identifier.of(Ewc.MOD_ID, "textures/gui/discord.png");
+    private static final Identifier GITHUB_ICON = Identifier.of(Ewc.MOD_ID, "textures/gui/github.png");
+    private static final Identifier KOFI_ICON = Identifier.of(Ewc.MOD_ID, "textures/gui/kofi.png");
+    private static final Identifier CURSEFORGE_ICON = Identifier.of(Ewc.MOD_ID, "textures/gui/curseforge.png");
+    private static final Identifier MODRINTH_ICON = Identifier.of(Ewc.MOD_ID, "textures/gui/modrinth.png");
 
 
     //links
@@ -32,8 +33,8 @@ public class EwcConfigScreen extends DefaultConfigScreen {
     private static final String MODRINTH_LINK = "https://modrinth.com/mod/ewc";
 
 
-    public EwcConfigScreen(Screen parent, ModConfig config, String modId) {
-        super(parent, config, modId, Identifier.of(EasierWorldCreator.MOD_ID, "textures/gui/config_background.png"), 1920, 1080, 0xAFAFAFFF, 0xD8000000);
+    public EwcConfigScreen(Screen parent, ModClientConfig config, String modId) {
+        super(parent, config, modId, Identifier.of(Ewc.MOD_ID, "textures/gui/config_background.png"), 1920, 1080, 0xFFAFAFAF, 0xB8000000);
     }
 
     @Override

@@ -16,8 +16,11 @@
   "icon": "assets/easierworldcreator/icon.png",
   "environment": "*",
   "entrypoints": {
-    "main": [
-      "net.rodofire.easierworldcreator.EasierWorldCreator"
+    "server": [
+      "net.rodofire.easierworldcreator.Ewc"
+    ],
+    "client": [
+      "net.rodofire.easierworldcreator.EwcClient"
     ],
     "modmenu": [
       "net.rodofire.easierworldcreator.config.client.ModMenuConfigScreen"

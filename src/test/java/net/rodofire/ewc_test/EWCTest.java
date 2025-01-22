@@ -19,8 +19,8 @@ public class EWCTest implements ModInitializer {
 
     @Override
     public void onInitialize() {
-        FeaturesRelated.ModItems.registerModItems();
-        FeaturesRelated.ModBlocks.registerModBlocks();
+//        FeaturesRelated.ModBlocks.registerModBlocks();
+//        FeaturesRelated.ModItems.registerModItems();
         FeaturesRelated.ModFeatures.addFeatures();
         BiomeModifications.addFeature(BiomeSelectors.includeByKey(BiomeKeys.PLAINS, BiomeKeys.BEACH, BiomeKeys.FOREST, BiomeKeys.TAIGA, BiomeKeys.BIRCH_FOREST), GenerationStep.Feature.TOP_LAYER_MODIFICATION, FeaturesRelated.ModPLacedFeatures.FEATURE_TESTER);
 
