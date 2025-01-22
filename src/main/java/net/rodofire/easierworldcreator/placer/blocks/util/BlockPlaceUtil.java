@@ -5,6 +5,7 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.registry.DynamicRegistryManager;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.random.Random;
 import net.minecraft.world.StructureWorldAccess;
@@ -121,9 +122,10 @@ public class BlockPlaceUtil {
         if (compound != null) {
             BlockEntity entity = world.getBlockEntity(pos);
             if (entity != null) {
-                NbtCompound currentNbt = entity.createNbtWithIdentifyingData();
+                DynamicRegistryManager registry =  world.getRegistryManager();
+                NbtCompound currentNbt = entity.createNbtWithIdentifyingData(registry);
                 currentNbt.copyFrom(compound);
-                entity.readNbt(currentNbt);
+                entity.read(currentNbt, registry);
                 entity.markDirty();
             }
         }

@@ -14,7 +14,7 @@ public class CancelScreen extends Screen {
     private Screen parent;
     private Screen base;
 
-    protected CancelScreen(Screen parent, Screen base) {
+    public CancelScreen(Screen parent, Screen base) {
         super(Text.translatable("config.ewc.cancel"));
         this.parent = parent;
         this.base = base;
@@ -41,7 +41,7 @@ public class CancelScreen extends Screen {
 
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
-        this.renderBackground(context);
+        this.renderBackground(context, mouseX, mouseY, delta);
         super.render(context, mouseX, mouseY, delta);
         MultilineText.create(textRenderer, Text.translatable("config.ewc.wanna_quit"), 2 * this.width / 3).drawCenterWithShadow(context, this.width / 2, this.height / 4, 30, 0xFFFFFF);
 

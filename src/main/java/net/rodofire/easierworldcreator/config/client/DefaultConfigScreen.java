@@ -1,6 +1,5 @@
 package net.rodofire.easierworldcreator.config.client;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
@@ -13,13 +12,15 @@ import net.minecraft.client.gui.tooltip.Tooltip;
 import net.minecraft.client.gui.widget.TextWidget;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
-import net.rodofire.easierworldcreator.EasierWorldCreator;
+import net.rodofire.easierworldcreator.Ewc;
+import net.rodofire.easierworldcreator.client.hud.screen.AbstractInfoScreen;
 import net.rodofire.easierworldcreator.client.hud.widget.ImageButtonWidget;
 import net.rodofire.easierworldcreator.client.hud.widget.IntegerEntryWidget;
 import net.rodofire.easierworldcreator.client.hud.widget.ScrollBarWidget;
 import net.rodofire.easierworldcreator.client.hud.widget.TextButtonWidget;
 import net.rodofire.easierworldcreator.config.ConfigCategory;
-import net.rodofire.easierworldcreator.config.ModConfig;
+import net.rodofire.easierworldcreator.config.ModClientConfig;
+import net.rodofire.easierworldcreator.config.objects.AbstractConfigObject;
 import net.rodofire.easierworldcreator.config.objects.BooleanConfigObject;
 import net.rodofire.easierworldcreator.config.objects.EnumConfigObject;
 import net.rodofire.easierworldcreator.config.objects.IntegerConfigObject;
@@ -28,7 +29,12 @@ import java.util.*;
 
 @Environment(EnvType.CLIENT)
 public class DefaultConfigScreen extends AbstractConfigScreen {
-    private final Screen parent;
+    protected final Screen parent;
+
+    List<Drawable> elements = new ArrayList<>();
+
+    private final int UP_PADDING = 40;
+    private final int DOWN_PADDING = 35;
 
     /**
      * used to knox where the mouse is and how we should put the "hole"
@@ -36,171 +42,114 @@ public class DefaultConfigScreen extends AbstractConfigScreen {
     int mouseY = 0;
     boolean bl = false;
 
-    private int currentCategoryIndex = 0;
-    private final int maxCategoriesVisible = 5;
-    private Identifier TEXTURE = Screen.OPTIONS_BACKGROUND_TEXTURE;
+    protected int currentCategoryIndex = 0;
+    protected final int maxCategoriesVisible = 5;
 
-    int backgroundHeight = 32;
-    int backgroundWidth = 32;
-    int backgroundShaderColor = 0x3F3F3FFF;
+
+    protected short maxScrollY = 0;
+
+    protected boolean cancelScreen = false;
+    protected boolean restartScreen = false;
+
+    protected List<Short> heights = new ArrayList<>();
+    protected Map<Short, Boolean> widths = new LinkedHashMap<>();
+
     int backgroundDarkRectangleShaderColor = 0xD8000000;
 
-    private final int[] lastDimension = {0, 0};
+    ScrollBarWidget scrollbar = new ScrollBarWidget(0, 0, 0, (short) 0, button -> {
+    }, Text.of(""));
 
-    private short scrollY = 0;
-    private short maxScrollY = 0;
-
-    private boolean cancelScreen = false;
-    private boolean restartScreen = false;
-
-
-    /**
-     * precalculated shader color values
-     */
-    private float backgroundShaderGreen = 0.67f;
-    private float backgroundShaderRed = 0.67f;
-    private float backgroundShaderBlue = 0.67f;
-    private float backgroundShaderAlpha = 0.67f;
-
-    List<Short> heights = new ArrayList<>();
-    Map<Short, Boolean> widths = new LinkedHashMap<>();
-
-    public DefaultConfigScreen(Screen parent, ModConfig config, String modId) {
+    public DefaultConfigScreen(Screen parent, ModClientConfig config, String modId) {
         super(config, modId);
         this.parent = parent;
-        this.categories = config.getCategories();
-        initShaderColors();
     }
 
-    public DefaultConfigScreen(Screen parent, ModConfig config, String modId, Identifier background, int backgroundWidth, int backgroundHeight) {
-        super(config, modId);
+    public DefaultConfigScreen(Screen parent, ModClientConfig config, String modId, Identifier background, int backgroundWidth, int backgroundHeight) {
+        super(background, backgroundWidth, backgroundHeight, config, modId);
         this.parent = parent;
-        this.categories = config.getCategories();
-        this.TEXTURE = background;
-        this.backgroundWidth = backgroundWidth;
-        this.backgroundHeight = backgroundHeight;
-        initShaderColors();
     }
 
-    public DefaultConfigScreen(Screen parent, ModConfig config, String modId, Identifier background, int backgroundWidth, int backgroundHeight, int backgroundShaderColor, int backgroundDarkRectangleShaderColor) {
-        super(config, modId);
+    public DefaultConfigScreen(Screen parent, ModClientConfig config, String modId, Identifier background, int backgroundWidth, int backgroundHeight, int backgroundShaderColor, int backgroundDarkRectangleShaderColor) {
+        super(background, backgroundWidth, backgroundHeight, config, modId);
         this.parent = parent;
-        this.categories = config.getCategories();
-        this.TEXTURE = background;
-        this.backgroundWidth = backgroundWidth;
-        this.backgroundHeight = backgroundHeight;
-        this.backgroundShaderColor = backgroundShaderColor;
         this.backgroundDarkRectangleShaderColor = backgroundDarkRectangleShaderColor;
-        initShaderColors();
-    }
-
-    /**
-     * precalculates the shader colors
-     */
-    public void initShaderColors() {
-        this.backgroundShaderRed = (float) ((this.backgroundShaderColor & 0xFF000000) >>> 24) / 0xFF;
-        this.backgroundShaderGreen = (float) ((this.backgroundShaderColor & 0x00FF0000) >> 16) / 0xFF;
-        this.backgroundShaderBlue = (float) ((this.backgroundShaderColor & 0x0000FF00) >> 8) / 0xFF;
-        this.backgroundShaderAlpha = (float) (this.backgroundShaderColor & 0x0000000FF) / 0xFF;
     }
 
 
     @Override
     protected void init(ConfigCategory category) {
-        if (lastDimension[0] != this.width || lastDimension[1] != this.height) {
-            this.scrollY = 0;
-            lastDimension[0] = this.width;
-            lastDimension[1] = this.height;
-        }
-
         cancelScreen = false;
         int centerX = this.width / 2;
         int startY = 13;
         int buttonWidth = this.width / 8;
         int buttonHeight = 20;
 
-
         maxScrollY = (short) calculateContentHeight(category, buttonHeight);
 
         drawTopCategories(buttonWidth, buttonHeight, startY, centerX);
 
-        addElements(category, buttonHeight, startY + 27 - scrollY);
-
         drawBottomElements();
-        this.addDrawableChild(new ScrollBarWidget(this.width - 10, 40, this.height - 35, scrollY, maxScrollY, button -> System.out.println("hi"), Text.translatable("config.ewc.scroll_bar")));
+        addElements(category, buttonHeight, startY + 27 - scrollbar.getScroll());
+
+        scrollbar.refresh(this.width - 10, UP_PADDING, this.height - DOWN_PADDING, maxScrollY);
+        this.addDrawableChild(scrollbar);
+
     }
 
     /**
      * we add the config elements (booleans, integer and enums)
-     * @param category the category to choose from
+     *
+     * @param category     the category to choose from
      * @param buttonHeight the height of the buttons
-     * @param startY the start of the buttons
+     * @param startY       the start of the buttons
      */
     public void addElements(ConfigCategory category, int buttonHeight, int startY) {
-        boolean bl = false;
-        boolean write;
         if (!category.getBools().isEmpty()) {
+            heights.add((short) (startY - scrollbar.getScroll() - 1));
+            widths.put((short) (startY - scrollbar.getScroll() - 1), true);
+            this.addElementChild(new TextWidget(0, startY - scrollbar.getScroll(), 4 * this.width / 12, buttonHeight, Text.translatable("config.ewc.boolean_category"), this.textRenderer));
 
-            heights.add((short) (startY - scrollY - 1));
-            widths.put((short) (startY - scrollY - 1), true);
-            if (this.toDraw(new TextWidget(0, startY - scrollY, 4 * this.width / 12, buttonHeight, Text.translatable("config.ewc.boolean_category"), this.textRenderer), startY, buttonHeight)) {
-                bl = true;
-            }
             startY += buttonHeight + 3;
             for (BooleanConfigObject obj : category.getBools().values()) {
-                heights.add((short) (startY - scrollY - 1));
-                widths.put((short) (startY - scrollY - 1), false);
-                TextWidget textWidget = new TextWidget(5 * this.width / 24, startY - scrollY, 7 * this.width / 24, buttonHeight, Text.translatable("config." + modId + "." + obj.getKey()), this.textRenderer);
+                heights.add((short) (startY - scrollbar.getScroll() - 1));
+                widths.put((short) (startY - scrollbar.getScroll() - 1), false);
+                TextWidget textWidget = new TextWidget(5 * this.width / 24, startY - scrollbar.getScroll(), 7 * this.width / 24, buttonHeight, Text.translatable("config." + modId + "." + obj.getKey()), this.textRenderer);
                 textWidget.setTooltip(Tooltip.of(Text.translatable(obj.getDescriptionKey(modId))));
 
-                write = this.toDraw(textWidget, startY, buttonHeight);
-
-                if (!write && bl)
-                    return;
-                else if (write && !bl) {
-                    bl = true;
-                }
-
-                this.toDraw(
+                this.addElementChild(textWidget);
+                this.addElementChild(
                         new TextButtonWidget(
-                                14 * this.width / 24, startY - scrollY,
-                                3 * this.width / 12, buttonHeight,
+                                14 * this.width / 24,
+                                startY - scrollbar.getScroll(),
+                                3 * this.width / 12,
+                                buttonHeight,
                                 Text.translatable("config.ewc.boolean." + obj.getActualValue()),
                                 button -> toggleBoolean(obj, button),
-                                obj.getActualValue() ? 0x00FF00 : 0xFF0000), startY, buttonHeight
+                                obj.getActualValue() ? 0x00FF00 : 0xFF0000)
                 );
-
-                this.toDraw(addResetButton(27 * this.width / 32, startY - scrollY, obj), startY, buttonHeight);
+                addSideButtons(buttonHeight, startY, obj);
 
                 startY += buttonHeight + 3;
             }
             startY += 4;
         }
         if (!category.getInts().isEmpty()) {
-            heights.add((short) (startY - scrollY - 1));
-            widths.put((short) (startY - scrollY - 1), true);
-            write = this.toDraw(new TextWidget(0, startY - scrollY, 4 * this.width / 12, buttonHeight, Text.translatable("config.ewc.integer_category"), this.textRenderer), startY, buttonHeight);
-            if (!write && bl)
-                return;
-            else if (write && !bl) {
-                bl = true;
-            }
+            heights.add((short) (startY - scrollbar.getScroll() - 1));
+            widths.put((short) (startY - scrollbar.getScroll() - 1), true);
+            this.addElementChild(new TextWidget(0, startY - scrollbar.getScroll(), 4 * this.width / 12, buttonHeight, Text.translatable("config.ewc.integer_category"), this.textRenderer));
+
             startY += buttonHeight + 3;
 
             for (IntegerConfigObject obj : category.getInts().values()) {
-                heights.add((short) (startY - scrollY - 1));
-                widths.put((short) (startY - scrollY - 1), false);
-                TextWidget textWidget = new TextWidget(5 * this.width / 24, startY - scrollY, 7 * this.width / 24, buttonHeight, Text.translatable("config." + modId + "." + obj.getKey()), this.textRenderer);
+                heights.add((short) (startY - scrollbar.getScroll() - 1));
+                widths.put((short) (startY - scrollbar.getScroll() - 1), false);
+                TextWidget textWidget = new TextWidget(5 * this.width / 24, startY - scrollbar.getScroll(), 7 * this.width / 24, buttonHeight, Text.translatable("config." + modId + "." + obj.getKey()), this.textRenderer);
                 textWidget.setTooltip(Tooltip.of(Text.translatable(obj.getDescriptionKey(modId))));
-                write = this.toDraw(textWidget, startY, buttonHeight);
-                if (!write && bl)
-                    return;
-                else if (write && !bl) {
-                    bl = true;
-                }
+                this.addElementChild(textWidget);
+
 
                 IntegerEntryWidget integerEntryWidget = new IntegerEntryWidget(this.textRenderer,
-                        14 * this.width / 24, startY - scrollY,
+                        14 * this.width / 24, startY - scrollbar.getScroll(),
                         3 * this.width / 12, buttonHeight,
                         null, Text.literal("config_entry"), String.valueOf(obj.getActualValue()), null, (button, chr) -> this.verifyInteger(obj, button, chr));
 
@@ -208,11 +157,10 @@ public class DefaultConfigScreen extends AbstractConfigScreen {
                         Text.translatable("config.ewc.min_value").getString() + ": " + obj.getMinValue() + ", " + Text.translatable("config.ewc.max_value").getString() + ": " + obj.getMaxValue()
                 )));
 
-                this.toDraw(integerEntryWidget,
-                        startY, buttonHeight
+                this.addElementChild(
+                        integerEntryWidget
                 );
-
-                this.toDraw(addResetButton(27 * this.width / 32, startY - scrollY, obj), startY, buttonHeight);
+                addSideButtons(buttonHeight, startY, obj);
 
                 startY += buttonHeight + 3;
             }
@@ -220,41 +168,38 @@ public class DefaultConfigScreen extends AbstractConfigScreen {
         }
 
         if (!category.getEnums().isEmpty()) {
-            heights.add((short) (startY - scrollY - 1));
-            widths.put((short) (startY - scrollY - 1), true);
-            write = this.toDraw(new TextWidget(0, startY - scrollY, 4 * this.width / 12, buttonHeight, Text.translatable("config.ewc.enum_category"), this.textRenderer), startY, buttonHeight);
-            if (!write && bl)
-                return;
-            else if (write && !bl) {
-                bl = true;
-            }
+            heights.add((short) (startY - scrollbar.getScroll() - 1));
+            widths.put((short) (startY - scrollbar.getScroll() - 1), true);
+            this.addElementChild(new TextWidget(0, startY - scrollbar.getScroll(), 4 * this.width / 12, buttonHeight, Text.translatable("config.ewc.enum_category"), this.textRenderer));
+
             startY += buttonHeight + 3;
             for (EnumConfigObject obj : category.getEnums().values()) {
-                heights.add((short) (startY - scrollY - 1));
-                widths.put((short) (startY - scrollY - 1), false);
-                TextWidget textWidget = new TextWidget(5 * this.width / 24, startY - scrollY, 7 * this.width / 24, buttonHeight, Text.translatable("config." + modId + "." + obj.getKey()), this.textRenderer);
+                heights.add((short) (startY - scrollbar.getScroll() - 1));
+                widths.put((short) (startY - scrollbar.getScroll() - 1), false);
+                TextWidget textWidget = new TextWidget(5 * this.width / 24, startY - scrollbar.getScroll(), 7 * this.width / 24, buttonHeight, Text.translatable("config." + modId + "." + obj.getKey()), this.textRenderer);
                 textWidget.setTooltip(Tooltip.of(Text.translatable(obj.getDescriptionKey(modId))));
-                write = this.toDraw(textWidget, startY, buttonHeight);
-                if (!write && bl)
-                    return;
-                else if (write && !bl) {
-                    bl = true;
-                }
+                this.addElementChild(textWidget);
 
-                this.toDraw(new TextButtonWidget(14 * this.width / 24, startY - scrollY, 3 * this.width / 12, buttonHeight, Text.translatable("config." + modId + "." + obj.getActualValue()), button -> cycleEnum(obj, button)), startY, buttonHeight);
-                this.toDraw(addResetButton(27 * this.width / 32, startY - scrollY, obj), startY, buttonHeight);
+                this.addElementChild(new TextButtonWidget(14 * this.width / 24, startY - scrollbar.getScroll(), 3 * this.width / 12, buttonHeight, Text.translatable("config." + modId + "." + obj.getActualValue()), button -> cycleEnum(obj, button)));
+                addSideButtons(buttonHeight, startY, obj);
 
                 startY += buttonHeight + 3;
             }
         }
     }
 
-    protected <T extends Element & Drawable & Selectable> boolean toDraw(T drawableElement, int startY, int height) {
-        if (startY - this.scrollY >= 40 && startY + height - this.scrollY < this.height - 35) {
-            this.addDrawableChild(drawableElement);
-            return true;
+    private <T extends AbstractConfigObject<U>, U> void addSideButtons(int buttonHeight, int startY, T obj) {
+        this.addElementChild(addResetButton(27 * this.width / 32, startY - scrollbar.getScroll(), obj));
+        if (hasInfoScreen(obj)) {
+            AbstractInfoScreen screen = getInfoScreen(obj);
+            screen.setParent(this);
+            this.addElementChild(addInfoButton(27 * this.width / 32 + 22, startY - scrollbar.getScroll(), screen));
         }
-        return false;
+    }
+
+    public <T extends Element & Drawable & Selectable> T addElementChild(T element) {
+        this.elements.add(element);
+        return this.addSelectableChild(element);
     }
 
     private int calculateContentHeight(ConfigCategory category, int buttonHeight) {
@@ -294,10 +239,12 @@ public class DefaultConfigScreen extends AbstractConfigScreen {
         }
         if (categories.size() > maxCategoriesVisible) {
             if (currentCategoryIndex > 0) {
-                this.addDrawableChild(new ImageButtonWidget(centerX - 10 - (maxCategoriesVisible * buttonWidth / 2 + 15), startY, 20, buttonHeight, new Identifier(EasierWorldCreator.MOD_ID, "textures/gui/before_button.png"), button -> scrollCategories(-1)));
+
+                this.addDrawableChild(new ImageButtonWidget(centerX - 10 - (maxCategoriesVisible * buttonWidth / 2 + 15), startY, 20, buttonHeight, Identifier.of(Ewc.MOD_ID, "textures/gui/before_button.png"), button -> scrollCategories(-1)));
             }
             if (this.categories.size() - currentCategoryIndex > 5) {
-                this.addDrawableChild(new ImageButtonWidget(centerX - 10 + (maxCategoriesVisible * buttonWidth / 2 + 15), startY, 20, buttonHeight, new Identifier(EasierWorldCreator.MOD_ID, "textures/gui/after_button.png"), button -> scrollCategories(1)));
+                this.addDrawableChild(new ImageButtonWidget(centerX - 10 + (maxCategoriesVisible * buttonWidth / 2 + 15), startY, 20, buttonHeight, Identifier.of(Ewc.MOD_ID, "textures/gui/after_button.png"), button -> scrollCategories(1)));
+
             }
         }
     }
@@ -314,9 +261,14 @@ public class DefaultConfigScreen extends AbstractConfigScreen {
 
     public void openCategory(String name) {
         this.selected = this.indexes.get(name);
-        this.scrollY = 0;
         this.clearChildren();
         this.init();
+    }
+
+    @Override
+    protected void clearChildren() {
+        super.clearChildren();
+        this.elements.clear();
     }
 
     private void scrollCategories(int direction) {
@@ -330,88 +282,39 @@ public class DefaultConfigScreen extends AbstractConfigScreen {
 
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
-        this.renderBackground(context);
         super.render(context, mouseX, mouseY, delta);
-    }
-
-
-    public void renderBackground(DrawContext context) {
-        assert this.client != null;
-        if (this.client.world != null) {
-            context.fillGradient(0, 0, this.width, this.height, -1072689136, -804253680);
-        } else {
-            this.renderBackgroundTexture(context);
+        context.enableScissor(0, UP_PADDING, this.width, this.height - DOWN_PADDING);
+        for (Drawable drawable : this.elements) {
+            drawable.render(context, mouseX, mouseY, delta);
         }
+        context.disableScissor();
     }
 
     @Override
-    public void renderBackgroundTexture(DrawContext context) {
-        float textureRatio = (float) this.backgroundWidth / this.backgroundHeight;
-        float screenRatio = (float) this.width / this.height;
-
-        int renderWidth, renderHeight, offsetX, offsetY;
-        if (textureRatio == 1) {
-            context.setShaderColor(backgroundShaderRed, backgroundShaderGreen, backgroundShaderBlue, backgroundShaderAlpha);
-            context.drawTexture(
-                    TEXTURE, 0, 0,
-                    0, 0, this.width, this.height, this.backgroundWidth, this.backgroundHeight
-            );
-        } else {
-            if (screenRatio > textureRatio) {
-                renderWidth = this.width;
-                renderHeight = (int) (this.width / textureRatio);
-                offsetX = 0;
-                offsetY = (renderHeight - this.height) / 2;
+    public void renderBackgroundTexture(DrawContext context, int mouseX, int mouseY, float delta) {
+        super.renderBackgroundTexture(context, mouseX, mouseY, delta);
+        if (TEXTURE != null) {
+            int darkRectX = 0;
+            int darkRectY = 40;
+            int darkRectWidth = this.width;
+            int darkRectHeight = this.height - 75;
+            // Coordonnes du trou (zone transparente)
+            int holeY = getStartY(mouseY);
+            int holeX = getStartX();
+            int holeEndX = getEndX();
+            int holeEndY = getEndY();
+            if (holeY > darkRectY) {
+                this.renderDarkRectangle(context, darkRectX, darkRectY, darkRectX + darkRectWidth, holeY, this.backgroundDarkRectangleShaderColor);
+                this.renderDarkRectangle(context, holeEndX, holeY, darkRectX + darkRectWidth, holeY + holeEndY, this.backgroundDarkRectangleShaderColor);
             } else {
-                renderWidth = (int) (this.height * textureRatio);
-                renderHeight = this.height;
-                offsetX = (renderWidth - this.width) / 2;
-                offsetY = 0;
+
+                this.renderDarkRectangle(context, holeEndX, darkRectY, darkRectX + darkRectWidth, holeY + holeEndY, this.backgroundDarkRectangleShaderColor);
             }
+            this.renderDarkRectangle(context, darkRectX, holeY + holeEndY, darkRectX + darkRectWidth, darkRectY + darkRectHeight, this.backgroundDarkRectangleShaderColor);
+            this.renderDarkRectangle(context, darkRectX, holeY, holeX, holeY + holeEndY, this.backgroundDarkRectangleShaderColor);
 
-
-            context.setShaderColor(backgroundShaderRed, backgroundShaderGreen, backgroundShaderBlue, backgroundShaderAlpha);
-            context.drawTexture(
-                    TEXTURE,
-                    -offsetX,
-                    -offsetY,
-                    0, 0,
-                    renderWidth,
-                    renderHeight,
-                    renderWidth,
-                    renderHeight
-            );
+            context.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
         }
-
-        int darkRectX = 0;
-        int darkRectY = 40;
-        int darkRectWidth = this.width;
-        int darkRectHeight = this.height - 75;
-
-        RenderSystem.enableBlend();
-        RenderSystem.defaultBlendFunc();
-        context.setShaderColor(
-                (float) ((this.backgroundDarkRectangleShaderColor & 0x00FF0000) >> 16) / 256,
-                (float) ((this.backgroundDarkRectangleShaderColor & 0x0000FF00) >> 8) / 256,
-                (float) (this.backgroundDarkRectangleShaderColor & 0x000000FF) / 256,
-                (float) (this.backgroundDarkRectangleShaderColor >>> 24) / 256
-        );
-        // Coordonnes du trou (zone transparente)
-        int holeY = getStartY(mouseY);
-        int holeX = getStartX();
-        int holeEndX = getEndX();
-        int holeEndY = getEndY();
-        if (holeY > darkRectY) {
-            context.fill(darkRectX, darkRectY, darkRectX + darkRectWidth, holeY, this.backgroundDarkRectangleShaderColor);
-            context.fill(holeEndX, holeY, darkRectX + darkRectWidth, holeY + holeEndY, this.backgroundDarkRectangleShaderColor);
-        } else {
-
-            context.fill(holeEndX, darkRectY, darkRectX + darkRectWidth, holeY + holeEndY, this.backgroundDarkRectangleShaderColor);
-        }
-        context.fill(darkRectX, holeY + holeEndY, darkRectX + darkRectWidth, darkRectY + darkRectHeight, this.backgroundDarkRectangleShaderColor);
-        context.fill(darkRectX, holeY, holeX, holeY + holeEndY, this.backgroundDarkRectangleShaderColor);
-
-        context.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
     }
 
     public void saveExit() {
@@ -428,18 +331,29 @@ public class DefaultConfigScreen extends AbstractConfigScreen {
     }
 
     @Override
-    public boolean mouseScrolled(double mouseX, double mouseY, double amount) {
-        if (maxScrollY > 0) {
-            scrollY = (short) Math.max(0, Math.min(maxScrollY, scrollY - (int) (amount * 10)));
-            this.clearChildren();
-            this.init();
-            return true;
-        }
-        if (scrollY > 0) {
-            scrollY = 0;
-        }
-        super.mouseScrolled(mouseX, mouseY, amount);
-        return true;
+    public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount, double verticalAmount) {
+        boolean bl = super.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount);
+        scrollbar.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount);
+
+        this.clearChildren();
+        this.init();
+        return bl;
+    }
+
+    @Override
+    public boolean mouseReleased(double mouseX, double mouseY, int button) {
+        boolean bl = super.mouseReleased(mouseX, mouseY, button);
+        scrollbar.mouseReleased(mouseX, mouseY, button);
+        return bl;
+    }
+
+    @Override
+    public boolean mouseDragged(double mouseX, double mouseY, int button, double deltaX, double deltaY) {
+        boolean bl = super.mouseDragged(mouseX, mouseY, button, deltaX, deltaY);
+        scrollbar.mouseDragged(mouseX, mouseY, button, deltaX, deltaY, this.height);
+        this.clearChildren();
+        this.init();
+        return bl;
     }
 
     @Override
@@ -472,6 +386,7 @@ public class DefaultConfigScreen extends AbstractConfigScreen {
 
     /**
      * get the end pos of the "hole"
+     *
      * @return the end pos
      */
     private int getEndY() {
@@ -480,6 +395,7 @@ public class DefaultConfigScreen extends AbstractConfigScreen {
 
     /**
      * get the start pos of the "hole"
+     *
      * @return the start pos
      */
     private int getStartX() {
@@ -488,6 +404,7 @@ public class DefaultConfigScreen extends AbstractConfigScreen {
 
     /**
      * get the end pos of the "hole"
+     *
      * @return the end pos
      */
     private int getEndX() {

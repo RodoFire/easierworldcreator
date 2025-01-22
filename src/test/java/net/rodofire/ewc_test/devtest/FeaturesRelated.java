@@ -26,6 +26,10 @@ import net.minecraft.world.gen.placementmodifier.BiomePlacementModifier;
 import net.minecraft.world.gen.placementmodifier.PlacementModifier;
 import net.minecraft.world.gen.placementmodifier.RarityFilterPlacementModifier;
 import net.minecraft.world.gen.placementmodifier.SquarePlacementModifier;
+import net.rodofire.easierworldcreator.blockdata.layer.BlockLayer;
+import net.rodofire.easierworldcreator.blockdata.layer.BlockLayerComparator;
+import net.rodofire.easierworldcreator.shape.block.gen.SphereGen;
+import net.rodofire.easierworldcreator.shape.block.instanciator.AbstractBlockShapeBase;
 import net.rodofire.ewc_test.EWCTest;
 import net.rodofire.easierworldcreator.blockdata.sorter.BlockSorter;
 import net.rodofire.easierworldcreator.placer.blocks.animator.StructurePlaceAnimator;
@@ -47,7 +51,7 @@ public class FeaturesRelated {
             BlockPos pos = context.getOrigin();
 
             long startTimeCartesian = System.nanoTime();
-            //NbtPlacer placer = new NbtPlacer(world, new Identifier("village/plains/houses/plains_accessory_1"));
+            //NbtPlacer placer = new NbtPlacer(world, Identifier.of("village/plains/houses/plains_accessory_1"));
             /*SphereGen sphereGen = new SphereGen(world, pos, AbstractBlockShapeBase.PlaceMoment.ANIMATED_OTHER, 32);
             TorusGen torusGen = new TorusGen(world, pos, AbstractBlockShapeBase.PlaceMoment.ANIMATED_OTHER, 20, 50);
             BlockSorter sorter = new BlockSorter(BlockSorter.BlockSorterType.ALONG_AXIS);
@@ -63,14 +67,11 @@ public class FeaturesRelated {
             torusGen.setSecondYRotation(30);
             torusGen.place();*/
 
-            NbtPlacer placer = new NbtPlacer(world, new Identifier("village/plains/houses/plains_medium_house_2"));
-            BlockSorter sorter = new BlockSorter(BlockSorter.BlockSorterType.FROM_PLANE);
-            sorter.setCenterPoint(pos.up(3));
-            sorter.setAxisDirection(new Vec3d(0, -1, 0));
-            StructurePlaceAnimator animator = new StructurePlaceAnimator(world, sorter, StructurePlaceAnimator.AnimatorTime.CONSTANT_BLOCKS_PER_TICK);
-            animator.setBlocksPerTick(1);
-            placer.setAnimator(animator);
-            placer.place(1.0f, pos, new BlockPos(-3, 0, -7), BlockMirror.NONE, BlockRotation.NONE, true);
+
+            SphereGen sphereGen = new SphereGen(world, pos, AbstractBlockShapeBase.PlaceMoment.WORLD_GEN, 48);
+            sphereGen.setBlockLayer(new BlockLayerComparator(new BlockLayer(Blocks.REDSTONE_BLOCK.getDefaultState())));
+            sphereGen.place();
+
 
 
 
@@ -90,7 +91,7 @@ public class FeaturesRelated {
 
 
         public static RegistryKey<ConfiguredFeature<?, ?>> registerKey(String name) {
-            return RegistryKey.of(RegistryKeys.CONFIGURED_FEATURE, new Identifier(EWCTest.MOD_ID, name));
+            return RegistryKey.of(RegistryKeys.CONFIGURED_FEATURE, Identifier.of(EWCTest.MOD_ID, name));
         }
 
         private static <FC extends FeatureConfig, F extends Feature<FC>> void register(Registerable<ConfiguredFeature<?, ?>> context,
@@ -124,7 +125,7 @@ public class FeaturesRelated {
         }
 
         public static RegistryKey<PlacedFeature> registerKey(String name) {
-            return RegistryKey.of(RegistryKeys.PLACED_FEATURE, new Identifier(EWCTest.MOD_ID, name));
+            return RegistryKey.of(RegistryKeys.PLACED_FEATURE, Identifier.of(EWCTest.MOD_ID, name));
         }
 
         private static void register(Registerable<PlacedFeature> context, RegistryKey<PlacedFeature> key, RegistryEntry<ConfiguredFeature<?, ?>> configuration,
@@ -140,7 +141,7 @@ public class FeaturesRelated {
     }
 
     public static class ModBlocks {
-        public static final Block FEATURETESTER = Registry.register(Registries.BLOCK, new Identifier(EWCTest.MOD_ID, "featuretester"), new FeatureBlock(FabricBlockSettings.copyOf(Blocks.OAK_SAPLING), FeaturesRelated.ModConfiguredFeatures.FEATURE_TESTER_KEY));
+        public static final Block FEATURETESTER = Registry.register(Registries.BLOCK, Identifier.of(EWCTest.MOD_ID, "featuretester"), new FeatureBlock(FabricBlockSettings.copyOf(Blocks.OAK_SAPLING), FeaturesRelated.ModConfiguredFeatures.FEATURE_TESTER_KEY));
 
         public static void registerModBlocks() {
             EWCTest.LOGGER.info("Registering ModBlocks");
@@ -148,7 +149,7 @@ public class FeaturesRelated {
     }
 
     public static class ModItems {
-        public static final Item FEATURETESTER = Registry.register(Registries.ITEM, new Identifier(EWCTest.MOD_ID, "feature_tester"), new AliasedBlockItem(ModBlocks.FEATURETESTER, new Item.Settings()));
+        public static final Item FEATURETESTER = Registry.register(Registries.ITEM, Identifier.of(EWCTest.MOD_ID, "feature_tester"), new AliasedBlockItem(ModBlocks.FEATURETESTER, new Item.Settings()));
 
         public static void registerModItems() {
             EWCTest.LOGGER.info("Registering ModItems");
@@ -164,7 +165,7 @@ public class FeaturesRelated {
         }
 
         @Override
-        public boolean isFertilizable(WorldView world, BlockPos pos, BlockState state, boolean isClient) {
+        public boolean isFertilizable(WorldView world, BlockPos pos, BlockState state) {
             return true;
         }
 

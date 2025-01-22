@@ -1,8 +1,10 @@
 package net.rodofire.easierworldcreator.config;
 
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerWorldEvents;
-import net.rodofire.easierworldcreator.config.client.ConfigScreen;
 import net.rodofire.easierworldcreator.config.objects.AbstractConfigObject;
+import net.rodofire.easierworldcreator.config.objects.BooleanConfigObject;
+import net.rodofire.easierworldcreator.config.objects.EnumConfigObject;
+import net.rodofire.easierworldcreator.config.objects.IntegerConfigObject;
 
 import java.nio.file.Path;
 import java.util.*;
@@ -12,50 +14,79 @@ import java.util.stream.Collectors;
 public class ModConfig {
     boolean protectedConfig = false;
     private final String MOD_ID;
-    Set<ConfigCategory> categories = new LinkedHashSet<>();
+    Map<String, ConfigCategory> categories = new LinkedHashMap<>();
 
     public ModConfig(String modID) {
         this.MOD_ID = modID;
     }
 
+    public boolean isConfigProtected() {
+        return protectedConfig;
+    }
+
     public void addCategory(ConfigCategory category) {
-        categories.add(category);
+        categories.put(category.getName(), category);
     }
 
     public void addCategory(Set<ConfigCategory> categories) {
-        this.categories.addAll(categories);
+        this.categories.putAll(categories.stream().collect(Collectors.toMap(ConfigCategory::getName, c -> c)));
     }
 
     public void addCategories(ConfigCategory... categories) {
-        this.categories.addAll(Arrays.stream(categories).collect(Collectors.toSet()));
+        // Convertir les catégories en une map temporaire
+        Map<String, ConfigCategory> categoryMap = Arrays.stream(categories)
+                .collect(Collectors.toMap(ConfigCategory::getName, category -> category));
+
+        // Ajouter toutes les catégories à la map existante
+        this.categories.putAll(categoryMap);
     }
 
+
+    public String getMOD_ID() {
+        return MOD_ID;
+    }
+
+    /**
+     * method to get a category of the config
+     *
+     * @param name the name of the category
+     * @return the category related to the name
+     */
     public ConfigCategory getCategory(String name) {
-        ConfigCategory cat = categories.stream().filter(c -> c.getName().equals(name)).findFirst().orElse(null);
+        ConfigCategory cat = categories.get(name);
         if (cat == null) {
             return null;
         }
-        if (protectedConfig) {
+        if (!protectedConfig) {
             ReadableConfig reader = new ReadableConfig(MOD_ID);
             reader.refresh(cat);
         }
         return cat;
     }
 
+    public ConfigCategory getTemporaryCategory(String name) {
+        return categories.get(name);
+    }
+
     public Set<ConfigCategory> getCategories() {
-        return categories;
+        return new HashSet<>(categories.values());
     }
 
     public void refreshValues() {
         ReadableConfig reader = new ReadableConfig(MOD_ID);
-        for (ConfigCategory cat : categories) {
+        for (ConfigCategory cat : categories.values()) {
             reader.refresh(cat);
         }
     }
 
+    public void apply(ConfigCategory category) {
+        String name = category.getName();
+        categories.put(name, category);
+    }
+
     public void save() {
         Path path = ConfigUtil.getConfigPath(MOD_ID);
-        for (ConfigCategory cat : categories) {
+        for (ConfigCategory cat : categories.values()) {
             WritableConfig writer = new WritableConfig(MOD_ID, cat);
             writer.write(path.resolve(cat.getName() + ".toml"));
         }
@@ -67,10 +98,15 @@ public class ModConfig {
     }
 
     public boolean shouldRestart() {
-        return this.categories.stream()
-                .anyMatch(
-                        configCategory -> configCategory.getBools().values().stream().anyMatch(AbstractConfigObject::shouldRestart)
-                );
+        return this.categories.values().stream().anyMatch(
+                configCategory -> configCategory.getBools().values().stream().anyMatch(AbstractConfigObject::shouldRestart)
+        )
+                || this.categories.values().stream().anyMatch(
+                configCategory -> configCategory.getInts().values().stream().anyMatch(AbstractConfigObject::shouldRestart)
+        )
+                || this.categories.values().stream().anyMatch(
+                configCategory -> configCategory.getEnums().values().stream().anyMatch(AbstractConfigObject::shouldRestart)
+        );
     }
 
     public void init() {
@@ -80,8 +116,9 @@ public class ModConfig {
         }
         repair();
         refreshValues();
-        ConfigScreen.putModId(MOD_ID, this);
-        ServerWorldEvents.LOAD.register((minecraftServer, world) -> this.protectedConfig = true);
+        ServerWorldEvents.LOAD.register((minecraftServer, world) -> {
+            this.protectedConfig = true;
+        });
         ServerWorldEvents.UNLOAD.register((minecraftServer, world) -> this.protectedConfig = false);
     }
 
@@ -91,7 +128,7 @@ public class ModConfig {
 
     private void repair() {
         Path path = ConfigUtil.getConfigPath(MOD_ID);
-        for (ConfigCategory category : categories) {
+        for (ConfigCategory category : categories.values()) {
             WritableConfig writableConfig = new WritableConfig(MOD_ID, category);
             writableConfig.repairConfig(path.resolve(category.getName() + ".toml"));
         }
@@ -100,7 +137,7 @@ public class ModConfig {
     private List<ConfigCategory> shouldWrite() {
         List<ConfigCategory> configCaterories = new ArrayList<>();
         Path path = ConfigUtil.getConfigPath(MOD_ID);
-        for (ConfigCategory cat : categories) {
+        for (ConfigCategory cat : categories.values()) {
             path = path.resolve(cat.getName() + ".toml");
             if (!path.toFile().exists()) {
                 configCaterories.add(cat);
@@ -119,9 +156,25 @@ public class ModConfig {
 
     public ModConfig copy() {
         ModConfig config = new ModConfig(MOD_ID);
-        config.categories = new LinkedHashSet<>(categories);
+        config.categories = new LinkedHashMap<>(categories);
         config.protectedConfig = this.protectedConfig;
         return config;
+    }
+
+    public boolean contains(String name) {
+        return categories.containsKey(name);
+    }
+
+    public <T extends AbstractConfigObject<U>, U> boolean contains(String name, T category) {
+        boolean bl = false;
+        if(categories.containsKey(name)) {
+            if(category instanceof BooleanConfigObject && categories.get(name).getBools().containsValue(category))
+                return true;
+            if(category instanceof EnumConfigObject && categories.get(name).getEnums().containsValue(category))
+                return true;
+            return category instanceof IntegerConfigObject && categories.get(name).getInts().containsValue(category);
+        }
+        return false;
     }
 
     public void apply(ModConfig config) {
@@ -133,8 +186,8 @@ public class ModConfig {
         if (categories.size() != obj.categories.size()) {
             return false;
         }
-        Iterator<ConfigCategory> catIt = categories.iterator();
-        Iterator<ConfigCategory> catIt2 = obj.categories.iterator();
+        Iterator<ConfigCategory> catIt = categories.values().iterator();
+        Iterator<ConfigCategory> catIt2 = obj.categories.values().iterator();
         for (int i = 0; i < categories.size(); i++) {
             ConfigCategory cat = catIt.next();
             ConfigCategory cat2 = catIt2.next();

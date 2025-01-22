@@ -1,37 +1,43 @@
 package net.rodofire.easierworldcreator.config.ewc;
 
-import net.minecraft.util.Identifier;
-import net.rodofire.easierworldcreator.EasierWorldCreator;
+import net.rodofire.easierworldcreator.Ewc;
 import net.rodofire.easierworldcreator.config.ConfigCategory;
 import net.rodofire.easierworldcreator.config.ModConfig;
-import net.rodofire.easierworldcreator.config.client.ConfigScreen;
 import net.rodofire.easierworldcreator.config.objects.BooleanConfigObject;
-
-import java.util.Set;
+import net.rodofire.easierworldcreator.config.objects.IntegerConfigObject;
 
 public class EwcConfig {
-    public static final ModConfig MOD_CONFIG = new ModConfig(EasierWorldCreator.MOD_ID);
+    public static final ModConfig MOD_CONFIG = new ModConfig(Ewc.MOD_ID);
     static final ConfigCategory SERVER_CATEGORY = new ConfigCategory("server");
-    static final ConfigCategory FOO_CATEGORY = new ConfigCategory("foo");
-    static final ConfigCategory VOO_CATEGORY = new ConfigCategory("voo");
-    static final ConfigCategory WOO_CATEGORY = new ConfigCategory("woo");
-    static final ConfigCategory XOO_CATEGORY = new ConfigCategory("xoo");
-    static final ConfigCategory YOO_CATEGORY = new ConfigCategory("yoo");
     static String SERVER = "server";
+
+    private static int distance;
 
 
     public static void setConfig() {
         BooleanConfigObject bool = new BooleanConfigObject(true, "performance_mode");
         bool.requireRestart = true;
         SERVER_CATEGORY.addBoolean(bool);
-        SERVER_CATEGORY.addBoolean(new BooleanConfigObject(true, "multi_chunk_features"));
+
+        BooleanConfigObject bool2 = new BooleanConfigObject(true, "multi_chunk_features");
+
+        SERVER_CATEGORY.addBoolean(bool2);
         SERVER_CATEGORY.addBoolean(new BooleanConfigObject(true, "chat_warns"));
         SERVER_CATEGORY.addBoolean(new BooleanConfigObject(true, "log_warns"));
         SERVER_CATEGORY.addBoolean(new BooleanConfigObject(true, "log_performance_info"));
 
+        /*IntegerConfigObject integerConfigObject = new IntegerConfigObject(1, 1, 4, "features_chunk_distance", "define how much chunks can be acced by feature generation");
+        integerConfigObject.requireRestart = true;
+        SERVER_CATEGORY.addInt(integerConfigObject);*/
+
         MOD_CONFIG.addCategories(SERVER_CATEGORY);
 
         MOD_CONFIG.init();
+        initValues();
+    }
+
+    private static void initValues() {
+        distance = getFeaturesChunkDistance();
     }
 
     public static boolean getPerformanceConfig() {
@@ -49,7 +55,16 @@ public class EwcConfig {
     public static boolean getLogWarns() {
         return MOD_CONFIG.getCategory(SERVER).getBools().get("log_warns").getActualValue();
     }
+
     public static boolean getLogPerformanceInfo() {
         return MOD_CONFIG.getCategory(SERVER).getBools().get("log_performance_info").getActualValue();
+    }
+
+    public static int getFeaturesChunkDistance() {
+        /*if (MOD_CONFIG.isConfigProtected())
+            return distance;
+        distance = MOD_CONFIG.getCategory(SERVER).getInts().get("features_chunk_distance").getActualValue();
+        return distance;*/
+        return 1;
     }
 }

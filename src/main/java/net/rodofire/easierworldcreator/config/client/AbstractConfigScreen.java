@@ -1,15 +1,18 @@
 package net.rodofire.easierworldcreator.config.client;
 
-import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.tooltip.Tooltip;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
-import net.rodofire.easierworldcreator.EasierWorldCreator;
+import net.rodofire.easierworldcreator.Ewc;
+import net.rodofire.easierworldcreator.client.hud.screen.AbstractInfoScreen;
+import net.rodofire.easierworldcreator.client.hud.screen.BackgroundScreen;
 import net.rodofire.easierworldcreator.client.hud.widget.AbstractEntryWidget;
 import net.rodofire.easierworldcreator.client.hud.widget.ImageButtonWidget;
+import net.rodofire.easierworldcreator.client.hud.widget.InfoButtonWidget;
 import net.rodofire.easierworldcreator.client.hud.widget.TextButtonWidget;
 import net.rodofire.easierworldcreator.config.ConfigCategory;
+import net.rodofire.easierworldcreator.config.ModClientConfig;
 import net.rodofire.easierworldcreator.config.ModConfig;
 import net.rodofire.easierworldcreator.config.objects.AbstractConfigObject;
 import net.rodofire.easierworldcreator.config.objects.BooleanConfigObject;
@@ -18,40 +21,78 @@ import net.rodofire.easierworldcreator.config.objects.IntegerConfigObject;
 import org.spongepowered.include.com.google.common.collect.BiMap;
 import org.spongepowered.include.com.google.common.collect.HashBiMap;
 
+import java.util.Map;
 import java.util.Set;
 
-public abstract class AbstractConfigScreen extends Screen {
+public abstract class AbstractConfigScreen extends BackgroundScreen {
     protected int selected = 0;
 
     protected final String modId;
 
+    ModClientConfig clientConfig;
     private final ModConfig config;
     private final ModConfig copy;
 
     Set<ConfigCategory> categories;
+    ConfigCategory category;
     protected final BiMap<String, Integer> indexes = HashBiMap.create();
 
-    protected AbstractConfigScreen(ModConfig config, String modId) {
+    protected AbstractConfigScreen(ModClientConfig config, String modId) {
         super(Text.translatable("config.screen." + modId + ".title"));
+        this.clientConfig = config;
         this.modId = modId;
-        this.config = config;
-        this.copy = config.copy();
-        this.categories = config.getCategories();
+        this.config = config.getConfig();
+        this.copy = config.getConfig().copy();
+        this.categories = config.getConfig().getCategories();
         this.initIndexes();
+        renitCategory();
+    }
+
+    public AbstractConfigScreen(Identifier background, int backgroundWidth, int backgroundHeight, ModClientConfig config, String modId) {
+        super(Text.translatable("config.screen." + modId + ".title"), background, backgroundWidth, backgroundHeight);
+        this.clientConfig = config;
+        this.config = config.getConfig();
+        this.modId = modId;
+        this.copy = config.getConfig().copy();
+        this.categories = config.getConfig().getCategories();
+        this.initIndexes();
+        renitCategory();
+    }
+
+    public AbstractConfigScreen(Identifier background, int backgroundWidth, int backgroundHeight, int backgroundShaderColor, ModClientConfig config, String modId) {
+        super(Text.translatable("config.screen." + modId + ".title"), background, backgroundWidth, backgroundHeight, backgroundShaderColor);
+        this.clientConfig = config;
+        this.config = config.getConfig();
+        this.modId = modId;
+        this.copy = config.getConfig().copy();
+        this.categories = config.getConfig().getCategories();
+        this.initIndexes();
+        renitCategory();
     }
 
     @Override
     protected void init() {
-        ConfigCategory category = copy.getCategory(indexes.inverse().get(selected));
+        copy.apply(category);
+        renitCategory();
         this.init(category);
+    }
+
+    private void renitCategory() {
+        category = copy.getTemporaryCategory(indexes.inverse().get(selected));
     }
 
     protected abstract void init(ConfigCategory category);
 
     public <T extends AbstractConfigObject<U>, U> ImageButtonWidget addResetButton(int startX, int yOffset, T obj) {
-        ImageButtonWidget buttonWidget = new ImageButtonWidget(startX, yOffset, 20, 20, new Identifier(EasierWorldCreator.MOD_ID, "textures/gui/reset_button.png"), press -> reset(obj));
+
+        ImageButtonWidget buttonWidget = new ImageButtonWidget(startX, yOffset, 20, 20, Identifier.of(Ewc.MOD_ID, "textures/gui/reset_button.png"), press -> reset(obj));
+
         buttonWidget.setTooltip(Tooltip.of(Text.translatable("config.ewc.reset")));
         return buttonWidget;
+    }
+
+    public <T extends AbstractInfoScreen> InfoButtonWidget addInfoButton(int startX, int yOffset, T obj) {
+        return new InfoButtonWidget(startX, yOffset, 20, 20, obj);
     }
 
     private void initIndexes() {
@@ -60,6 +101,15 @@ public abstract class AbstractConfigScreen extends Screen {
             indexes.put(category.getName(), i);
             i++;
         }
+    }
+
+    protected boolean hasInfoScreen(AbstractConfigObject<?> category) {
+        Map<AbstractConfigObject<?>, AbstractInfoScreen> a = clientConfig.getCategoryScreens(this.category.getName());
+        return a != null && a.containsKey(category);
+    }
+
+    protected AbstractInfoScreen getInfoScreen(AbstractConfigObject<?> category) {
+        return clientConfig.getCategoryScreens(this.category.getName()).get(category);
     }
 
     protected void toggleBoolean(BooleanConfigObject configObject, ButtonWidget button) {

@@ -6,6 +6,7 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.registry.DynamicRegistryManager;
 import net.minecraft.structure.StructurePlacementData;
 import net.minecraft.structure.StructureTemplate;
 import net.minecraft.util.math.BlockPos;
@@ -18,7 +19,7 @@ import net.rodofire.easierworldcreator.blockdata.blocklist.basic.comparator.Comp
 import net.rodofire.easierworldcreator.blockdata.blocklist.basic.comparator.FullBlockListComparator;
 import net.rodofire.easierworldcreator.blockdata.blocklist.ordered.comparator.AbstractOrderedBlockListComparator;
 import net.rodofire.easierworldcreator.maths.MathUtil;
-import net.rodofire.easierworldcreator.mixin.StructureTemplateMixin;
+import net.rodofire.easierworldcreator.mixin.world.structure.StructureTemplateMixin;
 import net.rodofire.easierworldcreator.placer.blocks.animator.StructurePlaceAnimator;
 import net.rodofire.easierworldcreator.placer.blocks.util.BlockPlaceUtil;
 
@@ -152,10 +153,11 @@ public class StructureUtil {
                         if (tag != null) {
                             BlockEntity blockEntity = world.getBlockEntity(pos);
                             if (blockEntity != null) {
-                                NbtCompound currentNbt = blockEntity.createNbtWithIdentifyingData();
+                                DynamicRegistryManager registry =  world.getRegistryManager();
+                                NbtCompound currentNbt = blockEntity.createNbtWithIdentifyingData(registry);
                                 currentNbt.copyFrom(tag);
 
-                                blockEntity.readNbt(currentNbt);
+                                blockEntity.read(currentNbt, registry);
                                 blockEntity.markDirty();
                             }
                         }

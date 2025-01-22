@@ -19,6 +19,7 @@ import net.minecraft.text.MutableText;
 import net.minecraft.text.OrderedText;
 import net.minecraft.text.Style;
 import net.minecraft.text.Text;
+import net.minecraft.util.StringHelper;
 import net.minecraft.util.Util;
 import net.minecraft.util.math.MathHelper;
 import org.jetbrains.annotations.Nullable;
@@ -60,14 +61,14 @@ public abstract class AbstractEntryWidget extends ClickableWidget implements Dra
     @Nullable
     private Text placeholder;
 
-    AbstractEntryWidget.PressAction onPress;
-    AbstractEntryWidget.TypeAction onType;
+    PressAction onPress;
+    TypeAction onType;
 
     public AbstractEntryWidget(TextRenderer textRenderer, int x, int y, int width, int height, Text text) {
         this(textRenderer, x, y, width, height, null, text, "", null, null);
     }
 
-    public AbstractEntryWidget(TextRenderer textRenderer, int x, int y, int width, int height, @Nullable AbstractEntryWidget copyFrom, Text text, String defaultText, AbstractEntryWidget.PressAction pressAction, AbstractEntryWidget.TypeAction typeAction) {
+    public AbstractEntryWidget(TextRenderer textRenderer, int x, int y, int width, int height, @Nullable AbstractEntryWidget copyFrom, Text text, String defaultText, PressAction pressAction, TypeAction typeAction) {
         super(x, y, width, height, text);
         this.textRenderer = textRenderer;
         if (copyFrom != null) {
@@ -146,21 +147,27 @@ public abstract class AbstractEntryWidget extends ClickableWidget implements Dra
         int i = Math.min(this.selectionStart, this.selectionEnd);
         int j = Math.max(this.selectionStart, this.selectionEnd);
         int k = this.maxLength - this.text.length() - (i - j);
-        String string = SharedConstants.stripInvalidChars(text);
-        int l = string.length();
-        if (k < l) {
-            string = string.substring(0, k);
-            l = k;
-        }
+        if (k > 0) {
+            String string = StringHelper.stripInvalidChars(text);
+            int l = string.length();
+            if (k < l) {
+                if (Character.isHighSurrogate(string.charAt(k - 1))) {
+                    k--;
+                }
 
-        String string2 = new StringBuilder(this.text).replace(i, j, string).toString();
-        if (this.textPredicate.test(string2)) {
-            if (!this.customWrite(text, this.text))
-                this.text = string2;
-            this.setSelectionStart(i + l);
-            this.setSelectionEnd(this.selectionStart);
-            this.onChanged(this.text);
-            this.onType(this.text);
+                string = string.substring(0, k);
+                l = k;
+            }
+
+            String string2 = new StringBuilder(this.text).replace(i, j, string).toString();
+            if (this.textPredicate.test(string2)) {
+                if (!this.customWrite(text, this.text))
+                    this.text = string2;
+                this.setSelectionStart(i + l);
+                this.setSelectionEnd(this.selectionStart);
+                this.onChanged(this.text);
+                this.onType(this.text);
+            }
         }
     }
 
@@ -371,11 +378,10 @@ public abstract class AbstractEntryWidget extends ClickableWidget implements Dra
     public boolean charTyped(char chr, int modifiers) {
         if (!this.isActive()) {
             return false;
-        } else if (SharedConstants.isValidChar(chr)) {
+        } else if (StringHelper.isValidChar(chr)) {
             if (this.editable && this.canWrite(chr)) {
                 this.write(Character.toString(chr));
             }
-
             return true;
         } else {
             return false;
@@ -405,7 +411,7 @@ public abstract class AbstractEntryWidget extends ClickableWidget implements Dra
     }
 
     @Override
-    public void renderButton(DrawContext context, int mouseX, int mouseY, float delta) {
+    protected void renderWidget(DrawContext context, int mouseX, int mouseY, float delta) {
         if (this.isVisible()) {
             if (this.drawsBackground()) {
                 int i = this.isFocused() ? -1 : -6250336;
