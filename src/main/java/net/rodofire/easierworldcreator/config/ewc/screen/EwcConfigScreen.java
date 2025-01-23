@@ -11,7 +11,9 @@ import net.rodofire.easierworldcreator.Ewc;
 import net.rodofire.easierworldcreator.client.hud.widget.ImageButtonWidget;
 import net.rodofire.easierworldcreator.config.ConfigCategory;
 import net.rodofire.easierworldcreator.config.ModClientConfig;
+import net.rodofire.easierworldcreator.config.ModConfig;
 import net.rodofire.easierworldcreator.config.client.DefaultConfigScreen;
+import net.rodofire.easierworldcreator.config.ewc.EwcClientConfig;
 import org.spongepowered.asm.mixin.Unique;
 
 import java.util.ArrayList;
@@ -35,8 +37,8 @@ public class EwcConfigScreen extends DefaultConfigScreen {
     private static final String MODRINTH_LINK = "https://modrinth.com/mod/ewc";
 
 
-    public EwcConfigScreen(Screen parent, ModConfig config, String modId) {
-        super(parent, config, modId, Identifier.of(Ewc.MOD_ID, "textures/gui/config_background.png"), 1920, 1080, 0xAFAFAFFF, 0xD8000000);
+    public EwcConfigScreen(Screen parent) {
+        super(parent, EwcClientConfig.CLIENT_CONFIG, Ewc.MOD_ID, Identifier.of(Ewc.MOD_ID, "textures/gui/config_background.png"), 1920, 1080, 0xAFAFAFFF, 0xD8000000);
     }
 
     @Override
