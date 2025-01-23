@@ -12,7 +12,7 @@ public class ModMenuConfigScreen implements ModMenuApi {
 
     @Override
     public ConfigScreenFactory<?> getModConfigScreenFactory() {
-        return parent -> new EwcConfigScreen(parent, EwcClientConfig.CLIENT_CONFIG, Ewc.MOD_ID);
+        return EwcConfigScreen::new;
     }
 
     @Override
