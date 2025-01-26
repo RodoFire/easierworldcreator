@@ -37,6 +37,38 @@ public class MathUtil {
     }
 
     /**
+     * method to get a random opposite with a 50% chance
+     *
+     * @param random the random that will be used to get the value
+     * @return a random opposite
+     */
+    public static int getRandomOpposite(Random random) {
+        return (random.nextBetween(0, 1) == 0) ? 1 : -1;
+    }
+
+    /**
+     * method to get a random opposite with the wanted chance
+     *
+     * @param chance the chance of -1 being selected
+     * @param random the random that will be used to get the value
+     * @return a random opposite
+     */
+    public static int getRandomOpposite(Random random, float chance) {
+        return (random.nextFloat() <= chance) ? 1 : -1;
+    }
+
+    /**
+     * method to get a random boolean
+     *
+     * @param chance the chance of true being selected
+     * @param random the random that will be used to get the value
+     * @return the random boolean
+     */
+    public static boolean getRandomBoolean(Random random, float chance) {
+        return random.nextFloat() < chance;
+    }
+
+    /**
      * method to get the sign of a number
      *
      * @param a the int to compare
