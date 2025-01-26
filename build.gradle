@@ -41,6 +41,7 @@ loom {
 			runDir "build/datagen"
 		}
 	}
+	accessWidenerPath = file("src/main/resources/easierworldcreator.accesswidener")
 }
 dependencies {
 	// To change the versions see the gradle.properties file
@@ -52,8 +53,9 @@ dependencies {
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 
 	modApi "com.terraformersmc:modmenu:11.0.1"
-	implementation 'com.moandjiezana.toml:toml4j:0.7.2'
-
+	include'com.moandjiezana.toml:toml4j:0.7.2'
+	implementation'com.moandjiezana.toml:toml4j:0.7.2'
+	testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
 }
 
 processResources {
@@ -111,7 +113,7 @@ publishMods {
 	}
 }
 static def getApiKey() {
-	def Properties props = new Properties()
+	Properties props = new Properties()
 	props.load(new FileInputStream(new File('api.properties')))
 	return props
 }
