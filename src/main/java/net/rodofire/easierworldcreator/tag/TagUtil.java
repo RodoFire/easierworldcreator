@@ -13,13 +13,12 @@ import java.util.Set;
 /**
  * Util class related to tags
  */
+@SuppressWarnings("unused")
 public class TagUtil {
     public static class BlockTags {
         public static Set<Block> convertBlockTagToBlockSet(TagKey<Block> blockTag) {
             Set<Block> blocks = new HashSet<>();
-            Registries.BLOCK.iterateEntries(blockTag).forEach(block -> {
-                blocks.add(block.value());
-            });
+            Registries.BLOCK.iterateEntries(blockTag).forEach(block -> blocks.add(block.value()));
             return blocks;
         }
 
@@ -33,6 +32,7 @@ public class TagUtil {
 
         /**
          * convert a blockTag to an array
+         *
          * @param blockTags the converted blockTag
          * @return the converted array
          */
@@ -59,23 +59,22 @@ public class TagUtil {
 
     public static class ItemTags {
         public static Set<Item> convertItemTagToItemSet(TagKey<Item> blockTag) {
-            Set<Item> blocks = new HashSet<>();
-            Registries.ITEM.iterateEntries(blockTag).forEach(block -> {
-                blocks.add(block.value());
-            });
-            return blocks;
+            Set<Item> items = new HashSet<>();
+            Registries.ITEM.iterateEntries(blockTag).forEach(block -> items.add(block.value()));
+            return items;
         }
 
         public static Set<Item> convertItemTagToItemSet(List<TagKey<Item>> blockTags) {
-            Set<Item> blocks = new HashSet<>();
+            Set<Item> items = new HashSet<>();
             for (TagKey<Item> blockTag : blockTags) {
-                blocks.addAll(convertItemTagToItemSet(blockTag));
+                items.addAll(convertItemTagToItemSet(blockTag));
             }
-            return blocks;
+            return items;
         }
 
         /**
          * convert an ItemTag to an array
+         *
          * @param blockTags the converted ItemTag
          * @return the converted array
          */
@@ -90,10 +89,10 @@ public class TagUtil {
             Item[][] result = new Item[blockTags.size()][];
 
             for (int i = 0; i < blockTags.size(); i++) {
-                TagKey<Item> blockTag = blockTags.get(i);
-                List<Item> blocks = new ArrayList<>();
-                Registries.ITEM.iterateEntries(blockTag).forEach(block -> blocks.add(block.value()));
-                result[i] = blocks.toArray(new Item[0]);
+                TagKey<Item> itemsTag = blockTags.get(i);
+                List<Item> items = new ArrayList<>();
+                Registries.ITEM.iterateEntries(itemsTag).forEach(block -> items.add(block.value()));
+                result[i] = items.toArray(new Item[0]);
             }
 
             return result;
