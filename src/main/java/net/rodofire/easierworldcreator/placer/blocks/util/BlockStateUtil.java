@@ -79,20 +79,4 @@ public class BlockStateUtil {
         }
         return comparator;
     }
-
-    public static Set<Block> convertBlockTagToBlockList(TagKey<Block> blockTag) {
-        Set<Block> blocks = new HashSet<>();
-        Registries.BLOCK.iterateEntries(blockTag).forEach(block -> {
-            blocks.add(block.value());
-        });
-        return blocks;
-    }
-
-    public static Set<Block> convertBlockTagToBlockList(List<TagKey<Block>> blockTags) {
-        Set<Block> blocks = new HashSet<>();
-        for (TagKey<Block> blockTag : blockTags) {
-            blocks.addAll(convertBlockTagToBlockList(blockTag));
-        }
-        return blocks;
-    }
 }

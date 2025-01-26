@@ -11,6 +11,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.rodofire.easierworldcreator.entity.EntityUtil;
 import net.rodofire.easierworldcreator.placer.blocks.util.BlockStateUtil;
+import net.rodofire.easierworldcreator.tag.TagUtil;
 import net.rodofire.easierworldcreator.util.WorldGenUtil;
 
 import java.util.HashSet;
@@ -44,7 +45,7 @@ public class JumpVerification {
         this.endPos = endPos;
         this.initial = initial;
         this.totalTime = totalTick;
-        this.allowed = BlockStateUtil.convertBlockTagToBlockList(allowed);
+        this.allowed = TagUtil.BlockTags.convertBlockTagToBlockSet(allowed);
     }
 
     public JumpVerification(Entity entity, BlockPos endPos, Vec3d initial, int totalTick, List<TagKey<Block>> allowed, Set<BlockPos> passing, Set<BlockPos> verified) {
@@ -52,7 +53,7 @@ public class JumpVerification {
         this.endPos = endPos;
         this.initial = initial;
         this.totalTime = totalTick;
-        this.allowed = BlockStateUtil.convertBlockTagToBlockList(allowed);
+        this.allowed = TagUtil.BlockTags.convertBlockTagToBlockSet(allowed);
         this.passing = new HashSet<>(passing);
         this.verified = new HashSet<>(verified);
 
