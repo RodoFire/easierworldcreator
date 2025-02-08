@@ -1,7 +1,12 @@
 package net.rodofire.easierworldcreator.blockdata;
 
 import net.minecraft.block.Block;
+import net.minecraft.block.BlockState;
 import net.minecraft.registry.tag.TagKey;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.StructureWorldAccess;
+import net.rodofire.easierworldcreator.tag.TagUtil;
+import net.rodofire.easierworldcreator.util.LongPosHelper;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -27,27 +32,17 @@ public class StructurePlacementRuleManager {
      * but it is present in the Set, it will not be replaced.
      */
     private Set<Block> overriddenBlocks = new HashSet<>();
-    /**
-     * Define which blocks can deviate from the rule defined by {@code force}
-     * <p>
-     * meaning that if a block is not supposed to be replaced,
-     * but it is present in the BlockTag, it will be replaced anyway.
-     * <p>
-     * Work the other way around: if a block is supposed to be replaced because {@code force = true},
-     * but it is present in the BlockTag, it will not be replaced.
-     */
-    private Set<TagKey<Block>> overriddenTags = new HashSet<>();
 
     public StructurePlacementRuleManager() {
     }
 
     public StructurePlacementRuleManager(Set<Block> overridenBlocks) {
-        this.overriddenBlocks = overridenBlocks;
+        this.overriddenBlocks = new HashSet<>(overridenBlocks);
     }
 
     public StructurePlacementRuleManager(Set<Block> overriddenBlocks, Set<TagKey<Block>> overriddenTags) {
-        this.overriddenBlocks = overriddenBlocks;
-        this.overriddenTags = overriddenTags;
+        this.overriddenBlocks = new HashSet<>(overriddenBlocks);
+        addTagKeys(overriddenTags);
     }
 
     public StructurePlacementRuleManager(boolean force) {
@@ -56,13 +51,13 @@ public class StructurePlacementRuleManager {
 
     public StructurePlacementRuleManager(boolean force, Set<Block> overriddenBlocks) {
         this.force = force;
-        this.overriddenBlocks = overriddenBlocks;
+        this.overriddenBlocks = new HashSet<>(overriddenBlocks);
     }
 
     public StructurePlacementRuleManager(boolean force, Set<Block> overriddenBlocks, Set<TagKey<Block>> overriddenTags) {
         this.force = force;
-        this.overriddenBlocks = overriddenBlocks;
-        this.overriddenTags = overriddenTags;
+        this.overriddenBlocks = new HashSet<>(overriddenBlocks);
+        addTagKeys(overriddenTags);
     }
 
     public Set<Block> getOverriddenBlocks() {
@@ -70,15 +65,11 @@ public class StructurePlacementRuleManager {
     }
 
     public void setOverriddenBlocks(Set<Block> overriddenBlocks) {
-        this.overriddenBlocks = overriddenBlocks;
-    }
-
-    public Set<TagKey<Block>> getOverriddenTags() {
-        return overriddenTags;
+        this.overriddenBlocks = new HashSet<>(overriddenBlocks);
     }
 
     public void setOverriddenTags(Set<TagKey<Block>> overriddenTags) {
-        this.overriddenTags = overriddenTags;
+        this.overriddenBlocks = TagUtil.BlockTags.convertBlockTagToBlockSet(overriddenTags);
     }
 
     public void addOverrideBlock(Block block) {
@@ -86,7 +77,7 @@ public class StructurePlacementRuleManager {
     }
 
     public void addTagKey(TagKey<Block> tagKey) {
-        overriddenTags.add(tagKey);
+        this.overriddenBlocks.addAll(TagUtil.BlockTags.convertBlockTagToBlockSet(tagKey));
     }
 
     public void addOverrideBlocks(Set<Block> overriddenBlocks) {
@@ -94,7 +85,7 @@ public class StructurePlacementRuleManager {
     }
 
     public void addTagKeys(Set<TagKey<Block>> tagKeys) {
-        this.overriddenTags.addAll(tagKeys);
+        this.overriddenBlocks.addAll(TagUtil.BlockTags.convertBlockTagToBlockSet(tagKeys));
     }
 
     public boolean isForce() {
@@ -105,16 +96,30 @@ public class StructurePlacementRuleManager {
         this.force = force;
     }
 
+    public boolean canPlace(StructureWorldAccess worldAccess, BlockPos pos) {
+        BlockState state = worldAccess.getBlockState(pos);
+        return canPlace(state);
+    }
+
+    public boolean canPlace(StructureWorldAccess worldAccess, long pos) {
+        BlockState state = worldAccess.getBlockState(LongPosHelper.decodeBlockPos(pos));
+        return canPlace(state);
+    }
+
+    public boolean canPlace(BlockState state) {
+        if (force) {
+            return !overriddenBlocks.contains(state.getBlock());
+        }
+        return overriddenBlocks.contains(state.getBlock());
+    }
+
 
     @Override
     public String toString() {
         return "StructurePlacementRuleManager{" +
                 "force=" + force +
-                ", overriddenBlocks=" + overriddenBlocks.stream()
+                ", overriddenBlocks=" + overriddenBlocks.parallelStream()
                 .map(Block::toString)
-                .collect(Collectors.joining(", ", "[", "]")) +
-                ", tagKeys=" + overriddenTags.stream()
-                .map(TagKey::toString)
                 .collect(Collectors.joining(", ", "[", "]")) +
                 '}';
     }
