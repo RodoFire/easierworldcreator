@@ -289,7 +289,6 @@ public class BlockList {
         if (manager != null) {
             jsonObject.addProperty("force", manager.isForce());
             jsonObject.add("overriddenBlock", gson.toJsonTree(manager.getOverriddenBlocks()).getAsJsonArray());
-            jsonObject.add("overriddenTags", gson.toJsonTree(manager.getOverriddenTags()).getAsJsonArray());
         }
         if (tag != null) {
             jsonObject.addProperty("tag", tag.toString());
