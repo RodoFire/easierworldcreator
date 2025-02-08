@@ -4,9 +4,11 @@ import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
+import it.unimi.dsi.fastutil.objects.Object2ShortArrayMap;
 import it.unimi.dsi.fastutil.shorts.*;
 import net.minecraft.block.BlockState;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.util.Pair;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.rodofire.easierworldcreator.util.LongPosHelper;
@@ -34,19 +36,16 @@ public class BlockListManager {
      * <li>The map allows us to get the place of the related {@code BlockState} in the {@code posList}.
      * <li>Instead of having a time complexity of O(n), we get O(1) by using only a small amount of memory in more.
      * </ul>
-     * <p> We use a Shorts to make the link between the {@code BlockState} and the {@code List<BlockList>}.
-     * Sometimes, the {@link BlockList} would have {@link NbtCompound}, making the case possible where multiple {@code BlockState} are in common with different {@link NbtCompound}.
-     * That's why we use {@link ShortArrayList}, that is used to link {@link BlockState} to {@link NbtCompound} and the {@code List<BlockList>}
+     * <p> We use a Shorts to make the link between the {@code Pair<BlockState, NbtCompound>} and the {@code List<BlockList>}.
+     * In the case where no {@link NbtCompound} is present, we put a {@code null} value to it.
      * <p>
      * Using short as a link allow us to save two bytes of data for each {@link BlockState}. Since that it is highly unprobable that more than 32 000 {@link BlockState} are used, shorts are enough.
-     * <p> {@link NbtCompound} Share the same short as their {@link BlockState} to make the link. They are as {@code indexes} linked to a {@link ShortArrayList} in the case where 2 nbtCompounds are in common but for different blockState.
+     * <p>
      * </p>
      */
-    protected List<BlockState> stateIndexes = new ArrayList<>();
-    protected final Map<BlockState, ShortSet> indexes = new HashMap<>();
+    protected List<Pair<BlockState, NbtCompound>> stateIndexes = new ArrayList<>();
 
-    protected final Short2ObjectArrayMap<NbtCompound> tagValues = new Short2ObjectArrayMap<>();
-    protected final Map<NbtCompound, ShortSet> invertedTagIndexes = new HashMap<>();
+    protected Object2ShortArrayMap<Pair<BlockState, NbtCompound>> blockDataMap = new Object2ShortArrayMap<>();
 
     /**
      * init a comparator
@@ -54,6 +53,9 @@ public class BlockListManager {
      * @param comparator the comparator that will be fused
      */
     public BlockListManager(BlockListManager comparator) {
+        this.blockLists = comparator.blockLists;
+        this.stateIndexes = comparator.stateIndexes;
+        this.blockDataMap = comparator.blockDataMap;
     }
 
     /**
@@ -61,7 +63,8 @@ public class BlockListManager {
      *
      * @param defaultBlockLists the list of blockList that will be indexed
      */
-    public BlockListManager(List<BlockList> defaultBlockLists) {
+    public BlockListManager(List<BlockList> blockList) {
+        put(blockList);
     }
 
     /**
@@ -69,7 +72,8 @@ public class BlockListManager {
      *
      * @param defaultBlockList a blockList that will be indexed
      */
-    public BlockListManager(BlockList defaultBlockList) {
+    public BlockListManager(BlockList blockList) {
+        put(blockList);
     }
 
     /**
@@ -95,45 +99,23 @@ public class BlockListManager {
     }
 
     public BlockState getBlockState(int index) {
-        return stateIndexes.get(index);
+        return stateIndexes.get(index).getLeft();
     }
 
-    public Set<BlockState> getBlockStateSet() {
-        return this.indexes.keySet();
-    }
-
-    public int size() {
-        return blockLists.size();
+    public short size() {
+        return (short) blockLists.size();
     }
 
     public BlockListManager put(BlockState state, LongArrayList pos, NbtCompound tag) {
-        if (tag != null) {
-            if (this.invertedTagIndexes.containsKey(tag) && this.indexes.containsKey(state)) {
-                short index = getCommonIndex(this.invertedTagIndexes.get(tag), this.indexes.get(state));
-                this.blockLists.get(index).addAll(pos);
-                return this;
-            }
-            short index = (short) size();
-            this.indexes.computeIfAbsent(state, k -> new ShortOpenHashSet()).add(index);
-            this.invertedTagIndexes.computeIfAbsent(tag, k -> new ShortOpenHashSet()).add(index);
-            return this;
-        }
-
-        if (this.indexes.containsKey(state)) {
-            ShortSet set = this.indexes.get(state);
-            short index = getIndexWithoutTag(set);
-            if (index == -1) {
-                index = (short) size();
-                set.add(index);
-                this.blockLists.add(new BlockList(state, pos));
-                return this;
-            }
+        Pair<BlockState, NbtCompound> blockData = new Pair<>(state, tag);
+        if (this.blockDataMap.containsKey(blockData)) {
+            short index = this.blockDataMap.getShort(blockData);
             this.blockLists.get(index).addAll(pos);
             return this;
         }
-        short index = (short) size();
-        this.indexes.get(state).add(index);
-        this.blockLists.add(new BlockList(state, pos));
+        short index = size();
+        this.blockDataMap.put(blockData, index);
+        this.blockLists.add(new BlockList(state, tag, pos));
         return this;
     }
 
@@ -181,64 +163,20 @@ public class BlockListManager {
 
     public BlockListManager put(BlockList blockList) {
         BlockState state = blockList.getBlockState();
-        if (blockList.getTag().isPresent()) {
-            NbtCompound tag = blockList.getTag().get();
-            if (this.invertedTagIndexes.containsKey(tag) && this.indexes.containsKey(state)) {
-                short index = getCommonIndex(this.invertedTagIndexes.get(tag), this.indexes.get(state));
-                this.blockLists.get(index).addAll(blockList.getList());
-                return this;
-            }
-            short index = (short) size();
-            this.indexes.computeIfAbsent(state, k -> new ShortOpenHashSet()).add(index);
-            this.invertedTagIndexes.computeIfAbsent(tag, k -> new ShortOpenHashSet()).add(index);
-            return this;
-        }
+        NbtCompound tag = blockList.getTag().isPresent() ? blockList.getTag().get() : null;
+        Pair<BlockState, NbtCompound> blockData = new Pair<>(state, tag);
 
-        if (this.indexes.containsKey(state)) {
-            ShortSet set = this.indexes.get(state);
-            short index = getIndexWithoutTag(set);
-            if (index == -1) {
-                index = (short) size();
-                set.add(index);
-                this.blockLists.add(blockList);
-                return this;
-            }
+        if (this.blockDataMap.containsKey(blockData)) {
+            short index = this.blockDataMap.getShort(blockData);
             this.blockLists.get(index).addAll(blockList.getList());
             return this;
         }
-        short index = (short) size();
-        this.indexes.get(state).add(index);
+        short index = size();
+        this.blockDataMap.put(blockData, index);
+        this.stateIndexes.add(blockData);
         this.blockLists.add(blockList);
         return this;
     }
-
-
-    private short getCommonIndex(ShortSet set1, ShortSet set2) {
-        if (set1 != null && set2 != null) {
-            //we go through the smallest set, getting us a better performance.
-            ShortSet smaller = set1.size() < set2.size() ? set1 : set2;
-            ShortSet larger = set1.size() < set2.size() ? set2 : set1;
-
-            for (ShortIterator it = smaller.iterator(); it.hasNext(); ) {
-                short index = it.nextShort();
-                if (larger.contains(index)) {
-                    return index;
-                }
-            }
-        }
-        return -1;
-    }
-
-    private short getIndexWithoutTag(ShortSet set1) {
-        for (short index : set1) {
-            if (!this.tagValues.containsKey(index)) {
-                return index;
-            }
-        }
-        //in the case where every index of the BlockState is linked to a NbtCompound
-        return -1;
-    }
-
 
     @Override
     public String toString() {
