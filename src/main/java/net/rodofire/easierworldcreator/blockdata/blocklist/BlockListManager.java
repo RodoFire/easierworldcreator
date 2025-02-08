@@ -61,7 +61,7 @@ public class BlockListManager {
     /**
      * init a comparator
      *
-     * @param defaultBlockLists the list of blockList that will be indexed
+     * @param blockList the list of blockList that will be indexed
      */
     public BlockListManager(List<BlockList> blockList) {
         put(blockList);
@@ -70,7 +70,7 @@ public class BlockListManager {
     /**
      * init a comparator
      *
-     * @param defaultBlockList a blockList that will be indexed
+     * @param blockList a blockList that will be indexed
      */
     public BlockListManager(BlockList blockList) {
         put(blockList);
