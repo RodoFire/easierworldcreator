@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
 import net.minecraft.block.BlockState;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.structure.StructureTemplate;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
@@ -16,6 +17,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * <p>Class used to connect BlockPos to a BlockState.</p>
@@ -40,6 +42,8 @@ public class BlockList {
     private final LongArrayList posList = new LongArrayList();
     private BlockState blockState;
 
+    private NbtCompound tag;
+
 
     /**
      * init a BlockShapeManager
@@ -47,7 +51,55 @@ public class BlockList {
      * @param posList    pos of the blockState
      * @param blockState the blockState related to the pos list
      */
-    public BlockList(List<BlockPos> posList, BlockState blockState) {
+    public BlockList(BlockState blockState, NbtCompound tag, List<BlockPos> posList) {
+        addAll(posList);
+        this.blockState = blockState;
+        this.tag = tag;
+    }
+
+    /**
+     * init a BlockShapeManager
+     *
+     * @param pos   pos of the blockState
+     * @param state the blockState related to the pos list
+     */
+    public BlockList(BlockState state, NbtCompound tag, BlockPos pos) {
+        add(pos);
+        this.blockState = state;
+        this.tag = tag;
+    }
+
+    /**
+     * init a BlockShapeManager
+     *
+     * @param posList    pos of the blockState
+     * @param blockState the blockState related to the pos list
+     */
+    public BlockList(BlockState blockState, NbtCompound tag, LongArrayList posList) {
+        addAll(posList);
+        this.blockState = blockState;
+        this.tag = tag;
+    }
+
+    /**
+     * init a BlockShapeManager
+     *
+     * @param pos   pos of the blockState
+     * @param state the blockState related to the pos list
+     */
+    public BlockList(BlockState state, NbtCompound tag, long pos) {
+        add(pos);
+        this.blockState = state;
+        this.tag = tag;
+    }
+
+    /**
+     * init a BlockShapeManager
+     *
+     * @param posList    pos of the blockState
+     * @param blockState the blockState related to the pos list
+     */
+    public BlockList(BlockState blockState, List<BlockPos> posList) {
         addAll(posList);
         this.blockState = blockState;
     }
@@ -58,7 +110,29 @@ public class BlockList {
      * @param pos   pos of the blockState
      * @param state the blockState related to the pos list
      */
-    public BlockList(BlockPos pos, BlockState state) {
+    public BlockList(BlockState state, BlockPos pos) {
+        add(pos);
+        this.blockState = state;
+    }
+
+    /**
+     * init a BlockShapeManager
+     *
+     * @param posList    pos of the blockState
+     * @param blockState the blockState related to the pos list
+     */
+    public BlockList(BlockState blockState, LongArrayList posList) {
+        addAll(posList);
+        this.blockState = blockState;
+    }
+
+    /**
+     * init a BlockShapeManager
+     *
+     * @param pos   pos of the blockState
+     * @param state the blockState related to the pos list
+     */
+    public BlockList(BlockState state, long pos) {
         add(pos);
         this.blockState = state;
     }
@@ -75,8 +149,20 @@ public class BlockList {
         return this;
     }
 
+    public BlockList addAll(LongArrayList list) {
+        for (long pos : list) {
+            add(pos);
+        }
+        return this;
+    }
+
     public BlockList add(BlockPos pos) {
         posList.add(LongPosHelper.encodeBlockPos(pos));
+        return this;
+    }
+
+    public BlockList add(long pos) {
+        posList.add(pos);
         return this;
     }
 
@@ -133,6 +219,14 @@ public class BlockList {
 
     public BlockPos removeFirstPos() {
         return LongPosHelper.decodeBlockPos(this.posList.removeLong(posList.size() - 1));
+    }
+
+    public Optional<NbtCompound> getTag() {
+        return Optional.of(tag);
+    }
+
+    public void setTag(NbtCompound tag) {
+        this.tag = tag;
     }
 
     /**
@@ -192,10 +286,13 @@ public class BlockList {
 
         jsonObject.addProperty("type", blockState.toString());
         jsonObject.addProperty("state", blockState.toString());
-        if(manager != null) {
+        if (manager != null) {
             jsonObject.addProperty("force", manager.isForce());
             jsonObject.add("overriddenBlock", gson.toJsonTree(manager.getOverriddenBlocks()).getAsJsonArray());
             jsonObject.add("overriddenTags", gson.toJsonTree(manager.getOverriddenTags()).getAsJsonArray());
+        }
+        if (tag != null) {
+            jsonObject.addProperty("tag", tag.toString());
         }
         addCustomProperty(jsonObject);
 
