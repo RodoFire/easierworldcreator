@@ -5,12 +5,12 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.fastutil.objects.Object2ShortArrayMap;
-import it.unimi.dsi.fastutil.shorts.*;
 import net.minecraft.block.BlockState;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.util.Pair;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
+import net.rodofire.easierworldcreator.blockdata.sorter.BlockSorter;
 import net.rodofire.easierworldcreator.util.LongPosHelper;
 
 import java.io.IOException;
@@ -168,7 +168,7 @@ public class BlockListManager {
 
         if (this.blockDataMap.containsKey(blockData)) {
             short index = this.blockDataMap.getShort(blockData);
-            this.blockLists.get(index).addAll(blockList.getList());
+            this.blockLists.get(index).addAll(blockList.getPosList());
             return this;
         }
         short index = size();
@@ -176,6 +176,14 @@ public class BlockListManager {
         this.stateIndexes.add(blockData);
         this.blockLists.add(blockList);
         return this;
+    }
+
+    public OrderedBlockListManager getOrdered() {
+        return new OrderedBlockListManager(this);
+    }
+
+    public OrderedBlockListManager getOrderedSorted(BlockSorter.BlockSorterType type) {
+        return new BlockSorter(type).sortOrderedBlockList(new OrderedBlockListManager(this));
     }
 
     @Override

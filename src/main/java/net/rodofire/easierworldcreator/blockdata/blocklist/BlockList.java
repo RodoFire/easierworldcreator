@@ -172,12 +172,18 @@ public class BlockList {
         return this;
     }
 
+    public BlockList setPosList(LongArrayList posList) {
+        this.posList.clear();
+        this.addAll(posList);
+        return this;
+    }
+
     public BlockList set(int index, BlockPos newPos) {
         this.posList.set(index, LongPosHelper.encodeBlockPos(newPos));
         return this;
     }
 
-    public List<BlockPos> getPosList() {
+    public List<BlockPos> getConvertedPosList() {
         List<BlockPos> posList = new ArrayList<BlockPos>();
         for (long pos : this.posList) {
             posList.add(LongPosHelper.decodeBlockPos(pos));
@@ -185,7 +191,7 @@ public class BlockList {
         return posList;
     }
 
-    public LongArrayList getList() {
+    public LongArrayList getPosList() {
         return posList;
     }
 
