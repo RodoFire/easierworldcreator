@@ -2,21 +2,19 @@ package net.rodofire.easierworldcreator.placer.blocks.animator;
 
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.util.Pair;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.random.Random;
 import net.minecraft.world.StructureWorldAccess;
 import net.rodofire.easierworldcreator.Ewc;
-import net.rodofire.easierworldcreator.blockdata.blocklist.basic.DefaultBlockList;
-import net.rodofire.easierworldcreator.blockdata.blocklist.basic.comparator.AbstractBlockListComparator;
-import net.rodofire.easierworldcreator.blockdata.blocklist.ordered.comparator.CompoundOrderedBlockListComparator;
-import net.rodofire.easierworldcreator.blockdata.blocklist.ordered.comparator.DefaultOrderedBlockListComparator;
-import net.rodofire.easierworldcreator.blockdata.blocklist.ordered.comparator.AbstractOrderedBlockListComparator;
+import net.rodofire.easierworldcreator.blockdata.blocklist.BlockList;
+import net.rodofire.easierworldcreator.blockdata.blocklist.BlockListManager;
+import net.rodofire.easierworldcreator.blockdata.blocklist.OrderedBlockListManager;
 import net.rodofire.easierworldcreator.blockdata.sorter.BlockSorter;
 import net.rodofire.easierworldcreator.maths.equation.CubicEquation;
 import net.rodofire.easierworldcreator.maths.equation.QuadraticEquation;
+import net.rodofire.easierworldcreator.util.LongPosHelper;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -40,7 +38,7 @@ import java.util.concurrent.atomic.AtomicReference;
  *     {@code StructurePlaceAnimator animator = new StructurePlaceAnimator(world, blockSorter, AnimatorTime.TICKS);
  * //the structure will be placed in 50 ticks no matter the size
  * animator.setTicks(50);
- * animator.place(blockListComparator);
+ * animator.place(blockListManager);
  *     }
  * </pre>
  *
@@ -242,9 +240,9 @@ public class StructurePlaceAnimator {
      * @param blockList the list of BlockList that will be sorted
      * @return a list of pair of BlockStates and BlockPos
      */
-    List<DefaultBlockList> convertFromDividedToUnified(List<Set<DefaultBlockList>> blockList) {
-        List<DefaultBlockList> fusedList = new ArrayList<>();
-        for (Set<DefaultBlockList> set : blockList) {
+    List<BlockList> convertFromDividedToUnified(List<Set<BlockList>> blockList) {
+        List<BlockList> fusedList = new ArrayList<>();
+        for (Set<BlockList> set : blockList) {
             fusedList.addAll(set);
         }
         return fusedList;
@@ -257,22 +255,22 @@ public class StructurePlaceAnimator {
      * @param blockList the list of BlockList that will be placed
      */
     @Deprecated(forRemoval = true)
-    public void placeFromDividedBlockList(List<Set<DefaultBlockList>> blockList) {
+    public void placeFromDividedBlockList(List<Set<BlockList>> blockList) {
         if (blockListVerification(blockList)) return;
         Instant start = Instant.now();
-        List<DefaultBlockList> fusedList = convertFromDividedToUnified(blockList);
+        List<BlockList> fusedList = convertFromDividedToUnified(blockList);
         //placeFromBlockList(fusedList);
     }
 
     /**
      * method to place the structure by sorting the BlockList depending on the {@code animatorType}
      *
-     * @param comparator the comparator that will be placed
+     * @param manager the manager that will be placed
      */
-    public <T extends AbstractBlockListComparator<U, V, W, X>, U extends DefaultBlockList, V, W extends AbstractOrderedBlockListComparator<X>, X> void placeFromBlockList(T comparator) {
-        if (blockListVerification(comparator.get())) return;
+    public void placeFromBlockList(BlockListManager manager) {
+        if (blockListVerification(manager.getAll())) return;
         Instant start = Instant.now();
-        W sortedBlockList = comparator.getOrderedSorted(this.blockSorter);
+        OrderedBlockListManager sortedBlockList = manager.getOrderedSorted(this.blockSorter);
         Instant end = Instant.now();
         Duration timeElapsed = Duration.between(start, end);
         Ewc.LOGGER.info("Shape sorted list calculations took : {}ms", timeElapsed.toMillis());
@@ -298,15 +296,15 @@ public class StructurePlaceAnimator {
      * <p>Method to handle animated block placement. This has some advantages : </p>
      * <p> - Since that the placement take many ticks instead of one, it will improve user experience when placing huge structures
      * <p> - It may look better than just a structure spawning
-     * <p>The method need a {@code List<Pair<BlockState, BlockPos>>} that will be used to place the blocks.
+     * <p>The method need a {@link OrderedBlockListManager} that will be used to place the blocks.
      * <p>The method calculates the number of ticks it will take to place the structure and will then place a part of the structure depending on how much blocks per ticks should be placed.
      * <p>To place them, it registers an event happening at the end of each world tick.
      *
-     * @param comparator the {@code List<Pair<>>} that will be placed.
+     * @param manager the {@code OrderedBlockListManager} that will be placed.
      */
-    public <T extends AbstractOrderedBlockListComparator<U>, U> void place(T comparator) {
+    public void place(OrderedBlockListManager manager) {
         List<Integer> randomBlocks = new ArrayList<>();
-        int totalBlocks = comparator.posSize();
+        int totalBlocks = manager.posSize();
         AtomicReference<Float> soundPlayed = new AtomicReference<>((float) 0);
 
 
@@ -322,47 +320,38 @@ public class StructurePlaceAnimator {
         this.ticksPassed = 0;
         //calling on end server tick because end world tick wouldn't place the blocks 2 times on 3.
         ServerTickEvents.END_SERVER_TICK.register(server -> {
-            if (ticksPassed == this.ticks || comparator.getBlockPosSet().isEmpty()) {
+            if (ticksPassed == this.ticks || manager.isPosEmpty()) {
                 return;
             }
             soundPlayed.set(soundPlayed.get() + this.soundPerTicks);
 
             int blocksThisTick;
             if (animatorTime == AnimatorTime.RANDOM_BLOCKS_PER_TICK && !randomBlocks.isEmpty()) {
-                blocksThisTick = randomBlocks.remove(randomBlocks.size() - 1);
+                blocksThisTick = randomBlocks.removeLast();
             } else {
                 int block = (int) (ax2 * this.ticksPassed * this.ticksPassed + bx * this.ticksPassed + c);
-                blocksThisTick = Math.min(block, comparator.posSize());
+                blocksThisTick = Math.min(block, manager.posSize());
             }
 
-            for (int i = 0; i < blocksThisTick && !comparator.getBlockPosSet().isEmpty(); i++) {
+            for (int i = 0; i < blocksThisTick && !manager.isPosEmpty(); i++) {
                 //init the state. the block doesn't matter
-                BlockState state = Blocks.BARRIER.getDefaultState();
-                Pair<BlockPos, U> info = comparator.getLastPosPair();
-                BlockPos pos = info.getLeft();
 
-                if (comparator instanceof CompoundOrderedBlockListComparator cmp) {
-                    state = cmp.getLastBlockState();
-                } else if (comparator instanceof DefaultOrderedBlockListComparator cmp) {
-                    state = cmp.getLastBlockState();
-                }
-
-                comparator.placeLastWithDeletion(world);
 
                 if (soundPlayed.get() >= 1) {
+                    BlockState state = manager.getLast().getLeft();
+                    BlockPos pos = LongPosHelper.decodeBlockPos(manager.getLastBlockPos());
                     world.playSound(null, pos, state.getSoundGroup().getPlaceSound(), SoundCategory.BLOCKS, (float) Random.create().nextBetween(20, 100) / 10, (float) Random.create().nextBetween(5, 20) / 10);
                     soundPlayed.set(soundPlayed.get() - 1);
                 }
+                manager.placeLastNDelete(world);
             }
             ticksPassed++;
 
-            if (ticksPassed == this.ticks && !comparator.isPosEmpty()) {
-                int left = comparator.posSize();
+            if (ticksPassed == this.ticks && !manager.isPosEmpty()) {
+                int left = manager.posSize();
                 Ewc.LOGGER.info("All ticks completed, but {} blocks are still unplaced. Placing remaining blocks in final tick.", left);
-                for (int i = 0; i < left; i++) {
-                    comparator.placeLastWithDeletion(world);
-                }
-                comparator.removeAll();
+                manager.placeAllNDelete(world);
+                manager.clear();
             }
         });
     }
