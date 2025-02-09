@@ -1,14 +1,9 @@
 package net.rodofire.easierworldcreator.blockdata.blocklist;
 
-import it.unimi.dsi.fastutil.longs.LongArrayList;
 import net.minecraft.block.BlockState;
-import net.minecraft.util.math.BlockPos;
 import net.rodofire.easierworldcreator.blockdata.sorter.BlockSorter;
-import net.rodofire.easierworldcreator.util.LongPosHelper;
 
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicInteger;
 
 @SuppressWarnings("unused")
 public class BlockListHelper {

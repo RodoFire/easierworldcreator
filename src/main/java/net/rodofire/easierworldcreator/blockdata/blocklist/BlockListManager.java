@@ -106,6 +106,14 @@ public class BlockListManager {
         return (short) blockLists.size();
     }
 
+    /**
+     * Method to put a list of encoded blockPos in the manager.
+     * In the case where the pair of {@link BlockState} and {@link NbtCompound} is already present,
+     * the method will fuse the encoded posList in the related blockList.
+     * In the other case, the method will create a new BlockList linked to the pair.
+     *
+     * @return the modified instance of the manager
+     */
     public BlockListManager put(BlockState state, NbtCompound tag, LongArrayList pos) {
         Pair<BlockState, NbtCompound> blockData = new Pair<>(state, tag);
         if (this.blockDataMap.containsKey(blockData)) {

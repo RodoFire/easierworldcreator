@@ -137,6 +137,9 @@ public class BlockList {
         this.blockState = state;
     }
 
+    public BlockList(){
+    }
+
     public int size() {
         return posList.size();
     }
