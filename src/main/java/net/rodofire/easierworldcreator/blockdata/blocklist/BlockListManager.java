@@ -106,7 +106,7 @@ public class BlockListManager {
         return (short) blockLists.size();
     }
 
-    public BlockListManager put(BlockState state, LongArrayList pos, NbtCompound tag) {
+    public BlockListManager put(BlockState state, NbtCompound tag, LongArrayList pos) {
         Pair<BlockState, NbtCompound> blockData = new Pair<>(state, tag);
         if (this.blockDataMap.containsKey(blockData)) {
             short index = this.blockDataMap.getShort(blockData);
@@ -120,31 +120,31 @@ public class BlockListManager {
     }
 
     public BlockListManager put(BlockState state, NbtCompound tag, long pos) {
-        return put(state, LongArrayList.of(pos), tag);
+        return put(state, tag, LongArrayList.of(pos));
     }
 
     public BlockListManager put(BlockState state, NbtCompound tag, List<BlockPos> posList) {
-        return put(state, LongPosHelper.encodeBlockPos(posList), tag);
+        return put(state, tag, LongPosHelper.encodeBlockPos(posList));
     }
 
     public BlockListManager put(BlockState state, NbtCompound tag, BlockPos pos) {
-        return put(state, LongArrayList.of(LongPosHelper.encodeBlockPos(pos)), tag);
+        return put(state, tag, LongArrayList.of(LongPosHelper.encodeBlockPos(pos)));
     }
 
     public BlockListManager put(BlockState state, LongArrayList pos) {
-        return put(state, pos, null);
+        return put(state, null, pos);
     }
 
     public BlockListManager put(BlockState state, long pos) {
-        return put(state, LongArrayList.of(pos), null);
+        return put(state, null, LongArrayList.of(pos));
     }
 
     public BlockListManager put(BlockState state, List<BlockPos> posList) {
-        return put(state, LongPosHelper.encodeBlockPos(posList), null);
+        return put(state, null, LongPosHelper.encodeBlockPos(posList));
     }
 
     public BlockListManager put(BlockState state, BlockPos pos) {
-        return put(state, LongArrayList.of(LongPosHelper.encodeBlockPos(pos)), null);
+        return put(state, null, LongArrayList.of(LongPosHelper.encodeBlockPos(pos)));
     }
 
     public BlockListManager put(BlockList[] blockLists) {
@@ -178,6 +178,13 @@ public class BlockListManager {
         return this;
     }
 
+    public BlockListManager put(BlockListManager manager) {
+        for (BlockList blockList : manager.blockLists) {
+            put(blockList);
+        }
+        return this;
+    }
+
     public OrderedBlockListManager getOrdered() {
         return new OrderedBlockListManager(this);
     }
@@ -189,6 +196,12 @@ public class BlockListManager {
     @Override
     public String toString() {
         return this.blockLists.toString();
+    }
+
+    public BlockListManager sort(BlockSorter.BlockSorterType type) {
+        BlockSorter sorter = new BlockSorter(type);
+        sorter.sortInsideBlockList(this);
+        return this;
     }
 
 
