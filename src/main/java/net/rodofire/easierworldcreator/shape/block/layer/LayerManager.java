@@ -4,9 +4,10 @@ import it.unimi.dsi.fastutil.longs.AbstractLongCollection;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
+import net.minecraft.world.StructureWorldAccess;
 import net.rodofire.easierworldcreator.blockdata.blocklist.BlockListManager;
 import net.rodofire.easierworldcreator.blockdata.blocklist.DividedBlockListManager;
-import net.rodofire.easierworldcreator.blockdata.layer.BlockLayerComparator;
+import net.rodofire.easierworldcreator.blockdata.layer.BlockLayerManager;
 
 import java.util.Collection;
 import java.util.Map;
@@ -16,11 +17,13 @@ import java.util.Map;
  */
 public class LayerManager implements Layer {
     Type layerType;
-    private final BlockLayerComparator blockLayerComparator;
+    private final BlockLayerManager blockLayerManager;
+    protected long centerPos;
+    protected long directionVector;
 
-    public LayerManager(Type layerType, BlockLayerComparator blockLayerComparator) {
+    public LayerManager(Type layerType, BlockLayerManager blockLayerManager) {
         this.layerType = layerType;
-        this.blockLayerComparator = blockLayerComparator;
+        this.blockLayerManager = blockLayerManager;
     }
 
     @Override
@@ -29,13 +32,13 @@ public class LayerManager implements Layer {
     }
 
     @Override
-    public void place(Map<ChunkPos, LongOpenHashSet> posMap) {
-        getLayer().place(posMap);
+    public void place(StructureWorldAccess world, Map<ChunkPos, LongOpenHashSet> posMap) {
+        getLayer().place(world, posMap);
     }
 
     @Override
-    public BlockListManager getVerified(Map<ChunkPos, LongOpenHashSet> posMap) {
-        return getLayer().getVerified(posMap);
+    public BlockListManager getVerified(StructureWorldAccess world, Map<ChunkPos, LongOpenHashSet> posMap) {
+        return getLayer().getVerified(world, posMap);
     }
 
     @Override
@@ -44,8 +47,8 @@ public class LayerManager implements Layer {
     }
 
     @Override
-    public DividedBlockListManager getVerifiedDivided(Map<ChunkPos, LongOpenHashSet> posMap) {
-        return getLayer().getVerifiedDivided(posMap);
+    public DividedBlockListManager getVerifiedDivided(StructureWorldAccess world, Map<ChunkPos, LongOpenHashSet> posMap) {
+        return getLayer().getVerifiedDivided(world, posMap);
     }
 
     @Override
@@ -54,13 +57,13 @@ public class LayerManager implements Layer {
     }
 
     @Override
-    public <T extends Collection<BlockPos>> void place(T posList) {
-        getLayer().place(posList);
+    public <T extends Collection<BlockPos>> void place(StructureWorldAccess world, T posList) {
+        getLayer().place(world, posList);
     }
 
     @Override
-    public <T extends Collection<BlockPos>> BlockListManager getVerified(T posList) {
-        return getLayer().getVerified(posList);
+    public <T extends Collection<BlockPos>> BlockListManager getVerified(StructureWorldAccess world, T posList) {
+        return getLayer().getVerified(world, posList);
     }
 
     @Override
@@ -69,8 +72,8 @@ public class LayerManager implements Layer {
     }
 
     @Override
-    public <T extends Collection<BlockPos>> DividedBlockListManager getVerifiedDivided(T posList) {
-        return getLayer().getVerifiedDivided(posList);
+    public <T extends Collection<BlockPos>> DividedBlockListManager getVerifiedDivided(StructureWorldAccess world, T posList) {
+        return getLayer().getVerifiedDivided(world, posList);
     }
 
     @Override
@@ -79,13 +82,13 @@ public class LayerManager implements Layer {
     }
 
     @Override
-    public <U extends AbstractLongCollection> void place(U posList) {
-        getLayer().place(posList);
+    public <U extends AbstractLongCollection> void place(StructureWorldAccess world, U posList) {
+        getLayer().place(world, posList);
     }
 
     @Override
-    public <U extends AbstractLongCollection> BlockListManager getVerified(U posList) {
-        return getLayer().getVerified(posList);
+    public <U extends AbstractLongCollection> BlockListManager getVerified(StructureWorldAccess world, U posList) {
+        return getLayer().getVerified(world, posList);
     }
 
     @Override
@@ -94,19 +97,60 @@ public class LayerManager implements Layer {
     }
 
     @Override
-    public <U extends AbstractLongCollection> DividedBlockListManager getVerifiedDivided(U posList) {
-        return getLayer().getVerifiedDivided(posList);
+    public <U extends AbstractLongCollection> DividedBlockListManager getVerifiedDivided(StructureWorldAccess world, U posList) {
+        return getLayer().getVerifiedDivided(world, posList);
+    }
+
+    @Override
+    public long getCenterPos() {
+        return centerPos;
+    }
+
+    @Override
+    public void setCenterPos(long centerPos) {
+        this.centerPos = centerPos;
+    }
+
+    @Override
+    public long getDirectionVector() {
+        return directionVector;
+    }
+
+    @Override
+    public void setDirectionVector(long directionVector) {
+        this.directionVector = directionVector;
     }
 
 
     private Layer getLayer() {
         return switch (layerType) {
-            case SURFACE -> new SurfaceLayer(blockLayerComparator);
-            case INNER_RADIAL -> new InnerRadialLayer(blockLayerComparator);
-            case OUTER_RADIAL -> new OuterRadialLayer(blockLayerComparator);
-            case INNER_CYLINDRICAL -> new InnerCylindricalLayer(blockLayerComparator);
-            case OUTER_CYLINDRICAL -> new OuterCylindricalLayer(blockLayerComparator);
-            case ALONG_DIRECTION -> new DirectionalLayer(blockLayerComparator);
+            case SURFACE -> new SurfaceLayer(blockLayerManager);
+            case INNER_RADIAL -> {
+                Layer layer = new InnerRadialLayer(blockLayerManager);
+                layer.setCenterPos(this.centerPos);
+                yield layer;
+            }
+            case OUTER_RADIAL -> {
+                Layer layer = new OuterRadialLayer(blockLayerManager);
+                layer.setCenterPos(this.centerPos);
+                yield layer;
+            }
+            case INNER_CYLINDRICAL -> {
+                Layer layer = new InnerCylindricalLayer(blockLayerManager);
+                layer.setCenterPos(this.centerPos);
+                yield layer;
+            }
+            case OUTER_CYLINDRICAL -> {
+                Layer layer = new OuterCylindricalLayer(blockLayerManager);
+                layer.setCenterPos(this.centerPos);
+                yield layer;
+            }
+            case ALONG_DIRECTION -> {
+                Layer layer = new DirectionalLayer(blockLayerManager);
+                layer.setCenterPos(this.centerPos);
+                layer.setDirectionVector(this.directionVector);
+                yield layer;
+            }
         };
     }
 
