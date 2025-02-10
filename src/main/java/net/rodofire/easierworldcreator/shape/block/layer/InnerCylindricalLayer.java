@@ -2,11 +2,12 @@ package net.rodofire.easierworldcreator.shape.block.layer;
 
 import net.rodofire.easierworldcreator.blockdata.layer.BlockLayerManager;
 
-public class InnerRadialLayer extends AbstractRadialLayer {
-    InnerRadialLayer(BlockLayerManager blockLayer) {
+public class InnerCylindricalLayer extends AbstractCylinderLayer {
+    InnerCylindricalLayer(BlockLayerManager blockLayer) {
         super(blockLayer);
     }
 
+    @Override
     protected int findLayerIndex(int[] layerDistance, float distance) {
         int left = 0, right = layerDistance.length - 1;
         while (left <= right) {
@@ -19,4 +20,6 @@ public class InnerRadialLayer extends AbstractRadialLayer {
         }
         return right;
     }
+
+
 }
