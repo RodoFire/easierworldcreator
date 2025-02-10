@@ -1,13 +1,12 @@
 package net.rodofire.easierworldcreator.blockdata.layer;
 
-import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.util.Pair;
+import net.rodofire.easierworldcreator.blockdata.StructurePlacementRuleManager;
+import net.rodofire.easierworldcreator.shape.block.LayerPlacer;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 /**
  * Represents a layer in a structure.
@@ -24,87 +23,83 @@ public class BlockLayer {
     private List<BlockState> blockStates;
     List<Short> chances;
     private int depth = 1;
-    private Set<Block> blocksToForce = new HashSet<>();
-    private boolean force;
+
+    private StructurePlacementRuleManager ruler;
+    private LayerPlacer placer;
 
     /**
      * init the BlockLayer
      *
-     * @param states        list of BlockStates
-     * @param depth         depth of the BlockStates
-     * @param blocksToForce list of blocks that can be forced by any blockStates of this posList
+     * @param states list of BlockStates
+     * @param depth  depth of the BlockStates
      */
-    public BlockLayer(List<BlockState> states, int depth, Set<Block> blocksToForce) {
+    public BlockLayer(LayerPlacer placer, List<BlockState> states, int depth, StructurePlacementRuleManager ruler) {
         this.blockStates = new ArrayList<>(states);
         chances = new ArrayList<>();
         for (int i = 0; i < states.size(); i++) {
             chances.add((short) 1);
         }
         this.depth = depth;
-        this.blocksToForce = new HashSet<>(blocksToForce);
+        this.ruler = ruler;
     }
 
     /**
      * init the BlockLayer
      *
-     * @param states        list of BlockStates
-     * @param depth         depth of the BlockStates
-     * @param blocksToForce list of blocks that can be forced by any blockStates of this posList
-     * @param chances       the chance of the related blockStates being chosen
+     * @param states  list of BlockStates
+     * @param depth   depth of the BlockStates
+     * @param chances the chance of the related blockStates being chosen
      */
-    public BlockLayer(List<BlockState> states, List<Short> chances, int depth, Set<Block> blocksToForce) {
+    public BlockLayer(LayerPlacer placer, List<BlockState> states, List<Short> chances, int depth, StructurePlacementRuleManager ruler) {
         this.blockStates = new ArrayList<>(states);
         this.chances = new ArrayList<>();
         for (int i = 0; i < states.size(); i++) {
             this.chances.add(chances.get(i));
         }
         this.depth = depth;
-        this.blocksToForce = new HashSet<>(blocksToForce);
+        this.ruler = ruler;
     }
 
     /**
      * init the BlockLayer
      *
      * @param states list of BlockStates
-     * @param force  set if any block can be replaced by any blockState in this BlockList
      */
-    public BlockLayer(List<BlockState> states, boolean force) {
+    public BlockLayer(LayerPlacer placer, List<BlockState> states, StructurePlacementRuleManager ruler) {
         this.blockStates = new ArrayList<>(states);
         chances = new ArrayList<>();
         for (int i = 0; i < states.size(); i++) {
             chances.add((short) 1);
         }
-        this.force = force;
-    }
-
-    /**
-     * init the BlockLayer
-     *
-     * @param state         if the layer is only composed of one BlockState, you don't necessary need to create a list (created automatically)
-     * @param depth         list of BlockStates
-     * @param blocksToForce list of blocks that can be forced by any blockStates of this posList
-     */
-    public BlockLayer(BlockState state, int depth, Set<Block> blocksToForce) {
-        this.blockStates = new ArrayList<>();
-        this.blockStates.add(state);
-        chances = new ArrayList<>();
-        this.chances.add((short) 1);
-        this.depth = depth;
-        this.blocksToForce = new HashSet<>(blocksToForce);
+        this.ruler = ruler;
     }
 
     /**
      * init the BlockLayer
      *
      * @param state if the layer is only composed of one BlockState, you don't necessary need to create a list (created automatically)
-     * @param force set if any block can be replaced by any blockState in this BlockList
+     * @param depth list of BlockStates
      */
-    public BlockLayer(BlockState state, boolean force) {
+    public BlockLayer(LayerPlacer placer, BlockState state, int depth, StructurePlacementRuleManager ruler) {
         this.blockStates = new ArrayList<>();
         this.blockStates.add(state);
         chances = new ArrayList<>();
         this.chances.add((short) 1);
-        this.force = force;
+        this.depth = depth;
+        this.ruler = ruler;
+    }
+
+    /**
+     * init the BlockLayer
+     *
+     * @param state if the layer is only composed of one BlockState, you don't necessary need to create a list (created automatically)
+     */
+    public BlockLayer(LayerPlacer placer, BlockState state, StructurePlacementRuleManager ruler) {
+        this.blockStates = new ArrayList<>();
+        this.blockStates.add(state);
+        chances = new ArrayList<>();
+        this.chances.add((short) 1);
+        this.ruler = ruler;
     }
 
     /**
@@ -113,7 +108,7 @@ public class BlockLayer {
      * @param states list of BlockStates
      * @param depth  depth of the BlockStates
      */
-    public BlockLayer(List<BlockState> states, int depth) {
+    public BlockLayer(LayerPlacer placer, List<BlockState> states, int depth) {
         this.blockStates = new ArrayList<>(states);
         chances = new ArrayList<>();
         for (int i = 0; i < states.size(); i++) {
@@ -127,7 +122,7 @@ public class BlockLayer {
      *
      * @param states list of BlockStates
      */
-    public BlockLayer(List<BlockState> states) {
+    public BlockLayer(LayerPlacer placer, List<BlockState> states) {
         this.blockStates = new ArrayList<>(states);
         chances = new ArrayList<>();
         for (int i = 0; i < states.size(); i++) {
@@ -141,7 +136,7 @@ public class BlockLayer {
      * @param states  list of BlockStates
      * @param chances the chance of the state being chosen
      */
-    public BlockLayer(List<BlockState> states, List<Short> chances) {
+    public BlockLayer(LayerPlacer placer, List<BlockState> states, List<Short> chances) {
         this.blockStates = new ArrayList<>(states);
         this.chances = new ArrayList<>();
         for (int i = 0; i < states.size(); i++) {
@@ -155,7 +150,7 @@ public class BlockLayer {
      * @param state if the layer is only composed of one BlockState, you don't necessary need to create a list (created automatically)
      * @param depth list of BlockStates
      */
-    public BlockLayer(BlockState state, int depth) {
+    public BlockLayer(LayerPlacer placer, BlockState state, int depth) {
         this.blockStates = new ArrayList<>();
         this.blockStates.add(state);
         chances = new ArrayList<>();
@@ -168,11 +163,28 @@ public class BlockLayer {
      *
      * @param state if the layer is only composed of one BlockState, you don't necessary need to create a list (created automatically)
      */
-    public BlockLayer(BlockState state) {
+    public BlockLayer(LayerPlacer placer, BlockState state) {
         this.blockStates = new ArrayList<>();
         this.blockStates.add(state);
         chances = new ArrayList<>();
         this.chances.add((short) 1);
+    }
+
+    public StructurePlacementRuleManager getRuler() {
+        return ruler;
+    }
+
+    public void setRuler(StructurePlacementRuleManager ruler) {
+        this.ruler = ruler;
+    }
+
+
+    public LayerPlacer getPlacer() {
+        return placer;
+    }
+
+    public void setPlacer(LayerPlacer placer) {
+        this.placer = placer;
     }
 
     /**
@@ -331,79 +343,6 @@ public class BlockLayer {
      */
     public int size() {
         return blockStates.size();
-    }
-
-
-    /**
-     * gives you the Set of every block that can be forced
-     *
-     * @return the set of the blocks that can be forced
-     */
-    public Set<Block> getBlocksToForce() {
-        return blocksToForce;
-    }
-
-    /**
-     * sets all the blocks that can be forced in the case force == false
-     *
-     * @param blocksToForce the set of blocks that can be forced
-     */
-    public void setBlocksToForce(Set<Block> blocksToForce) {
-        this.blocksToForce = new HashSet<>(blocksToForce);
-    }
-
-    /**
-     * add a block to the set
-     *
-     * @param block the block added
-     */
-    public void addBlocksToForce(Block block) {
-        blocksToForce.add(block);
-    }
-
-    /**
-     * add a set of blocks to the set
-     *
-     * @param blocksToForce the set that will be added
-     */
-    public void addBlocksToForce(Set<Block> blocksToForce) {
-        this.blocksToForce.addAll(blocksToForce);
-    }
-
-    /**
-     * remove a block to the set
-     *
-     * @param block the block removed
-     */
-    public void removeBlocksToForce(Block block) {
-        blocksToForce.remove(block);
-    }
-
-    /**
-     * remove a set of blocks to the set
-     *
-     * @param blocksToForce the set that will be removed
-     */
-    public void removeBlocksToForce(Set<Block> blocksToForce) {
-        this.blocksToForce.removeAll(blocksToForce);
-    }
-
-    /**
-     * get if any block can be replaced by any BlockState of this blockList
-     *
-     * @return the boolean related to it
-     */
-    public boolean isForce() {
-        return force;
-    }
-
-    /**
-     * sets if any block can be replaced by any BlockState of this blockList
-     *
-     * @param force the boolean used
-     */
-    public void setForce(boolean force) {
-        this.force = force;
     }
 
     @Override
