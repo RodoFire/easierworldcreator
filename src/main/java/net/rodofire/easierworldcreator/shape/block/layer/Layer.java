@@ -4,6 +4,7 @@ import it.unimi.dsi.fastutil.longs.AbstractLongCollection;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.StructureWorldAccess;
 import net.rodofire.easierworldcreator.blockdata.blocklist.BlockListManager;
 import net.rodofire.easierworldcreator.blockdata.blocklist.DividedBlockListManager;
@@ -42,11 +43,11 @@ public interface Layer {
 
     <U extends AbstractLongCollection> DividedBlockListManager getVerifiedDivided(StructureWorldAccess world, U posList);
 
-    long getCenterPos();
+    Vec3d getCenterPos();
 
-    void setCenterPos(long centerPos);
+    void setCenterPos(Vec3d centerPos);
 
-    long getDirectionVector();
+    Vec3d getDirectionVector();
 
-    void setDirectionVector(long directionVector);
+    void setDirectionVector(Vec3d directionVector);
 }
