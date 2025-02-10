@@ -1,11 +1,33 @@
 package net.rodofire.easierworldcreator.shape.block.layer;
 
-import net.rodofire.easierworldcreator.blockdata.layer.BlockLayerComparator;
+import net.rodofire.easierworldcreator.blockdata.layer.BlockLayerManager;
 
 abstract class AbstractLayer implements Layer {
-    private BlockLayerComparator blockLayer;
+    protected BlockLayerManager blockLayer;
+    protected long centerPos;
+    protected long directionVector;
 
-    AbstractLayer(final BlockLayerComparator blockLayer) {
+    AbstractLayer(final BlockLayerManager blockLayer) {
         this.blockLayer = blockLayer;
+    }
+
+    @Override
+    public long getCenterPos() {
+        return centerPos;
+    }
+
+    @Override
+    public void setCenterPos(long centerPos) {
+        this.centerPos = centerPos;
+    }
+
+    @Override
+    public long getDirectionVector() {
+        return directionVector;
+    }
+
+    @Override
+    public void setDirectionVector(long directionVector) {
+        this.directionVector = directionVector;
     }
 }
