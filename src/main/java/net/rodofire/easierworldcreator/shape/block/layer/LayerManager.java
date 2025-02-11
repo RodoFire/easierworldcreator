@@ -4,6 +4,7 @@ import it.unimi.dsi.fastutil.longs.AbstractLongCollection;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.StructureWorldAccess;
 import net.rodofire.easierworldcreator.blockdata.blocklist.BlockListManager;
 import net.rodofire.easierworldcreator.blockdata.blocklist.DividedBlockListManager;
@@ -18,8 +19,8 @@ import java.util.Map;
 public class LayerManager implements Layer {
     Type layerType;
     private final BlockLayerManager blockLayerManager;
-    protected long centerPos;
-    protected long directionVector;
+    protected Vec3d centerPos;
+    protected Vec3d directionVector;
 
     public LayerManager(Type layerType, BlockLayerManager blockLayerManager) {
         this.layerType = layerType;
@@ -102,22 +103,22 @@ public class LayerManager implements Layer {
     }
 
     @Override
-    public long getCenterPos() {
+    public Vec3d getCenterPos() {
         return centerPos;
     }
 
     @Override
-    public void setCenterPos(long centerPos) {
+    public void setCenterPos(Vec3d centerPos) {
         this.centerPos = centerPos;
     }
 
     @Override
-    public long getDirectionVector() {
+    public Vec3d getDirectionVector() {
         return directionVector;
     }
 
     @Override
-    public void setDirectionVector(long directionVector) {
+    public void setDirectionVector(Vec3d directionVector) {
         this.directionVector = directionVector;
     }
 

@@ -1,33 +1,34 @@
 package net.rodofire.easierworldcreator.shape.block.layer;
 
+import net.minecraft.util.math.Vec3d;
 import net.rodofire.easierworldcreator.blockdata.layer.BlockLayerManager;
 
 abstract class AbstractLayer implements Layer {
     protected BlockLayerManager blockLayer;
-    protected long centerPos;
-    protected long directionVector;
+    protected Vec3d centerPos;
+    protected Vec3d directionVector;
 
     AbstractLayer(final BlockLayerManager blockLayer) {
         this.blockLayer = blockLayer;
     }
 
     @Override
-    public long getCenterPos() {
+    public Vec3d getCenterPos() {
         return centerPos;
     }
 
     @Override
-    public void setCenterPos(long centerPos) {
+    public void setCenterPos(Vec3d centerPos) {
         this.centerPos = centerPos;
     }
 
     @Override
-    public long getDirectionVector() {
+    public Vec3d getDirectionVector() {
         return directionVector;
     }
 
     @Override
-    public void setDirectionVector(long directionVector) {
+    public void setDirectionVector(Vec3d directionVector) {
         this.directionVector = directionVector;
     }
 }
