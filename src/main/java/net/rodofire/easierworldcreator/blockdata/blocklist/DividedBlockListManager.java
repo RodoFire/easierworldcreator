@@ -5,8 +5,11 @@ import net.minecraft.block.BlockState;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
+import net.minecraft.world.StructureWorldAccess;
+import net.rodofire.easierworldcreator.blockdata.sorter.BlockSorter;
 import net.rodofire.easierworldcreator.util.LongPosHelper;
 
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -148,7 +151,59 @@ public class DividedBlockListManager {
     public BlockListManager get(ChunkPos pos) {
         return managers.get(pos);
     }
+
+    public BlockListManager[] getAll() {
+        return this.managers.values().toArray(BlockListManager[]::new);
+    }
+
+    public void clear() {
+        this.managers.clear();
+    }
+
     public boolean contains(ChunkPos pos) {
         return managers.containsKey(pos);
+    }
+
+    public boolean placeAll(StructureWorldAccess world) {
+        boolean place = true;
+        for (BlockListManager manager : managers.values()) {
+            if (!manager.placeAll(world)) {
+                place = false;
+            }
+        }
+        return place;
+    }
+
+    public boolean placeAllNDelete(StructureWorldAccess world) {
+        boolean place = true;
+        for (BlockListManager manager : managers.values()) {
+            if (!manager.placeAll(world)) {
+                place = false;
+            }
+        }
+        clear();
+        return place;
+    }
+
+    public OrderedBlockListManager getOrdered() {
+        OrderedBlockListManager manager = new OrderedBlockListManager();
+        for (BlockListManager manager1 : this.managers.values()) {
+            manager.put(manager1.getOrdered());
+        }
+        return manager;
+    }
+
+    public OrderedBlockListManager getOrdered(BlockSorter sorter) {
+        OrderedBlockListManager manager = new OrderedBlockListManager();
+        for (BlockListManager manager1 : this.managers.values()) {
+            manager.put(manager1.getOrdered(sorter));
+        }
+        return manager;
+    }
+
+    public void toJson(Path path, String name){
+        for(Map.Entry<ChunkPos, BlockListManager> entry : managers.entrySet()){
+            entry.getValue().toJson(entry.getKey(), path.resolve("chunk_" + entry.getKey().x+"_"+entry.getKey().z).resolve());
+        }
     }
 }

@@ -10,6 +10,7 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.util.Pair;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
+import net.minecraft.world.StructureWorldAccess;
 import net.rodofire.easierworldcreator.blockdata.sorter.BlockSorter;
 import net.rodofire.easierworldcreator.util.LongPosHelper;
 
@@ -197,8 +198,8 @@ public class BlockListManager {
         return new OrderedBlockListManager(this);
     }
 
-    public OrderedBlockListManager getOrderedSorted(BlockSorter.BlockSorterType type) {
-        return new BlockSorter(type).sortOrderedBlockList(new OrderedBlockListManager(this));
+    public OrderedBlockListManager getOrdered(BlockSorter sorter) {
+        return sorter.sortOrderedBlockList(new OrderedBlockListManager(this));
     }
 
     @Override
@@ -206,10 +207,44 @@ public class BlockListManager {
         return this.blockLists.toString();
     }
 
-    public BlockListManager sort(BlockSorter.BlockSorterType type) {
-        BlockSorter sorter = new BlockSorter(type);
+    public BlockListManager sort(BlockSorter sorter) {
         sorter.sortInsideBlockList(this);
         return this;
+    }
+
+    public void set(int index, BlockList blockList) {
+        Pair<BlockState, NbtCompound> blockData = blockList.getBlockData();
+        if(this.blockDataMap.containsKey(blockData)) {
+        }
+        this.blockLists.set(index, blockList);
+
+    }
+
+    public void clear(){
+        this.blockLists.clear();
+        this.stateIndexes.clear();
+        this.blockDataMap.clear();
+    }
+
+    public boolean placeAll(StructureWorldAccess worldAccess) {
+        boolean placed = true;
+        for(BlockList blockList : this.blockLists){
+            if(!blockList.placeAllNDelete(worldAccess)){
+                placed = false;
+            }
+        }
+        return placed;
+    }
+
+    public boolean placeAllNDelete(StructureWorldAccess worldAccess) {
+        boolean placed = true;
+        for(BlockList blockList : this.blockLists){
+            if(!blockList.placeAllNDelete(worldAccess)){
+                placed = false;
+            }
+        }
+        clear();
+        return placed;
     }
 
 

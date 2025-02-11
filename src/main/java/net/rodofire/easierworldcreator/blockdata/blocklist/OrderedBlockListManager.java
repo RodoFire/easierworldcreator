@@ -11,11 +11,15 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.util.Pair;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.random.Random;
+import net.minecraft.world.StructureWorldAccess;
+import net.rodofire.easierworldcreator.blockdata.StructurePlacementRuleManager;
+import net.rodofire.easierworldcreator.blockdata.sorter.BlockSorter;
 import net.rodofire.easierworldcreator.util.LongPosHelper;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * Default Ordered BlockList comparator. The class provides the basic related to order blockList comparator
@@ -28,6 +32,8 @@ public class OrderedBlockListManager {
      */
     List<Pair<BlockState, NbtCompound>> state = new ArrayList<>();
     Object2ShortArrayMap<Pair<BlockState, NbtCompound>> blockDataMap = new Object2ShortArrayMap<>();
+
+    Short2ReferenceOpenHashMap<StructurePlacementRuleManager> ruler = new Short2ReferenceOpenHashMap<>();
 
     /**
      * Link between blockData and BlockPos
@@ -367,13 +373,17 @@ public class OrderedBlockListManager {
         return this.state.get(index).getLeft();
     }
 
+    public Pair<BlockState, NbtCompound> get(int index) {
+        return this.state.get(index);
+    }
+
     /**
      * method to get the blockState related to the index
      *
      * @param index the index of the BlockState
      * @return the blockState related to the index
      */
-    public NbtCompound getNbt(short index) {
+    public NbtCompound getCompound(short index) {
         return this.state.get(index).getRight();
     }
 
@@ -386,6 +396,14 @@ public class OrderedBlockListManager {
         return this.state.getFirst().getLeft();
     }
 
+    public Pair<BlockState, NbtCompound> getFirst() {
+        return this.state.getFirst();
+    }
+
+    public NbtCompound getFirstCompound() {
+        return this.state.getFirst().getRight();
+    }
+
     /**
      * Method to get the last BlockState
      *
@@ -393,6 +411,14 @@ public class OrderedBlockListManager {
      */
     public BlockState getLastBlockState() {
         return this.state.getLast().getLeft();
+    }
+
+    public Pair<BlockState, NbtCompound> getLast() {
+        return this.state.getLast();
+    }
+
+    public NbtCompound getLastCompound() {
+        return this.state.getLast().getRight();
     }
 
     public void setPosList(LongArrayList posList) {
@@ -483,5 +509,80 @@ public class OrderedBlockListManager {
 
     public OrderedBlockListManager put(BlockState state, BlockPos pos) {
         return put(state, null, LongArrayList.of(LongPosHelper.encodeBlockPos(pos)));
+    }
+
+    public Pair<BlockState, NbtCompound> get(long pos) {
+        return this.state.get(this.posStateLink.get(this.posMap.get(pos)));
+    }
+
+    public BlockState getState(long pos) {
+        return this.state.get(this.posStateLink.get(this.posMap.get(pos))).getLeft();
+    }
+
+    public NbtCompound getCompound(long pos) {
+        return this.state.get(this.posStateLink.get(this.posMap.get(pos))).getRight();
+    }
+
+    public Optional<StructurePlacementRuleManager> getPlacementRule(long pos) {
+        short index = this.posStateLink.get(this.posMap.get(pos));
+        return this.ruler.containsKey(index) ? Optional.of(this.ruler.get(index)) : Optional.empty();
+    }
+
+
+    public boolean placeLast(StructureWorldAccess world) {
+        return place(world, posListOptimized.getLast());
+    }
+
+    public boolean placeFirst(StructureWorldAccess world) {
+        return place(world, posListOptimized.getFirst());
+    }
+
+    public boolean place(StructureWorldAccess world, int index) {
+        return place(world, posListOptimized.getLong(index));
+    }
+
+    public boolean placeAll(StructureWorldAccess worldAccess) {
+        boolean placed = true;
+        for(long pos : this.posListOptimized){
+            if(!place(worldAccess, pos)){
+                placed = false;
+            }
+        }
+        return placed;
+    }
+
+    public boolean placeLastNDelete(StructureWorldAccess world) {
+        return place(world, posListOptimized.removeLast());
+    }
+
+    /**
+     * for the most performance, it is recommended to not use this method where {@code placeLastNDelete()} can be applied
+     */
+    public boolean placeNDelete(StructureWorldAccess world, int index) {
+        return place(world, posListOptimized.removeLong(index));
+    }
+
+    public boolean placeAllNDelete(StructureWorldAccess worldAccess) {
+        boolean placed = true;
+        for(long pos : this.posListOptimized){
+            if(!place(worldAccess, pos)){
+                placed = false;
+            }
+        }
+        this.posListOptimized.clear();
+        return placed;
+    }
+
+    public boolean place(StructureWorldAccess world, long pos) {
+        BlockState state = world.getBlockState(LongPosHelper.decodeBlockPos(pos));
+        Optional<StructurePlacementRuleManager> rule = getPlacementRule(pos);
+        if (rule.isPresent()) {
+            if (rule.get().canPlace(state)) {
+                world.setBlockState(LongPosHelper.decodeBlockPos(pos), state, 2);
+                return true;
+            }
+            return false;
+        }
+        return state.isAir() && world.setBlockState(LongPosHelper.decodeBlockPos(pos), state, 2);
     }
 }

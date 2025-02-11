@@ -6,9 +6,11 @@ import it.unimi.dsi.fastutil.longs.LongArrayList;
 import net.minecraft.block.BlockState;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.structure.StructureTemplate;
+import net.minecraft.util.Pair;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.random.Random;
+import net.minecraft.world.StructureWorldAccess;
 import net.rodofire.easierworldcreator.blockdata.StructurePlacementRuleManager;
 import net.rodofire.easierworldcreator.util.LongPosHelper;
 
@@ -137,13 +139,23 @@ public class BlockList {
         this.blockState = state;
     }
 
-    public BlockList(){
+    public BlockList() {
     }
 
     public int size() {
         return posList.size();
     }
 
+
+    public BlockList replace(int index, BlockPos newPos) {
+        this.posList.set(index, LongPosHelper.encodeBlockPos(newPos));
+        return this;
+    }
+
+    public BlockList replace(int index, long newPos) {
+        this.posList.set(index, newPos);
+        return this;
+    }
 
     public BlockList addAll(List<BlockPos> list) {
         for (BlockPos pos : list) {
@@ -218,6 +230,26 @@ public class BlockList {
         return LongPosHelper.decodeBlockPos(this.posList.getLong(random.nextBetween(0, this.size() - 1)));
     }
 
+    public long get(int index) {
+        return this.posList.getLong(index);
+    }
+
+    public long getFirst() {
+        return this.posList.getFirst();
+    }
+
+    public long getLast() {
+        return this.posList.getLast();
+    }
+
+    public long getRandom() {
+        return this.posList.getLong(Random.create().nextBetween(0, this.size() - 1));
+    }
+
+    public long getRandom(Random random) {
+        return this.posList.getLong(random.nextBetween(0, this.size() - 1));
+    }
+
     public BlockPos removePos(int index) {
         return LongPosHelper.decodeBlockPos(this.posList.removeLong(index));
     }
@@ -275,6 +307,71 @@ public class BlockList {
 
     public void setBlockState(BlockState blockState) {
         this.blockState = blockState;
+    }
+
+    public Pair<BlockState, NbtCompound> getBlockData() {
+        return new Pair<>(blockState, tag);
+    }
+
+    public void getBlockData(Pair<BlockState, NbtCompound> blockState) {
+        this.blockState = blockState.getLeft();
+        this.tag = blockState.getRight();
+    }
+
+    public boolean placeLast(StructureWorldAccess world) {
+        return place(world, this.posList.getLast());
+    }
+
+    public boolean placeFirst(StructureWorldAccess world) {
+        return place(world, this.posList.getFirst());
+    }
+
+    public boolean place(StructureWorldAccess world, int index) {
+        return place(world, this.posList.getLong(index));
+    }
+
+    public boolean placeAll(StructureWorldAccess worldAccess) {
+        boolean placed = true;
+        for (long pos : this.posList) {
+            if (!place(worldAccess, pos)) {
+                placed = false;
+            }
+        }
+        return placed;
+    }
+
+    public boolean placeLastNDelete(StructureWorldAccess world) {
+        return place(world, this.posList.removeLast());
+    }
+
+    /**
+     * for the most performance, it is recommended to not use this method where {@code placeLastNDelete()} can be applied
+     */
+    public boolean placeNDelete(StructureWorldAccess world, int index) {
+        return place(world, this.posList.removeLong(index));
+    }
+
+    public boolean placeAllNDelete(StructureWorldAccess worldAccess) {
+        boolean placed = true;
+        for (long pos : this.posList) {
+            if (!place(worldAccess, pos)) {
+                placed = false;
+            }
+        }
+        this.posList.clear();
+        return placed;
+    }
+
+    private boolean place(StructureWorldAccess world, long pos) {
+        BlockState state = world.getBlockState(LongPosHelper.decodeBlockPos(pos));
+        if (this.manager != null) {
+            if (this.manager.canPlace(state)) {
+                world.setBlockState(LongPosHelper.decodeBlockPos(pos), state, 2);
+                return true;
+            }
+            return false;
+        }
+        return state.isAir() && world.setBlockState(LongPosHelper.decodeBlockPos(pos), state, 2);
     }
 
     public JsonObject toJson(ChunkPos chunkPos) {
