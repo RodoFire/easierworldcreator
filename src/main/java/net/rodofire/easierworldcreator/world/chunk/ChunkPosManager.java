@@ -4,11 +4,13 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.StructureWorldAccess;
 import net.rodofire.easierworldcreator.config.ewc.EwcConfig;
+import net.rodofire.easierworldcreator.maths.MathUtil;
 import net.rodofire.easierworldcreator.util.ChunkUtil;
 import net.rodofire.easierworldcreator.util.WorldGenUtil;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 @SuppressWarnings("unused")
@@ -142,6 +144,45 @@ public class ChunkPosManager {
             }
         }
         return bl;
+    }
+
+
+    /**
+     * method to know if the shape should use multi-chunk feature
+     *
+     * @param posSetMap the map that will determine if the shape is multi-chunk
+     * @return true if it is, false if not
+     */
+    public boolean isMultiChunk(Set<ChunkPos> posSetMap, BlockPos centerPos) {
+        if (posSetMap.size() > Math.pow(2 * EwcConfig.getFeaturesChunkDistance() + 1, 2))
+            return true;
+        for (ChunkPos set : posSetMap) {
+            if (Math.abs(set.x) > EwcConfig.getFeaturesChunkDistance() + Math.abs(new ChunkPos(centerPos).x))
+                return true;
+            if (Math.abs(set.z) > EwcConfig.getFeaturesChunkDistance() + Math.abs(new ChunkPos(centerPos).z))
+                return true;
+        }
+        return false;
+    }
+
+    public boolean canPlaceMultiChunk(Set<ChunkPos> chunkPosSet, int maxDistance) {
+        int minOffset = Integer.MAX_VALUE;
+        for (int x = -maxDistance; x <= maxDistance; x++) {
+            for (int z = -maxDistance; z <= maxDistance; z++) {
+                if (canGenerate(chunkPosSet, x, z)) {
+                    int offset = MathUtil.absDistance(x, z);
+                    if (offset < minOffset) {
+                        minOffset = offset;
+                        this.offset = new BlockPos(16 * x, 0, 16 * z);
+                    }
+                }
+            }
+        }
+        return minOffset != Integer.MAX_VALUE;
+    }
+
+    public BlockPos getOffset() {
+        return offset;
     }
 
 }
