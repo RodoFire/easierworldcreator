@@ -1,5 +1,6 @@
 package net.rodofire.easierworldcreator.shape.block.gen;
 
+import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import net.minecraft.util.Pair;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
@@ -8,6 +9,8 @@ import net.minecraft.world.StructureWorldAccess;
 import net.rodofire.easierworldcreator.blockdata.layer.BlockLayer;
 import net.rodofire.easierworldcreator.maths.FastMaths;
 import net.rodofire.easierworldcreator.shape.block.instanciator.AbstractBlockShape;
+import net.rodofire.easierworldcreator.shape.block.rotations.Rotator;
+import net.rodofire.easierworldcreator.util.LongPosHelper;
 import net.rodofire.easierworldcreator.util.WorldGenUtil;
 import org.jetbrains.annotations.NotNull;
 
@@ -158,22 +161,14 @@ public class SpiralGen extends AbstractBlockShape {
     /**
      * init the Spiral Shape
      *
-     * @param world           the world the spiral will spawn in
-     * @param pos             the center of the spiral
-     * @param placeMoment     define the moment where the shape will be placed
-     * @param layerPlace      how the {@code @BlockStates} inside of a {@link BlockLayer} will be placed
-     * @param layersType      how the Layers will be placed
-     * @param yRotation       first rotation around the y-axis
-     * @param zRotation       second rotation around the z-axis
-     * @param secondYRotation last rotation around the y-axis
-     * @param featureName     the name of the feature
-     * @param radiusX         the radius on the x-axis. The first value corresponding to the radius at the base of the spiral, the second, corresponding to the radius at the top of the spiral
-     * @param radiusZ         the radius on the z-axis. The first value corresponding to the radius at the base of the spiral, the second, corresponding to the radius at the top of the spiral
-     * @param height          the height of the spiral
-     * @param turnNumber      the number of turn that the spiral will do (ex: 1 -> 1 turn, 3.5 -> 3.5 turn)
+     * @param pos        the center of the spiral
+     * @param radiusX    the radius on the x-axis. The first value corresponding to the radius at the base of the spiral, the second, corresponding to the radius at the top of the spiral
+     * @param radiusZ    the radius on the z-axis. The first value corresponding to the radius at the base of the spiral, the second, corresponding to the radius at the top of the spiral
+     * @param height     the height of the spiral
+     * @param turnNumber the number of turn that the spiral will do (ex: 1 -> 1 turn, 3.5 -> 3.5 turn)
      */
-    public SpiralGen(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, PlaceMoment placeMoment, LayerPlace layerPlace, LayersType layersType, int yRotation, int zRotation, int secondYRotation, String featureName, Pair<Integer, Integer> radiusX, Pair<Integer, Integer> radiusZ, int height, float turnNumber) {
-        super(world, pos, placeMoment, layerPlace, layersType, yRotation, zRotation, secondYRotation, featureName);
+    public SpiralGen(@NotNull BlockPos pos, Rotator rotator, Pair<Integer, Integer> radiusX, Pair<Integer, Integer> radiusZ, int height, float turnNumber) {
+        super(pos, rotator);
         this.radiusX = radiusX;
         this.radiusZ = radiusZ;
         this.height = height;
@@ -181,14 +176,12 @@ public class SpiralGen extends AbstractBlockShape {
     }
 
     /**
-     * @param world       the world the spiral will spawn in
-     * @param pos         the center of the spiral
-     * @param placeMoment define the moment where the shape will be placed
-     * @param radius      the radius of the spiral
-     * @param height      the height of the spiral
+     * @param pos    the center of the spiral
+     * @param radius the radius of the spiral
+     * @param height the height of the spiral
      */
-    public SpiralGen(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, PlaceMoment placeMoment, int radius, int height) {
-        super(world, pos, placeMoment);
+    public SpiralGen(@NotNull BlockPos pos, int radius, int height) {
+        super(pos);
         this.radiusX = new Pair<>(radius, radius);
         this.radiusZ = new Pair<>(radius, radius);
         this.height = height;
@@ -314,12 +307,12 @@ public class SpiralGen extends AbstractBlockShape {
 
 
     @Override
-    public Map<ChunkPos, Set<BlockPos>> getBlockPos() {
+    public Map<ChunkPos, LongOpenHashSet> getShapeCoordinates() {
         this.getFilling();
-        Map<ChunkPos, Set<BlockPos>> chunkMap = new HashMap<>();
+        Map<ChunkPos, LongOpenHashSet> chunkMap = new HashMap<>();
 
         if (this.spiralType == SpiralType.DEFAULT) {
-            this.generateEllipsoidSpiral(this.getPos(), chunkMap);
+            this.generateEllipsoidSpiral(this.rotator.getCenterPos(), chunkMap);
         } else if (this.spiralType == SpiralType.HELICOID || this.spiralType == SpiralType.HALF_HELICOID || this.spiralType == SpiralType.CUSTOM_HELICOID) {
             this.generateHelicoid(chunkMap);
         } else if (this.spiralType == SpiralType.LARGE_OUTLINE) {
@@ -341,7 +334,7 @@ public class SpiralGen extends AbstractBlockShape {
      *
      * @param pos the center of the spiral. This can be changed to match certain needing like when generating a large outline
      */
-    public void generateEllipsoidSpiral(BlockPos pos, Map<ChunkPos, Set<BlockPos>> chunkMap) {
+    public void generateEllipsoidSpiral(BlockPos pos, Map<ChunkPos, LongOpenHashSet> chunkMap) {
         /*if (this.turnNumber <= 0) {
             Easierworldcreator.LOGGER.error("param turn can't be <= 0");
         }*/
@@ -351,7 +344,7 @@ public class SpiralGen extends AbstractBlockShape {
         float limit = maxLarge * this.turnNumber * height;
 
 
-        if (this.getYRotation() % 180 == 0 && this.getZRotation() % 180 == 0 && this.getSecondYRotation() == 0) {
+        if (rotator == null) {
             for (float i = 0; i < limit; i++) {
                 float ai = a * i + spiralOffset;
                 float percentage = i / (limit);
@@ -360,10 +353,7 @@ public class SpiralGen extends AbstractBlockShape {
                 int x = (int) (radiusX * FastMaths.getFastCos(ai));
                 int z = (int) (radiusZ * FastMaths.getFastSin(ai));
                 int y = (int) (i / f);
-                BlockPos pos1 = new BlockPos(pos.getX() + x, pos.getY() + y, pos.getZ() + z);
-                if (!this.multiChunk && WorldGenUtil.isPosAChunkFar(pos1, this.getPos()))
-                    this.multiChunk = true;
-                WorldGenUtil.modifyChunkMap(pos1, chunkMap);
+                WorldGenUtil.modifyChunkMap(LongPosHelper.encodeBlockPos(x + centerX, y + centerY, z + centerZ), chunkMap);
             }
         } else {
             for (float i = 0; i < limit; i += 0.5f) {
@@ -374,10 +364,7 @@ public class SpiralGen extends AbstractBlockShape {
                 float x = radiusX * FastMaths.getFastCos(ai);
                 float z = radiusZ * FastMaths.getFastSin(ai);
                 float y = i / f;
-                BlockPos pos2 = this.getCoordinatesRotation(x, y, z, pos);
-                if (!this.multiChunk && WorldGenUtil.isPosAChunkFar(pos2, this.getPos()))
-                    this.multiChunk = true;
-                WorldGenUtil.modifyChunkMap(pos2, chunkMap);
+                WorldGenUtil.modifyChunkMap(rotator.get(x, y, z), chunkMap);
             }
         }
     }
@@ -386,7 +373,7 @@ public class SpiralGen extends AbstractBlockShape {
     /**
      * this allows the generation of a large outline spiral.
      */
-    public void generateLargeOutlineSpiral(Map<ChunkPos, Set<BlockPos>> chunkMap) {
+    public void generateLargeOutlineSpiral(Map<ChunkPos, LongOpenHashSet> chunkMap) {
         float angle = (float) Math.atan(height / turnNumber);
         int degAngle = (int) Math.toDegrees(angle);
         Vec3d vec = new Vec3d(FastMaths.getFastCos(degAngle), FastMaths.getFastSin(degAngle), 0).normalize();
@@ -397,16 +384,15 @@ public class SpiralGen extends AbstractBlockShape {
         for (int i = 0; i < 360; i += 45 / maxLarge) {
             double x = outlineRadiusX * FastMaths.getFastCos(i);
             double z = outlineRadiusZ * FastMaths.getFastSin(i);
-            BlockPos pos = WorldGenUtil.getCoordinatesRotation((float) x, (float) 0, (float) z, 1, 0, cosY, sinY, 1, 0, this.getPos());
-            if (!this.multiChunk && WorldGenUtil.isPosAChunkFar(pos, this.getPos())) this.multiChunk = true;
-            this.generateEllipsoidSpiral(pos, chunkMap);
+            //BlockPos pos = WorldGenUtil.getCoordinatesRotation((float) x, (float) 0, (float) z, 1, 0, cosY, sinY, 1, 0, this.getPos());
+            this.generateEllipsoidSpiral(rotator.getBlockPos((float) x, (float) 0, (float) z), chunkMap);
         }
     }
 
     /**
      * generates a helicoid if the {@link SpiralType} is set to {@code HELICOID} or {@code DOUBLE_HELICOID} with their variants
      */
-    public void generateHelicoid(Map<ChunkPos, Set<BlockPos>> chunkMap) {
+    public void generateHelicoid(Map<ChunkPos, LongOpenHashSet> chunkMap) {
         /*if (this.turnNumber <= 0) {
             Easierworldcreator.LOGGER.error("param turn can't be <= 0");
         }*/
@@ -416,7 +402,7 @@ public class SpiralGen extends AbstractBlockShape {
         float limit = maxLarge * this.turnNumber * height;
 
 
-        if (this.getYRotation() % 180 == 0 && this.getZRotation() % 180 == 0 && this.getSecondYRotation() == 0 && this.helicoidAngle.getLeft() < 45 && this.helicoidAngle.getLeft() > -45 && this.helicoidAngle.getRight() < 45 && this.helicoidAngle.getRight() > -45) {
+        if (rotator == null && this.helicoidAngle.getLeft() < 45 && this.helicoidAngle.getLeft() > -45 && this.helicoidAngle.getRight() < 45 && this.helicoidAngle.getRight() > -45) {
             for (float i = 0; i < limit; i++) {
                 float ai = a * i + spiralOffset;
 
@@ -452,10 +438,7 @@ public class SpiralGen extends AbstractBlockShape {
                     }
                     if (bl) {
                         int y = (int) ((int) (i / f) + distance * FastMaths.getFastSin(helicoidAngle));
-                        BlockPos pos = new BlockPos(this.getPos().getX() + x, this.getPos().getY() + y, this.getPos().getZ() + z);
-                        if (!this.multiChunk && WorldGenUtil.isPosAChunkFar(pos, this.getPos()))
-                            this.multiChunk = true;
-                        WorldGenUtil.modifyChunkMap(pos, chunkMap);
+                        WorldGenUtil.modifyChunkMap(LongPosHelper.encodeBlockPos(x + centerX, y + centerY, z + centerZ), chunkMap);
                     }
                 }
             }
@@ -496,10 +479,7 @@ public class SpiralGen extends AbstractBlockShape {
                     }
                     if (bl) {
                         int y = (int) ((int) (i / f) + distance * FastMaths.getFastSin(helicoidAngle));
-                        BlockPos pos = this.getCoordinatesRotation(x, y, z, this.getPos());
-                        if (!this.multiChunk && WorldGenUtil.isPosAChunkFar(pos, this.getPos()))
-                            this.multiChunk = true;
-                        WorldGenUtil.modifyChunkMap(pos, chunkMap);
+                        WorldGenUtil.modifyChunkMap(rotator.get(x, y, z), chunkMap);
                     }
                 }
             }
