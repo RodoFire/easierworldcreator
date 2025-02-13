@@ -1,5 +1,6 @@
 package net.rodofire.easierworldcreator.shape.block.gen;
 
+import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.Direction;
@@ -9,6 +10,8 @@ import net.rodofire.easierworldcreator.blockdata.layer.BlockLayer;
 import net.rodofire.easierworldcreator.maths.FastMaths;
 import net.rodofire.easierworldcreator.shape.block.instanciator.AbstractBlockShape;
 import net.rodofire.easierworldcreator.shape.block.instanciator.AbstractFillableBlockShape;
+import net.rodofire.easierworldcreator.shape.block.rotations.Rotator;
+import net.rodofire.easierworldcreator.util.LongPosHelper;
 import net.rodofire.easierworldcreator.util.WorldGenUtil;
 import org.jetbrains.annotations.NotNull;
 
@@ -79,22 +82,14 @@ public class SphereGen extends AbstractFillableBlockShape {
     /**
      * init the Sphere Shape
      *
-     * @param world           the world the spiral will spawn in
-     * @param pos             the center of the spiral
-     * @param placeMoment     define the moment where the shape will be placed
-     * @param layerPlace      how the {@code @BlockStates} inside of a {@link BlockLayer} will be placed
-     * @param layersType      how the Layers will be placed
-     * @param yRotation       first rotation around the y-axis
-     * @param zRotation       second rotation around the z-axis
-     * @param secondYRotation last rotation around the y-axis
-     * @param featureName     the name of the feature
-     * @param radiusX         the radius on the x-axis
-     * @param radiusY         the radius on the y-axis
-     * @param radiusZ         the radius on the z-axis
-     * @param halfSphere      determines if the sphere is half or not
+     * @param pos        the center of the spiral
+     * @param radiusX    the radius on the x-axis
+     * @param radiusY    the radius on the y-axis
+     * @param radiusZ    the radius on the z-axis
+     * @param halfSphere determines if the sphere is half or not
      */
-    public SphereGen(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, PlaceMoment placeMoment, LayerPlace layerPlace, LayersType layersType, int yRotation, int zRotation, int secondYRotation, String featureName, int radiusX, int radiusY, int radiusZ, SphereType halfSphere) {
-        super(world, pos, placeMoment, layerPlace, layersType, yRotation, zRotation, secondYRotation, featureName);
+    public SphereGen(@NotNull BlockPos pos, Rotator rotator, int radiusX, int radiusY, int radiusZ, SphereType halfSphere) {
+        super(pos, rotator);
         this.radiusX = radiusX;
         this.radiusY = radiusY;
         this.radiusZ = radiusZ;
@@ -104,13 +99,12 @@ public class SphereGen extends AbstractFillableBlockShape {
     /**
      * init the shape generation
      *
-     * @param world       the world the shape will be generated
-     * @param pos         the pos of the structure center
-     * @param placeMoment define the moment where the shape will be placed
-     * @param radius      the radius of the sphere
+     * @param world  the world the shape will be generated
+     * @param pos    the pos of the structure center
+     * @param radius the radius of the sphere
      */
-    public SphereGen(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, PlaceMoment placeMoment, int radius) {
-        super(world, pos, placeMoment);
+    public SphereGen(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, int radius) {
+        super(pos);
         this.radiusX = radius;
         this.radiusY = radius;
         this.radiusZ = radius;
@@ -187,15 +181,8 @@ public class SphereGen extends AbstractFillableBlockShape {
     }
 
     @Override
-    public Map<ChunkPos, Set<BlockPos>> getBlockPos() {
-        return this.getSphereCoordinates();
-    }
-
-
-    //calculate and return the coordinates
-    public Map<ChunkPos, Set<BlockPos>> getSphereCoordinates() {
-        Map<ChunkPos, Set<BlockPos>> chunkMap = new HashMap<>();
-
+    public Map<ChunkPos, LongOpenHashSet> getShapeCoordinates() {
+        Map<ChunkPos, LongOpenHashSet> chunkMap = new HashMap<>();
         //verify if the rotations == 0 to avoid some unnecessary calculations
         if (this.getFillingType() == Type.EMPTY) {
             if (this.halfSphere == SphereType.HALF) {
@@ -214,7 +201,7 @@ public class SphereGen extends AbstractFillableBlockShape {
     }
 
 
-    public void generateHalfEmptyEllipsoid(Map<ChunkPos, Set<BlockPos>> chunkMap) {
+    public void generateHalfEmptyEllipsoid(Map<ChunkPos, LongOpenHashSet> chunkMap) {
         if (direction == Direction.UP) {
             generateEmptyEllipsoid(-180, 180, 0, 90, chunkMap);
         } else if (direction == Direction.DOWN) {
@@ -230,16 +217,16 @@ public class SphereGen extends AbstractFillableBlockShape {
         }
     }
 
-    public void generateEmptyEllipsoid(Map<ChunkPos, Set<BlockPos>> chunkMap) {
+    public void generateEmptyEllipsoid(Map<ChunkPos, LongOpenHashSet> chunkMap) {
         this.generateEmptyEllipsoid(-180, 180, -90, 90, chunkMap);
     }
 
-    public void generateEmptyEllipsoid(int minLarge, int maxLarge, int minHeight, int maxHeight, Map<ChunkPos, Set<BlockPos>> chunkMap) {
+    public void generateEmptyEllipsoid(int minLarge, int maxLarge, int minHeight, int maxHeight, Map<ChunkPos, LongOpenHashSet> chunkMap) {
         int maxLarge1 = Math.max(radiusZ, Math.max(radiusX, radiusY));
 
         BlockPos.Mutable mutable = new BlockPos.Mutable();
         List<BlockPos> poslist = new ArrayList<>();
-        if (this.getYRotation() % 180 == 0 && this.getZRotation() % 180 == 0 && this.getSecondYRotation() % 180 == 0) {
+        if (rotator == null) {
             for (float theta = minLarge; theta <= maxLarge; theta += (float) 45 / maxLarge1) {
 
                 double xCosTheta = radiusX * FastMaths.getFastCos(theta);
@@ -251,11 +238,7 @@ public class SphereGen extends AbstractFillableBlockShape {
                     int x = (int) (xCosTheta * cosPhi);
                     int y = (int) (radiusY * FastMaths.getFastSin(phi));
                     int z = (int) (zSinTheta * cosPhi);
-                    BlockPos pos = new BlockPos(this.getPos().getX() + x, this.getPos().getY() + y, this.getPos().getZ() + z);
-                    if (!this.multiChunk && WorldGenUtil.isPosAChunkFar(pos, this.getPos()))
-                        this.multiChunk = true;
-                    WorldGenUtil.modifyChunkMap(pos, chunkMap);
-                    System.out.println(x + " " + y + " " + z);
+                    WorldGenUtil.modifyChunkMap(LongPosHelper.encodeBlockPos(x, y, z), chunkMap);
                 }
             }
         } else {
@@ -270,17 +253,14 @@ public class SphereGen extends AbstractFillableBlockShape {
                     float x = xCosTheta * cosPhi;
                     float y = (radiusY * FastMaths.getFastSin(phi));
                     float z = zSinTheta * cosPhi;
-                    BlockPos pos = this.getCoordinatesRotation(x, y, z, this.getPos());
-                    if (!this.multiChunk && WorldGenUtil.isPosAChunkFar(pos, this.getPos()))
-                        this.multiChunk = true;
-                    WorldGenUtil.modifyChunkMap(pos, chunkMap);
+                    WorldGenUtil.modifyChunkMap(rotator.get(x, y, z), chunkMap);
                 }
             }
         }
     }
 
 
-    public void generateHalfFullEllipsoid(Map<ChunkPos, Set<BlockPos>> chunkMap) {
+    public void generateHalfFullEllipsoid(Map<ChunkPos, LongOpenHashSet> chunkMap) {
         if (direction == Direction.UP) {
             this.generateFullEllipsoid(-radiusX, radiusX, 0, radiusY, -radiusZ, radiusZ, chunkMap);
         } else if (direction == Direction.DOWN) {
@@ -296,7 +276,7 @@ public class SphereGen extends AbstractFillableBlockShape {
         }
     }
 
-    public void generateFullEllipsoid(Map<ChunkPos, Set<BlockPos>> chunkMap) {
+    public void generateFullEllipsoid(Map<ChunkPos, LongOpenHashSet> chunkMap) {
         this.generateFullEllipsoid(-radiusX, radiusX, -radiusY, radiusY, -radiusZ, radiusZ, chunkMap);
     }
 
@@ -312,7 +292,7 @@ public class SphereGen extends AbstractFillableBlockShape {
      * @param minZ the start of the circle on the z-axis
      * @param maxZ the end of the circle on the z-axis
      */
-    public void generateFullEllipsoid(int minX, int maxX, int minY, int maxY, int minZ, int maxZ, Map<ChunkPos, Set<BlockPos>> chunkMap) {
+    public void generateFullEllipsoid(int minX, int maxX, int minY, int maxY, int minZ, int maxZ, Map<ChunkPos, LongOpenHashSet> chunkMap) {
         this.setFill();
         int largeXSquared = radiusX * radiusX;
         int largeYSquared = radiusY * radiusY;
@@ -326,7 +306,7 @@ public class SphereGen extends AbstractFillableBlockShape {
         if (radiusX > 32 || radiusY > 32 || radiusZ > 32) {
             Ewc.LOGGER.warn("generating huge sphere (diameter > 64)");
         }
-        if (this.getYRotation() % 180 == 0 && this.getZRotation() % 180 == 0 && this.getSecondYRotation() % 180 == 0) {
+        if (this.rotator == null) {
             for (float x = minX; x <= maxX; x++) {
                 float xx = x * x;
                 float xs = xx / largeXSquared;
@@ -348,10 +328,7 @@ public class SphereGen extends AbstractFillableBlockShape {
                                 }
                             }
                             if (bl) {
-                                BlockPos pos = new BlockPos((int) (this.getPos().getX() + x), (int) (this.getPos().getY() + y), (int) (this.getPos().getZ() + z));
-                                if (!this.multiChunk && WorldGenUtil.isPosAChunkFar(pos, this.getPos()))
-                                    this.multiChunk = true;
-                                WorldGenUtil.modifyChunkMap(pos, chunkMap);
+                                WorldGenUtil.modifyChunkMap(LongPosHelper.encodeBlockPos((int) (this.centerX + x), (int) (this.centerY + y), (int) (this.centerZ + z)), chunkMap);
                             }
                         }
                     }
@@ -379,10 +356,7 @@ public class SphereGen extends AbstractFillableBlockShape {
                                 }
                             }
                             if (bl) {
-                                BlockPos pos = this.getCoordinatesRotation(x, y, z, this.getPos());
-                                if (!this.multiChunk && WorldGenUtil.isPosAChunkFar(pos, this.getPos()))
-                                    this.multiChunk = true;
-                                WorldGenUtil.modifyChunkMap(pos, chunkMap);
+                                WorldGenUtil.modifyChunkMap(rotator.get(x, y, z), chunkMap);
                             }
                         }
                     }
