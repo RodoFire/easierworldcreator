@@ -238,7 +238,7 @@ public class SphereGen extends AbstractFillableBlockShape {
                     int x = (int) (xCosTheta * cosPhi);
                     int y = (int) (radiusY * FastMaths.getFastSin(phi));
                     int z = (int) (zSinTheta * cosPhi);
-                    WorldGenUtil.modifyChunkMap(LongPosHelper.encodeBlockPos(x, y, z), chunkMap);
+                    WorldGenUtil.modifyChunkMap(LongPosHelper.encodeBlockPos(x + centerX, y + centerY, z+ centerZ), chunkMap);
                 }
             }
         } else {

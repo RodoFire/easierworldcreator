@@ -3,7 +3,6 @@ package net.rodofire.easierworldcreator.shape.block.gen;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
-import net.minecraft.world.StructureWorldAccess;
 import net.rodofire.easierworldcreator.maths.FastMaths;
 import net.rodofire.easierworldcreator.shape.block.instanciator.AbstractBlockShape;
 import net.rodofire.easierworldcreator.shape.block.instanciator.AbstractFillableBlockShape;
@@ -12,7 +11,10 @@ import net.rodofire.easierworldcreator.util.LongPosHelper;
 import net.rodofire.easierworldcreator.util.WorldGenUtil;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /*
 
@@ -262,7 +264,7 @@ public class CylinderGen extends AbstractFillableBlockShape {
                     if (bl) {
                         for (float y = 0; y <= this.height; y += 0.5f) {
                             if (xSquared + (z * z) / radiusZSquared <= 1) {
-                                WorldGenUtil.modifyChunkMap(rotator.get(x + centerX, y + centerY, z + centerZ), chunkMap);
+                                WorldGenUtil.modifyChunkMap(rotator.get(x, y, z), chunkMap);
                             }
                         }
                     }
@@ -290,7 +292,7 @@ public class CylinderGen extends AbstractFillableBlockShape {
                 float x = radiusX * FastMaths.getFastCos(u);
                 float z = radiusZ * FastMaths.getFastSin(u);
                 for (float y = 0; y <= this.height; y += 0.5f) {
-                    WorldGenUtil.modifyChunkMap(rotator.get(x + centerX, y + centerY, z + centerZ), chunkMap);
+                    WorldGenUtil.modifyChunkMap(rotator.get(x, y, z), chunkMap);
                 }
             }
         }

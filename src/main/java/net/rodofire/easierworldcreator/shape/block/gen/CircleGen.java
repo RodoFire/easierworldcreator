@@ -207,7 +207,7 @@ public class CircleGen extends AbstractFillableBlockShape {
                             }
                         }
                         if (bl) {
-                            WorldGenUtil.modifyChunkMap(rotator.get(x + centerX, centerY, z + centerZ), chunkMap);
+                            WorldGenUtil.modifyChunkMap(rotator.get(x, 0, z), chunkMap);
                         }
                     }
                 }
@@ -231,7 +231,7 @@ public class CircleGen extends AbstractFillableBlockShape {
             for (float u = 0; u < 360; u += (float) 45 / Math.max(this.radiusZ, this.radiusX)) {
                 float x = radiusX * FastMaths.getFastCos(u);
                 float z = radiusZ * FastMaths.getFastSin(u);
-                WorldGenUtil.modifyChunkMap(LongPosHelper.encodeBlockPos((int) (x + centerX), centerY, (int) (z + centerZ)), chunkMap);
+                WorldGenUtil.modifyChunkMap(LongPosHelper.encodeBlockPos((int) (x + centerX),  centerY, (int) (z+ centerZ)), chunkMap);
             }
         } else {
             for (float u = 0; u < 360; u += (float) 35 / Math.max(this.radiusZ, this.radiusX)) {
@@ -239,7 +239,7 @@ public class CircleGen extends AbstractFillableBlockShape {
                 float z = radiusZ * FastMaths.getFastSin(u);
 
                 WorldGenUtil.modifyChunkMap(
-                        rotator.get(x + centerX, centerY, z + centerZ),
+                        rotator.get(x, 0, z),
                         chunkMap)
                 ;
             }
