@@ -3,13 +3,13 @@ package net.rodofire.easierworldcreator.shape.block.instanciator;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
-import net.rodofire.easierworldcreator.blockdata.layer.BlockLayer;
-import net.rodofire.easierworldcreator.placer.blocks.animator.StructurePlaceAnimator;
 import net.rodofire.easierworldcreator.shape.block.rotations.Rotator;
 import net.rodofire.easierworldcreator.util.LongPosHelper;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Class to create custom shapes
@@ -44,7 +44,7 @@ public abstract class AbstractBlockShape {
      * init the shape
      *
      * @param centerPos the center BlockPos
-     * @param rotator   the rotator use to rotate the shape
+     * @param rotator   the rotator uses to rotate the shape
      */
     public AbstractBlockShape(BlockPos centerPos, Rotator rotator) {
         this.centerPos = LongPosHelper.encodeBlockPos(centerPos);
