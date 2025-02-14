@@ -1,18 +1,14 @@
-package net.rodofire.easierworldcreator.shape.block.instanciator;
+package net.rodofire.easierworldcreator.shape.block.rotations;
 
+import it.unimi.dsi.fastutil.longs.LongArrayList;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.StructureWorldAccess;
-import net.rodofire.easierworldcreator.blockdata.layer.BlockLayer;
 import net.rodofire.easierworldcreator.maths.FastMaths;
-import org.jetbrains.annotations.NotNull;
-
-import java.util.ArrayList;
-import java.util.List;
+import net.rodofire.easierworldcreator.util.LongPosHelper;
 
 @SuppressWarnings("unused")
-public abstract class AbstractBlockShapeRotation extends AbstractBlockShapeLayer {
-
+public class Rotator {
+    private BlockPos centerPos = new BlockPos(0, 0, 0);
     //These are rotations in degrees (0-360).
     //These 3 are used to represent every rotation possible in a 3d world
     private int yRotation = 0;
@@ -27,32 +23,29 @@ public abstract class AbstractBlockShapeRotation extends AbstractBlockShapeLayer
     private double sinY2 = 0;
     private double sinZ = 0;
 
-    /**
-     * init the ShapeRotation
-     *
-     * @param world           the world the spiral will spawn in
-     * @param pos             the center of the spiral
-     * @param placeMoment     define the moment where the shape will be placed
-     * @param layerPlace      how the {@code @BlockStates} inside of a {@link BlockLayer} will be placed
-     * @param layersType      how the Layers will be placed
-     * @param yRotation       first rotation around the y-axis
-     * @param zRotation       second rotation around the z-axis
-     * @param secondYRotation last rotation around the y-axis
-     */
-    public AbstractBlockShapeRotation(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, @NotNull PlaceMoment placeMoment, LayerPlace layerPlace, LayersType layersType, int yRotation, int zRotation, int secondYRotation) {
-        super(world, pos, placeMoment, layerPlace, layersType);
-        getRotations(yRotation, zRotation, secondYRotation);
+
+    public Rotator(BlockPos centerPos, int yRotation, int zRotation, int secondYRotation) {
+        this.centerPos = centerPos;
+        this.yRotation = yRotation;
+        this.zRotation = zRotation;
+        this.secondYRotation = secondYRotation;
     }
 
     /**
      * init the ShapeRotation
      *
-     * @param world       the world of the shape
-     * @param pos         the pos of the shape (usually the center of the structure)
-     * @param placeMoment define the moment where the shape will be placed
+     * @param yRotation       first rotation around the y-axis
+     * @param zRotation       second rotation around the z-axis
+     * @param secondYRotation last rotation around the y-axis
      */
-    public AbstractBlockShapeRotation(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, @NotNull PlaceMoment placeMoment) {
-        super(world, pos, placeMoment);
+    public Rotator(int yRotation, int zRotation, int secondYRotation) {
+        getRotations(yRotation, zRotation, secondYRotation);
+    }
+
+    /**
+     * init the ShapeRotation
+     */
+    public Rotator() {
         getRotations(0, 0, 0);
     }
 
@@ -101,6 +94,16 @@ public abstract class AbstractBlockShapeRotation extends AbstractBlockShapeLayer
         getRotations(this.yRotation, this.zRotation, this.secondYRotation);
     }
 
+    public BlockPos getCenterPos() {
+        return centerPos;
+    }
+
+    public Rotator setCenterPos(BlockPos centerPos) {
+        this.centerPos = centerPos;
+        return this;
+    }
+
+
     /**
      * precompute the cosines and the sinus of the rotations for better performance
      *
@@ -118,30 +121,73 @@ public abstract class AbstractBlockShapeRotation extends AbstractBlockShapeLayer
         this.sinZ = FastMaths.getFastSin(zRotation);
         this.cosY2 = FastMaths.getFastCos(secondYRotation);
         this.sinY2 = FastMaths.getFastSin(secondYRotation);
-        this.setRadialCenterPos(this.getPos());
+    }
+
+    public LongArrayList getAll(LongArrayList pos) {
+        for (int i = 0; i < pos.size(); ++i) {
+            pos.set(i, get(pos.getLong(i)));
+        }
+        return pos;
+    }
+
+    public long get(long pos) {
+        int[] intPos = LongPosHelper.decodeBlockPos2Array(pos);
+        // first y rotation
+        float x_rot1 = (float) (intPos[0] * cosY - intPos[2] * sinY);
+        float z_rot1 = (float) (intPos[0] * sinY + intPos[2] * cosY);
+        // z rotation
+        float x_rot_z = (float) (x_rot1 * cosZ - intPos[1] * sinZ);
+        float y_rot_z = (float) (x_rot1 * sinZ + intPos[1] * cosZ);
+
+        // second y rotation
+        float x_final = (float) (x_rot_z * cosY2 - z_rot1 * sinY2);
+        float z_final = (float) (x_rot_z * sinY2 + z_rot1 * cosY2);
+
+        return LongPosHelper.encodeBlockPos((int) x_final + this.centerPos.getX(), (int) y_rot_z + this.centerPos.getY(), (int) z_final + this.centerPos.getZ());
+    }
+
+    public long get(float x, float y, float z) {
+        // first y rotation
+        float x_rot1 = (float) (x * cosY - z * sinY);
+        float z_rot1 = (float) (x * sinY + z * cosY);
+        // z rotation
+        float x_rot_z = (float) (x_rot1 * cosZ - y * sinZ);
+        float y_rot_z = (float) (x_rot1 * sinZ + y * cosZ);
+
+        // second y rotation
+        float x_final = (float) (x_rot_z * cosY2 - z_rot1 * sinY2);
+        float z_final = (float) (x_rot_z * sinY2 + z_rot1 * cosY2);
+
+        return LongPosHelper.encodeBlockPos((int) x_final + this.centerPos.getX(), (int) y_rot_z + this.centerPos.getY(), (int) z_final + this.centerPos.getZ());
+    }
+
+    public BlockPos getBlockPos(int[] pos) {
+        return getBlockPos(pos[0], pos[1], pos[2]);
+    }
+
+    public BlockPos getBlockPos(BlockPos pos) {
+        return getBlockPos(pos.getX(), pos.getY(), pos.getZ());
     }
 
     /**
      * method to get the rotation of Vec3d depending on the different rotations determined before
      *
-     * @param pos       BlockPos that has to be rotated
-     * @param centerPos The center of the rotation
+     * @param pos BlockPos that has to be rotated
      * @return a list of BlockPos related to the rotation
      */
-    public BlockPos getCoordinatesRotation(Vec3d pos, BlockPos centerPos) {
-        return getCoordinatesRotation((float) pos.getX(), (float) pos.getY(), (float) pos.getZ(), centerPos);
+    public BlockPos getBlockPos(Vec3d pos) {
+        return getBlockPos((float) pos.getX(), (float) pos.getY(), (float) pos.getZ());
     }
 
     /**
      * method to get the rotation depending on the different rotations determined before
      *
-     * @param x         the distance on the x-axis from the BlockPos
-     * @param y         the distance on the y-axis from the BlockPos
-     * @param z         the distance on the z-axis from the BlockPos
-     * @param centerPos the center of the rotation
+     * @param x the distance on the x-axis from the BlockPos
+     * @param y the distance on the y-axis from the BlockPos
+     * @param z the distance on the z-axis from the BlockPos
      * @return the BlockPos related to the rotation
      */
-    public BlockPos getCoordinatesRotation(float x, float y, float z, BlockPos centerPos) {
+    public BlockPos getBlockPos(float x, float y, float z) {
         // first y rotation
         float x_rot1 = (float) (x * cosY - z * sinY);
         float z_rot1 = (float) (x * sinY + z * cosY);
@@ -155,20 +201,4 @@ public abstract class AbstractBlockShapeRotation extends AbstractBlockShapeLayer
 
         return new BlockPos(new BlockPos.Mutable().set(centerPos, (int) x_final, (int) y_rot_z, (int) z_final));
     }
-
-    /**
-     * method to get the rotation of a list depending on the different rotations determined before
-     *
-     * @param posList   the list of coordinates that has to be rotated
-     * @param centerPos The center of the rotation
-     * @return a list of BlockPos related to the rotation
-     */
-    public List<BlockPos> getCoordinatesRotationList(List<Vec3d> posList, BlockPos centerPos) {
-        List<BlockPos> newposlist = new ArrayList<>();
-        for (Vec3d pos : posList) {
-            newposlist.add(this.getCoordinatesRotation(pos, centerPos));
-        }
-        return newposlist;
-    }
-
 }
