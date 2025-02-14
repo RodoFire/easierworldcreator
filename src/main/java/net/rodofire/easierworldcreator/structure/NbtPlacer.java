@@ -15,8 +15,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.StructureWorldAccess;
 import net.rodofire.easierworldcreator.Ewc;
-import net.rodofire.easierworldcreator.blockdata.blocklist.basic.comparator.CompoundBlockListComparator;
-import net.rodofire.easierworldcreator.blockdata.blocklist.basic.comparator.FullBlockListComparator;
+import net.rodofire.easierworldcreator.blockdata.blocklist.BlockListManager;
 import net.rodofire.easierworldcreator.placer.blocks.animator.StructurePlaceAnimator;
 
 import java.util.Optional;
@@ -147,15 +146,10 @@ public class NbtPlacer {
 
 
             if (animator != null || !bl2 || !bl3) {
-                if (bl2) {
-                    FullBlockListComparator comparator = new FullBlockListComparator();
-                    StructureUtil.convertNbtToComparator(structureTemplate, comparator, structurePlacementData, world, offset);
+                    BlockListManager comparator = new BlockListManager();
+                    StructureUtil.convertNbtToManager(structureTemplate, comparator, structurePlacementData, world, offset);
                     StructureUtil.place(world, animator, comparator, pos, force, blockToForce, blockToSkip, 1.0f);
-                } else {
-                    CompoundBlockListComparator comparator = new CompoundBlockListComparator();
-                    StructureUtil.convertNbtToComparator(structureTemplate, comparator, structurePlacementData, world, offset);
-                    StructureUtil.place(world, animator, comparator, pos, force, blockToForce, blockToSkip, 1.0f);
-                }
+
             } else {
                 structureTemplate.place(world, pos, offset, structurePlacementData, world.getRandom(), 3);
             }
