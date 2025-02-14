@@ -3,6 +3,7 @@ package net.rodofire.easierworldcreator.util;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
+import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
 
 import java.util.List;
@@ -146,15 +147,21 @@ public class LongPosHelper {
         return new ChunkPos(x, z);
     }
 
-    public long add(long pos, int dx, int dy, int dz) {
+    public static long add(long pos, int dx, int dy, int dz) {
         long shiftedDx = (long) dx << (Y_BITS + XZ_BITS);
         long shiftedDz = (long) dz << Y_BITS;
 
         return pos + shiftedDx + shiftedDz + dy;
     }
 
-    public long up(long pos, int i){
+    public static long up(long pos, int i) {
         return pos + i;
+    }
+
+    public static long offset(Direction direction, long pos, int distance) {
+        return distance == 0
+                ? pos
+                : add(pos, direction.getOffsetX() * distance, direction.getOffsetY() * distance, direction.getOffsetZ() * distance);
     }
 }
 
