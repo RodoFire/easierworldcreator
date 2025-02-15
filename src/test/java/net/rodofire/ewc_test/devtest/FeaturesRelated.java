@@ -1,6 +1,7 @@
 package net.rodofire.ewc_test.devtest;
 
 import com.mojang.serialization.Codec;
+import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import net.fabricmc.fabric.api.object.builder.v1.block.FabricBlockSettings;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
@@ -11,11 +12,9 @@ import net.minecraft.item.Item;
 import net.minecraft.registry.*;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.BlockMirror;
-import net.minecraft.util.BlockRotation;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.random.Random;
 import net.minecraft.world.StructureWorldAccess;
 import net.minecraft.world.World;
@@ -26,16 +25,15 @@ import net.minecraft.world.gen.placementmodifier.BiomePlacementModifier;
 import net.minecraft.world.gen.placementmodifier.PlacementModifier;
 import net.minecraft.world.gen.placementmodifier.RarityFilterPlacementModifier;
 import net.minecraft.world.gen.placementmodifier.SquarePlacementModifier;
-import net.rodofire.easierworldcreator.blockdata.layer.BlockLayer;
-import net.rodofire.easierworldcreator.blockdata.layer.BlockLayerComparator;
+import net.rodofire.easierworldcreator.blockdata.layer.BlockLayerManager;
+import net.rodofire.easierworldcreator.shape.block.LayerPlacer;
+import net.rodofire.easierworldcreator.shape.block.ShapePlacer;
 import net.rodofire.easierworldcreator.shape.block.gen.SphereGen;
-import net.rodofire.easierworldcreator.shape.block.instanciator.AbstractBlockShapeBase;
+import net.rodofire.easierworldcreator.shape.block.layer.LayerManager;
 import net.rodofire.ewc_test.EWCTest;
-import net.rodofire.easierworldcreator.blockdata.sorter.BlockSorter;
-import net.rodofire.easierworldcreator.placer.blocks.animator.StructurePlaceAnimator;
-import net.rodofire.easierworldcreator.structure.NbtPlacer;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 public class FeaturesRelated {
@@ -68,11 +66,16 @@ public class FeaturesRelated {
             torusGen.place();*/
 
 
-            SphereGen sphereGen = new SphereGen(world, pos, AbstractBlockShapeBase.PlaceMoment.WORLD_GEN, 48);
-            sphereGen.setBlockLayer(new BlockLayerComparator(new BlockLayer(Blocks.REDSTONE_BLOCK.getDefaultState())));
-            sphereGen.place();
-
-
+            SphereGen sphereGen = new SphereGen(pos, 48);
+            Map<ChunkPos, LongOpenHashSet> posSet = sphereGen.getShapeCoordinates();
+            ShapePlacer placer = new ShapePlacer(world, ShapePlacer.PlaceMoment.WORLD_GEN, pos);
+            placer.place(posSet, new LayerManager(
+                    LayerManager.Type.SURFACE,
+                    new BlockLayerManager(
+                            new LayerPlacer(world, LayerPlacer.LayerPlace.RANDOM),
+                            Blocks.REDSTONE_BLOCK.getDefaultState(),
+                            (short) 1)
+            ));
 
 
             long endTimeCartesian = (System.nanoTime());
