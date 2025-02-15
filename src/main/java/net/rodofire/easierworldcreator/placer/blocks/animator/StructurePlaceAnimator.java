@@ -270,7 +270,7 @@ public class StructurePlaceAnimator {
     public void placeFromBlockList(BlockListManager manager) {
         if (blockListVerification(manager.getAll())) return;
         Instant start = Instant.now();
-        OrderedBlockListManager sortedBlockList = manager.getOrderedSorted(this.blockSorter);
+        OrderedBlockListManager sortedBlockList = manager.getOrdered(this.blockSorter);
         Instant end = Instant.now();
         Duration timeElapsed = Duration.between(start, end);
         Ewc.LOGGER.info("Shape sorted list calculations took : {}ms", timeElapsed.toMillis());

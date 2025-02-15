@@ -3,14 +3,13 @@ package net.rodofire.easierworldcreator.util.map;
 import it.unimi.dsi.fastutil.objects.Object2ShortOpenHashMap;
 import it.unimi.dsi.fastutil.shorts.Short2ObjectMap;
 import it.unimi.dsi.fastutil.shorts.Short2ObjectOpenHashMap;
-import it.unimi.dsi.fastutil.shorts.ShortArrays;
 import it.unimi.dsi.fastutil.shorts.ShortSet;
 
 import java.util.Collection;
 
 public class Short2ObjectHashBiMap<T> {
-    private Short2ObjectMap<T> short2Obj = new Short2ObjectOpenHashMap<>();
-    private Object2ShortOpenHashMap<T> obj2Short = new Object2ShortOpenHashMap<>();
+    private final Short2ObjectMap<T> short2Obj = new Short2ObjectOpenHashMap<>();
+    private final Object2ShortOpenHashMap<T> obj2Short = new Object2ShortOpenHashMap<>();
 
     public Short2ObjectHashBiMap() {
     }
@@ -21,12 +20,15 @@ public class Short2ObjectHashBiMap<T> {
     }
 
     public T remove(short key) {
-        T obj = short2Obj.get(key);
+        T obj = short2Obj.remove(key);
         obj2Short.removeShort(obj);
         return obj;
     }
 
     public short remove(T obj) {
+        if (!obj2Short.containsKey(obj)) {
+            return -1; // Valeur par défaut pour indiquer l'absence de l'objet
+        }
         short key = obj2Short.removeShort(obj);
         short2Obj.remove(key);
         return key;
@@ -46,5 +48,22 @@ public class Short2ObjectHashBiMap<T> {
 
     public Collection<T> getObjects() {
         return obj2Short.keySet();
+    }
+
+    public short get(T obj) {
+        return obj2Short.getShort(obj);
+    }
+
+    public T get(short key) {
+        return short2Obj.get(key);
+    }
+
+    public int size() {
+        return short2Obj.size();
+    }
+
+    public void clear() {
+        short2Obj.clear();
+        obj2Short.clear();
     }
 }

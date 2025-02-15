@@ -1,5 +1,6 @@
 package net.rodofire.easierworldcreator.util;
 
+import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.util.math.BlockPos;
@@ -10,6 +11,7 @@ import net.minecraft.util.math.random.Random;
 import net.rodofire.easierworldcreator.Ewc;
 import net.rodofire.easierworldcreator.blockdata.layer.BlockLayer;
 import net.rodofire.easierworldcreator.maths.FastMaths;
+import org.apache.http.annotation.Experimental;
 
 import java.util.*;
 
@@ -104,6 +106,18 @@ public class WorldGenUtil {
 
     public static float getDistance(BlockPos pos1, BlockPos pos2) {
         return FastMaths.getLength(pos1.getX() - pos2.getX(), pos1.getY() - pos2.getY(), pos1.getZ() - pos2.getZ());
+    }
+
+    public static float getDistance(int x1, int y1, int z1, int x2, int y2, int z2) {
+        return FastMaths.getLength(x1 - x2, y1 - y2, z1 - z2);
+    }
+
+    public static float getDistance(int x1, int y1, int z1, int[] pos2) {
+        return FastMaths.getLength(x1 - pos2[0], y1 - pos2[1], z1 - pos2[2]);
+    }
+
+    public static float getDistance(int[] pos1, int[] pos2) {
+        return FastMaths.getLength(pos1[0] - pos2[0], pos1[1] - pos2[1], pos1[2] - pos2[2]);
     }
 
     public static float getDistance(BlockPos pos1, BlockPos pos2, float precision) {
@@ -232,25 +246,23 @@ public class WorldGenUtil {
 
     }
 
-    /**
-     * This method allows you to divide a list of blockPos into chunks.
-     * It is used later to put the blocks
-     *
-     * @param posList the list of BlockPos that will be divided
-     * @return a list of set of BlockPos that represents a list of chunks
-     */
-    public static List<Set<BlockPos>> divideBlockPosIntoChunk(List<BlockPos> posList) {
-        Map<ChunkPos, Set<BlockPos>> chunkMap = new HashMap<>();
-        for (BlockPos pos : posList) {
-            modifyChunkMap(pos, chunkMap);
-        }
-        return new ArrayList<>(chunkMap.values());
+    public static void modifyChunkMap(long pos, Map<ChunkPos, LongOpenHashSet> chunkMap) {
+        ChunkPos chunkPos = new ChunkPos(pos);
+        chunkMap.computeIfAbsent(chunkPos, k -> new LongOpenHashSet()).add(pos);
     }
 
-    public static void modifyChunkMap(BlockPos pos, Map<ChunkPos, Set<BlockPos>> chunkMap) {
-        ChunkPos chunkPos = new ChunkPos(pos);
-        Set<BlockPos> blockPosInChunk = chunkMap.computeIfAbsent(chunkPos, k -> new HashSet<>());
-        blockPosInChunk.add(pos);
+    /**
+     * performance improvements test
+     */
+    @Experimental
+    public static void modifyChunkMapExperimental(long pos, Map<ChunkPos, LongOpenHashSet> chunkMap) {
+        ChunkPos chunkPos = LongPosHelper.getChunkPos(pos);
+        LongOpenHashSet set = chunkMap.get(chunkPos);
+        if (set == null) {
+            set = new LongOpenHashSet();
+            chunkMap.put(chunkPos, set);
+        }
+        set.add(pos);
     }
 
     public static ChunkPos addChunkPos(ChunkPos pos1, ChunkPos pos2) {
@@ -264,5 +276,15 @@ public class WorldGenUtil {
     public static ChunkPos addChunkPos(ChunkPos pos1, BlockPos pos2) {
         ChunkPos pos = new ChunkPos(pos2);
         return new ChunkPos(pos1.x + pos.x, pos1.z + pos.z);
+    }
+
+
+    public static float getDistanceToAxis(Vec3d centerPos, Vec3d axisDir, Vec3d pos) {
+        Vec3d v = pos.subtract(centerPos);
+        Vec3d cross = v.crossProduct(axisDir);
+        double crossNorm = cross.length();
+        double dirNorm = axisDir.length();
+
+        return (float) (crossNorm / dirNorm);
     }
 }

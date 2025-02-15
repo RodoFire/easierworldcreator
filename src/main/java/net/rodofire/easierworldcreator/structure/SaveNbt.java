@@ -12,9 +12,10 @@ import net.minecraft.world.EmptyBlockView;
 import net.minecraft.world.StructureWorldAccess;
 import net.minecraft.world.chunk.Chunk;
 import net.rodofire.easierworldcreator.Ewc;
-import net.rodofire.easierworldcreator.blockdata.blocklist.basic.DefaultBlockList;
+import net.rodofire.easierworldcreator.blockdata.blocklist.BlockList;
 import net.rodofire.easierworldcreator.mixin.world.structure.PalettedBlockInfoListMixin;
 import net.rodofire.easierworldcreator.mixin.world.structure.StructureTemplateMixin;
+import net.rodofire.easierworldcreator.util.LongPosHelper;
 import org.spongepowered.asm.mixin.Unique;
 
 import java.io.IOException;
@@ -45,17 +46,17 @@ public class SaveNbt {
      * @param defaultBlockLists a list of BlockList to save it into the nbt file
      */
     @SuppressWarnings("UnreachableCode")
-    public static void saveNbtDuringWorldGen(StructureWorldAccess world, List<DefaultBlockList> defaultBlockLists, String featureName) {
+    public static void saveNbtDuringWorldGen(StructureWorldAccess world, List<BlockList> defaultBlockLists, String featureName) {
         Map<ChunkPos, List<StructureTemplate.StructureBlockInfo>> chunkBlockInfoMap = new HashMap<>();
 
         List<StructureTemplate.StructureBlockInfo> list = Lists.newArrayList();
         List<StructureTemplate.StructureBlockInfo> list2 = Lists.newArrayList();
         List<StructureTemplate.StructureBlockInfo> list3 = Lists.newArrayList();
 
-        for (DefaultBlockList blocks : defaultBlockLists) {
+        for (BlockList blocks : defaultBlockLists) {
             BlockState blockState = blocks.getBlockState();
-            for (BlockPos pos : blocks.getPosList()) {
-                StructureTemplate.StructureBlockInfo structureBlockInfo = new StructureTemplate.StructureBlockInfo(pos, blockState, null);
+            for (long pos : blocks.getPosList()) {
+                StructureTemplate.StructureBlockInfo structureBlockInfo = new StructureTemplate.StructureBlockInfo(LongPosHelper.decodeBlockPos(pos), blockState, null);
                 categorize(structureBlockInfo, list, list2, list3);
 
                 ChunkPos chunkPos = new ChunkPos(pos);

@@ -1,6 +1,7 @@
 package net.rodofire.easierworldcreator.blockdata.layer;
 
 import net.minecraft.block.BlockState;
+import net.rodofire.easierworldcreator.shape.block.LayerPlacer;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,7 +12,7 @@ import java.util.List;
  * layers, as well as checking for specific conditions such as forced parameters.
  */
 @SuppressWarnings("unused")
-public class BlockLayerComparator {
+public class BlockLayerManager {
 
     /**
      * The list of {@code BlockLayer} objects managed by this comparator.
@@ -23,7 +24,7 @@ public class BlockLayerComparator {
      *
      * @param layers the initial list of {@code BlockLayer} objects to manage
      */
-    public BlockLayerComparator(List<BlockLayer> layers) {
+    public BlockLayerManager(List<BlockLayer> layers) {
         this.layers = new ArrayList<>(layers);
     }
 
@@ -32,9 +33,17 @@ public class BlockLayerComparator {
      *
      * @param layer the initial {@code BlockLayer} objects to manage
      */
-    public BlockLayerComparator(BlockLayer layer) {
+    public BlockLayerManager(BlockLayer layer) {
         this.layers = new ArrayList<>();
         this.layers.add(layer);
+    }
+
+    /**
+     * Constructs a {@code BlockLayerComparator} with the specified layers.
+     */
+    public BlockLayerManager(LayerPlacer placer, BlockState state, short depth) {
+        this.layers = new ArrayList<>();
+        this.layers.add(new BlockLayer(placer, state, depth));
     }
 
     /**
@@ -175,19 +184,5 @@ public class BlockLayerComparator {
      */
     public boolean isEmpty() {
         return this.layers.isEmpty();
-    }
-
-    /**
-     * Checks whether any {@code BlockLayer} in the list has force parameters enabled.
-     *
-     * @return {@code true} if any layer has force parameters; {@code false} otherwise
-     */
-    public boolean hasForceParameters() {
-        for (BlockLayer layer : this.layers) {
-            if (layer.isForce() || (layer.getBlocksToForce() != null && !layer.getBlocksToForce().isEmpty())) {
-                return true;
-            }
-        }
-        return false;
     }
 }

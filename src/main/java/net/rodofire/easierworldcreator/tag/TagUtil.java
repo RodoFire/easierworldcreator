@@ -22,6 +22,14 @@ public class TagUtil {
             return blocks;
         }
 
+        public static Set<Block> convertBlockTagToBlockSet(Set<TagKey<Block>> blockTags) {
+            Set<Block> blocks = new HashSet<>();
+            for (TagKey<Block> blockTag : blockTags) {
+                blocks.addAll(convertBlockTagToBlockSet(blockTag));
+            }
+            return blocks;
+        }
+
         public static Set<Block> convertBlockTagToBlockSet(List<TagKey<Block>> blockTags) {
             Set<Block> blocks = new HashSet<>();
             for (TagKey<Block> blockTag : blockTags) {

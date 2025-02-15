@@ -1,11 +1,10 @@
 package net.rodofire.easierworldcreator.mixin.world.gen;
 
-import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.StructureWorldAccess;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.gen.StructureAccessor;
 import net.minecraft.world.gen.chunk.ChunkGenerator;
-import net.rodofire.easierworldcreator.blockdata.blocklist.basic.comparator.DefaultBlockListComparator;
+import net.rodofire.easierworldcreator.blockdata.blocklist.BlockListManager;
 import net.rodofire.easierworldcreator.fileutil.FileUtil;
 import net.rodofire.easierworldcreator.fileutil.LoadChunkShapeInfo;
 import org.spongepowered.asm.mixin.Mixin;
@@ -47,7 +46,7 @@ public abstract class ChunkGeneratorMixin {
             if (!pathlist.isEmpty()) {
                 for (Path path : pathlist) {
                     world.setCurrentlyGeneratingStructureName(() -> "ewc multi-chunk feature generating: " + path.getFileName());
-                    DefaultBlockListComparator comparator = LoadChunkShapeInfo.loadFromJson(world, path);
+                    BlockListManager comparator = LoadChunkShapeInfo.loadFromJson(world, path);
                     LoadChunkShapeInfo.placeStructure(world, comparator);
                     FileUtil.removeFile(path);
                 }
@@ -71,7 +70,7 @@ public abstract class ChunkGeneratorMixin {
         if (!pathlist.isEmpty()) {
             for (Path path : pathlist) {
                 world.setCurrentlyGeneratingStructureName(() -> "ewc multi-chunk feature generating: " + path.getFileName());
-                DefaultBlockListComparator comparator = LoadChunkShapeInfo.loadFromJson(world, path);
+                BlockListManager comparator = LoadChunkShapeInfo.loadFromJson(world, path);
                 LoadChunkShapeInfo.placeStructure(world, comparator);
                 FileUtil.removeFile(path);
             }

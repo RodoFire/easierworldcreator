@@ -20,8 +20,8 @@ import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.StructureWorldAccess;
 import net.minecraft.world.chunk.Chunk;
 import net.rodofire.easierworldcreator.Ewc;
-import net.rodofire.easierworldcreator.blockdata.blocklist.basic.DefaultBlockList;
-import net.rodofire.easierworldcreator.blockdata.blocklist.basic.comparator.DefaultBlockListComparator;
+import net.rodofire.easierworldcreator.blockdata.blocklist.BlockList;
+import net.rodofire.easierworldcreator.blockdata.blocklist.BlockListManager;
 import net.rodofire.easierworldcreator.config.ewc.EwcConfig;
 
 import java.io.File;
@@ -47,21 +47,21 @@ public class LoadChunkShapeInfo {
      * @param chunkFilePath the path of the shape
      * @return a {@link List} used later to place the BlockStates
      */
-    public static DefaultBlockListComparator loadFromJson(StructureWorldAccess world, Path chunkFilePath) {
+    public static BlockListManager loadFromJson(StructureWorldAccess world, Path chunkFilePath) {
         File file = new File(chunkFilePath.toString());
-        if (!file.exists()) return new DefaultBlockListComparator();
+        if (!file.exists()) return new BlockListManager();
         String jsonContent;
         try {
             jsonContent = Files.readString(chunkFilePath);
         } catch (IOException e) {
             e.fillInStackTrace();
-            return new DefaultBlockListComparator();
+            return new BlockListManager();
         }
 
         Gson gson = new Gson();
 
         JsonArray jsonArray = gson.fromJson(jsonContent, JsonArray.class);
-        DefaultBlockListComparator comparator = new DefaultBlockListComparator();
+        BlockListManager comparator = new BlockListManager();
         String fileName = chunkFilePath.getParent().getFileName().toString();
         Pattern pattern = Pattern.compile("chunk_(-?\\d+)_(-?\\d+)$");
         Matcher matcher = pattern.matcher(fileName);
@@ -93,7 +93,7 @@ public class LoadChunkShapeInfo {
             }
 
             // Create a new BlockList and add it to the set
-            DefaultBlockList defaultBlockList = new DefaultBlockList(posList, blockState);
+            BlockList defaultBlockList = new BlockList(blockState, posList);
             comparator.put(defaultBlockList);
         }
         return comparator;
@@ -105,8 +105,8 @@ public class LoadChunkShapeInfo {
      * @param world             the world the structure will spawn in
      * @param defaultBlockLists the list of blockList that compose the structure
      */
-    public static void placeStructure(StructureWorldAccess world, DefaultBlockListComparator defaultBlockLists) {
-        defaultBlockLists.placeAllWithVerification(world);
+    public static void placeStructure(StructureWorldAccess world, BlockListManager defaultBlockLists) {
+        defaultBlockLists.placeAllNDelete(world);
     }
 
     /**

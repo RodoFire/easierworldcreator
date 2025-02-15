@@ -214,13 +214,13 @@ public class BlockListManager {
 
     public void set(int index, BlockList blockList) {
         Pair<BlockState, NbtCompound> blockData = blockList.getBlockData();
-        if(this.blockDataMap.containsKey(blockData)) {
+        if (this.blockDataMap.containsKey(blockData)) {
         }
         this.blockLists.set(index, blockList);
 
     }
 
-    public void clear(){
+    public void clear() {
         this.blockLists.clear();
         this.stateIndexes.clear();
         this.blockDataMap.clear();
@@ -228,8 +228,8 @@ public class BlockListManager {
 
     public boolean placeAll(StructureWorldAccess worldAccess) {
         boolean placed = true;
-        for(BlockList blockList : this.blockLists){
-            if(!blockList.placeAllNDelete(worldAccess)){
+        for (BlockList blockList : this.blockLists) {
+            if (!blockList.placeAllNDelete(worldAccess)) {
                 placed = false;
             }
         }
@@ -238,8 +238,8 @@ public class BlockListManager {
 
     public boolean placeAllNDelete(StructureWorldAccess worldAccess) {
         boolean placed = true;
-        for(BlockList blockList : this.blockLists){
-            if(!blockList.placeAllNDelete(worldAccess)){
+        for (BlockList blockList : this.blockLists) {
+            if (!blockList.placeAllNDelete(worldAccess)) {
                 placed = false;
             }
         }
@@ -281,11 +281,18 @@ public class BlockListManager {
         toJson(chunkPos, new BlockPos(0, 0, 0));
     }
 
-    public void toJson(ChunkPos chunkPos, Path path, BlockPos offset) {
+    /**
+     * convert the manager into a Json file
+     *
+     * @param chunkPos the chunkpos of the manager. Positions will be written relative to this blockPos
+     * @param path     the path of the directory where the file will be written in
+     * @param offset   the offset to move the blockPos
+     */
+    public void toJson(ChunkPos chunkPos, Path path, BlockPos offset, String name) {
         Gson gson = new Gson();
         JsonArray jsonArray = toJson(chunkPos, offset);
         try {
-            Files.writeString(path, gson.toJson(jsonArray));
+            Files.writeString(path.resolve(name + ".json"), gson.toJson(jsonArray));
         } catch (IOException e) {
             e.fillInStackTrace();
         }

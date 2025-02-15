@@ -99,11 +99,10 @@ public class SphereGen extends AbstractFillableBlockShape {
     /**
      * init the shape generation
      *
-     * @param world  the world the shape will be generated
      * @param pos    the pos of the structure center
      * @param radius the radius of the sphere
      */
-    public SphereGen(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, int radius) {
+    public SphereGen(@NotNull BlockPos pos, int radius) {
         super(pos);
         this.radiusX = radius;
         this.radiusY = radius;

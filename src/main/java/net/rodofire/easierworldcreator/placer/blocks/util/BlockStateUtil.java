@@ -1,19 +1,15 @@
 package net.rodofire.easierworldcreator.placer.blocks.util;
 
-import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.registry.DynamicRegistryManager;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.tag.TagKey;
 import net.minecraft.util.Pair;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.StructureWorldAccess;
-import net.rodofire.easierworldcreator.blockdata.blocklist.ordered.comparator.CompoundOrderedBlockListComparator;
-import net.rodofire.easierworldcreator.blockdata.blocklist.ordered.comparator.DefaultOrderedBlockListComparator;
+import net.rodofire.easierworldcreator.blockdata.blocklist.BlockListManager;
+import net.rodofire.easierworldcreator.blockdata.blocklist.OrderedBlockListManager;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -51,8 +47,8 @@ public class BlockStateUtil {
         //blockStateMap.putAll(concurrentMap);
     }
 
-    public static CompoundOrderedBlockListComparator getCompoundBlockStatesFromWorld(List<Set<BlockPos>> posList, StructureWorldAccess world) {
-        CompoundOrderedBlockListComparator comparator = new CompoundOrderedBlockListComparator();
+    public static BlockListManager getCompoundBlockStatesFromWorld(List<Set<BlockPos>> posList, StructureWorldAccess world) {
+        BlockListManager comparator = new BlockListManager();
         for (Set<BlockPos> set : posList) {
             for (BlockPos blockPos : set) {
                 BlockState blockState = world.getBlockState(blockPos);
@@ -60,17 +56,17 @@ public class BlockStateUtil {
                 if (entity != null) {
                     DynamicRegistryManager registry = world.getRegistryManager();
                     NbtCompound nbtCompound = entity.createNbtWithIdentifyingData(registry);
-                    comparator.put(new Pair<>(blockState, nbtCompound), blockPos);
+                    comparator.put(blockState, nbtCompound, blockPos);
                 } else {
-                    comparator.put(new Pair<>(blockState, null), blockPos);
+                    comparator.put(blockState, null, blockPos);
                 }
             }
         }
         return comparator;
     }
 
-    public static DefaultOrderedBlockListComparator getBlockStatesFromWorld(List<Set<BlockPos>> posList, StructureWorldAccess world) {
-        DefaultOrderedBlockListComparator comparator = new DefaultOrderedBlockListComparator();
+    public static OrderedBlockListManager getBlockStatesFromWorld(List<Set<BlockPos>> posList, StructureWorldAccess world) {
+        OrderedBlockListManager comparator = new OrderedBlockListManager();
         for (Set<BlockPos> set : posList) {
             for (BlockPos blockPos : set) {
                 BlockState blockState = world.getBlockState(blockPos);

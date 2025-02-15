@@ -1,6 +1,5 @@
 package net.rodofire.easierworldcreator.shape.block.layer;
 
-import io.netty.util.internal.ConcurrentSet;
 import it.unimi.dsi.fastutil.longs.AbstractLongCollection;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
@@ -19,8 +18,8 @@ import net.rodofire.easierworldcreator.util.LongPosHelper;
 
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ForkJoinPool;
+import java.util.function.BiConsumer;
 
 class SurfaceLayer extends AbstractLayer {
 
@@ -43,37 +42,9 @@ class SurfaceLayer extends AbstractLayer {
                 BlockListManager threadedManager = new BlockListManager();
                 LongSet leftPositions = entry.getValue();
 
-                for (int i = 1; i < blockLayer.size(); i++) {
-                    if (leftPositions.isEmpty()) {
-                        break;
-                    }
-
-                    BlockLayer layer = blockLayer.get(i - 1);
-                    int depth = layer.getDepth();
-                    LongSet difference = new LongOpenHashSet();
-
-                    LayerPlacer placer = layer.getPlacer();
-                    List<BlockState> states = layer.getBlockStates();
-
-                    for (long pos : leftPositions) {
-                        if (!leftPositions.contains(LongPosHelper.up(pos, depth))) {
-                            difference.add(pos);
-                            threadedManager.put(placer.get(states, LongPosHelper.decodeBlockPos(pos)), pos);
-                        }
-                    }
-                    leftPositions.removeAll(difference);
-                }
-
-                if (!leftPositions.isEmpty()) {
-                    LayerPlacer placer = blockLayer.getLastLayer().getPlacer();
-                    List<BlockState> states = blockLayer.getLastLayer().getBlockStates();
-                    for (long pos : leftPositions) {
-                        threadedManager.put(
-                                placer.get(states, LongPosHelper.decodeBlockPos(pos)), pos
-                        );
-
-                    }
-                }
+                processCommonGet(leftPositions, (layer, pos) -> {
+                    threadedManager.put(layer.getPlacer().get(layer.getBlockStates(), LongPosHelper.decodeBlockPos(pos)), pos);
+                });
 
                 synchronized (manager) {
                     manager.put(threadedManager);
@@ -143,38 +114,10 @@ class SurfaceLayer extends AbstractLayer {
                 BlockListManager threadedManager = new BlockListManager();
                 LongSet leftPositions = entry.getValue();
 
-                for (int i = 1; i < blockLayer.size(); i++) {
-                    if (leftPositions.isEmpty()) {
-                        break;
-                    }
-
-                    BlockLayer layer = blockLayer.get(i - 1);
-                    int depth = layer.getDepth();
-                    LongSet difference = new LongOpenHashSet();
-
-                    LayerPlacer placer = layer.getPlacer();
-                    List<BlockState> states = layer.getBlockStates();
-
-                    for (long pos : leftPositions) {
-                        if (!leftPositions.contains(LongPosHelper.up(pos, depth))) {
-                            difference.add(pos);
-                            if (layer.getRuler().canPlace(worldStates.getState(pos)))
-                                threadedManager.put(placer.get(states, LongPosHelper.decodeBlockPos(pos)), pos);
-                        }
-                    }
-                    leftPositions.removeAll(difference);
-                }
-
-                if (!leftPositions.isEmpty()) {
-                    LayerPlacer placer = blockLayer.getLastLayer().getPlacer();
-                    List<BlockState> states = blockLayer.getLastLayer().getBlockStates();
-                    for (long pos : leftPositions) {
-                        threadedManager.put(
-                                placer.get(states, LongPosHelper.decodeBlockPos(pos)), pos
-                        );
-
-                    }
-                }
+                processCommonGet(leftPositions, (layer, pos) -> {
+                    if (layer.getRuler().canPlace(worldStates.getState(pos)))
+                        threadedManager.put(layer.getPlacer().get(layer.getBlockStates(), LongPosHelper.decodeBlockPos(pos)), pos);
+                });
 
                 synchronized (manager) {
                     manager.put(threadedManager);
@@ -198,36 +141,9 @@ class SurfaceLayer extends AbstractLayer {
                 BlockListManager threadedManager = new BlockListManager();
                 LongSet leftPositions = entry.getValue();
 
-                for (int i = 1; i < blockLayer.size(); i++) {
-                    if (leftPositions.isEmpty()) {
-                        break;
-                    }
-
-                    BlockLayer layer = blockLayer.get(i - 1);
-                    int depth = layer.getDepth();
-                    LongSet difference = new LongOpenHashSet();
-
-                    LayerPlacer placer = layer.getPlacer();
-                    List<BlockState> states = layer.getBlockStates();
-
-                    for (long pos : leftPositions) {
-                        if (!leftPositions.contains(LongPosHelper.up(pos, depth))) {
-                            difference.add(pos);
-                            threadedManager.put(placer.get(states, LongPosHelper.decodeBlockPos(pos)), pos);
-                        }
-                    }
-                    leftPositions.removeAll(difference);
-                }
-
-                if (!leftPositions.isEmpty()) {
-                    LayerPlacer placer = blockLayer.getLastLayer().getPlacer();
-                    List<BlockState> states = blockLayer.getLastLayer().getBlockStates();
-                    for (long pos : leftPositions) {
-                        threadedManager.put(
-                                placer.get(states, LongPosHelper.decodeBlockPos(pos)), pos
-                        );
-                    }
-                }
+                processCommonGet(leftPositions, (layer, pos) -> {
+                    threadedManager.put(layer.getPlacer().get(layer.getBlockStates(), LongPosHelper.decodeBlockPos(pos)), pos);
+                });
 
                 synchronized (manager) {
                     manager.putWithoutVerification(entry.getKey(), threadedManager);
@@ -259,39 +175,10 @@ class SurfaceLayer extends AbstractLayer {
                 BlockListManager threadedManager = new BlockListManager();
                 LongSet leftPositions = entry.getValue();
 
-                for (int i = 1; i < blockLayer.size(); i++) {
-                    if (leftPositions.isEmpty()) {
-                        break;
-                    }
-
-                    BlockLayer layer = blockLayer.get(i - 1);
-                    int depth = layer.getDepth();
-                    LongSet difference = new LongOpenHashSet();
-
-                    LayerPlacer placer = layer.getPlacer();
-                    List<BlockState> states = layer.getBlockStates();
-
-                    for (long pos : leftPositions) {
-                        if (!leftPositions.contains(LongPosHelper.up(pos, depth))) {
-                            difference.add(pos);
-                            if (layer.getRuler().canPlace(worldStates.getState(pos)))
-                                threadedManager.put(placer.get(states, LongPosHelper.decodeBlockPos(pos)), pos);
-                        }
-                    }
-                    leftPositions.removeAll(difference);
-                }
-
-                if (!leftPositions.isEmpty()) {
-                    LayerPlacer placer = blockLayer.getLastLayer().getPlacer();
-                    List<BlockState> states = blockLayer.getLastLayer().getBlockStates();
-                    for (long pos : leftPositions) {
-
-                        threadedManager.put(
-                                placer.get(states, LongPosHelper.decodeBlockPos(pos)), pos
-                        );
-
-                    }
-                }
+                processCommonGet(leftPositions, (layer, pos) -> {
+                    if (layer.getRuler().canPlace(worldStates.getState(pos)))
+                        threadedManager.put(layer.getPlacer().get(layer.getBlockStates(), LongPosHelper.decodeBlockPos(pos)), pos);
+                });
 
                 synchronized (manager) {
                     manager.putWithoutVerification(entry.getKey(), threadedManager);
@@ -511,34 +398,9 @@ class SurfaceLayer extends AbstractLayer {
 
         LongSet leftPositions = new LongOpenHashSet(posList);
 
-        for (int i = 1; i < blockLayer.size(); i++) {
-            if (leftPositions.isEmpty()) {
-                break;
-            }
-
-            BlockLayer layer = blockLayer.get(i - 1);
-            int depth = layer.getDepth();
-            LongSet difference = new LongOpenHashSet();
-
-            LayerPlacer placer = layer.getPlacer();
-            List<BlockState> states = layer.getBlockStates();
-
-            for (long pos : leftPositions) {
-                if (!leftPositions.contains(LongPosHelper.up(pos, depth))) {
-                    difference.add(pos);
-                    manager.put(placer.get(states, LongPosHelper.decodeBlockPos(pos)), pos);
-                }
-            }
-            leftPositions.removeAll(difference);
-        }
-
-        if (!leftPositions.isEmpty()) {
-            LayerPlacer placer = blockLayer.getLastLayer().getPlacer();
-            List<BlockState> states = blockLayer.getLastLayer().getBlockStates();
-            for (long pos : leftPositions) {
-                manager.put(placer.get(states, LongPosHelper.decodeBlockPos(pos)), pos);
-            }
-        }
+        processCommonGet(leftPositions, (layer, pos) -> {
+            manager.put(layer.getPlacer().get(layer.getBlockStates(), LongPosHelper.decodeBlockPos(pos)), pos);
+        });
 
         return manager;
     }
@@ -581,38 +443,20 @@ class SurfaceLayer extends AbstractLayer {
 
     @Override
     public <U extends AbstractLongCollection> BlockListManager getVerified(StructureWorldAccess world, U posList) {
-        BlockListManager manager = new BlockListManager();
+        OrderedBlockListManager worldStates = new OrderedBlockListManager();
 
+        for (long pos : posList) {
+            worldStates.put(world.getBlockState(LongPosHelper.decodeBlockPos(pos)), pos);
+        }
+
+        BlockListManager manager = new BlockListManager();
         LongSet leftPositions = new LongOpenHashSet(posList);
 
-        for (int i = 1; i < blockLayer.size(); i++) {
-            if (leftPositions.isEmpty()) {
-                break;
-            }
 
-            BlockLayer layer = blockLayer.get(i - 1);
-            int depth = layer.getDepth();
-            LongSet difference = new LongOpenHashSet();
-
-            LayerPlacer placer = layer.getPlacer();
-            List<BlockState> states = layer.getBlockStates();
-
-            for (long pos : leftPositions) {
-                if (!leftPositions.contains(LongPosHelper.up(pos, depth))) {
-                    difference.add(pos);
-                    manager.put(placer.get(states, LongPosHelper.decodeBlockPos(pos)), pos);
-                }
-            }
-            leftPositions.removeAll(difference);
-        }
-
-        if (!leftPositions.isEmpty()) {
-            LayerPlacer placer = blockLayer.getLastLayer().getPlacer();
-            List<BlockState> states = blockLayer.getLastLayer().getBlockStates();
-            for (long pos : leftPositions) {
-                manager.put(placer.get(states, LongPosHelper.decodeBlockPos(pos)), pos);
-            }
-        }
+        processCommonGet(leftPositions, (layer, pos) -> {
+            if (layer.getRuler().canPlace(worldStates.getState(pos)))
+                manager.put(layer.getPlacer().get(layer.getBlockStates(), LongPosHelper.decodeBlockPos(pos)), pos);
+        });
 
         return manager;
     }
@@ -623,34 +467,9 @@ class SurfaceLayer extends AbstractLayer {
 
         LongSet leftPositions = new LongOpenHashSet(posList);
 
-        for (int i = 1; i < blockLayer.size(); i++) {
-            if (leftPositions.isEmpty()) {
-                break;
-            }
-
-            BlockLayer layer = blockLayer.get(i - 1);
-            int depth = layer.getDepth();
-            LongSet difference = new LongOpenHashSet();
-
-            LayerPlacer placer = layer.getPlacer();
-            List<BlockState> states = layer.getBlockStates();
-
-            for (long pos : leftPositions) {
-                if (!leftPositions.contains(LongPosHelper.up(pos, depth))) {
-                    difference.add(pos);
-                    manager.put(placer.get(states, LongPosHelper.decodeBlockPos(pos)), pos);
-                }
-            }
-            leftPositions.removeAll(difference);
-        }
-
-        if (!leftPositions.isEmpty()) {
-            LayerPlacer placer = blockLayer.getLastLayer().getPlacer();
-            List<BlockState> states = blockLayer.getLastLayer().getBlockStates();
-            for (long pos : leftPositions) {
-                manager.put(placer.get(states, LongPosHelper.decodeBlockPos(pos)), pos);
-            }
-        }
+        processCommonGet(leftPositions, (layer, pos) -> {
+            manager.put(layer.getPlacer().get(layer.getBlockStates(), LongPosHelper.decodeBlockPos(pos)), pos);
+        });
 
         return manager;
     }
@@ -667,6 +486,15 @@ class SurfaceLayer extends AbstractLayer {
 
         LongSet leftPositions = new LongOpenHashSet(posList);
 
+        processCommonGet(leftPositions, (layer, pos) -> {
+            if (layer.getRuler().canPlace(worldStates.getState(pos)))
+                manager.put(layer.getPlacer().get(layer.getBlockStates(), LongPosHelper.decodeBlockPos(pos)), pos);
+        });
+
+        return manager;
+    }
+
+    private void processCommonGet(LongSet leftPositions, BiConsumer<BlockLayer, Long> consumer) {
         for (int i = 1; i < blockLayer.size(); i++) {
             if (leftPositions.isEmpty()) {
                 break;
@@ -675,31 +503,29 @@ class SurfaceLayer extends AbstractLayer {
             BlockLayer layer = blockLayer.get(i - 1);
             int depth = layer.getDepth();
             LongSet difference = new LongOpenHashSet();
-
+/*
             LayerPlacer placer = layer.getPlacer();
             List<BlockState> states = layer.getBlockStates();
-            StructurePlacementRuleManager ruler = blockLayer.getLastLayer().getRuler();
-
+            StructurePlacementRuleManager ruler = layer.getRuler();
+*/
             for (long pos : leftPositions) {
                 if (!leftPositions.contains(LongPosHelper.up(pos, depth))) {
                     difference.add(pos);
-                    if (ruler.canPlace(worldStates.getState(pos)))
-                        manager.put(placer.get(states, LongPosHelper.decodeBlockPos(pos)), pos);
+                    consumer.accept(layer, pos);
                 }
             }
             leftPositions.removeAll(difference);
         }
 
         if (!leftPositions.isEmpty()) {
+            BlockLayer layer = blockLayer.getLastLayer();
+            /*
             LayerPlacer placer = blockLayer.getLastLayer().getPlacer();
             List<BlockState> states = blockLayer.getLastLayer().getBlockStates();
-            StructurePlacementRuleManager ruler = blockLayer.getLastLayer().getRuler();
+            */
             for (long pos : leftPositions) {
-                if (ruler.canPlace(worldStates.getState((pos))))
-                    manager.put(placer.get(states, LongPosHelper.decodeBlockPos(pos)), pos);
+                consumer.accept(layer, pos);
             }
         }
-
-        return manager;
     }
 }
