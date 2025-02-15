@@ -23,8 +23,8 @@ public class BlockPlaceUtil {
     /**
      * method to verify that the block is not an unbreakable block or not and to verify if the block can be put or not.
      *
-     * @param world         the world where the {@link Block} will be placed
-     * @param pos           the position of the block
+     * @param world the world where the {@link Block} will be placed
+     * @param pos   the position of the block
      * @return true if it can be posed, false if not
      */
     public static boolean verifyBlock(StructureWorldAccess world, BlockPos pos) {
@@ -110,6 +110,22 @@ public class BlockPlaceUtil {
     }
 
     /**
+     * Verifies and places a block at a given position in the world if verification passes.
+     *
+     * @param world The world in which to place the block.
+     * @param pos   The position of the block.
+     * @param state The state of the block.
+     * @return true if the block was placed, false otherwise.
+     */
+    public static boolean placeVerifiedBlock(StructureWorldAccess world, BlockPos pos, BlockState state) {
+        if (verifyBlock(world, false, Set.of(), pos)) {
+            placeBlock(world, pos, state);
+            return true;
+        }
+        return false;
+    }
+
+    /**
      * Places a block at a given position in the world with NBT data.
      *
      * @param world    The world in which to place the block.
@@ -122,7 +138,7 @@ public class BlockPlaceUtil {
         if (compound != null) {
             BlockEntity entity = world.getBlockEntity(pos);
             if (entity != null) {
-                DynamicRegistryManager registry =  world.getRegistryManager();
+                DynamicRegistryManager registry = world.getRegistryManager();
                 NbtCompound currentNbt = entity.createNbtWithIdentifyingData(registry);
                 currentNbt.copyFrom(compound);
                 entity.read(currentNbt, registry);
@@ -328,8 +344,7 @@ public class BlockPlaceUtil {
      * @param noise         the noise
      * @return the block related to the noise
      */
-    public static BlockState getBlockWith2DNoise(List<BlockState> blocksToPlace, BlockPos pos, FastNoiseLite
-            noise) {
+    public static BlockState getBlockWith2DNoise(List<BlockState> blocksToPlace, BlockPos pos, FastNoiseLite noise) {
         double a = noise.GetNoise(pos.getX(), pos.getZ());
         return getBlockStateWithNoise(blocksToPlace, a);
     }
@@ -344,8 +359,7 @@ public class BlockPlaceUtil {
      * @param noise         the noise
      * @return the block related to the noise
      */
-    public static BlockState getBlockWith3DNoise(List<BlockState> blocksToPlace, BlockPos pos, FastNoiseLite
-            noise) {
+    public static BlockState getBlockWith3DNoise(List<BlockState> blocksToPlace, BlockPos pos, FastNoiseLite noise) {
         double a = noise.GetNoise(pos);
         return getBlockStateWithNoise(blocksToPlace, a);
     }
@@ -360,5 +374,72 @@ public class BlockPlaceUtil {
     private static BlockState getBlockStateWithNoise(List<BlockState> blocksToPlace, double a) {
         int length = blocksToPlace.size() - 1;
         return blocksToPlace.get((int) ((length) * (a / 2 + 0.5)));
+    }
+
+    /**
+     * return the BlockState wanted based on randomness
+     * this method doesn't place the block
+     * It is notable used during the shape gen during world gen
+     *
+     * @param blocksToPlace the block states list that would be chosen from
+     * @return the block related to the noise
+     */
+    public static BlockState getRandomBlock(BlockState[] blocksToPlace) {
+        return blocksToPlace[Random.create().nextBetween(0, blocksToPlace.length - 1)];
+    }
+
+    /**
+     * return the BlockState wanted based on order
+     * this method doesn't place the block
+     * It is notable used during the shape gen during world gen
+     *
+     * @param blocksToPlace the blockStates list that would be chosen from
+     * @param i             the index to choose from
+     * @return the block related to the noise
+     */
+    public static BlockState getBlockWithOrder(BlockState[] blocksToPlace, int i) {
+        return blocksToPlace[i];
+    }
+
+    /**
+     * return the BlockState wanted based on 2d noise
+     * this method doesn't place the block
+     * It is notable used during the shape gen during world gen
+     *
+     * @param blocksToPlace the blockStates list that would be chosen from
+     * @param pos           the pos of the block to test
+     * @param noise         the noise
+     * @return the block related to the noise
+     */
+    public static BlockState getBlockWith2DNoise(BlockState[] blocksToPlace, BlockPos pos, FastNoiseLite noise) {
+        double a = noise.GetNoise(pos.getX(), pos.getZ());
+        return getBlockStateWithNoise(blocksToPlace, a);
+    }
+
+    /**
+     * return the BlockState wanted based on 3d noise
+     * this method doesn't place the block
+     * It is notable used during the shape gen during world gen
+     *
+     * @param blocksToPlace the blockStates list that would be chosen from
+     * @param pos           the pos of the block to test
+     * @param noise         the noise
+     * @return the block related to the noise
+     */
+    public static BlockState getBlockWith3DNoise(BlockState[] blocksToPlace, BlockPos pos, FastNoiseLite noise) {
+        double a = noise.GetNoise(pos);
+        return getBlockStateWithNoise(blocksToPlace, a);
+    }
+
+    /**
+     * simplify the choice of block
+     *
+     * @param blocksToPlace the list of blockStates to place
+     * @param a             the value of the noise
+     * @return the block related to the noise
+     */
+    private static BlockState getBlockStateWithNoise(BlockState[] blocksToPlace, double a) {
+        int length = blocksToPlace.length - 1;
+        return blocksToPlace[(int) ((length) * (a / 2 + 0.5))];
     }
 }
