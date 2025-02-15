@@ -13,6 +13,7 @@ import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class DividedBlockListManager {
     private final Map<ChunkPos, BlockListManager> managers = new HashMap<>();
@@ -164,6 +165,10 @@ public class DividedBlockListManager {
         return managers.containsKey(pos);
     }
 
+    public Set<ChunkPos> getChunkPos(){
+        return managers.keySet();
+    }
+
     public boolean placeAll(StructureWorldAccess world) {
         boolean place = true;
         for (BlockListManager manager : managers.values()) {
@@ -201,9 +206,15 @@ public class DividedBlockListManager {
         return manager;
     }
 
-    public void toJson(Path path, String name){
-        for(Map.Entry<ChunkPos, BlockListManager> entry : managers.entrySet()){
-            entry.getValue().toJson(entry.getKey(), path.resolve("chunk_" + entry.getKey().x+"_"+entry.getKey().z).resolve());
+    public void toJson(Path path, String name) {
+        for (Map.Entry<ChunkPos, BlockListManager> entry : managers.entrySet()) {
+            entry.getValue().toJson(entry.getKey(), path.resolve("chunk_" + entry.getKey().x + "_" + entry.getKey().z), new BlockPos(0, 0, 0), name);
+        }
+    }
+
+    public void toJson(Path path, String name, BlockPos offset) {
+        for (Map.Entry<ChunkPos, BlockListManager> entry : managers.entrySet()) {
+            entry.getValue().toJson(entry.getKey(), path.resolve("chunk_" + entry.getKey().x + "_" + entry.getKey().z), offset, name);
         }
     }
 }
