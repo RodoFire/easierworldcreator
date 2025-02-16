@@ -29,6 +29,7 @@ public class Rotator {
         this.yRotation = yRotation;
         this.zRotation = zRotation;
         this.secondYRotation = secondYRotation;
+        getRotations(yRotation, zRotation, secondYRotation);
     }
 
     /**
