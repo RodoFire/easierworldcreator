@@ -5,6 +5,7 @@ import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import net.minecraft.block.BlockState;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.StructureWorldAccess;
 import net.rodofire.easierworldcreator.blockdata.blocklist.BlockListManager;
 import net.rodofire.easierworldcreator.blockdata.blocklist.DividedBlockListManager;
@@ -12,7 +13,6 @@ import net.rodofire.easierworldcreator.blockdata.blocklist.OrderedBlockListManag
 import net.rodofire.easierworldcreator.blockdata.layer.BlockLayer;
 import net.rodofire.easierworldcreator.blockdata.layer.BlockLayerManager;
 import net.rodofire.easierworldcreator.util.LongPosHelper;
-import net.rodofire.easierworldcreator.util.WorldGenUtil;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -23,8 +23,12 @@ import java.util.concurrent.ForkJoinPool;
 
 //TODO test to see if everything works
 public abstract class AbstractRadialLikeLayer extends AbstractLayer {
-    AbstractRadialLikeLayer(BlockLayerManager blockLayer) {
-        super(blockLayer);
+    AbstractRadialLikeLayer(BlockLayerManager blockLayer, Vec3d center, Vec3d direction) {
+        super(blockLayer, center, direction);
+    }
+
+    AbstractRadialLikeLayer(BlockLayerManager blockLayer, Vec3d center) {
+        super(blockLayer, center);
     }
 
     @Override
@@ -40,12 +44,11 @@ public abstract class AbstractRadialLikeLayer extends AbstractLayer {
         List<CompletableFuture<Void>> futures = new ArrayList<>();
         ForkJoinPool pool = new ForkJoinPool(Math.min(2, Math.min(posMap.size(), Runtime.getRuntime().availableProcessors())));
 
-        int[] center = LongPosHelper.decodeBlockPos2Array(LongPosHelper.encodeVec3d(this.centerPos));
         for (LongOpenHashSet set : posMap.values()) {
             futures.add(CompletableFuture.runAsync(() -> {
                 BlockListManager manager1 = new BlockListManager();
                 for (long pos : set) {
-                    float distance = getDistance(center[0], center[1], center[2], LongPosHelper.decodeBlockPos2Array(pos));
+                    float distance = getDistance(LongPosHelper.decodeBlockPos2Array(pos));
                     int index = findLayerIndex(layerDistance, distance);
                     BlockLayer layer = (index >= 0) ? blockLayer.get(index) : blockLayer.get(0);
                     BlockState state = layer.getPlacer().get(layer.getBlockStates(), LongPosHelper.decodeBlockPos(pos));
@@ -71,10 +74,9 @@ public abstract class AbstractRadialLikeLayer extends AbstractLayer {
             layerDistance[i] = this.blockLayer.get(i).getDepth() + layerDistance[i - 1];
         }
 
-        int[] center = LongPosHelper.decodeBlockPos2Array(LongPosHelper.encodeVec3d(this.centerPos));
         for (LongOpenHashSet set : posMap.values()) {
             for (long pos : set) {
-                float distance = getDistance(center[0], center[1], center[2], LongPosHelper.decodeBlockPos2Array(pos));
+                float distance = getDistance(LongPosHelper.decodeBlockPos2Array(pos));
                 int index = findLayerIndex(layerDistance, distance);
                 BlockLayer layer = (index >= 0) ? blockLayer.get(index) : blockLayer.get(0);
                 layer.getPlacer().place(world, layer.getBlockStates(), LongPosHelper.decodeBlockPos(pos), layer.getRuler());
@@ -101,12 +103,11 @@ public abstract class AbstractRadialLikeLayer extends AbstractLayer {
         List<CompletableFuture<Void>> futures = new ArrayList<>();
         ForkJoinPool pool = new ForkJoinPool(Math.min(2, Math.min(posMap.size(), Runtime.getRuntime().availableProcessors())));
 
-        int[] center = LongPosHelper.decodeBlockPos2Array(LongPosHelper.encodeVec3d(this.centerPos));
         for (LongOpenHashSet set : posMap.values()) {
             futures.add(CompletableFuture.runAsync(() -> {
                 BlockListManager manager1 = new BlockListManager();
                 for (long pos : set) {
-                    float distance = getDistance(center[0], center[1], center[2], LongPosHelper.decodeBlockPos2Array(pos));
+                    float distance = getDistance(LongPosHelper.decodeBlockPos2Array(pos));
                     int index = findLayerIndex(layerDistance, distance);
                     BlockLayer layer = (index >= 0) ? blockLayer.get(index) : blockLayer.get(0);
                     if (!layer.getRuler().canPlace(worldStates.getState(pos)))
@@ -134,7 +135,6 @@ public abstract class AbstractRadialLikeLayer extends AbstractLayer {
         for (int i = 1; i < this.blockLayer.size(); i++) {
             layerDistance[i] = this.blockLayer.get(i).getDepth() + layerDistance[i - 1];
         }
-        int[] center = LongPosHelper.decodeBlockPos2Array(LongPosHelper.encodeVec3d(this.centerPos));
 
         List<CompletableFuture<Void>> futures = new ArrayList<>();
         ForkJoinPool pool = new ForkJoinPool(Math.min(2, Math.min(posMap.size(), Runtime.getRuntime().availableProcessors())));
@@ -143,7 +143,7 @@ public abstract class AbstractRadialLikeLayer extends AbstractLayer {
             futures.add(CompletableFuture.runAsync(() -> {
                 BlockListManager manager1 = new BlockListManager();
                 for (long pos : set.getValue()) {
-                    float distance = getDistance(center[0], center[1], center[2], LongPosHelper.decodeBlockPos2Array(pos));
+                    float distance = getDistance(LongPosHelper.decodeBlockPos2Array(pos));
                     int index = findLayerIndex(layerDistance, distance);
                     BlockLayer layer = (index >= 0) ? blockLayer.get(index) : blockLayer.get(0);
                     BlockState state = layer.getPlacer().get(layer.getBlockStates(), LongPosHelper.decodeBlockPos(pos));
@@ -179,12 +179,11 @@ public abstract class AbstractRadialLikeLayer extends AbstractLayer {
         List<CompletableFuture<Void>> futures = new ArrayList<>();
         ForkJoinPool pool = new ForkJoinPool(Math.min(2, Math.min(posMap.size(), Runtime.getRuntime().availableProcessors())));
 
-        int[] center = LongPosHelper.decodeBlockPos2Array(LongPosHelper.encodeVec3d(this.centerPos));
         for (Map.Entry<ChunkPos, LongOpenHashSet> set : posMap.entrySet()) {
             futures.add(CompletableFuture.runAsync(() -> {
                 BlockListManager manager1 = new BlockListManager();
                 for (long pos : set.getValue()) {
-                    float distance = getDistance(center[0], center[1], center[2], LongPosHelper.decodeBlockPos2Array(pos));
+                    float distance = getDistance(LongPosHelper.decodeBlockPos2Array(pos));
                     int index = findLayerIndex(layerDistance, distance);
                     BlockLayer layer = (index >= 0) ? blockLayer.get(index) : blockLayer.get(0);
                     if (!layer.getRuler().canPlace(worldStates.getState(pos)))
@@ -216,11 +215,10 @@ public abstract class AbstractRadialLikeLayer extends AbstractLayer {
         List<CompletableFuture<Void>> futures = new ArrayList<>();
         ForkJoinPool pool = new ForkJoinPool(Math.min(2, Math.min(posList.size(), Runtime.getRuntime().availableProcessors())));
 
-        int[] center = LongPosHelper.decodeBlockPos2Array(LongPosHelper.encodeVec3d(this.centerPos));
 
         for (BlockPos pos : posList) {
             futures.add(CompletableFuture.runAsync(() -> {
-                float distance = getDistance(center[0], center[1], center[2], pos.getX(), pos.getY(), pos.getZ());
+                float distance = getDistance(pos.getX(), pos.getY(), pos.getZ());
                 int index = findLayerIndex(layerDistance, distance);
                 BlockLayer layer = (index >= 0) ? blockLayer.get(index) : blockLayer.get(0);
                 BlockState state = layer.getPlacer().get(layer.getBlockStates(), pos);
@@ -243,9 +241,8 @@ public abstract class AbstractRadialLikeLayer extends AbstractLayer {
             layerDistance[i] = this.blockLayer.get(i).getDepth() + layerDistance[i - 1];
         }
 
-        int[] center = LongPosHelper.decodeBlockPos2Array(LongPosHelper.encodeVec3d(this.centerPos));
         for (BlockPos pos : posList) {
-            float distance = getDistance(center[0], center[1], center[2], pos.getX(), pos.getY(), pos.getZ());
+            float distance = getDistance(pos.getX(), pos.getY(), pos.getZ());
             int index = findLayerIndex(layerDistance, distance);
             BlockLayer layer = (index >= 0) ? blockLayer.get(index) : blockLayer.get(0);
             layer.getPlacer().place(world, layer.getBlockStates(), pos, layer.getRuler());
@@ -270,11 +267,10 @@ public abstract class AbstractRadialLikeLayer extends AbstractLayer {
         List<CompletableFuture<Void>> futures = new ArrayList<>();
         ForkJoinPool pool = new ForkJoinPool(Math.min(2, Math.min(posList.size(), Runtime.getRuntime().availableProcessors())));
 
-        int[] center = LongPosHelper.decodeBlockPos2Array(LongPosHelper.encodeVec3d(this.centerPos));
 
         for (BlockPos pos : posList) {
             futures.add(CompletableFuture.runAsync(() -> {
-                float distance = getDistance(center[0], center[1], center[2], pos.getX(), pos.getY(), pos.getZ());
+                float distance = getDistance(pos.getX(), pos.getY(), pos.getZ());
                 int index = findLayerIndex(layerDistance, distance);
                 BlockLayer layer = (index >= 0) ? blockLayer.get(index) : blockLayer.get(0);
                 if (layer.getRuler().canPlace(worldStates.getState(LongPosHelper.encodeBlockPos(pos)))) {
@@ -303,11 +299,10 @@ public abstract class AbstractRadialLikeLayer extends AbstractLayer {
         List<CompletableFuture<Void>> futures = new ArrayList<>();
         ForkJoinPool pool = new ForkJoinPool(Math.min(2, Math.min(posList.size(), Runtime.getRuntime().availableProcessors())));
 
-        int[] center = LongPosHelper.decodeBlockPos2Array(LongPosHelper.encodeVec3d(this.centerPos));
 
         for (BlockPos pos : posList) {
             futures.add(CompletableFuture.runAsync(() -> {
-                float distance = getDistance(center[0], center[1], center[2], pos.getX(), pos.getY(), pos.getZ());
+                float distance = getDistance(pos.getX(), pos.getY(), pos.getZ());
                 int index = findLayerIndex(layerDistance, distance);
                 BlockLayer layer = (index >= 0) ? blockLayer.get(index) : blockLayer.get(0);
                 BlockState state = layer.getPlacer().get(layer.getBlockStates(), pos);
@@ -339,11 +334,10 @@ public abstract class AbstractRadialLikeLayer extends AbstractLayer {
         List<CompletableFuture<Void>> futures = new ArrayList<>();
         ForkJoinPool pool = new ForkJoinPool(Math.min(2, Math.min(posList.size(), Runtime.getRuntime().availableProcessors())));
 
-        int[] center = LongPosHelper.decodeBlockPos2Array(LongPosHelper.encodeVec3d(this.centerPos));
 
         for (BlockPos pos : posList) {
             futures.add(CompletableFuture.runAsync(() -> {
-                float distance = getDistance(center[0], center[1], center[2], pos.getX(), pos.getY(), pos.getZ());
+                float distance = getDistance(pos.getX(), pos.getY(), pos.getZ());
                 int index = findLayerIndex(layerDistance, distance);
                 BlockLayer layer = (index >= 0) ? blockLayer.get(index) : blockLayer.get(0);
                 if (layer.getRuler().canPlace(worldStates.getState(LongPosHelper.encodeBlockPos(pos)))) {
@@ -372,10 +366,9 @@ public abstract class AbstractRadialLikeLayer extends AbstractLayer {
         List<CompletableFuture<Void>> futures = new ArrayList<>();
         ForkJoinPool pool = new ForkJoinPool(Math.min(2, Math.min(posList.size(), Runtime.getRuntime().availableProcessors())));
 
-        int[] center = LongPosHelper.decodeBlockPos2Array(LongPosHelper.encodeVec3d(this.centerPos));
         for (long pos : posList) {
             futures.add(CompletableFuture.runAsync(() -> {
-                float distance = getDistance(center[0], center[1], center[2], LongPosHelper.decodeBlockPos2Array(pos));
+                float distance = getDistance(LongPosHelper.decodeBlockPos2Array(pos));
                 int index = findLayerIndex(layerDistance, distance);
                 BlockLayer layer = (index >= 0) ? blockLayer.get(index) : blockLayer.get(0);
                 BlockState state = layer.getPlacer().get(layer.getBlockStates(), LongPosHelper.decodeBlockPos(pos));
@@ -399,9 +392,8 @@ public abstract class AbstractRadialLikeLayer extends AbstractLayer {
             layerDistance[i] = this.blockLayer.get(i).getDepth() + layerDistance[i - 1];
         }
 
-        int[] center = LongPosHelper.decodeBlockPos2Array(LongPosHelper.encodeVec3d(this.centerPos));
         for (long pos : posList) {
-            float distance = getDistance(center[0], center[1], center[2], LongPosHelper.decodeBlockPos2Array(pos));
+            float distance = getDistance(LongPosHelper.decodeBlockPos2Array(pos));
             int index = findLayerIndex(layerDistance, distance);
             BlockLayer layer = (index >= 0) ? blockLayer.get(index) : blockLayer.get(0);
             layer.getPlacer().place(world, layer.getBlockStates(), LongPosHelper.decodeBlockPos(pos), layer.getRuler());
@@ -427,10 +419,9 @@ public abstract class AbstractRadialLikeLayer extends AbstractLayer {
         List<CompletableFuture<Void>> futures = new ArrayList<>();
         ForkJoinPool pool = new ForkJoinPool(Math.min(2, Math.min(posList.size(), Runtime.getRuntime().availableProcessors())));
 
-        int[] center = LongPosHelper.decodeBlockPos2Array(LongPosHelper.encodeVec3d(this.centerPos));
         for (long pos : posList) {
             futures.add(CompletableFuture.runAsync(() -> {
-                float distance = getDistance(center[0], center[1], center[2], LongPosHelper.decodeBlockPos2Array(pos));
+                float distance = getDistance(LongPosHelper.decodeBlockPos2Array(pos));
                 int index = findLayerIndex(layerDistance, distance);
                 BlockLayer layer = (index >= 0) ? blockLayer.get(index) : blockLayer.get(0);
                 if (layer.getRuler().canPlace(worldStates.getState(pos))) {
@@ -460,10 +451,9 @@ public abstract class AbstractRadialLikeLayer extends AbstractLayer {
         List<CompletableFuture<Void>> futures = new ArrayList<>();
         ForkJoinPool pool = new ForkJoinPool(Math.min(2, Math.min(posList.size(), Runtime.getRuntime().availableProcessors())));
 
-        int[] center = LongPosHelper.decodeBlockPos2Array(LongPosHelper.encodeVec3d(this.centerPos));
         for (long pos : posList) {
             futures.add(CompletableFuture.runAsync(() -> {
-                float distance = getDistance(center[0], center[1], center[2], LongPosHelper.decodeBlockPos2Array(pos));
+                float distance = getDistance(LongPosHelper.decodeBlockPos2Array(pos));
                 int index = findLayerIndex(layerDistance, distance);
                 BlockLayer layer = (index >= 0) ? blockLayer.get(index) : blockLayer.get(0);
                 BlockState state = layer.getPlacer().get(layer.getBlockStates(), LongPosHelper.decodeBlockPos(pos));
@@ -496,10 +486,9 @@ public abstract class AbstractRadialLikeLayer extends AbstractLayer {
         List<CompletableFuture<Void>> futures = new ArrayList<>();
         ForkJoinPool pool = new ForkJoinPool(Math.min(2, Math.min(posList.size(), Runtime.getRuntime().availableProcessors())));
 
-        int[] center = LongPosHelper.decodeBlockPos2Array(LongPosHelper.encodeVec3d(this.centerPos));
         for (long pos : posList) {
             futures.add(CompletableFuture.runAsync(() -> {
-                float distance = getDistance(center[0], center[1], center[2], LongPosHelper.decodeBlockPos2Array(pos));
+                float distance = getDistance(LongPosHelper.decodeBlockPos2Array(pos));
                 int index = findLayerIndex(layerDistance, distance);
                 BlockLayer layer = (index >= 0) ? blockLayer.get(index) : blockLayer.get(0);
                 if (layer.getRuler().canPlace(worldStates.getState(pos))) {
@@ -515,9 +504,9 @@ public abstract class AbstractRadialLikeLayer extends AbstractLayer {
         return manager;
     }
 
-    protected abstract float getDistance(int centerPosX, int centerPosY, int centerPosZ, int[] pos);
+    protected abstract float getDistance(int[] pos);
 
-    protected abstract float getDistance(int centerPosX, int centerPosY, int centerPosZ, int posX, int posY, int posZ);
+    protected abstract float getDistance(int posX, int posY, int posZ);
 
     protected abstract int findLayerIndex(int[] layerDistance, float distance);
 

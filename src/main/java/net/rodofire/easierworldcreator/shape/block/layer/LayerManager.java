@@ -19,12 +19,26 @@ import java.util.Map;
 public class LayerManager implements Layer {
     Type layerType;
     private final BlockLayerManager blockLayerManager;
-    protected Vec3d centerPos;
-    protected Vec3d directionVector;
+    protected Vec3d centerPos = new Vec3d(0, 0, 0);
+    protected Vec3d directionVector = new Vec3d(0, 1, 0);
 
     public LayerManager(Type layerType, BlockLayerManager blockLayerManager) {
         this.layerType = layerType;
         this.blockLayerManager = blockLayerManager;
+    }
+
+
+    public LayerManager(Type layerType, BlockLayerManager blockLayerManager, Vec3d centerPos) {
+        this.blockLayerManager = blockLayerManager;
+        this.layerType = layerType;
+        this.centerPos = centerPos;
+    }
+
+    public LayerManager(Type layerType, BlockLayerManager blockLayerManager, Vec3d centerPos, Vec3d directionVector) {
+        this.layerType = layerType;
+        this.blockLayerManager = blockLayerManager;
+        this.centerPos = centerPos;
+        this.directionVector = directionVector;
     }
 
     @Override
@@ -126,32 +140,11 @@ public class LayerManager implements Layer {
     private Layer getLayer() {
         return switch (layerType) {
             case SURFACE -> new SurfaceLayer(blockLayerManager);
-            case INNER_RADIAL -> {
-                Layer layer = new InnerRadialLayer(blockLayerManager);
-                layer.setCenterPos(this.centerPos);
-                yield layer;
-            }
-            case OUTER_RADIAL -> {
-                Layer layer = new OuterRadialLayer(blockLayerManager);
-                layer.setCenterPos(this.centerPos);
-                yield layer;
-            }
-            case INNER_CYLINDRICAL -> {
-                Layer layer = new InnerCylindricalLayer(blockLayerManager);
-                layer.setCenterPos(this.centerPos);
-                yield layer;
-            }
-            case OUTER_CYLINDRICAL -> {
-                Layer layer = new OuterCylindricalLayer(blockLayerManager);
-                layer.setCenterPos(this.centerPos);
-                yield layer;
-            }
-            case ALONG_DIRECTION -> {
-                Layer layer = new DirectionalLayer(blockLayerManager);
-                layer.setCenterPos(this.centerPos);
-                layer.setDirectionVector(this.directionVector);
-                yield layer;
-            }
+            case INNER_RADIAL -> new InnerRadialLayer(blockLayerManager, centerPos);
+            case OUTER_RADIAL -> new OuterRadialLayer(blockLayerManager, centerPos);
+            case INNER_CYLINDRICAL -> new InnerCylindricalLayer(blockLayerManager, centerPos, directionVector);
+            case OUTER_CYLINDRICAL -> new OuterCylindricalLayer(blockLayerManager, centerPos, directionVector);
+            case ALONG_DIRECTION ->  new DirectionalLayer(blockLayerManager, centerPos, directionVector);
         };
     }
 

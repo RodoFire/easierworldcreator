@@ -5,10 +5,22 @@ import net.rodofire.easierworldcreator.blockdata.layer.BlockLayerManager;
 
 abstract class AbstractLayer implements Layer {
     protected BlockLayerManager blockLayer;
-    protected Vec3d centerPos;
-    protected Vec3d directionVector;
+    protected Vec3d centerPos = new Vec3d(0,0,0);
+    protected Vec3d directionVector = new Vec3d(0,1,0);
 
-    AbstractLayer(final BlockLayerManager blockLayer) {
+
+    AbstractLayer(BlockLayerManager blockLayer, Vec3d centerPos, Vec3d directionVector) {
+        this.blockLayer = blockLayer;
+        this.centerPos = centerPos;
+        this.directionVector = directionVector;
+    }
+
+    AbstractLayer(BlockLayerManager blockLayer, Vec3d centerPos) {
+        this.blockLayer = blockLayer;
+        this.centerPos = centerPos;
+    }
+
+    AbstractLayer(BlockLayerManager blockLayer) {
         this.blockLayer = blockLayer;
     }
 
