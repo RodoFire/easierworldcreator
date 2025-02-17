@@ -106,7 +106,7 @@ public class FastMaths {
      * @return the sinus of the angle
      */
     public static float getPreciseSin(float x) {
-        return sinPreciseTable[((int) x * 10) % PRECISE_TRIGO_TABLE_SIZE];
+        return sinPreciseTable[((int) (x * 10)) % PRECISE_TRIGO_TABLE_SIZE];
     }
 
     /**
@@ -116,7 +116,7 @@ public class FastMaths {
      * @return the cosines of the angle
      */
     public static float getPreciseCos(float x) {
-        return cosPreciseTable[((int) x * 10) % PRECISE_TRIGO_TABLE_SIZE];
+        return cosPreciseTable[((int) (x * 10)) % PRECISE_TRIGO_TABLE_SIZE];
     }
 
     /**
@@ -126,11 +126,11 @@ public class FastMaths {
      * @return the tan of the angle
      */
     public static float getPreciseTan(float x) {
-        if ((int) x % 180 == 90) {
+        if ((int) (x * 10) % 180 == 90) {
             Ewc.LOGGER.error("getPreciseExp() :thrown error, tan can't accept values equal to 90° +- 180° (div by 0 error)");
             return 0;
         }
-        return sinPreciseTable[((int) x * 10) % PRECISE_TRIGO_TABLE_SIZE] / cosPreciseTable[((int) x * 10) % PRECISE_TRIGO_TABLE_SIZE];
+        return sinPreciseTable[((int) (x * 10)) % PRECISE_TRIGO_TABLE_SIZE] / cosPreciseTable[((int) x * 10) % PRECISE_TRIGO_TABLE_SIZE];
 
 
     }
