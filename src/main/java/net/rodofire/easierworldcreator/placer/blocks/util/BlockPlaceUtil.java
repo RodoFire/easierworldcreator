@@ -372,8 +372,10 @@ public class BlockPlaceUtil {
      * @return the block related to the noise
      */
     private static BlockState getBlockStateWithNoise(List<BlockState> blocksToPlace, double a) {
-        int length = blocksToPlace.size() - 1;
-        return blocksToPlace.get((int) ((length) * (a / 2 + 0.5)));
+        int size = blocksToPlace.size();
+        int index = (int) Math.floor((a + 1) * size / 2.0);
+        index = Math.min(index, size - 1);
+        return blocksToPlace.get(index);
     }
 
     /**
@@ -439,7 +441,9 @@ public class BlockPlaceUtil {
      * @return the block related to the noise
      */
     private static BlockState getBlockStateWithNoise(BlockState[] blocksToPlace, double a) {
-        int length = blocksToPlace.length - 1;
-        return blocksToPlace[(int) ((length) * (a / 2 + 0.5))];
+        int size = blocksToPlace.length;
+        int index = (int) Math.floor((a + 1) * size / 2.0);
+        index = Math.min(index, size - 1);
+        return blocksToPlace[index];
     }
 }
