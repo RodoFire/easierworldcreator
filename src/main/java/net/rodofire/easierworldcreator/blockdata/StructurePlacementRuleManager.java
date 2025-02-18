@@ -110,7 +110,7 @@ public class StructurePlacementRuleManager {
         if (force) {
             return !overriddenBlocks.contains(state.getBlock());
         }
-        return overriddenBlocks.contains(state.getBlock());
+        return state.isAir() || overriddenBlocks.contains(state.getBlock());
     }
 
 
