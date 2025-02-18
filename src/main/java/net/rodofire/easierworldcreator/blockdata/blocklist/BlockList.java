@@ -263,7 +263,7 @@ public class BlockList {
     }
 
     public Optional<NbtCompound> getTag() {
-        return Optional.of(tag);
+        return Optional.ofNullable(tag);
     }
 
     public void setTag(NbtCompound tag) {
@@ -366,12 +366,12 @@ public class BlockList {
         BlockState state = world.getBlockState(LongPosHelper.decodeBlockPos(pos));
         if (this.manager != null) {
             if (this.manager.canPlace(state)) {
-                world.setBlockState(LongPosHelper.decodeBlockPos(pos), state, 2);
+                world.setBlockState(LongPosHelper.decodeBlockPos(pos), this.blockState, 3);
                 return true;
             }
             return false;
         }
-        return state.isAir() && world.setBlockState(LongPosHelper.decodeBlockPos(pos), state, 2);
+        return state.isAir() && world.setBlockState(LongPosHelper.decodeBlockPos(pos), this.blockState, 3);
     }
 
     public JsonObject toJson(ChunkPos chunkPos) {
