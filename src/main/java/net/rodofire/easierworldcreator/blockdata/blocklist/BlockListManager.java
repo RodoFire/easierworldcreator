@@ -4,20 +4,22 @@ import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
-import it.unimi.dsi.fastutil.objects.Object2ShortArrayMap;
+import it.unimi.dsi.fastutil.objects.Object2ShortOpenHashMap;
 import net.minecraft.block.BlockState;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.util.Pair;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.StructureWorldAccess;
+import net.rodofire.easierworldcreator.blockdata.BlockDataKey;
 import net.rodofire.easierworldcreator.blockdata.sorter.BlockSorter;
 import net.rodofire.easierworldcreator.util.LongPosHelper;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.*;
 
 /**
@@ -44,9 +46,9 @@ public class BlockListManager {
      * <p>
      * </p>
      */
-    protected List<Pair<BlockState, NbtCompound>> stateIndexes = new ArrayList<>();
+    protected List<BlockDataKey> stateIndexes = new ArrayList<>();
 
-    protected Object2ShortArrayMap<Pair<BlockState, NbtCompound>> blockDataMap = new Object2ShortArrayMap<>();
+    protected Object2ShortOpenHashMap<BlockDataKey> blockDataMap = new Object2ShortOpenHashMap<>();
 
     /**
      * init a comparator
@@ -100,7 +102,7 @@ public class BlockListManager {
     }
 
     public BlockState getBlockState(int index) {
-        return stateIndexes.get(index).getLeft();
+        return stateIndexes.get(index).state();
     }
 
     public short size() {
@@ -116,7 +118,7 @@ public class BlockListManager {
      * @return the modified instance of the manager
      */
     public BlockListManager put(BlockState state, NbtCompound tag, LongArrayList pos) {
-        Pair<BlockState, NbtCompound> blockData = new Pair<>(state, tag);
+        BlockDataKey blockData = new BlockDataKey(state, tag);
         if (this.blockDataMap.containsKey(blockData)) {
             short index = this.blockDataMap.getShort(blockData);
             this.blockLists.get(index).addAll(pos);
@@ -173,7 +175,7 @@ public class BlockListManager {
     public BlockListManager put(BlockList blockList) {
         BlockState state = blockList.getBlockState();
         NbtCompound tag = blockList.getTag().isPresent() ? blockList.getTag().get() : null;
-        Pair<BlockState, NbtCompound> blockData = new Pair<>(state, tag);
+        BlockDataKey blockData = new BlockDataKey(state, tag);
 
         if (this.blockDataMap.containsKey(blockData)) {
             short index = this.blockDataMap.getShort(blockData);
@@ -228,6 +230,7 @@ public class BlockListManager {
 
     public boolean placeAll(StructureWorldAccess worldAccess) {
         boolean placed = true;
+        System.out.println("size: " + this.blockLists.size());
         for (BlockList blockList : this.blockLists) {
             if (!blockList.placeAllNDelete(worldAccess)) {
                 placed = false;
