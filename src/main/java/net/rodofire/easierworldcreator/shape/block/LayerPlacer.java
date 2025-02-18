@@ -1,17 +1,13 @@
 package net.rodofire.easierworldcreator.shape.block;
 
-import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.StructureWorldAccess;
 import net.rodofire.easierworldcreator.blockdata.StructurePlacementRuleManager;
-import net.rodofire.easierworldcreator.blockdata.layer.BlockLayer;
 import net.rodofire.easierworldcreator.placer.blocks.util.BlockPlaceUtil;
 import net.rodofire.easierworldcreator.util.FastNoiseLite;
-import org.lwjgl.stb.STBTruetype;
 
 import java.util.List;
-import java.util.Set;
 
 public class LayerPlacer {
     private LayerPlace type = LayerPlace.RANDOM;
