@@ -41,6 +41,7 @@ public class BlockLayer {
         }
         this.depth = depth;
         this.ruler = ruler;
+        this.placer = placer;
     }
 
     /**
@@ -58,6 +59,7 @@ public class BlockLayer {
         }
         this.depth = depth;
         this.ruler = ruler;
+        this.placer = placer;
     }
 
     /**
@@ -72,6 +74,7 @@ public class BlockLayer {
             chances.add((short) 1);
         }
         this.ruler = ruler;
+        this.placer = placer;
     }
 
     /**
@@ -87,6 +90,7 @@ public class BlockLayer {
         this.chances.add((short) 1);
         this.depth = depth;
         this.ruler = ruler;
+        this.placer = placer;
     }
 
     /**
@@ -100,6 +104,7 @@ public class BlockLayer {
         chances = new ArrayList<>();
         this.chances.add((short) 1);
         this.ruler = ruler;
+        this.placer = placer;
     }
 
     /**
@@ -115,6 +120,7 @@ public class BlockLayer {
             chances.add((short) 1);
         }
         this.depth = depth;
+        this.placer = placer;
     }
 
     /**
@@ -128,6 +134,7 @@ public class BlockLayer {
         for (int i = 0; i < states.size(); i++) {
             chances.add((short) 1);
         }
+        this.placer = placer;
     }
 
     /**
@@ -142,6 +149,7 @@ public class BlockLayer {
         for (int i = 0; i < states.size(); i++) {
             this.chances.add((chances.get(i)));
         }
+        this.placer = placer;
     }
 
     /**
@@ -156,6 +164,7 @@ public class BlockLayer {
         chances = new ArrayList<>();
         this.chances.add((short) 1);
         this.depth = depth;
+        this.placer = placer;
     }
 
     /**
@@ -168,6 +177,7 @@ public class BlockLayer {
         this.blockStates.add(state);
         chances = new ArrayList<>();
         this.chances.add((short) 1);
+        this.placer = placer;
     }
 
     public StructurePlacementRuleManager getRuler() {
