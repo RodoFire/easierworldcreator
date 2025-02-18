@@ -147,17 +147,17 @@ public class Rotator {
         return LongPosHelper.encodeBlockPos((int) x_final + this.centerPos.getX(), (int) y_rot_z + this.centerPos.getY(), (int) z_final + this.centerPos.getZ());
     }
 
-    public long get(float x, float y, float z) {
+    public long get(double x, double y, double z) {
         // first y rotation
-        float x_rot1 = (float) (x * cosY - z * sinY);
-        float z_rot1 = (float) (x * sinY + z * cosY);
+        double x_rot1 = (x * cosY - z * sinY);
+        double z_rot1 = (x * sinY + z * cosY);
         // z rotation
-        float x_rot_z = (float) (x_rot1 * cosZ - y * sinZ);
-        float y_rot_z = (float) (x_rot1 * sinZ + y * cosZ);
+        double x_rot_z = (x_rot1 * cosZ - y * sinZ);
+        double y_rot_z = (x_rot1 * sinZ + y * cosZ);
 
         // second y rotation
-        float x_final = (float) (x_rot_z * cosY2 - z_rot1 * sinY2);
-        float z_final = (float) (x_rot_z * sinY2 + z_rot1 * cosY2);
+        double x_final = (x_rot_z * cosY2 - z_rot1 * sinY2);
+        double z_final = (x_rot_z * sinY2 + z_rot1 * cosY2);
 
         return LongPosHelper.encodeBlockPos((int) x_final + this.centerPos.getX(), (int) y_rot_z + this.centerPos.getY(), (int) z_final + this.centerPos.getZ());
     }
