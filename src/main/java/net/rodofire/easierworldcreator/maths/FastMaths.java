@@ -263,6 +263,10 @@ public class FastMaths {
         return getFastSqrt(number, 0.2f);
     }
 
+    public static double getFastSqrt(double number) {
+        return getFastSqrt(number, 0.2f);
+    }
+
     /**
      * method to get a precise sqrt with the wanted precision
      *
@@ -282,6 +286,26 @@ public class FastMaths {
 
         float x = number;
         float prev;
+
+        do {
+            prev = x;
+            x = (x + number / x) / 2;
+        } while (Math.abs(x - prev) > precision);
+        return x;
+    }
+
+    public static double getFastSqrt(double number, float precision) {
+
+        if (number < 0) {
+            throw new IllegalArgumentException("Bound must be positive inside of sqrt");
+        }
+
+        if (number == 0 || number == 1) {
+            return number;
+        }
+
+        double x = number;
+        double prev;
 
         do {
             prev = x;
