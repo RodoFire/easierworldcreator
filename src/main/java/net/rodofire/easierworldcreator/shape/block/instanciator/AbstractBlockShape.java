@@ -5,8 +5,10 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.rodofire.easierworldcreator.shape.block.rotations.Rotator;
 import net.rodofire.easierworldcreator.util.LongPosHelper;
+import org.apache.commons.lang3.mutable.MutableObject;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -29,6 +31,11 @@ public abstract class AbstractBlockShape {
     protected int centerZ;
 
     protected Rotator rotator;
+
+    protected Map<ChunkPos, LongOpenHashSet> chunkMap = new HashMap<>();
+
+    MutableObject<ChunkPos> lastChunkPos = new MutableObject<>(null);
+    MutableObject<LongOpenHashSet> lastSet = new MutableObject<>(null);
 
     /**
      * init the Shape
@@ -63,9 +70,20 @@ public abstract class AbstractBlockShape {
      */
     public abstract Map<ChunkPos, LongOpenHashSet> getShapeCoordinates();
 
-    private void setCenterPos(){
+    private void setCenterPos() {
         centerX = LongPosHelper.decodeX(centerPos);
         centerY = LongPosHelper.decodeY(centerPos);
         centerZ = LongPosHelper.decodeZ(centerPos);
+    }
+
+    protected void modifyChunkMap(long pos) {
+        ChunkPos chunkPos = LongPosHelper.getChunkPos(pos);
+
+        if (!chunkPos.equals(lastChunkPos.getValue())) {
+            lastChunkPos.setValue(chunkPos);
+            lastSet.setValue(chunkMap.computeIfAbsent(chunkPos, k -> new LongOpenHashSet()));
+        }
+
+        lastSet.getValue().add(pos);
     }
 }
