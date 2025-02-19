@@ -232,7 +232,7 @@ public class BlockListManager {
         boolean placed = true;
         System.out.println("size: " + this.blockLists.size());
         for (BlockList blockList : this.blockLists) {
-            if (!blockList.placeAllNDelete(worldAccess)) {
+            if (!blockList.placeAll(worldAccess)) {
                 placed = false;
             }
         }
@@ -243,6 +243,28 @@ public class BlockListManager {
         boolean placed = true;
         for (BlockList blockList : this.blockLists) {
             if (!blockList.placeAllNDelete(worldAccess)) {
+                placed = false;
+            }
+        }
+        clear();
+        return placed;
+    }
+
+    public boolean placeAll(StructureWorldAccess worldAccess, int flag) {
+        boolean placed = true;
+        System.out.println("size: " + this.blockLists.size());
+        for (BlockList blockList : this.blockLists) {
+            if (!blockList.placeAll(worldAccess, flag)) {
+                placed = false;
+            }
+        }
+        return placed;
+    }
+
+    public boolean placeAllNDelete(StructureWorldAccess worldAccess, int flag) {
+        boolean placed = true;
+        for (BlockList blockList : this.blockLists) {
+            if (!blockList.placeAllNDelete(worldAccess, flag)) {
                 placed = false;
             }
         }
