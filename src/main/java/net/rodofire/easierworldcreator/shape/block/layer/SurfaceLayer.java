@@ -13,14 +13,13 @@ import net.rodofire.easierworldcreator.blockdata.blocklist.DividedBlockListManag
 import net.rodofire.easierworldcreator.blockdata.blocklist.OrderedBlockListManager;
 import net.rodofire.easierworldcreator.blockdata.layer.BlockLayer;
 import net.rodofire.easierworldcreator.blockdata.layer.BlockLayerManager;
-import net.rodofire.easierworldcreator.shape.block.LayerPlacer;
+import net.rodofire.easierworldcreator.shape.block.placer.LayerPlacer;
 import net.rodofire.easierworldcreator.util.LongPosHelper;
 import net.rodofire.easierworldcreator.util.consumer.QuadConsumer;
 
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ForkJoinPool;
-import java.util.function.BiConsumer;
 
 class SurfaceLayer extends AbstractLayer {
 

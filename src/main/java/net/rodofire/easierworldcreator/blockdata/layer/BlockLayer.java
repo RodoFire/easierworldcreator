@@ -3,7 +3,7 @@ package net.rodofire.easierworldcreator.blockdata.layer;
 import net.minecraft.block.BlockState;
 import net.minecraft.util.Pair;
 import net.rodofire.easierworldcreator.blockdata.StructurePlacementRuleManager;
-import net.rodofire.easierworldcreator.shape.block.LayerPlacer;
+import net.rodofire.easierworldcreator.shape.block.placer.LayerPlacer;
 
 import java.util.ArrayList;
 import java.util.List;
