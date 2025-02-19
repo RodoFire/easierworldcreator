@@ -148,18 +148,18 @@ public class CircleGen extends AbstractFillableBlockShape {
         if (this.getCustomFill() < 0f) this.setCustomFill(0f);
 
         if (this.getFillingType() == AbstractFillableBlockShape.Type.EMPTY) {
-            return this.generateEmptyOval();
+            this.generateEmptyOval();
+        }else{
+            this.generateFullOval();
         }
-        return this.generateFullOval();
+        return chunkMap;
     }
 
     /**
      * method to create a full oval/ with custom filling
      *
-     * @return {@code List<Set<BlockPos>>} : set of BlockPos divided into a list of chunks
      */
-    public Map<ChunkPos, LongOpenHashSet> generateFullOval() {
-        Map<ChunkPos, LongOpenHashSet> chunkMap = new HashMap<>();
+    public void generateFullOval() {
 
         int radiusXSquared = radiusX * radiusX;
         int radiusZSquared = radiusZ * radiusZ;
@@ -185,7 +185,7 @@ public class CircleGen extends AbstractFillableBlockShape {
                             }
                         }
                         if (bl) {
-                            WorldGenUtil.modifyChunkMap(LongPosHelper.encodeBlockPos((int) (centerX + x), centerY, (int) (centerZ + z)), chunkMap);
+                            modifyChunkMap(LongPosHelper.encodeBlockPos((int) (centerX + x), centerY, (int) (centerZ + z)));
                         }
                     }
                 }
@@ -207,43 +207,33 @@ public class CircleGen extends AbstractFillableBlockShape {
                             }
                         }
                         if (bl) {
-                            WorldGenUtil.modifyChunkMap(rotator.get(x, 0, z), chunkMap);
+                            modifyChunkMap(rotator.get(x, 0, z));
                         }
                     }
                 }
             }
         }
-
-        return chunkMap;
     }
 
     /**
      * method to create an empty oval with rotations
-     *
-     * @return {@code List<Set<BlockPos>>} : set of BlockPos divided into a list of chunks
      */
-    public Map<ChunkPos, LongOpenHashSet> generateEmptyOval() {
-        Map<ChunkPos, LongOpenHashSet> chunkMap = new HashMap<>();
-
+    public void generateEmptyOval() {
         //Rotating a shape requires more blocks.
         //This verification is there to avoid some unnecessary calculations when the rotations don't have any impact on the number of blocks
         if (rotator == null) {
             for (float u = 0; u < 360; u += (float) 45 / Math.max(this.radiusZ, this.radiusX)) {
                 float x = radiusX * FastMaths.getFastCos(u);
                 float z = radiusZ * FastMaths.getFastSin(u);
-                WorldGenUtil.modifyChunkMap(LongPosHelper.encodeBlockPos((int) (x + centerX),  centerY, (int) (z+ centerZ)), chunkMap);
+                modifyChunkMap(LongPosHelper.encodeBlockPos((int) (x + centerX),  centerY, (int) (z+ centerZ)));
             }
         } else {
             for (float u = 0; u < 360; u += (float) 35 / Math.max(this.radiusZ, this.radiusX)) {
                 float x = radiusX * FastMaths.getFastCos(u);
                 float z = radiusZ * FastMaths.getFastSin(u);
 
-                WorldGenUtil.modifyChunkMap(
-                        rotator.get(x, 0, z),
-                        chunkMap)
-                ;
+                modifyChunkMap(rotator.get(x, 0, z));
             }
         }
-        return chunkMap;
     }
 }

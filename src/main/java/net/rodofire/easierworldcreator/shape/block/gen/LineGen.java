@@ -62,11 +62,10 @@ public class LineGen extends AbstractBlockShape {
     @Override
     public Map<ChunkPos, LongOpenHashSet> getShapeCoordinates() {
         Direction direction;
-        Map<ChunkPos, LongOpenHashSet> chunkMap = new HashMap<>();
         if ((direction = WorldGenUtil.getDirection(LongPosHelper.decodeBlockPos(this.centerPos), secondPos)) != null) {
-            this.generateAxisLine(direction, chunkMap);
+            this.generateAxisLine(direction);
         } else {
-            this.drawLine(chunkMap);
+            this.drawLine();
         }
         return chunkMap;
     }
@@ -77,16 +76,16 @@ public class LineGen extends AbstractBlockShape {
      * @param dir      the direction of the line
      * @param chunkMap the map used to get the coordinates
      */
-    public void generateAxisLine(Direction dir, Map<ChunkPos, LongOpenHashSet> chunkMap) {
+    public void generateAxisLine(Direction dir) {
         int length = (int) WorldGenUtil.getDistance(LongPosHelper.decodeBlockPos(centerPos), secondPos);
         for (int i = 0; i < length; i++) {
-            WorldGenUtil.modifyChunkMap(LongPosHelper.offset(dir, centerPos, i), chunkMap);
+            modifyChunkMap(LongPosHelper.offset(dir, centerPos, i));
         }
     }
 
 
-    public void drawLine(Map<ChunkPos, LongOpenHashSet> chunkMap) {
-        WorldGenUtil.modifyChunkMap(this.centerPos, chunkMap);
+    public void drawLine() {
+        modifyChunkMap(this.centerPos);
 
         int x1 = centerX;
         int y1 = centerY;

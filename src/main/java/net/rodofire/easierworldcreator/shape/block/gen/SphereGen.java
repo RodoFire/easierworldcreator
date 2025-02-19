@@ -181,46 +181,45 @@ public class SphereGen extends AbstractFillableBlockShape {
 
     @Override
     public Map<ChunkPos, LongOpenHashSet> getShapeCoordinates() {
-        Map<ChunkPos, LongOpenHashSet> chunkMap = new HashMap<>();
         //verify if the rotations == 0 to avoid some unnecessary calculations
         if (this.getFillingType() == Type.EMPTY) {
             if (this.halfSphere == SphereType.HALF) {
-                this.generateHalfEmptyEllipsoid(chunkMap);
+                this.generateHalfEmptyEllipsoid();
             } else {
-                this.generateEmptyEllipsoid(chunkMap);
+                this.generateEmptyEllipsoid();
             }
         } else {
             if (this.halfSphere == SphereType.HALF) {
-                this.generateHalfFullEllipsoid(chunkMap);
+                this.generateHalfFullEllipsoid();
             } else {
-                this.generateFullEllipsoid(chunkMap);
+                this.generateFullEllipsoid();
             }
         }
         return chunkMap;
     }
 
 
-    public void generateHalfEmptyEllipsoid(Map<ChunkPos, LongOpenHashSet> chunkMap) {
+    public void generateHalfEmptyEllipsoid() {
         if (direction == Direction.UP) {
-            generateEmptyEllipsoid(-180, 180, 0, 90, chunkMap);
+            generateEmptyEllipsoid(-180, 180, 0, 90);
         } else if (direction == Direction.DOWN) {
-            generateEmptyEllipsoid(-180, 180, -90, 0, chunkMap);
+            generateEmptyEllipsoid(-180, 180, -90, 0);
         } else if (direction == Direction.WEST) {
-            generateEmptyEllipsoid(0, 180, -90, 90, chunkMap);
+            generateEmptyEllipsoid(0, 180, -90, 90);
         } else if (direction == Direction.EAST) {
-            generateEmptyEllipsoid(-180, 0, -90, 90, chunkMap);
+            generateEmptyEllipsoid(-180, 0, -90, 90);
         } else if (direction == Direction.NORTH) {
-            generateEmptyEllipsoid(-90, 90, -90, 90, chunkMap);
+            generateEmptyEllipsoid(-90, 90, -90, 90);
         } else {
-            generateEmptyEllipsoid(90, 270, -90, 90, chunkMap);
+            generateEmptyEllipsoid(90, 270, -90, 90);
         }
     }
 
-    public void generateEmptyEllipsoid(Map<ChunkPos, LongOpenHashSet> chunkMap) {
-        this.generateEmptyEllipsoid(-180, 180, -90, 90, chunkMap);
+    public void generateEmptyEllipsoid() {
+        this.generateEmptyEllipsoid(-180, 180, -90, 90);
     }
 
-    public void generateEmptyEllipsoid(int minLarge, int maxLarge, int minHeight, int maxHeight, Map<ChunkPos, LongOpenHashSet> chunkMap) {
+    public void generateEmptyEllipsoid(int minLarge, int maxLarge, int minHeight, int maxHeight) {
         int maxLarge1 = Math.max(radiusZ, Math.max(radiusX, radiusY));
 
         BlockPos.Mutable mutable = new BlockPos.Mutable();
@@ -237,7 +236,7 @@ public class SphereGen extends AbstractFillableBlockShape {
                     int x = (int) (xCosTheta * cosPhi);
                     int y = (int) (radiusY * FastMaths.getFastSin(phi));
                     int z = (int) (zSinTheta * cosPhi);
-                    WorldGenUtil.modifyChunkMap(LongPosHelper.encodeBlockPos(x + centerX, y + centerY, z+ centerZ), chunkMap);
+                    modifyChunkMap(LongPosHelper.encodeBlockPos(x + centerX, y + centerY, z + centerZ));
                 }
             }
         } else {
@@ -252,31 +251,31 @@ public class SphereGen extends AbstractFillableBlockShape {
                     float x = xCosTheta * cosPhi;
                     float y = (radiusY * FastMaths.getFastSin(phi));
                     float z = zSinTheta * cosPhi;
-                    WorldGenUtil.modifyChunkMap(rotator.get(x, y, z), chunkMap);
+                    modifyChunkMap(rotator.get(x, y, z));
                 }
             }
         }
     }
 
 
-    public void generateHalfFullEllipsoid(Map<ChunkPos, LongOpenHashSet> chunkMap) {
+    public void generateHalfFullEllipsoid() {
         if (direction == Direction.UP) {
-            this.generateFullEllipsoid(-radiusX, radiusX, 0, radiusY, -radiusZ, radiusZ, chunkMap);
+            this.generateFullEllipsoid(-radiusX, radiusX, 0, radiusY, -radiusZ, radiusZ);
         } else if (direction == Direction.DOWN) {
-            this.generateFullEllipsoid(-radiusX, radiusX, -radiusY, 0, -radiusZ, radiusZ, chunkMap);
+            this.generateFullEllipsoid(-radiusX, radiusX, -radiusY, 0, -radiusZ, radiusZ);
         } else if (direction == Direction.WEST) {
-            this.generateFullEllipsoid(0, radiusX, -radiusY, radiusY, -radiusZ, radiusZ, chunkMap);
+            this.generateFullEllipsoid(0, radiusX, -radiusY, radiusY, -radiusZ, radiusZ);
         } else if (direction == Direction.EAST) {
-            this.generateFullEllipsoid(-radiusX, 0, -radiusY, radiusY, -radiusZ, radiusZ, chunkMap);
+            this.generateFullEllipsoid(-radiusX, 0, -radiusY, radiusY, -radiusZ, radiusZ);
         } else if (direction == Direction.NORTH) {
-            this.generateFullEllipsoid(-radiusX, radiusX, -radiusY, radiusY, -radiusZ, 0, chunkMap);
+            this.generateFullEllipsoid(-radiusX, radiusX, -radiusY, radiusY, -radiusZ, 0);
         } else {
-            this.generateFullEllipsoid(-radiusX, radiusX, -radiusY, radiusY, 0, radiusZ, chunkMap);
+            this.generateFullEllipsoid(-radiusX, radiusX, -radiusY, radiusY, 0, radiusZ);
         }
     }
 
-    public void generateFullEllipsoid(Map<ChunkPos, LongOpenHashSet> chunkMap) {
-        this.generateFullEllipsoid(-radiusX, radiusX, -radiusY, radiusY, -radiusZ, radiusZ, chunkMap);
+    public void generateFullEllipsoid() {
+        this.generateFullEllipsoid(-radiusX, radiusX, -radiusY, radiusY, -radiusZ, radiusZ);
     }
 
     //Using cartesian coordinates because it has better performance than using trigonometry
@@ -291,7 +290,7 @@ public class SphereGen extends AbstractFillableBlockShape {
      * @param minZ the start of the circle on the z-axis
      * @param maxZ the end of the circle on the z-axis
      */
-    public void generateFullEllipsoid(int minX, int maxX, int minY, int maxY, int minZ, int maxZ, Map<ChunkPos, LongOpenHashSet> chunkMap) {
+    public void generateFullEllipsoid(int minX, int maxX, int minY, int maxY, int minZ, int maxZ) {
         this.setFill();
         int largeXSquared = radiusX * radiusX;
         int largeYSquared = radiusY * radiusY;
@@ -327,7 +326,7 @@ public class SphereGen extends AbstractFillableBlockShape {
                                 }
                             }
                             if (bl) {
-                                WorldGenUtil.modifyChunkMap(LongPosHelper.encodeBlockPos((int) (this.centerX + x), (int) (this.centerY + y), (int) (this.centerZ + z)), chunkMap);
+                                modifyChunkMap(LongPosHelper.encodeBlockPos((int) (this.centerX + x), (int) (this.centerY + y), (int) (this.centerZ + z)));
                             }
                         }
                     }
@@ -355,7 +354,7 @@ public class SphereGen extends AbstractFillableBlockShape {
                                 }
                             }
                             if (bl) {
-                                WorldGenUtil.modifyChunkMap(rotator.get(x, y, z), chunkMap);
+                                modifyChunkMap(rotator.get(x, y, z));
                             }
                         }
                     }

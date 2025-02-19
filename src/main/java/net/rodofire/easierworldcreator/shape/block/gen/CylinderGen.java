@@ -196,13 +196,12 @@ public class CylinderGen extends AbstractFillableBlockShape {
      */
     @Override
     public Map<ChunkPos, LongOpenHashSet> getShapeCoordinates() {
-        Map<ChunkPos, LongOpenHashSet> chunkMap = new HashMap<>();
         this.setFill();
 
         if (this.getFillingType() == Type.EMPTY) {
-            this.generateEmptyCylinder(chunkMap);
+            this.generateEmptyCylinder();
         } else {
-            this.generateFullCylinder(chunkMap);
+            this.generateFullCylinder();
         }
 
         return chunkMap;
@@ -211,9 +210,8 @@ public class CylinderGen extends AbstractFillableBlockShape {
     /**
      * this generates a full cylinder
      *
-     * @param chunkMap the Map of ChunkPos that will be converted into {@code List<Set<BlockPos>>}
      */
-    public void generateFullCylinder(Map<ChunkPos, LongOpenHashSet> chunkMap) {
+    public void generateFullCylinder() {
         int radiusXSquared = radiusX * radiusX;
         int radiusZSquared = radiusZ * radiusZ;
         float innerRadiusXSquared = (1 - this.getCustomFill()) * (1 - this.getCustomFill()) * radiusX * radiusX;
@@ -241,7 +239,7 @@ public class CylinderGen extends AbstractFillableBlockShape {
                         }
                         if (bl) {
                             for (float y = 0; y <= this.height; y += 1f) {
-                                WorldGenUtil.modifyChunkMap(LongPosHelper.encodeBlockPos((int) x, (int) y, (int) z), chunkMap);
+                                modifyChunkMap(LongPosHelper.encodeBlockPos((int) x + centerX, (int) y + centerY, (int) z + centerZ));
                             }
                         }
                     }
@@ -264,7 +262,7 @@ public class CylinderGen extends AbstractFillableBlockShape {
                     if (bl) {
                         for (float y = 0; y <= this.height; y += 0.5f) {
                             if (xSquared + (z * z) / radiusZSquared <= 1) {
-                                WorldGenUtil.modifyChunkMap(rotator.get(x, y, z), chunkMap);
+                                modifyChunkMap(rotator.get(x, y, z));
                             }
                         }
                     }
@@ -276,7 +274,7 @@ public class CylinderGen extends AbstractFillableBlockShape {
     /**
      * this generates a full cylinder.
      */
-    public void generateEmptyCylinder(Map<ChunkPos, LongOpenHashSet> chunkMap) {
+    public void generateEmptyCylinder() {
         //Rotating a shape requires more blocks.
         //This verification is there to avoid some unnecessary calculations when the rotations don't have any impact on the number of blocks
         if (rotator == null) {
@@ -284,7 +282,7 @@ public class CylinderGen extends AbstractFillableBlockShape {
                 float x = radiusX * FastMaths.getFastCos(u);
                 float z = radiusZ * FastMaths.getFastSin(u);
                 for (float y = 0; y <= this.height; y += 1f) {
-                    WorldGenUtil.modifyChunkMap(LongPosHelper.encodeBlockPos((int) (centerX + x), (int) (centerY + y), (int) (centerZ + z)), chunkMap);
+                    modifyChunkMap(LongPosHelper.encodeBlockPos((int) (centerX + x), (int) (centerY + y), (int) (centerZ + z)));
                 }
             }
         } else {
@@ -292,7 +290,7 @@ public class CylinderGen extends AbstractFillableBlockShape {
                 float x = radiusX * FastMaths.getFastCos(u);
                 float z = radiusZ * FastMaths.getFastSin(u);
                 for (float y = 0; y <= this.height; y += 0.5f) {
-                    WorldGenUtil.modifyChunkMap(rotator.get(x, y, z), chunkMap);
+                    modifyChunkMap(rotator.get(x, y, z));
                 }
             }
         }

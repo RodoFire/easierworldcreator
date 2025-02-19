@@ -309,21 +309,20 @@ public class SpiralGen extends AbstractBlockShape {
     @Override
     public Map<ChunkPos, LongOpenHashSet> getShapeCoordinates() {
         this.getFilling();
-        Map<ChunkPos, LongOpenHashSet> chunkMap = new HashMap<>();
 
         if (this.spiralType == SpiralType.DEFAULT) {
-            this.generateEllipsoidSpiral(this.rotator.getCenterPos(), chunkMap);
+            this.generateEllipsoidSpiral(this.rotator.getCenterPos());
         } else if (this.spiralType == SpiralType.HELICOID || this.spiralType == SpiralType.HALF_HELICOID || this.spiralType == SpiralType.CUSTOM_HELICOID) {
-            this.generateHelicoid(chunkMap);
+            this.generateHelicoid();
         } else if (this.spiralType == SpiralType.LARGE_OUTLINE) {
-            this.generateLargeOutlineSpiral(chunkMap);
+            this.generateLargeOutlineSpiral();
         } else if (this.spiralType == SpiralType.DOUBLE_HELICOID || this.spiralType == SpiralType.HALF_DOUBLE_HELICOID || this.spiralType == SpiralType.CUSTOM_DOUBLE_HELICOID) {
-            this.generateHelicoid(chunkMap);
+            this.generateHelicoid();
             this.spiralOffset = 180;
-            this.generateHelicoid(chunkMap);
+            this.generateHelicoid();
 
         } else {
-            this.generateHelicoid(chunkMap);
+            this.generateHelicoid();
         }
         return chunkMap;
     }
@@ -334,7 +333,7 @@ public class SpiralGen extends AbstractBlockShape {
      *
      * @param pos the center of the spiral. This can be changed to match certain needing like when generating a large outline
      */
-    public void generateEllipsoidSpiral(BlockPos pos, Map<ChunkPos, LongOpenHashSet> chunkMap) {
+    public void generateEllipsoidSpiral(BlockPos pos) {
         /*if (this.turnNumber <= 0) {
             Easierworldcreator.LOGGER.error("param turn can't be <= 0");
         }*/
@@ -353,7 +352,7 @@ public class SpiralGen extends AbstractBlockShape {
                 int x = (int) (radiusX * FastMaths.getFastCos(ai));
                 int z = (int) (radiusZ * FastMaths.getFastSin(ai));
                 int y = (int) (i / f);
-                WorldGenUtil.modifyChunkMap(LongPosHelper.encodeBlockPos(x + centerX, y + centerY, z + centerZ), chunkMap);
+                modifyChunkMap(LongPosHelper.encodeBlockPos(x + centerX, y + centerY, z + centerZ));
             }
         } else {
             for (float i = 0; i < limit; i += 0.5f) {
@@ -364,7 +363,7 @@ public class SpiralGen extends AbstractBlockShape {
                 float x = radiusX * FastMaths.getFastCos(ai);
                 float z = radiusZ * FastMaths.getFastSin(ai);
                 float y = i / f;
-                WorldGenUtil.modifyChunkMap(rotator.get(x, y, z), chunkMap);
+                modifyChunkMap(rotator.get(x, y, z));
             }
         }
     }
@@ -373,7 +372,7 @@ public class SpiralGen extends AbstractBlockShape {
     /**
      * this allows the generation of a large outline spiral.
      */
-    public void generateLargeOutlineSpiral(Map<ChunkPos, LongOpenHashSet> chunkMap) {
+    public void generateLargeOutlineSpiral() {
         float angle = (float) Math.atan(height / turnNumber);
         int degAngle = (int) Math.toDegrees(angle);
         Vec3d vec = new Vec3d(FastMaths.getFastCos(degAngle), FastMaths.getFastSin(degAngle), 0).normalize();
@@ -385,14 +384,14 @@ public class SpiralGen extends AbstractBlockShape {
             double x = outlineRadiusX * FastMaths.getFastCos(i);
             double z = outlineRadiusZ * FastMaths.getFastSin(i);
             //BlockPos pos = WorldGenUtil.getCoordinatesRotation((float) x, (float) 0, (float) z, 1, 0, cosY, sinY, 1, 0, this.getPos());
-            this.generateEllipsoidSpiral(rotator.getBlockPos((float) x, (float) 0, (float) z), chunkMap);
+            this.generateEllipsoidSpiral(rotator.getBlockPos((float) x, (float) 0, (float) z));
         }
     }
 
     /**
      * generates a helicoid if the {@link SpiralType} is set to {@code HELICOID} or {@code DOUBLE_HELICOID} with their variants
      */
-    public void generateHelicoid(Map<ChunkPos, LongOpenHashSet> chunkMap) {
+    public void generateHelicoid() {
         /*if (this.turnNumber <= 0) {
             Easierworldcreator.LOGGER.error("param turn can't be <= 0");
         }*/
@@ -438,7 +437,7 @@ public class SpiralGen extends AbstractBlockShape {
                     }
                     if (bl) {
                         int y = (int) ((int) (i / f) + distance * FastMaths.getFastSin(helicoidAngle));
-                        WorldGenUtil.modifyChunkMap(LongPosHelper.encodeBlockPos(x + centerX, y + centerY, z + centerZ), chunkMap);
+                        modifyChunkMap(LongPosHelper.encodeBlockPos(x + centerX, y + centerY, z + centerZ));
                     }
                 }
             }
@@ -479,7 +478,7 @@ public class SpiralGen extends AbstractBlockShape {
                     }
                     if (bl) {
                         int y = (int) ((int) (i / f) + distance * FastMaths.getFastSin(helicoidAngle));
-                        WorldGenUtil.modifyChunkMap(rotator.get(x, y, z), chunkMap);
+                        modifyChunkMap(rotator.get(x, y, z));
                     }
                 }
             }
