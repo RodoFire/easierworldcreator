@@ -408,6 +408,12 @@ public class BlockList {
         return placed;
     }
 
+    public boolean placeAllNDelete(StructureWorldAccess worldAccess, int flag) {
+        boolean placed = placeAll(worldAccess, flag);
+        this.posList.clear();
+        return placed;
+    }
+
     /**
      * <p>When placing huge structures, {@link Block#NOTIFY_ALL} takes up 80% of the placement.
      * <p>It not used in this method for this reason.
