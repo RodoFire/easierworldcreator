@@ -1,4 +1,4 @@
-package net.rodofire.easierworldcreator.shape.block;
+package net.rodofire.easierworldcreator.shape.block.placer;
 
 import net.minecraft.block.BlockState;
 import net.minecraft.util.math.BlockPos;

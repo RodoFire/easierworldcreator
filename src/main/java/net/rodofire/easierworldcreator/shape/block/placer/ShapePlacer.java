@@ -1,4 +1,4 @@
-package net.rodofire.easierworldcreator.shape.block;
+package net.rodofire.easierworldcreator.shape.block.placer;
 
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import net.minecraft.util.math.BlockPos;
@@ -72,6 +72,7 @@ public class ShapePlacer {
         if (placeMoment == PlaceMoment.WORLD_GEN &&
                 chunkPosManager.isMultiChunk(posLit.keySet(), center)) {
 
+            System.out.println("placing");
             List<CompletableFuture<Void>> futures = new ArrayList<>();
             ForkJoinPool pool = new ForkJoinPool(Runtime.getRuntime().availableProcessors());
 
@@ -81,8 +82,12 @@ public class ShapePlacer {
             for (Map.Entry<ChunkPos, LongOpenHashSet> posSet : posLit.entrySet()) {
                 futures.add(CompletableFuture.runAsync(() -> {
                     Path path = SaveChunkShapeInfo.getMultiChunkPath(world, posSet.getKey());
-                    if (path != null)
+                    System.out.println("path");
+                    if (path != null) {
+                        System.out.println("manager");
                         manager.get(posSet.getValue()).toJson(posSet.getKey(), path, chunkPosManager.getOffset(), featureName);
+                        System.out.println("placed");
+                    }
                 }, pool));
             }
             CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
@@ -128,7 +133,7 @@ public class ShapePlacer {
         }
     }
 
-    public enum PlaceMoment{
+    public enum PlaceMoment {
         WORLD_GEN,
         ANIMATED_OTHER,
         OTHER
