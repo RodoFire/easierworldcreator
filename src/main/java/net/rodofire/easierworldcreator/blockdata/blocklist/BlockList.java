@@ -3,11 +3,22 @@ package net.rodofire.easierworldcreator.blockdata.blocklist;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
+import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.ai.TargetPredicate;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.world.ServerChunkManager;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.structure.StructureTemplate;
 import net.minecraft.util.Pair;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Box;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.random.Random;
 import net.minecraft.world.StructureWorldAccess;
@@ -17,9 +28,7 @@ import net.rodofire.easierworldcreator.util.LongPosHelper;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 /**
  * <p>Class used to connect BlockPos to a BlockState.</p>
@@ -340,6 +349,40 @@ public class BlockList {
         return placed;
     }
 
+    public boolean placeLast(StructureWorldAccess world, int flag) {
+        return place(world, this.posList.getLast(), flag);
+    }
+
+    public boolean placeFirst(StructureWorldAccess world, int flag) {
+        return place(world, this.posList.getFirst(), flag);
+    }
+
+    public boolean place(StructureWorldAccess world, int index, int flag) {
+        return place(world, this.posList.getLong(index), flag);
+    }
+
+    public boolean placeAll(StructureWorldAccess worldAccess, int flag) {
+        boolean placed = true;
+        boolean markdirty = false;
+        ServerChunkManager chunkManager = null;
+        MinecraftServer server = worldAccess.getServer();
+        if (server != null) {
+            if (worldAccess instanceof ServerWorld world) {
+                chunkManager = world.getChunkManager();
+                markdirty = true;
+            }
+        }
+
+        for (long pos : this.posList) {
+            if (!place(worldAccess, pos, flag)) {
+                placed = false;
+            } else if (markdirty) {
+                chunkManager.markForUpdate(LongPosHelper.decodeBlockPos(pos));
+            }
+        }
+        return placed;
+    }
+
     public boolean placeLastNDelete(StructureWorldAccess world) {
         return place(world, this.posList.removeLast());
     }
@@ -351,27 +394,39 @@ public class BlockList {
         return place(world, this.posList.removeLong(index));
     }
 
+    /**
+     * for the most performance,
+     * it is recommended to not use this method where {@code placeLastNDelete()} can be applied
+     */
+    public boolean placeNDelete(StructureWorldAccess world, int index, int flag) {
+        return place(world, this.posList.removeLong(index), flag);
+    }
+
     public boolean placeAllNDelete(StructureWorldAccess worldAccess) {
-        boolean placed = true;
-        for (long pos : this.posList) {
-            if (!place(worldAccess, pos)) {
-                placed = false;
-            }
-        }
+        boolean placed = placeAll(worldAccess);
         this.posList.clear();
         return placed;
     }
 
+    /**
+     * <p>When placing huge structures, {@link Block#NOTIFY_ALL} takes up 80% of the placement.
+     * <p>It not used in this method for this reason.
+     * <p>You can however still modify the flags using {@link #place(StructureWorldAccess, long, int)}
+     */
     private boolean place(StructureWorldAccess world, long pos) {
+        return place(world, pos, Block.FORCE_STATE);
+    }
+
+    private boolean place(StructureWorldAccess world, long pos, int flags) {
         BlockState state = world.getBlockState(LongPosHelper.decodeBlockPos(pos));
         if (this.manager != null) {
             if (this.manager.canPlace(state)) {
-                world.setBlockState(LongPosHelper.decodeBlockPos(pos), this.blockState, 3);
+                world.setBlockState(LongPosHelper.decodeBlockPos(pos), this.blockState, flags);
                 return true;
             }
             return false;
         }
-        return state.isAir() && world.setBlockState(LongPosHelper.decodeBlockPos(pos), this.blockState, 3);
+        return state.isAir() && world.setBlockState(LongPosHelper.decodeBlockPos(pos), this.blockState, flags);
     }
 
     public JsonObject toJson(ChunkPos chunkPos) {
