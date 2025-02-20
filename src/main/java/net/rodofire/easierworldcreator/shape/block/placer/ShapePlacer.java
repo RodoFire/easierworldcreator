@@ -5,12 +5,13 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.random.Random;
 import net.minecraft.world.StructureWorldAccess;
+import net.minecraft.world.gen.GenerationStep;
 import net.rodofire.easierworldcreator.Ewc;
 import net.rodofire.easierworldcreator.blockdata.blocklist.BlockListManager;
 import net.rodofire.easierworldcreator.blockdata.blocklist.DividedBlockListManager;
 import net.rodofire.easierworldcreator.blockdata.sorter.BlockSorter;
-import net.rodofire.easierworldcreator.fileutil.LoadChunkShapeInfo;
-import net.rodofire.easierworldcreator.fileutil.SaveChunkShapeInfo;
+import net.rodofire.easierworldcreator.util.file.LoadChunkShapeInfo;
+import net.rodofire.easierworldcreator.util.file.SaveChunkShapeInfo;
 import net.rodofire.easierworldcreator.placer.blocks.animator.StructurePlaceAnimator;
 import net.rodofire.easierworldcreator.shape.block.layer.LayerManager;
 import net.rodofire.easierworldcreator.world.chunk.ChunkPosManager;
@@ -30,6 +31,8 @@ public class ShapePlacer {
     private PlaceMoment placeMoment;
     private StructurePlaceAnimator animator;
 
+    private WGShapeData shapeData;
+
     ChunkPosManager chunkPosManager;
 
     public ShapePlacer(StructureWorldAccess world, ShapePlacer.PlaceMoment placeMoment, BlockPos center) {
@@ -48,12 +51,18 @@ public class ShapePlacer {
         return placeMoment;
     }
 
+    public void setShapeData(WGShapeData shapeData) {
+        this.shapeData = shapeData;
+    }
+
     public void place(BlockListManager defaultManager) {
         switch (placeMoment) {
             case WORLD_GEN -> {
                 Ewc.LOGGER.error("cannot place structure during world generation using BlockListManager. Please use DividedBlockListManager.");
                 IllegalStateException exception = new IllegalStateException();
-                Ewc.LOGGER.info(ExceptionUtils.getStackTrace(exception));
+                exception.fillInStackTrace();
+                throw exception;
+                //Ewc.LOGGER.info(ExceptionUtils.getStackTrace(exception));
             }
             case ANIMATED_OTHER -> {
                 if (animator == null) {
@@ -78,6 +87,10 @@ public class ShapePlacer {
 
             chunkPosManager.canPlaceMultiChunk(posLit.keySet(), 6);
 
+            if (shapeData == null)
+                shapeData = WGShapeData.ofStep(GenerationStep.Feature.VEGETAL_DECORATION, "custom_shape_" + Random.create().nextLong());
+
+            WGShapeHandler.encodeInformations(posLit.keySet(), shapeData);
 
             for (Map.Entry<ChunkPos, LongOpenHashSet> posSet : posLit.entrySet()) {
                 futures.add(CompletableFuture.runAsync(() -> {
