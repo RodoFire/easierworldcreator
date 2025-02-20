@@ -1,6 +1,5 @@
 package net.rodofire.easierworldcreator.util;
 
-import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.util.math.BlockPos;
@@ -11,9 +10,11 @@ import net.minecraft.util.math.random.Random;
 import net.rodofire.easierworldcreator.Ewc;
 import net.rodofire.easierworldcreator.blockdata.layer.BlockLayer;
 import net.rodofire.easierworldcreator.maths.FastMaths;
-import org.apache.http.annotation.Experimental;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 @SuppressWarnings("unused")
 public class WorldGenUtil {
@@ -218,51 +219,6 @@ public class WorldGenUtil {
             return pos2.getX() - pos1.getX() < 0 ? Direction.SOUTH : Direction.NORTH;
         }
         return null;
-    }
-
-
-    public static BlockPos getCoordinatesRotation(float x, float y, float z, int rotationX, int rotationY, BlockPos pos) {
-        return getCoordinatesRotation(x, y, z, rotationX, rotationY, 0, pos);
-    }
-
-    public static BlockPos getCoordinatesRotation(float x, float y, float z, int rotationX, int rotationY, int secondRotationX, BlockPos pos) {
-        return getCoordinatesRotation(x, y, z, FastMaths.getFastCos(rotationX), FastMaths.getFastSin(rotationX), FastMaths.getFastCos(rotationY), FastMaths.getFastSin(rotationY), FastMaths.getFastCos(secondRotationX), FastMaths.getFastSin(secondRotationX), pos);
-    }
-
-    public static BlockPos getCoordinatesRotation(float x, float y, float z, double cosX, double sinX, double cosy, double sinY, double cosX2, double sinX2, BlockPos pos) {
-        // first x rotation
-        float y_rot1 = (float) (y * cosX - z * sinX);
-        float z_rot1 = (float) (y * sinX + z * cosX);
-
-        // y rotation
-        float x_rot_z = (float) (x * cosy - y_rot1 * sinY);
-        float y_rot_z = (float) (x * sinY + y_rot1 * cosy);
-
-        // second x rotation
-        float y_rot2 = (float) (y_rot_z * cosX2 - z_rot1 * sinX2);
-        float z_rot2 = (float) (y_rot_z * sinX2 + z_rot1 * cosX2);
-
-        return new BlockPos(new BlockPos.Mutable().set(pos, (int) x_rot_z, (int) y_rot2, (int) z_rot2));
-
-    }
-
-    public static void modifyChunkMap(long pos, Map<ChunkPos, LongOpenHashSet> chunkMap) {
-        ChunkPos chunkPos = new ChunkPos(pos);
-        chunkMap.computeIfAbsent(chunkPos, k -> new LongOpenHashSet()).add(pos);
-    }
-
-    /**
-     * performance improvements test
-     */
-    @Experimental
-    public static void modifyChunkMapExperimental(long pos, Map<ChunkPos, LongOpenHashSet> chunkMap) {
-        ChunkPos chunkPos = LongPosHelper.getChunkPos(pos);
-        LongOpenHashSet set = chunkMap.get(chunkPos);
-        if (set == null) {
-            set = new LongOpenHashSet();
-            chunkMap.put(chunkPos, set);
-        }
-        set.add(pos);
     }
 
     public static ChunkPos addChunkPos(ChunkPos pos1, ChunkPos pos2) {
