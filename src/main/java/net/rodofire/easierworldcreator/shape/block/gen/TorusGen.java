@@ -3,18 +3,17 @@ package net.rodofire.easierworldcreator.shape.block.gen;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.StructureWorldAccess;
-import net.rodofire.easierworldcreator.blockdata.layer.BlockLayer;
 import net.rodofire.easierworldcreator.maths.FastMaths;
 import net.rodofire.easierworldcreator.shape.block.instanciator.AbstractBlockShape;
 import net.rodofire.easierworldcreator.shape.block.instanciator.AbstractFillableBlockShape;
 import net.rodofire.easierworldcreator.shape.block.rotations.Rotator;
 import net.rodofire.easierworldcreator.util.LongPosHelper;
-import net.rodofire.easierworldcreator.util.WorldGenUtil;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 /*
 
                                          =======%

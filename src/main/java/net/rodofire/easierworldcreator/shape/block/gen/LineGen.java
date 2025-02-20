@@ -74,7 +74,6 @@ public class LineGen extends AbstractBlockShape {
      * this method generates the coordinates
      *
      * @param dir      the direction of the line
-     * @param chunkMap the map used to get the coordinates
      */
     public void generateAxisLine(Direction dir) {
         int length = (int) WorldGenUtil.getDistance(LongPosHelper.decodeBlockPos(centerPos), secondPos);
@@ -117,7 +116,7 @@ public class LineGen extends AbstractBlockShape {
                 }
                 p1 += 2 * dy;
                 p2 += 2 * dz;
-                WorldGenUtil.modifyChunkMap(LongPosHelper.encodeBlockPos(x1, y1, z1), chunkMap);
+                modifyChunkMap(LongPosHelper.encodeBlockPos(x1, y1, z1));
             }
         } else if (dy >= dx && dy >= dz) {
             int p1 = 2 * dx - dy;
@@ -134,7 +133,7 @@ public class LineGen extends AbstractBlockShape {
                 }
                 p1 += 2 * dx;
                 p2 += 2 * dz;
-                WorldGenUtil.modifyChunkMap(LongPosHelper.encodeBlockPos(x1, y1, z1), chunkMap);
+                modifyChunkMap(LongPosHelper.encodeBlockPos(x1, y1, z1));
             }
         } else {
             int p1 = 2 * dy - dz;
@@ -151,7 +150,7 @@ public class LineGen extends AbstractBlockShape {
                 }
                 p1 += 2 * dy;
                 p2 += 2 * dx;
-                WorldGenUtil.modifyChunkMap(LongPosHelper.encodeBlockPos(x1, y1, z1), chunkMap);
+                modifyChunkMap(LongPosHelper.encodeBlockPos(x1, y1, z1));
             }
         }
     }

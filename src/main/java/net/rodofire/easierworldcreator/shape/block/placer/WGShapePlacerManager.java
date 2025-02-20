@@ -25,7 +25,7 @@ public class WGShapePlacerManager {
     /**
      * represents the name of the features.
      */
-    private String[] references;
+    private final String[] references;
     short putReferences = 0;
 
     public WGShapePlacerManager(ChunkPos pos, int referenceSize) {

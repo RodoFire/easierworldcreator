@@ -10,12 +10,11 @@ import net.rodofire.easierworldcreator.Ewc;
 import net.rodofire.easierworldcreator.blockdata.blocklist.BlockListManager;
 import net.rodofire.easierworldcreator.blockdata.blocklist.DividedBlockListManager;
 import net.rodofire.easierworldcreator.blockdata.sorter.BlockSorter;
-import net.rodofire.easierworldcreator.util.file.LoadChunkShapeInfo;
-import net.rodofire.easierworldcreator.util.file.SaveChunkShapeInfo;
 import net.rodofire.easierworldcreator.placer.blocks.animator.StructurePlaceAnimator;
 import net.rodofire.easierworldcreator.shape.block.layer.LayerManager;
+import net.rodofire.easierworldcreator.util.file.LoadChunkShapeInfo;
+import net.rodofire.easierworldcreator.util.file.SaveChunkShapeInfo;
 import net.rodofire.easierworldcreator.world.chunk.ChunkPosManager;
-import org.apache.commons.lang3.exception.ExceptionUtils;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -27,8 +26,8 @@ import java.util.concurrent.ForkJoinPool;
 public class ShapePlacer {
     StructureWorldAccess world;
     BlockPos center;
-    private String featureName;
-    private PlaceMoment placeMoment;
+    private final String featureName;
+    private final PlaceMoment placeMoment;
     private StructurePlaceAnimator animator;
 
     private WGShapeData shapeData;

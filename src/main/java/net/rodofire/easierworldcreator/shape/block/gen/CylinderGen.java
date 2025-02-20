@@ -8,10 +8,8 @@ import net.rodofire.easierworldcreator.shape.block.instanciator.AbstractBlockSha
 import net.rodofire.easierworldcreator.shape.block.instanciator.AbstractFillableBlockShape;
 import net.rodofire.easierworldcreator.shape.block.rotations.Rotator;
 import net.rodofire.easierworldcreator.util.LongPosHelper;
-import net.rodofire.easierworldcreator.util.WorldGenUtil;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;

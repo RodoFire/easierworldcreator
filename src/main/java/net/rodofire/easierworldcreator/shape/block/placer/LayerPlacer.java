@@ -14,17 +14,17 @@ public class LayerPlacer {
     FastNoiseLite noise;
     int placedBlocks = 0;
 
-    public LayerPlacer(StructureWorldAccess worldAccess, int placedBlocks, LayerPlace type) {
+    public LayerPlacer(int placedBlocks, LayerPlace type) {
         this.placedBlocks = placedBlocks;
         this.type = type;
     }
 
-    public LayerPlacer(StructureWorldAccess worldAccess, LayerPlace type, FastNoiseLite noise) {
+    public LayerPlacer(LayerPlace type, FastNoiseLite noise) {
         this.type = type;
         this.noise = noise;
     }
 
-    public LayerPlacer(StructureWorldAccess worldAccess, LayerPlace type) {
+    public LayerPlacer(LayerPlace type) {
         this.type = type;
     }
 
