@@ -1,6 +1,5 @@
 plugins {
     id 'fabric-loom' version '1.9-SNAPSHOT'
-    id 'maven-publish'
     id "me.modmuss50.mod-publish-plugin" version "0.8.1"
 }
 
@@ -34,6 +33,7 @@ dependencies {
     modApi "com.terraformersmc:modmenu:13.0.0-beta.1"
 
     implementation 'com.moandjiezana.toml:toml4j:0.7.2'
+    include 'com.moandjiezana.toml:toml4j:0.7.2'
     implementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
 }
 
