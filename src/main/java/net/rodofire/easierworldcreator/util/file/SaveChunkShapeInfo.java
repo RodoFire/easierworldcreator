@@ -1,4 +1,4 @@
-package net.rodofire.easierworldcreator.fileutil;
+package net.rodofire.easierworldcreator.util.file;
 
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.WorldSavePath;

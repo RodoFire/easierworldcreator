@@ -1,4 +1,4 @@
-package net.rodofire.easierworldcreator.fileutil;
+package net.rodofire.easierworldcreator.util.file;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
