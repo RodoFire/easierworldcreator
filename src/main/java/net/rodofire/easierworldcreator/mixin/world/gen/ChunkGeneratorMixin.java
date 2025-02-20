@@ -1,12 +1,17 @@
 package net.rodofire.easierworldcreator.mixin.world.gen;
 
+import com.llamalad7.mixinextras.sugar.Local;
 import net.minecraft.world.StructureWorldAccess;
 import net.minecraft.world.chunk.Chunk;
+import net.minecraft.world.gen.GenerationStep;
 import net.minecraft.world.gen.StructureAccessor;
 import net.minecraft.world.gen.chunk.ChunkGenerator;
+import net.minecraft.world.gen.feature.PlacedFeature;
 import net.rodofire.easierworldcreator.blockdata.blocklist.BlockListManager;
-import net.rodofire.easierworldcreator.fileutil.FileUtil;
-import net.rodofire.easierworldcreator.fileutil.LoadChunkShapeInfo;
+import net.rodofire.easierworldcreator.shape.block.placer.WGShapeHandler;
+import net.rodofire.easierworldcreator.shape.block.placer.WGShapePlacerManager;
+import net.rodofire.easierworldcreator.util.file.FileUtil;
+import net.rodofire.easierworldcreator.util.file.LoadChunkShapeInfo;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -21,8 +26,33 @@ import java.util.List;
  */
 @Mixin(ChunkGenerator.class)
 public abstract class ChunkGeneratorMixin {
+
     @Unique
-    boolean bl = true;
+    WGShapePlacerManager placerManager;
+
+    @Unique
+    PlacedFeature old;
+
+    /**
+     * We initialize the placer manager that will define how each piece should be placed
+     */
+    @Inject(method = "generateFeatures", at = @At(value = "HEAD"))
+    private void initShapeHandler(StructureWorldAccess world, Chunk chunk, StructureAccessor structureAccessor, CallbackInfo ci) {
+        placerManager = WGShapeHandler.decodeInformation(chunk.getPos());
+    }
+
+
+    @Inject(method = "generateFeatures", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/gen/StructureAccessor;shouldGenerateStructures()Z"))
+    private void onGenerationStep(StructureWorldAccess world, Chunk chunk, StructureAccessor structureAccessor, CallbackInfo ci, @Local(ordinal = 0) int k) {
+        Path[] paths = placerManager.getToPlace(GenerationStep.Feature.values()[k]);
+        for(Path path : paths) {
+            world.setCurrentlyGeneratingStructureName(() -> "ewc multi-chunk feature generating: " + path.getFileName());
+            BlockListManager comparator = LoadChunkShapeInfo.loadFromJson(world, path);
+            LoadChunkShapeInfo.placeStructure(world, comparator);
+            FileUtil.removeFile(path);
+        }
+    }
+
 
     /**
      * <p>The method verifies
@@ -38,21 +68,16 @@ public abstract class ChunkGeneratorMixin {
      * @param ci                unused parameters that need to be there in order for the mixin to work
      */
     @Inject(method = "generateFeatures", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/StructureWorldAccess;setCurrentlyGeneratingStructureName(Ljava/util/function/Supplier;)V", ordinal = 1))
-    private void onGenerateFeatures(StructureWorldAccess world, Chunk chunk, StructureAccessor structureAccessor, CallbackInfo ci) {
-        if (bl) {
-            bl = false;
-            List<Path> pathlist = LoadChunkShapeInfo.getWorldGenFiles(world, chunk);
-
-            if (!pathlist.isEmpty()) {
-                for (Path path : pathlist) {
-                    world.setCurrentlyGeneratingStructureName(() -> "ewc multi-chunk feature generating: " + path.getFileName());
-                    BlockListManager comparator = LoadChunkShapeInfo.loadFromJson(world, path);
-                    LoadChunkShapeInfo.placeStructure(world, comparator);
-                    FileUtil.removeFile(path);
-                }
-            }
-            FileUtil.removeGeneratedChunkDirectory(chunk, world);
+    private void onFeatureGenerated(StructureWorldAccess world, Chunk chunk, StructureAccessor structureAccessor, CallbackInfo ci, @Local PlacedFeature placedFeature) {
+        Path[] paths = placerManager.getToPlace(old, placedFeature);
+        for(Path path : paths) {
+            world.setCurrentlyGeneratingStructureName(() -> "ewc multi-chunk feature generating: " + path.getFileName());
+            BlockListManager comparator = LoadChunkShapeInfo.loadFromJson(world, path);
+            LoadChunkShapeInfo.placeStructure(world, comparator);
+            FileUtil.removeFile(path);
         }
+
+        old = placedFeature;
     }
 
     /**
