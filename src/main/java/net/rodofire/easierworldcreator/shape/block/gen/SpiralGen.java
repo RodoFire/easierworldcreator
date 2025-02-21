@@ -124,10 +124,15 @@ import java.util.Set;
 
 /**
  * Class to generate Spiral related shapes
+ *
  * <p>Since 2.1.0, the shape doesn't return a {@code List<BlockPos>} but it returns instead a {@code List<Set<BlockPos>>}
+ *
  * <p>Before 2.1.0, the BlockPos list was a simple list.
+ *
  * <p>Starting from 2.1.0, the shapes return a list of {@link ChunkPos} that has a set of {@link BlockPos}
+ *
  * <p>The change from {@link List} to {@link Set} was done to avoid duplicates BlockPos which resulted in unnecessary calculations.
+ *
  * <p>this allow easy multithreading for the Block assignment done in the {@link AbstractBlockShape} which result in better performance;
  */
 @SuppressWarnings("unused")
@@ -146,9 +151,9 @@ public class SpiralGen extends AbstractBlockShape {
     private SpiralType spiralType = SpiralType.DEFAULT;
     private float spiralFilling = 1f;
     //set the radius of the outline on the x-axis
-    private int outlineRadiusX = 1;
+    private float outlineRadiusX = 1;
     //set the radius of the outline on the z-axis
-    private int outlineRadiusZ = 1;
+    private float outlineRadiusZ = 1;
 
     /**
      * The angle of the side.
@@ -186,7 +191,7 @@ public class SpiralGen extends AbstractBlockShape {
         this.height = height;
     }
 
-    public int getOutlineRadiusZ() {
+    public float getOutlineRadiusZ() {
         return outlineRadiusZ;
     }
 
@@ -194,7 +199,7 @@ public class SpiralGen extends AbstractBlockShape {
         this.outlineRadiusZ = outlineRadiusZ;
     }
 
-    public int getOutlineRadiusX() {
+    public float getOutlineRadiusX() {
         return outlineRadiusX;
     }
 
@@ -308,20 +313,36 @@ public class SpiralGen extends AbstractBlockShape {
     @Override
     public Map<ChunkPos, LongOpenHashSet> getShapeCoordinates() {
         this.getFilling();
+        switch (this.spiralType) {
+            case DEFAULT:
+                this.generateEllipsoidSpiral(new BlockPos(0, 0, 0));
+                break;
 
-        if (this.spiralType == SpiralType.DEFAULT) {
-            this.generateEllipsoidSpiral(this.rotator.getCenterPos());
-        } else if (this.spiralType == SpiralType.HELICOID || this.spiralType == SpiralType.HALF_HELICOID || this.spiralType == SpiralType.CUSTOM_HELICOID) {
-            this.generateHelicoid();
-        } else if (this.spiralType == SpiralType.LARGE_OUTLINE) {
-            this.generateLargeOutlineSpiral();
-        } else if (this.spiralType == SpiralType.DOUBLE_HELICOID || this.spiralType == SpiralType.HALF_DOUBLE_HELICOID || this.spiralType == SpiralType.CUSTOM_DOUBLE_HELICOID) {
-            this.generateHelicoid();
-            this.spiralOffset = 180;
-            this.generateHelicoid();
+            case HELICOID, HALF_HELICOID, CUSTOM_HELICOID:
+                this.generateHelicoid();
+                break;
 
-        } else {
-            this.generateHelicoid();
+            case DOUBLE_HELICOID, HALF_DOUBLE_HELICOID, CUSTOM_DOUBLE_HELICOID:
+                this.generateHelicoid();
+                this.spiralOffset = 180;
+                this.generateHelicoid();
+                break;
+
+            case LARGE_OUTLINE:
+                this.generateLargeOutlineSpiral();
+                break;
+            case FULL_LARGE_OUTLINE:
+                float intermediateOutlineX = this.outlineRadiusX;
+                float intermediateOutlineZ = this.outlineRadiusZ;
+
+                float max = Math.max(intermediateOutlineX, intermediateOutlineZ);
+                for (float i = 0; i < max; i += 0.5f) {
+                    this.outlineRadiusX = i * (intermediateOutlineX) / max;
+                    this.outlineRadiusZ = i * (intermediateOutlineZ) / max;
+
+                    this.generateLargeOutlineSpiral();
+                }
+                break;
         }
         return chunkMap;
     }
@@ -341,7 +362,6 @@ public class SpiralGen extends AbstractBlockShape {
         float a = (float) 360 / (height * maxLarge);
         float limit = maxLarge * this.turnNumber * height;
 
-
         if (rotator == null) {
             for (float i = 0; i < limit; i++) {
                 float ai = a * i + spiralOffset;
@@ -351,7 +371,7 @@ public class SpiralGen extends AbstractBlockShape {
                 int x = (int) (radiusX * FastMaths.getFastCos(ai));
                 int z = (int) (radiusZ * FastMaths.getFastSin(ai));
                 int y = (int) (i / f);
-                modifyChunkMap(LongPosHelper.encodeBlockPos(x + centerX, y + centerY, z + centerZ));
+                modifyChunkMap(LongPosHelper.encodeBlockPos(x + centerX + pos.getX(), y + centerY, z + centerZ + pos.getZ()));
             }
         } else {
             for (float i = 0; i < limit; i += 0.5f) {
@@ -362,7 +382,7 @@ public class SpiralGen extends AbstractBlockShape {
                 float x = radiusX * FastMaths.getFastCos(ai);
                 float z = radiusZ * FastMaths.getFastSin(ai);
                 float y = i / f;
-                modifyChunkMap(rotator.get(x, y, z));
+                modifyChunkMap(rotator.get(x + pos.getX(), y, z + pos.getZ()));
             }
         }
     }
@@ -378,12 +398,11 @@ public class SpiralGen extends AbstractBlockShape {
         double cosY = FastMaths.getFastCos(degAngle);
         double sinY = FastMaths.getFastSin(degAngle);
 
-        int maxLarge = Math.max(outlineRadiusX, outlineRadiusZ);
-        for (int i = 0; i < 360; i += 45 / maxLarge) {
+        float maxLarge = Math.max(outlineRadiusX, outlineRadiusZ);
+        for (float i = 0; i < 360; i += 45 / maxLarge) {
             double x = outlineRadiusX * FastMaths.getFastCos(i);
             double z = outlineRadiusZ * FastMaths.getFastSin(i);
-            //BlockPos pos = WorldGenUtil.getCoordinatesRotation((float) x, (float) 0, (float) z, 1, 0, cosY, sinY, 1, 0, this.getPos());
-            this.generateEllipsoidSpiral(rotator.getBlockPos((float) x, (float) 0, (float) z));
+            this.generateEllipsoidSpiral(rotator.getRawBlockPos((float) x, (float) 0, (float) z));
         }
     }
 
@@ -461,8 +480,8 @@ public class SpiralGen extends AbstractBlockShape {
 
                 for (float j = 0; j <= maxLarge; j++) {
 
-                    int x = (int) (xpr * j);
-                    int z = (int) (zpr * j);
+                    float x = (xpr * j);
+                    float z = (zpr * j);
 
                     float distance = FastMaths.getLength(x, z);
 
@@ -476,7 +495,7 @@ public class SpiralGen extends AbstractBlockShape {
                         }
                     }
                     if (bl) {
-                        int y = (int) ((int) (i / f) + distance * FastMaths.getFastSin(helicoidAngle));
+                        float y = ((i / f) + distance * FastMaths.getFastSin(helicoidAngle));
                         modifyChunkMap(rotator.get(x, y, z));
                     }
                 }
@@ -522,7 +541,11 @@ public class SpiralGen extends AbstractBlockShape {
          */
         HALF_DOUBLE_HELICOID,
         CUSTOM_DOUBLE_HELICOID,
-        LARGE_OUTLINE
+        LARGE_OUTLINE,
+        /**
+         * same as large outline except that it is full on the inside
+         */
+        FULL_LARGE_OUTLINE
     }
 
     /**
