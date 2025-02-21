@@ -25,6 +25,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import static net.rodofire.easierworldcreator.util.file.EwcFolderData.getNVerifyDataDir;
+
 /**
  * <p>Class used to connect BlockPos to a BlockState.</p>
  * <br>
@@ -203,7 +205,7 @@ public class BlockList {
     }
 
     public List<BlockPos> getConvertedPosList() {
-        List<BlockPos> posList = new ArrayList<BlockPos>();
+        List<BlockPos> posList = new ArrayList<>();
         for (long pos : this.posList) {
             posList.add(LongPosHelper.decodeBlockPos(pos));
         }
@@ -469,13 +471,11 @@ public class BlockList {
             int relZ = pos.getZ() - chunkMinZ - offsetZ;
             int relY = pos.getY() - offsetY;
 
-            // Vérification des limites
-            if (relX < 0 || relX >= 2048 || relZ < 0 || relZ >= 2048 || relY < -512 || relY > 512) {
-                throw new IllegalArgumentException("Position hors limites: " + pos);
+            if (relX < -1024 || relX > 1023 || relZ < -1024 || relZ > 1023) {
+                throw new IllegalArgumentException("pos out of range: " + pos);
             }
 
-            // Encodage des positions (2*11 bits pour X et Z, 10 bits pour Y)
-            int compactPos = (relX << 21) | ((relY + 512) << 11) | relZ;
+            int compactPos = ((relX & 0x7FF) << 21) | ((relY + 512) << 11) | (relZ & 0x7FF);
             compactPositions[i] = compactPos;
         }
 
@@ -489,12 +489,13 @@ public class BlockList {
 
     }
 
-    public void toJson(Path path, ChunkPos chunkPos) {
+    public void placeJson(ChunkPos chunkPos) {
         toJson(new BlockPos(0, 0, 0), chunkPos);
     }
 
-    public void toJson(Path path, BlockPos offset, ChunkPos chunkPos) {
+    public void placeJson(BlockPos offset, ChunkPos chunkPos) {
         Gson gson = new Gson();
+        Path path = getNVerifyDataDir(chunkPos);
         JsonObject jsonObj = toJson(offset, chunkPos);
         try {
             Files.writeString(path, gson.toJson(jsonObj));

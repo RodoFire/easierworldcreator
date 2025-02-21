@@ -1,7 +1,20 @@
 package net.rodofire.easierworldcreator.blockdata.blocklist;
 
+import com.google.common.reflect.TypeToken;
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.StringNbtReader;
+import net.minecraft.util.math.ChunkPos;
+import net.minecraft.world.StructureWorldAccess;
+import net.rodofire.easierworldcreator.Ewc;
 import net.rodofire.easierworldcreator.blockdata.sorter.BlockSorter;
+import net.rodofire.easierworldcreator.util.BlockStateUtil;
+import net.rodofire.easierworldcreator.util.LongPosHelper;
 
 import java.util.*;
 
@@ -67,6 +80,68 @@ public class BlockListHelper {
             }
 
         }
+    }
 
+    public static BlockListManager fromJson(StructureWorldAccess worldAccess, JsonArray jsonArray, ChunkPos chunkPos) {
+        BlockListManager manager = new BlockListManager();
+        Gson gson = new Gson();
+
+        System.out.println("from json");
+
+        for (JsonElement jsonElement : jsonArray) {
+            BlockList blockList = new BlockList();
+            JsonObject jsonObject = jsonElement.getAsJsonObject();
+            BlockState state = BlockStateUtil.parseBlockState(worldAccess, jsonObject.get("state").getAsString());
+
+            blockList.setBlockState(state);
+
+
+            if (jsonObject.has("force")) {
+                boolean force = jsonObject.get("force").getAsBoolean();
+                blockList.manager.setForce(force);
+            }
+            if (jsonObject.has("overriddenBlock")) {
+                Set<Block> overriddenBlocks = gson.fromJson(jsonObject.get("overriddenBlock"), new TypeToken<Set<Block>>() {
+                }.getType());
+                blockList.manager.setOverriddenBlocks(overriddenBlocks);
+            }
+
+            // Récupération du tag (optionnel)
+            if (jsonObject.has("tag")) {
+                String tagString = jsonObject.get("tag").getAsString();
+                try {
+                    NbtCompound tag = StringNbtReader.parse(tagString);
+                    blockList.setTag(tag);
+                } catch (Exception e) {
+                    Ewc.LOGGER.info("cannot parse NbtCompound");
+                    e.fillInStackTrace();
+                }
+            }
+
+            JsonArray positionsArray = jsonObject.getAsJsonArray("positions");
+            int[] compactPositions = gson.fromJson(positionsArray, int[].class);
+
+            int chunkMinX = chunkPos.x << 4;
+            int chunkMinZ = chunkPos.z << 4;
+
+            for (int compactPos : compactPositions) {
+                int relX = ((compactPos >> 21) & 0x7FF);
+                int relY = ((compactPos >> 11) & 0x3FF) - 512;
+                int relZ = (compactPos & 0x7FF);
+
+                // Ajustement pour les valeurs signées
+                if (relX >= 1024) relX -= 2048;
+                if (relZ >= 1024) relZ -= 2048;
+
+                int x = relX + chunkMinX;
+                int y = relY;
+                int z = relZ + chunkMinZ;
+
+                blockList.add(LongPosHelper.encodeBlockPos(x, y, z));
+            }
+            manager.put(blockList);
+
+        }
+        return manager;
     }
 }

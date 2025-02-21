@@ -10,10 +10,12 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.util.Pair;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
+import net.minecraft.util.math.random.Random;
 import net.minecraft.world.StructureWorldAccess;
 import net.rodofire.easierworldcreator.blockdata.BlockDataKey;
 import net.rodofire.easierworldcreator.blockdata.sorter.BlockSorter;
 import net.rodofire.easierworldcreator.util.LongPosHelper;
+import net.rodofire.easierworldcreator.util.file.EwcFolderData;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -279,44 +281,49 @@ public class BlockListManager {
 
     public JsonArray toJson(ChunkPos chunkPos, BlockPos offset) {
         JsonArray jsonArray = new JsonArray();
-        Gson gson = new Gson();
 
-        ExecutorService executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
-        CompletionService<JsonObject> completionService = new ExecutorCompletionService<>(executorService);
+        ForkJoinPool pool = new ForkJoinPool(Math.min(blockLists.size(), Runtime.getRuntime().availableProcessors() / 2));
+        List<CompletableFuture<JsonObject>> futures = new ArrayList<>();
 
-        List<Future<JsonObject>> futures = new ArrayList<>();
-
+        // Création des CompletableFutures pour chaque BlockList
         for (BlockList blockList : blockLists) {
-            futures.add(completionService.submit(() -> blockList.toJson(offset, chunkPos)));
+            CompletableFuture<JsonObject> future = CompletableFuture.supplyAsync(() -> {
+                return blockList.toJson(offset, chunkPos);
+            }, pool);
+            futures.add(future);
         }
 
-        for (Future<JsonObject> future : futures) {
+        CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
+
+        for (CompletableFuture<JsonObject> future : futures) {
             try {
                 jsonArray.add(future.get());
             } catch (InterruptedException | ExecutionException e) {
                 e.fillInStackTrace();
             }
         }
-        executorService.shutdown();
 
+        pool.shutdown();
         return jsonArray;
     }
 
-    public void toJson(ChunkPos chunkPos, Path path) {
-        toJson(chunkPos, new BlockPos(0, 0, 0));
+    public void placeJson(ChunkPos chunkPos) {
+        placeJson(chunkPos, new BlockPos(0, 0, 0), "custom_feature_" + Random.create().nextLong());
     }
 
     /**
      * convert the manager into a Json file
      *
      * @param chunkPos the chunkpos of the manager. Positions will be written relative to this blockPos
-     * @param path     the path of the directory where the file will be written in
      * @param offset   the offset to move the blockPos
      */
-    public void toJson(ChunkPos chunkPos, Path path, BlockPos offset, String name) {
+    public void placeJson(ChunkPos chunkPos, BlockPos offset, String name) {
         Gson gson = new Gson();
+        Path path = EwcFolderData.getNVerifyDataDir(chunkPos);
+        System.out.println("path: " + path);
         JsonArray jsonArray = toJson(chunkPos, offset);
         try {
+            System.out.println("json created");
             Files.writeString(path.resolve(name + ".json"), gson.toJson(jsonArray));
         } catch (IOException e) {
             e.fillInStackTrace();

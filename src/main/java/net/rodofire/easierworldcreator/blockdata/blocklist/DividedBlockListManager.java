@@ -9,7 +9,6 @@ import net.minecraft.world.StructureWorldAccess;
 import net.rodofire.easierworldcreator.blockdata.sorter.BlockSorter;
 import net.rodofire.easierworldcreator.util.LongPosHelper;
 
-import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -165,7 +164,7 @@ public class DividedBlockListManager {
         return managers.containsKey(pos);
     }
 
-    public Set<ChunkPos> getChunkPos(){
+    public Set<ChunkPos> getChunkPos() {
         return managers.keySet();
     }
 
@@ -206,15 +205,15 @@ public class DividedBlockListManager {
         return manager;
     }
 
-    public void toJson(Path path, String name) {
+    public void placeJson(String name) {
         for (Map.Entry<ChunkPos, BlockListManager> entry : managers.entrySet()) {
-            entry.getValue().toJson(entry.getKey(), path.resolve("chunk_" + entry.getKey().x + "_" + entry.getKey().z), new BlockPos(0, 0, 0), name);
+            entry.getValue().placeJson(entry.getKey(), new BlockPos(0, 0, 0), name);
         }
     }
 
-    public void toJson(Path path, String name, BlockPos offset) {
+    public void placeJson(String name, BlockPos offset) {
         for (Map.Entry<ChunkPos, BlockListManager> entry : managers.entrySet()) {
-            entry.getValue().toJson(entry.getKey(), path.resolve("chunk_" + entry.getKey().x + "_" + entry.getKey().z), offset, name);
+            entry.getValue().placeJson(entry.getKey(), offset, name);
         }
     }
 }
