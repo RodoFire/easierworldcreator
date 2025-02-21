@@ -19,6 +19,8 @@ public class BlockLayerManager {
      */
     private List<BlockLayer> layers;
 
+    boolean repeatLayers = false;
+
     /**
      * Constructs a {@code BlockLayerComparator} with the specified list of layers.
      *
@@ -89,6 +91,13 @@ public class BlockLayerManager {
      * @return the {@code BlockLayer} at the specified index
      */
     public BlockLayer get(int index) {
+        if (index >= layers.size()) {
+            if (repeatLayers) {
+                index = index % layers.size();
+            } else {
+                index = layers.size() - 1;
+            }
+        }
         return this.layers.get(index);
     }
 
@@ -184,5 +193,13 @@ public class BlockLayerManager {
      */
     public boolean isEmpty() {
         return this.layers.isEmpty();
+    }
+
+    public boolean isRepeatLayers() {
+        return repeatLayers;
+    }
+
+    public void setRepeatLayers(boolean repeatLayers) {
+        this.repeatLayers = repeatLayers;
     }
 }
