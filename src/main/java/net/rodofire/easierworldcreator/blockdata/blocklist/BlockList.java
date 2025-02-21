@@ -334,10 +334,10 @@ public class BlockList {
         return place(world, this.posList.getLong(index));
     }
 
-    public boolean placeAll(StructureWorldAccess worldAccess) {
+    public boolean placeAll(StructureWorldAccess worldAccess, int flag) {
         boolean placed = true;
         for (long pos : this.posList) {
-            if (!place(worldAccess, pos)) {
+            if (!place(worldAccess, pos, flag)) {
                 placed = false;
             }
         }
@@ -356,7 +356,7 @@ public class BlockList {
         return place(world, this.posList.getLong(index), flag);
     }
 
-    public boolean placeAll(StructureWorldAccess worldAccess, int flag) {
+    public boolean placeAll(StructureWorldAccess worldAccess) {
         boolean placed = true;
         boolean markdirty = false;
         ServerChunkManager chunkManager = null;
@@ -369,7 +369,7 @@ public class BlockList {
         }
 
         for (long pos : this.posList) {
-            if (!place(worldAccess, pos, flag)) {
+            if (!place(worldAccess, pos)) {
                 placed = false;
             } else if (markdirty) {
                 chunkManager.markForUpdate(LongPosHelper.decodeBlockPos(pos));
