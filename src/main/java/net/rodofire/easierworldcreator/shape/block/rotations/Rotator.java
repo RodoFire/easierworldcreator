@@ -162,6 +162,37 @@ public class Rotator {
         return LongPosHelper.encodeBlockPos((int) x_final + this.centerPos.getX(), (int) y_rot_z + this.centerPos.getY(), (int) z_final + this.centerPos.getZ());
     }
 
+    public long getRaw(long pos) {
+        int[] intPos = LongPosHelper.decodeBlockPos2Array(pos);
+        // first y rotation
+        float x_rot1 = (float) (intPos[0] * cosY - intPos[2] * sinY);
+        float z_rot1 = (float) (intPos[0] * sinY + intPos[2] * cosY);
+        // z rotation
+        float x_rot_z = (float) (x_rot1 * cosZ - intPos[1] * sinZ);
+        float y_rot_z = (float) (x_rot1 * sinZ + intPos[1] * cosZ);
+
+        // second y rotation
+        float x_final = (float) (x_rot_z * cosY2 - z_rot1 * sinY2);
+        float z_final = (float) (x_rot_z * sinY2 + z_rot1 * cosY2);
+
+        return LongPosHelper.encodeBlockPos((int) x_final, (int) y_rot_z, (int) z_final);
+    }
+
+    public long getRaw(double x, double y, double z) {
+        // first y rotation
+        double x_rot1 = (x * cosY - z * sinY);
+        double z_rot1 = (x * sinY + z * cosY);
+        // z rotation
+        double x_rot_z = (x_rot1 * cosZ - y * sinZ);
+        double y_rot_z = (x_rot1 * sinZ + y * cosZ);
+
+        // second y rotation
+        double x_final = (x_rot_z * cosY2 - z_rot1 * sinY2);
+        double z_final = (x_rot_z * sinY2 + z_rot1 * cosY2);
+
+        return LongPosHelper.encodeBlockPos((int) x_final, (int) y_rot_z, (int) z_final);
+    }
+
     public BlockPos getBlockPos(int[] pos) {
         return getBlockPos(pos[0], pos[1], pos[2]);
     }
@@ -200,6 +231,23 @@ public class Rotator {
         float x_final = (float) (x_rot_z * cosY2 - z_rot1 * sinY2);
         float z_final = (float) (x_rot_z * sinY2 + z_rot1 * cosY2);
 
-        return new BlockPos(new BlockPos.Mutable().set(centerPos, (int) x_final, (int) y_rot_z, (int) z_final));
+        return new BlockPos((int) x_final + centerPos.getX(), (int) y_rot_z + centerPos.getY(), (int) z_final + centerPos.getZ());
+    }
+
+    /**
+     * method to get the rotation without taking account of the center pos
+     */
+    public BlockPos getRawBlockPos(float x, float y, float z) {
+        // first y rotation
+        float x_rot1 = (float) (x * cosY - z * sinY);
+        float z_rot1 = (float) (x * sinY + z * cosY);
+        // z rotation
+        float x_rot_z = (float) (x_rot1 * cosZ - y * sinZ);
+        float y_rot_z = (float) (x_rot1 * sinZ + y * cosZ);
+
+        // second y rotation
+        float x_final = (float) (x_rot_z * cosY2 - z_rot1 * sinY2);
+        float z_final = (float) (x_rot_z * sinY2 + z_rot1 * cosY2);
+        return new BlockPos((int) x_final, (int) y_rot_z, (int) z_final);
     }
 }
