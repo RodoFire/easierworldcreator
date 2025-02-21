@@ -52,6 +52,8 @@ public class WGShapeHandler {
     public static WGShapePlacerManager decodeInformation(ChunkPos pos) {
         List<WGShapeData> data = loadData(pos);
 
+        if(data.isEmpty())
+            return null;
         WGShapePlacerManager manager = new WGShapePlacerManager(pos, data.size());
         for (WGShapeData shapeData : data) {
             manager.put(shapeData);

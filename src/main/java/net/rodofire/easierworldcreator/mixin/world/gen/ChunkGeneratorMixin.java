@@ -44,8 +44,12 @@ public abstract class ChunkGeneratorMixin {
 
     @Inject(method = "generateFeatures", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/gen/StructureAccessor;shouldGenerateStructures()Z"))
     private void onGenerationStep(StructureWorldAccess world, Chunk chunk, StructureAccessor structureAccessor, CallbackInfo ci, @Local(ordinal = 0) int k) {
+        if (placerManager == null) return;
+        if (k >= GenerationStep.Feature.values().length) {
+            return;
+        }
         Path[] paths = placerManager.getToPlace(GenerationStep.Feature.values()[k]);
-        for(Path path : paths) {
+        for (Path path : paths) {
             world.setCurrentlyGeneratingStructureName(() -> "ewc multi-chunk feature generating: " + path.getFileName());
             BlockListManager comparator = LoadChunkShapeInfo.loadFromJson(world, path);
             LoadChunkShapeInfo.placeStructure(world, comparator);
@@ -69,8 +73,9 @@ public abstract class ChunkGeneratorMixin {
      */
     @Inject(method = "generateFeatures", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/StructureWorldAccess;setCurrentlyGeneratingStructureName(Ljava/util/function/Supplier;)V", ordinal = 1))
     private void onFeatureGenerated(StructureWorldAccess world, Chunk chunk, StructureAccessor structureAccessor, CallbackInfo ci, @Local PlacedFeature placedFeature) {
+        if (placerManager == null) return;
         Path[] paths = placerManager.getToPlace(old, placedFeature);
-        for(Path path : paths) {
+        for (Path path : paths) {
             world.setCurrentlyGeneratingStructureName(() -> "ewc multi-chunk feature generating: " + path.getFileName());
             BlockListManager comparator = LoadChunkShapeInfo.loadFromJson(world, path);
             LoadChunkShapeInfo.placeStructure(world, comparator);
