@@ -10,6 +10,7 @@ import net.minecraft.util.math.random.Random;
 import net.rodofire.easierworldcreator.Ewc;
 import net.rodofire.easierworldcreator.blockdata.layer.BlockLayer;
 import net.rodofire.easierworldcreator.maths.FastMaths;
+import net.rodofire.easierworldcreator.maths.MathUtil;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -105,6 +106,13 @@ public class WorldGenUtil {
         return false;
     }
 
+    public static double getAbs(Vec3d pos) {
+        return MathUtil.absDistance(pos.x, pos.y, pos.z);
+    }
+    public static double getSquared(Vec3d pos) {
+        return MathUtil.squared(pos.x, pos.y, pos.z);
+    }
+
     public static float getDistance(BlockPos pos1, BlockPos pos2) {
         return FastMaths.getLength(pos1.getX() - pos2.getX(), pos1.getY() - pos2.getY(), pos1.getZ() - pos2.getZ());
     }
@@ -149,7 +157,7 @@ public class WorldGenUtil {
         return block;
     }
 
-    public static float getDistanceFromPointToPlane(Vec3d normal, Vec3d pointOnPlane, Vec3d point) {
+    public static double getDistanceFromPointToPlane(Vec3d normal, Vec3d pointOnPlane, Vec3d point) {
         double A = normal.x;
         double B = normal.y;
         double C = normal.z;
@@ -161,9 +169,9 @@ public class WorldGenUtil {
         double z0 = point.z;
 
         double numerator = Math.abs(A * x0 + B * y0 + C * z0 + D);
-        double denominator = FastMaths.getFastSqrt((float) (A * A + B * B + C * C), 0.001f);
+        double denominator = Math.sqrt(A * A + B * B + C * C);
 
-        return (float) (numerator / denominator);
+        return (numerator / denominator);
     }
 
     public static int getTotalBlockLayerDepth(List<BlockLayer> layers) {
@@ -242,5 +250,9 @@ public class WorldGenUtil {
         double dirNorm = axisDir.length();
 
         return (float) (crossNorm / dirNorm);
+    }
+
+    public static double getExactDistance(Vec3d pos) {
+        return MathUtil.getExactDistance(pos.x, pos.y, pos.z);
     }
 }

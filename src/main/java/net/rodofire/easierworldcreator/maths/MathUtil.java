@@ -147,4 +147,32 @@ public class MathUtil {
         }
         return distance;
     }
+
+    /**
+     * Calculates the total absolute distance for an array of integer values.
+     *
+     * @param ints an array of integer values
+     * @return the sum of the absolute values of the elements in {@code ints}
+     */
+    public static double absDistance(double... ints) {
+        double distance = 0;
+        for (double anInt : ints) {
+            distance += Math.abs(anInt);
+        }
+        return distance;
+    }
+
+    public static double getExactDistance(double... coordinates) {
+        double a = squared(coordinates);
+        return Math.sqrt(a);
+    }
+
+    public static double squared(double... coordinates) {
+        double a = 0;
+        for (double pos : coordinates) {
+            a += pos * pos;
+            System.out.println(a + "   " + (pos) + "   " + (pos * pos));
+        }
+        return a;
+    }
 }
