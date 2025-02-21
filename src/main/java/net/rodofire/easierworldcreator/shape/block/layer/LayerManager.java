@@ -5,6 +5,7 @@ import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.Vec3i;
 import net.minecraft.world.StructureWorldAccess;
 import net.rodofire.easierworldcreator.blockdata.blocklist.BlockListManager;
 import net.rodofire.easierworldcreator.blockdata.blocklist.DividedBlockListManager;
@@ -20,7 +21,7 @@ public class LayerManager implements Layer {
     Type layerType;
     private final BlockLayerManager blockLayerManager;
     protected Vec3d centerPos = new Vec3d(0, 0, 0);
-    protected Vec3d directionVector = new Vec3d(0, 1, 0);
+    protected Vec3i directionVector = new Vec3i(0, 1, 0);
 
     public LayerManager(Type layerType, BlockLayerManager blockLayerManager) {
         this.layerType = layerType;
@@ -34,7 +35,7 @@ public class LayerManager implements Layer {
         this.centerPos = centerPos;
     }
 
-    public LayerManager(Type layerType, BlockLayerManager blockLayerManager, Vec3d centerPos, Vec3d directionVector) {
+    public LayerManager(Type layerType, BlockLayerManager blockLayerManager, Vec3d centerPos, Vec3i directionVector) {
         this.layerType = layerType;
         this.blockLayerManager = blockLayerManager;
         this.centerPos = centerPos;
@@ -128,11 +129,11 @@ public class LayerManager implements Layer {
 
     @Override
     public Vec3d getDirectionVector() {
-        return directionVector;
+        return Vec3d.of(directionVector);
     }
 
     @Override
-    public void setDirectionVector(Vec3d directionVector) {
+    public void setDirectionVector(Vec3i directionVector) {
         this.directionVector = directionVector;
     }
 

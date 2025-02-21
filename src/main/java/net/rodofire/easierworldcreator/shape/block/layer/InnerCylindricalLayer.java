@@ -1,11 +1,12 @@
 package net.rodofire.easierworldcreator.shape.block.layer;
 
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.Vec3i;
 import net.rodofire.easierworldcreator.blockdata.layer.BlockLayerManager;
 import net.rodofire.easierworldcreator.util.WorldGenUtil;
 
 public class InnerCylindricalLayer extends AbstractRadialLikeLayer {
-    InnerCylindricalLayer(BlockLayerManager blockLayer, Vec3d center, Vec3d direction) {
+    InnerCylindricalLayer(BlockLayerManager blockLayer, Vec3d center, Vec3i direction) {
         super(blockLayer, center, direction);
     }
 

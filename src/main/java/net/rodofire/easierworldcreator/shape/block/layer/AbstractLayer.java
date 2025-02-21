@@ -1,6 +1,7 @@
 package net.rodofire.easierworldcreator.shape.block.layer;
 
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.Vec3i;
 import net.rodofire.easierworldcreator.blockdata.layer.BlockLayerManager;
 
 abstract class AbstractLayer implements Layer {
@@ -9,10 +10,10 @@ abstract class AbstractLayer implements Layer {
     protected Vec3d directionVector = new Vec3d(0,1,0);
 
 
-    AbstractLayer(BlockLayerManager blockLayer, Vec3d centerPos, Vec3d directionVector) {
+    AbstractLayer(BlockLayerManager blockLayer, Vec3d centerPos, Vec3i directionVector) {
         this.blockLayer = blockLayer;
         this.centerPos = centerPos;
-        this.directionVector = directionVector;
+        this.directionVector = Vec3d.of(directionVector);
     }
 
     AbstractLayer(BlockLayerManager blockLayer, Vec3d centerPos) {
@@ -40,7 +41,7 @@ abstract class AbstractLayer implements Layer {
     }
 
     @Override
-    public void setDirectionVector(Vec3d directionVector) {
-        this.directionVector = directionVector;
+    public void setDirectionVector(Vec3i directionVector) {
+        this.directionVector = Vec3d.of(directionVector);
     }
 }

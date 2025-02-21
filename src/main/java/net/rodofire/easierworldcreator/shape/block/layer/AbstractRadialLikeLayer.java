@@ -6,6 +6,7 @@ import net.minecraft.block.BlockState;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.Vec3i;
 import net.minecraft.world.StructureWorldAccess;
 import net.rodofire.easierworldcreator.blockdata.blocklist.BlockListManager;
 import net.rodofire.easierworldcreator.blockdata.blocklist.DividedBlockListManager;
@@ -23,7 +24,7 @@ import java.util.concurrent.ForkJoinPool;
 
 //TODO test to see if everything works
 public abstract class AbstractRadialLikeLayer extends AbstractLayer {
-    AbstractRadialLikeLayer(BlockLayerManager blockLayer, Vec3d center, Vec3d direction) {
+    AbstractRadialLikeLayer(BlockLayerManager blockLayer, Vec3d center, Vec3i direction) {
         super(blockLayer, center, direction);
     }
 
