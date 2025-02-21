@@ -519,6 +519,10 @@ public class OrderedBlockListManager {
         return this.state.get(this.posStateLink.get(this.posMap.get(pos))).getLeft();
     }
 
+    public BlockState getState(BlockPos pos) {
+        return getState(LongPosHelper.encodeBlockPos(pos));
+    }
+
     public NbtCompound getCompound(long pos) {
         return this.state.get(this.posStateLink.get(this.posMap.get(pos))).getRight();
     }
