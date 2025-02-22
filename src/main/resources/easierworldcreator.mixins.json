@@ -3,11 +3,7 @@
   "package": "net.rodofire.easierworldcreator.mixin",
   "compatibilityLevel": "JAVA_17",
   "mixins": [
-    "world.gen.ChunkGeneratingMixin",
-    "world.gen.ChunkGeneratinguMixin",
-    "world.gen.ChunkGenerationStepMixin",
     "world.gen.ChunkGeneratorMixin",
-    "world.gen.ChunkLoaderMixin",
     "world.gen.ChunkRegionMixin",
     "world.gen.surfacebuilder.MaterialConditionMixin",
     "world.gen.surfacebuilder.SurfaceRulesMixin",
