@@ -4,21 +4,17 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.StructureWorldAccess;
 import net.rodofire.easierworldcreator.config.ewc.EwcConfig;
-import net.rodofire.easierworldcreator.maths.MathUtil;
 import net.rodofire.easierworldcreator.util.ChunkUtil;
-import net.rodofire.easierworldcreator.util.WorldGenUtil;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 @SuppressWarnings("unused")
 public class ChunkPosManager {
-    private final Set<ChunkPos> unGeneratedChunks = new HashSet<>();
-    private final Set<ChunkPos> allowedChunks = new HashSet<>();
-    private final Set<ChunkPos> unAllowedChunks = new HashSet<>();
-    private BlockPos offset = new BlockPos(0, 0, 0);
+    private final Map<ChunkPos, ChunkState> chunkStateMap = new ConcurrentHashMap<>();
+    private ChunkPos offset = new ChunkPos(0, 0);
 
     private final @NotNull StructureWorldAccess world;
 
@@ -43,30 +39,22 @@ public class ChunkPosManager {
      * @return true, it can accept world-gen blocks, false if not
      */
     public boolean put(ChunkPos chunkPos) {
-        //verifies if the chunk was added previously
-        if (unGeneratedChunks.contains(chunkPos)) {
-            return true;
-        }
-        if (allowedChunks.contains(chunkPos)) {
-            return true;
-        }
-        if (unAllowedChunks.contains(chunkPos)) {
-            return false;
+        ChunkState state = chunkStateMap.get(chunkPos);
+        if (state != null) {
+            return state != ChunkState.UNALLOWED;
         }
 
-        //The chunk is then not present. We verify if the chunk was generated
         if (!ChunkUtil.isFeaturesGenerated(world, chunkPos)) {
-            unGeneratedChunks.add(chunkPos);
+            chunkStateMap.put(chunkPos, ChunkState.UNGENERATED);
             return true;
         }
 
-        //if the chunk is at a distance minor to the feature distance, it is allowed
         if (canBeAllowed(chunkPos)) {
-            allowedChunks.add(chunkPos);
+            chunkStateMap.put(chunkPos, ChunkState.ALLOWED);
             return true;
         }
-        //if not, it is refused
-        unAllowedChunks.add(chunkPos);
+
+        chunkStateMap.put(chunkPos, ChunkState.UNALLOWED);
         return false;
     }
 
@@ -82,18 +70,12 @@ public class ChunkPosManager {
     private boolean putSafe(ChunkPos chunkPos) {
         //The chunk is then not present. We verify if the chunk was generated
         if (!ChunkUtil.isFeaturesGenerated(world, chunkPos)) {
-            unGeneratedChunks.add(chunkPos);
+            chunkStateMap.put(chunkPos, ChunkState.UNGENERATED);
             return true;
         }
         return false;
     }
 
-    /**
-     * method to know if a chunk can be placed
-     *
-     * @param chunkPos the pos of the chunk to be tested
-     * @return true if the chunk
-     */
     private boolean canBeAllowed(ChunkPos chunkPos) {
         int distance = EwcConfig.getFeaturesChunkDistance();
         for (int x = -distance; x <= distance; x++) {
@@ -101,49 +83,27 @@ public class ChunkPosManager {
                 if (z == 0 && x == 0) continue;
 
                 ChunkPos pos = new ChunkPos(chunkPos.x + x, chunkPos.z + z);
-                if (unGeneratedChunks.contains(pos))
-                    return true;
+                ChunkState state = chunkStateMap.get(pos);
 
-                //verifies that the chunk was already tested
-                if (unAllowedChunks.contains(pos) || allowedChunks.contains(pos)) continue;
-
-                //if not, we verify it
-                if (putSafe(pos))
+                if (state == ChunkState.UNGENERATED) {
                     return true;
+                }
+
+                if (state == null && putSafe(pos)) {
+                    return true;
+                }
             }
         }
         return false;
     }
 
+
     public void putAll(Set<ChunkPos> chunks) {
-        for (ChunkPos chunkPos : chunks) {
-            put(chunkPos);
-        }
+        chunks.forEach(this::put);
     }
 
     public boolean containsChunk(ChunkPos chunkPos) {
-        return unGeneratedChunks.contains(chunkPos) || unAllowedChunks.contains(chunkPos) || allowedChunks.contains(chunkPos);
-    }
-
-
-    /**
-     * method to know if a set of chunk can be placed
-     *
-     * @param chunks the set to be verified
-     * @return true if every chunk can be placed, false if not
-     */
-    public boolean canGenerate(Set<ChunkPos> chunks, int xOffset, int zOffset) {
-        boolean bl = true;
-        for (ChunkPos chunkPos : chunks) {
-            ChunkPos newChunkPos = WorldGenUtil.addChunkPos(chunkPos, xOffset, zOffset);
-            if (!containsChunk(newChunkPos)) {
-                put(newChunkPos);
-            }
-            if (unAllowedChunks.contains(newChunkPos)) {
-                bl = false;
-            }
-        }
-        return bl;
+        return chunkStateMap.containsKey(chunkPos);
     }
 
 
@@ -166,23 +126,57 @@ public class ChunkPosManager {
     }
 
     public boolean canPlaceMultiChunk(Set<ChunkPos> chunkPosSet, int maxDistance) {
+        System.out.println(chunkPosSet.size());
         int minOffset = Integer.MAX_VALUE;
-        for (int x = -maxDistance; x <= maxDistance; x++) {
-            for (int z = -maxDistance; z <= maxDistance; z++) {
-                if (canGenerate(chunkPosSet, x, z)) {
-                    int offset = MathUtil.absDistance(x, z);
-                    if (offset < minOffset) {
-                        minOffset = offset;
-                        this.offset = new BlockPos(16 * x, 0, 16 * z);
+        for (int distance = 0; distance <= maxDistance; distance++) {
+            for (int x = -distance; x <= distance; x++) {
+                for (int z = -distance; z <= distance; z++) {
+                    if (Math.abs(x) < distance && Math.abs(z) < distance) {
+                        continue;
+                    }
+
+                    if (canGenerate(chunkPosSet, x, z)) {
+                        this.offset = new ChunkPos(x, z);
+                        return true;
                     }
                 }
             }
         }
-        return minOffset != Integer.MAX_VALUE;
+        return false;
     }
 
-    public BlockPos getOffset() {
+    public boolean canGenerate(Set<ChunkPos> chunkPosSet, int x, int z) {
+        return chunkPosSet.parallelStream().noneMatch(chunkPos -> {
+            chunkPos = new ChunkPos(chunkPos.x + x, chunkPos.z + z);
+
+
+            ChunkState existingState = chunkStateMap.get(chunkPos);
+
+            if (existingState != null) {
+                return existingState == ChunkState.UNALLOWED;
+            }
+
+            //avoid crash with computeIfAbsent
+            ChunkState newState;
+            if (!ChunkUtil.isFeaturesGenerated(world, chunkPos)) {
+                newState = ChunkState.UNGENERATED;
+            } else if (canBeAllowed(chunkPos)) {
+                newState = ChunkState.ALLOWED;
+            } else {
+                newState = ChunkState.UNALLOWED;
+            }
+
+            chunkStateMap.put(chunkPos, newState);
+            return newState == ChunkState.UNALLOWED;
+        });
+    }
+
+    public ChunkPos getOffset() {
         return offset;
+    }
+
+    private enum ChunkState {
+        UNGENERATED, ALLOWED, UNALLOWED
     }
 
 }
