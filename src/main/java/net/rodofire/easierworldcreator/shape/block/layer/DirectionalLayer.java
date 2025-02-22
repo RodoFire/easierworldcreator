@@ -39,7 +39,7 @@ public class DirectionalLayer extends AbstractLayer {
         int[] depth = initDepth();
 
         List<CompletableFuture<Void>> futures = new ArrayList<>();
-        ForkJoinPool pool = new ForkJoinPool(Math.min(2, Math.min(Runtime.getRuntime().availableProcessors(), posMap.size())));
+        ForkJoinPool pool = new ForkJoinPool(Math.min(Runtime.getRuntime().availableProcessors() / 2, posMap.size()));
         double distanceMin = WorldGenUtil.getExactDistance(directionVector) / WorldGenUtil.getSquared(directionVector);
 
         this.directionVector = this.directionVector.normalize();
@@ -82,7 +82,7 @@ public class DirectionalLayer extends AbstractLayer {
         int[] depth = initDepth();
 
         List<CompletableFuture<Void>> futures = new ArrayList<>();
-        ForkJoinPool pool = new ForkJoinPool(Math.min(2, Math.min(Runtime.getRuntime().availableProcessors(), posMap.size())));
+        ForkJoinPool pool = new ForkJoinPool(Math.min(Runtime.getRuntime().availableProcessors() / 2, posMap.size()));
         double distanceMin = WorldGenUtil.getExactDistance(directionVector) / WorldGenUtil.getSquared(directionVector);
 
         this.directionVector = this.directionVector.normalize();
@@ -115,7 +115,7 @@ public class DirectionalLayer extends AbstractLayer {
         int[] depth = initDepth();
 
         List<CompletableFuture<Void>> futures = new ArrayList<>();
-        ForkJoinPool pool = new ForkJoinPool(Math.min(2, Math.min(Runtime.getRuntime().availableProcessors(), posMap.size())));
+        ForkJoinPool pool = new ForkJoinPool(Math.min(Runtime.getRuntime().availableProcessors() / 2, posMap.size()));
         double distanceMin = WorldGenUtil.getExactDistance(directionVector) / WorldGenUtil.getSquared(directionVector);
 
         this.directionVector = this.directionVector.normalize();
@@ -129,7 +129,7 @@ public class DirectionalLayer extends AbstractLayer {
                     threadedManager.put(layer.getPlacer().get(layer.getBlockStates(), LongPosHelper.decodeBlockPos(po)), po);
                 }
                 synchronized (manager) {
-                    manager.put(threadedManager);
+                    manager.putWithoutVerification(threadedManager);
                 }
 
             }, pool));
@@ -153,7 +153,7 @@ public class DirectionalLayer extends AbstractLayer {
         int[] depth = initDepth();
 
         List<CompletableFuture<Void>> futures = new ArrayList<>();
-        ForkJoinPool pool = new ForkJoinPool(Math.min(2, Math.min(Runtime.getRuntime().availableProcessors(), posMap.size())));
+        ForkJoinPool pool = new ForkJoinPool(Math.min(Runtime.getRuntime().availableProcessors() / 2, posMap.size()));
         double distanceMin = WorldGenUtil.getExactDistance(directionVector) / WorldGenUtil.getSquared(directionVector);
 
         this.directionVector = this.directionVector.normalize();
@@ -168,7 +168,7 @@ public class DirectionalLayer extends AbstractLayer {
                         threadedManager.put(layer.getPlacer().get(layer.getBlockStates(), LongPosHelper.decodeBlockPos(po)), po);
                 }
                 synchronized (manager) {
-                    manager.put(threadedManager);
+                    manager.putWithoutVerification(threadedManager);
                 }
 
             }, pool));
