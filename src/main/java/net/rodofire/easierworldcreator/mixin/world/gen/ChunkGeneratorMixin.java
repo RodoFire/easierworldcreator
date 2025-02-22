@@ -14,7 +14,6 @@ import net.rodofire.easierworldcreator.shape.block.placer.WGShapeHandler;
 import net.rodofire.easierworldcreator.shape.block.placer.WGShapePlacerManager;
 import net.rodofire.easierworldcreator.util.file.EwcFolderData;
 import net.rodofire.easierworldcreator.util.file.FileUtil;
-import net.rodofire.easierworldcreator.util.file.LoadChunkShapeInfo;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -98,6 +97,9 @@ public abstract class ChunkGeneratorMixin {
             for (Path path : paths) {
                 world.setCurrentlyGeneratingStructureName(() -> "\n\t-ewc multi-chunk feature generating: \n\t\t- " + path.getFileName() + "\n\t\t - step : feature");
                 BlockListManager comparator = BlockListHelper.fromJsonPath(world, path);
+                if (comparator == null) {
+                    continue;
+                }
                 comparator.placeAllNDelete(world);
                 FileUtil.removeFile(path);
             }
