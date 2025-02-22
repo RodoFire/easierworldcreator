@@ -16,8 +16,8 @@ import net.rodofire.easierworldcreator.blockdata.blocklist.BlockList;
 import net.rodofire.easierworldcreator.blockdata.blocklist.BlockListManager;
 import net.rodofire.easierworldcreator.maths.MathUtil;
 import net.rodofire.easierworldcreator.mixin.world.structure.StructureTemplateMixin;
-import net.rodofire.easierworldcreator.placer.blocks.animator.StructurePlaceAnimator;
-import net.rodofire.easierworldcreator.placer.blocks.util.BlockPlaceUtil;
+import net.rodofire.easierworldcreator.shape.block.placer.animator.StructurePlaceAnimator;
+import net.rodofire.easierworldcreator.util.BlockPlaceUtil;
 import net.rodofire.easierworldcreator.util.LongPosHelper;
 
 import java.util.*;

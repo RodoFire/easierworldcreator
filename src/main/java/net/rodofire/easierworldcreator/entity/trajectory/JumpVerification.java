@@ -10,7 +10,6 @@ import net.minecraft.registry.tag.TagKey;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.rodofire.easierworldcreator.entity.EntityUtil;
-import net.rodofire.easierworldcreator.placer.blocks.util.BlockStateUtil;
 import net.rodofire.easierworldcreator.tag.TagUtil;
 import net.rodofire.easierworldcreator.util.WorldGenUtil;
 
