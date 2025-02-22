@@ -13,6 +13,7 @@ import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.chunk.ChunkStatus;
 import net.rodofire.easierworldcreator.blockdata.blocklist.BlockListHelper;
 import net.rodofire.easierworldcreator.blockdata.blocklist.BlockListManager;
+import net.rodofire.easierworldcreator.util.ChunkUtil;
 import net.rodofire.easierworldcreator.util.file.EwcFolderData;
 import net.rodofire.easierworldcreator.util.file.FileUtil;
 import net.rodofire.easierworldcreator.world.chunk.ChunkRegionUtil;
@@ -54,7 +55,7 @@ public class LegacyPlaceAllMCFCommand {
                         chunkX = 0;
                     }
 
-                    if (((ChunkRegionUtil) context.getSource().getWorld()).ewc_main$getNullableChunk(chunkX, chunkZ, ChunkStatus.FEATURES, false) != null) {
+                    if (ChunkUtil.isFeaturesGenerated(context.getSource().getWorld(), new ChunkPos(chunkX, chunkZ))) {
                         try (Stream<Path> files = Files.list(filePath)) {
                             files.forEach((jsonFiles) -> {
                                 if (jsonFiles.endsWith(".json")) {
