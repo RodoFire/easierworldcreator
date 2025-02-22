@@ -6,12 +6,10 @@ import net.minecraft.util.Pair;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.gen.GenerationStep;
 import net.minecraft.world.gen.feature.PlacedFeature;
-import net.rodofire.easierworldcreator.util.file.FileUtil;
+import net.rodofire.easierworldcreator.util.file.EwcFolderData;
 
 import java.nio.file.Path;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class WGShapePlacerManager {
 
@@ -26,6 +24,8 @@ public class WGShapePlacerManager {
      * represents the name of the features.
      */
     private final String[] references;
+    private Set<String> placed = new HashSet<>();
+
     short putReferences = 0;
 
     public WGShapePlacerManager(ChunkPos pos, int referenceSize) {
@@ -61,25 +61,54 @@ public class WGShapePlacerManager {
 
     public Path[] getToPlace(PlacedFeature beforeFeature, PlacedFeature featureAfter) {
         ShortSet set = new ShortOpenHashSet();
-        if (beforeFeature != null)
-            set.addAll(beforeFeatures.get(beforeFeature));
-        set.addAll(afterFeatures.get(featureAfter));
+        if (beforeFeature != null) {
+            ShortSet result = beforeFeatures.get(beforeFeature);
+            if (result != null) {
+                set.addAll(beforeFeatures.get(beforeFeature));
+            }
+        }
+
+        ShortSet result = afterFeatures.get(featureAfter);
+        if (result != null) {
+            set.addAll(afterFeatures.get(featureAfter));
+        }
+
+        if (set.isEmpty()) {
+            return new Path[0];
+        }
 
         return getPath(set);
     }
 
     public Path[] getToPlace(GenerationStep.Feature feature) {
-        return getPath(steps.get(feature));
+        ShortSet set = steps.get(feature);
+        if (set == null) {
+            return new Path[0];
+        }
+        return getPath(set);
     }
 
     private Path[] getPath(ShortSet set) {
-        Path basePath = FileUtil.getStructureChunkDirectory(pos);
+        Path basePath = EwcFolderData.getStructureDataDir(pos);
         Path[] paths = new Path[set.size()];
 
         int i = 0;
         for (short index : set) {
-            paths[i++] = basePath.resolve(references[index] + ".json");
+            paths[i] = basePath.resolve(references[index] + ".json");
+            placed.add(references[index]);
+            i++;
         }
         return paths;
+    }
+
+    public Path[] getLeft() {
+        Path basePath = EwcFolderData.getStructureDataDir(pos);
+        Set<Path> paths = new HashSet<>();
+        for (String string : references) {
+            if (!placed.contains(string)) {
+                paths.add(basePath.resolve(string + ".json"));
+            }
+        }
+        return paths.toArray(new Path[0]);
     }
 }

@@ -4,7 +4,7 @@ import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import net.minecraft.util.math.ChunkPos;
-import net.rodofire.easierworldcreator.util.file.FileUtil;
+import net.rodofire.easierworldcreator.util.file.EwcFolderData;
 
 import java.io.File;
 import java.io.FileReader;
@@ -25,9 +25,10 @@ public class WGShapeHandler {
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 
 
-    public static void encodeInformations(Set<ChunkPos> posSet, WGShapeData placer) {
+    public static void encodeInformations(Set<ChunkPos> posSet, WGShapeData placer, ChunkPos posOffset) {
         for (ChunkPos pos : posSet) {
-            encodeInformation(pos, placer);
+            ChunkPos newPos = new ChunkPos(pos.x + posOffset.x, pos.z + posOffset.z);
+            encodeInformation(newPos, placer);
         }
     }
 
@@ -52,8 +53,10 @@ public class WGShapeHandler {
     public static WGShapePlacerManager decodeInformation(ChunkPos pos) {
         List<WGShapeData> data = loadData(pos);
 
-        if(data.isEmpty())
+
+        if (data.isEmpty()) {
             return null;
+        }
         WGShapePlacerManager manager = new WGShapePlacerManager(pos, data.size());
         for (WGShapeData shapeData : data) {
             manager.put(shapeData);
@@ -65,7 +68,7 @@ public class WGShapeHandler {
      * Charge les données JSON.
      */
     private static List<WGShapeData> loadData(ChunkPos pos) {
-        Path path = FileUtil.getStructureReference(pos);
+        Path path = EwcFolderData.getStructureReference(pos);
         File file = path.toFile();
         if (!file.exists()) {
             return new ArrayList<>();
@@ -84,7 +87,7 @@ public class WGShapeHandler {
      * Sauvegarde les données JSON.
      */
     private static void saveData(ChunkPos pos, List<WGShapeData> data) {
-        Path path = FileUtil.getStructureReference(pos);
+        Path path = EwcFolderData.getStructureReference(pos);
         File file = path.toFile();
         try (FileWriter writer = new FileWriter(file)) {
             GSON.toJson(data, writer);

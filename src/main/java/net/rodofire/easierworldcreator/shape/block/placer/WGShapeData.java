@@ -41,7 +41,18 @@ public class WGShapeData {
 
     @Override
     public String toString() {
-        return "AdvancedWGShapePlacer{name='" + name + ", shift=" + featureShift.getRight() + ", feature=" + featureShift.getLeft() + ", step=" + step + "}";
+        StringBuilder builder = new StringBuilder();
+        builder.append("WGShapeData [name=").append(name);
+        if (featureShift != null) {
+            builder.append(", placementShift=").append(featureShift.getRight());
+            builder.append(", feature=").append(featureShift.getLeft());
+        }
+        ;
+        if (step != null) {
+            builder.append(", step=").append(step);
+        }
+        builder.append("]");
+        return builder.toString();
     }
 
     public enum PlacementShift {
