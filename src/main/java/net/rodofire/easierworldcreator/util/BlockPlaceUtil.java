@@ -1,4 +1,4 @@
-package net.rodofire.easierworldcreator.placer.blocks.util;
+package net.rodofire.easierworldcreator.util;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
@@ -9,7 +9,6 @@ import net.minecraft.registry.DynamicRegistryManager;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.random.Random;
 import net.minecraft.world.StructureWorldAccess;
-import net.rodofire.easierworldcreator.util.FastNoiseLite;
 
 import java.util.List;
 import java.util.Map;
