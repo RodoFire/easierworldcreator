@@ -1,4 +1,4 @@
-package net.rodofire.easierworldcreator.placer.blocks.animator;
+package net.rodofire.easierworldcreator.shape.block.placer.animator;
 
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.minecraft.block.BlockState;

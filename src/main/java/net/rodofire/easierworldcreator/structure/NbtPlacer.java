@@ -16,7 +16,7 @@ import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.StructureWorldAccess;
 import net.rodofire.easierworldcreator.Ewc;
 import net.rodofire.easierworldcreator.blockdata.blocklist.BlockListManager;
-import net.rodofire.easierworldcreator.placer.blocks.animator.StructurePlaceAnimator;
+import net.rodofire.easierworldcreator.shape.block.placer.animator.StructurePlaceAnimator;
 
 import java.util.Optional;
 import java.util.Set;
