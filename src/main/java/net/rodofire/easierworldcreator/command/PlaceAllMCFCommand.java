@@ -39,7 +39,7 @@ public class PlaceAllMCFCommand {
         if (context.getSource().hasPermissionLevel(2)) {
             try (Stream<Path> paths = Files.list(path)) {
                 paths.forEach(filePath -> {
-                    String fileName = filePath.getParent().getFileName().toString();
+                    String fileName = filePath.getFileName().toString();
                     Pattern pattern = Pattern.compile("chunk_(-?\\d+)_(-?\\d+)$");
                     Matcher matcher = pattern.matcher(fileName);
                     int chunkX;
@@ -58,7 +58,7 @@ public class PlaceAllMCFCommand {
                     if (ChunkUtil.isFeaturesGenerated(context.getSource().getWorld(), new ChunkPos(chunkX, chunkZ))) {
                         try (Stream<Path> files = Files.list(filePath)) {
                             files.forEach((jsonFiles) -> {
-                                if (jsonFiles.endsWith(".json")) {
+                                if (jsonFiles.toString().endsWith(".json")) {
                                     JsonArray jsonArray = new Gson().fromJson(FileUtil.loadJson(jsonFiles), JsonArray.class);
                                     BlockListManager manager = BlockListHelper.fromJson(context.getSource().getWorld(), jsonArray, new ChunkPos(chunkX, chunkZ));
                                     manager.placeAllNDelete(context.getSource().getWorld());
