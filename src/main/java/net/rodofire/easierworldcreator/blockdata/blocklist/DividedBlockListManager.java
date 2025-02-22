@@ -23,7 +23,7 @@ public class DividedBlockListManager {
     public DividedBlockListManager put(BlockList blockList) {
         BlockState state = blockList.getBlockState();
         for (long pos : blockList.getPosList()) {
-            managers.computeIfAbsent(new ChunkPos(pos), (k) -> new BlockListManager(new BlockList())).put(state, pos);
+            managers.computeIfAbsent(LongPosHelper.getChunkPos(pos), (k) -> new BlockListManager(new BlockList())).put(state, pos);
         }
         return this;
     }
@@ -207,13 +207,18 @@ public class DividedBlockListManager {
 
     public void placeJson(String name) {
         for (Map.Entry<ChunkPos, BlockListManager> entry : managers.entrySet()) {
-            entry.getValue().placeJson(entry.getKey(), new BlockPos(0, 0, 0), name);
+            entry.getValue().placeJson(entry.getKey(), new ChunkPos(0,  0), name);
         }
     }
 
-    public void placeJson(String name, BlockPos offset) {
+    public void placeJson(String name, ChunkPos offset) {
         for (Map.Entry<ChunkPos, BlockListManager> entry : managers.entrySet()) {
             entry.getValue().placeJson(entry.getKey(), offset, name);
         }
+    }
+
+    public void putWithoutVerification(BlockListManager manager) {
+        ChunkPos pos = LongPosHelper.getChunkPos(manager.getFirst().getFirst());
+        manager.blockLists.forEach(blockList -> this.putWithoutVerification(pos, blockList));
     }
 }
