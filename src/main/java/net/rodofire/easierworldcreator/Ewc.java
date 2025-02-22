@@ -1,9 +1,10 @@
 package net.rodofire.easierworldcreator;
 
 import net.fabricmc.api.DedicatedServerModInitializer;
-import net.fabricmc.api.ModInitializer;
+import net.rodofire.easierworldcreator.command.ModCommands;
 import net.rodofire.easierworldcreator.config.ewc.EwcConfig;
 import net.rodofire.easierworldcreator.maths.FastMaths;
+import net.rodofire.easierworldcreator.util.file.EwcFolderData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,6 +30,8 @@ public class Ewc implements DedicatedServerModInitializer {
         initialized = true;
         EwcConfig.setConfig();
         FastMaths.registerMaths();
+        EwcFolderData.initFiles();
+        ModCommands.registerCommands();
 
         LOGGER.info("Starting Easierworldcreator");
     }
