@@ -48,14 +48,18 @@ public class LayerPlacer {
 
     public boolean place(StructureWorldAccess worldAccess, List<BlockState> states, BlockPos pos, StructurePlacementRuleManager ruler) {
         BlockState state;
-        switch (this.type) {
-            case NOISE2D -> state = BlockPlaceUtil.getBlockWith2DNoise(states, pos, this.noise);
-            case NOISE3D -> state = BlockPlaceUtil.getBlockWith3DNoise(states, pos, this.noise);
-            case ORDER -> {
-                state = BlockPlaceUtil.getBlockWithOrder(states, this.placedBlocks);
-                this.placedBlocks = (this.placedBlocks + 1) % (states.size() - 1);
+        if (states.size() == 1)
+            state = states.getFirst();
+        else {
+            switch (this.type) {
+                case NOISE2D -> state = BlockPlaceUtil.getBlockWith2DNoise(states, pos, this.noise);
+                case NOISE3D -> state = BlockPlaceUtil.getBlockWith3DNoise(states, pos, this.noise);
+                case ORDER -> {
+                    state = BlockPlaceUtil.getBlockWithOrder(states, this.placedBlocks);
+                    this.placedBlocks = (this.placedBlocks + 1) % (states.size() - 1);
+                }
+                default -> state = BlockPlaceUtil.getRandomBlock(states);
             }
-            default -> state = BlockPlaceUtil.getRandomBlock(states);
         }
         if (ruler == null) {
             return worldAccess.getBlockState(pos).isAir() && worldAccess.setBlockState(pos, state, 3);
@@ -65,14 +69,18 @@ public class LayerPlacer {
 
     public boolean place(StructureWorldAccess worldAccess, BlockState[] states, BlockPos pos, StructurePlacementRuleManager ruler) {
         BlockState state;
-        switch (this.type) {
-            case NOISE2D -> state = BlockPlaceUtil.getBlockWith2DNoise(states, pos, this.noise);
-            case NOISE3D -> state = BlockPlaceUtil.getBlockWith3DNoise(states, pos, this.noise);
-            case ORDER -> {
-                state = BlockPlaceUtil.getBlockWithOrder(states, this.placedBlocks);
-                this.placedBlocks = (this.placedBlocks + 1) % (states.length - 1);
+        if (states.length == 1)
+            state = states[0];
+        else {
+            switch (this.type) {
+                case NOISE2D -> state = BlockPlaceUtil.getBlockWith2DNoise(states, pos, this.noise);
+                case NOISE3D -> state = BlockPlaceUtil.getBlockWith3DNoise(states, pos, this.noise);
+                case ORDER -> {
+                    state = BlockPlaceUtil.getBlockWithOrder(states, this.placedBlocks);
+                    this.placedBlocks = (this.placedBlocks + 1) % (states.length - 1);
+                }
+                default -> state = BlockPlaceUtil.getRandomBlock(states);
             }
-            default -> state = BlockPlaceUtil.getRandomBlock(states);
         }
         if (ruler == null) {
             return worldAccess.getBlockState(pos).isAir() && worldAccess.setBlockState(pos, state, 3);
@@ -89,6 +97,9 @@ public class LayerPlacer {
      * @return the BlockState related to the pos
      **/
     public BlockState get(List<BlockState> states, BlockPos pos) {
+        if (states.size() == 1)
+            return states.getFirst();
+
         return switch (this.type) {
             case RANDOM -> BlockPlaceUtil.getRandomBlock(states);
             case NOISE2D -> BlockPlaceUtil.getBlockWith2DNoise(states, pos, this.noise);
@@ -102,6 +113,8 @@ public class LayerPlacer {
     }
 
     public BlockState get(BlockState[] states, BlockPos pos) {
+        if (states.length == 1)
+            return states[0];
         return switch (this.type) {
             case RANDOM -> BlockPlaceUtil.getRandomBlock(states);
             case NOISE2D -> BlockPlaceUtil.getBlockWith2DNoise(states, pos, this.noise);
