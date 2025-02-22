@@ -433,16 +433,15 @@ public class BlockList {
     }
 
     public JsonObject toJson(ChunkPos chunkPos) {
-        return toJson(new BlockPos(0, 0, 0), chunkPos);
+        return toJson(new ChunkPos(0, 0), chunkPos);
     }
 
-    public JsonObject toJson(BlockPos offset, ChunkPos chunkPos) {
+    public JsonObject toJson(ChunkPos offset, ChunkPos chunkPos) {
         Gson gson = new Gson();
         JsonObject jsonObject = new JsonObject();
 
-        int offsetX = offset.getX();
-        int offsetY = offset.getY();
-        int offsetZ = offset.getZ();
+        int offsetX = offset.x << 4;
+        int offsetZ = offset.z << 4;
 
         // Calcul du coin inférieur gauche du chunk
         int chunkMinX = chunkPos.x << 4;
@@ -467,9 +466,9 @@ public class BlockList {
             BlockPos pos = LongPosHelper.decodeBlockPos(posList.getLong(i));
 
             // Positions relatives dans le chunk après application de l'offset
-            int relX = pos.getX() - chunkMinX - offsetX;
-            int relZ = pos.getZ() - chunkMinZ - offsetZ;
-            int relY = pos.getY() - offsetY;
+            int relX = pos.getX() - chunkMinX + offsetX;
+            int relZ = pos.getZ() - chunkMinZ + offsetZ;
+            int relY = pos.getY();
 
             if (relX < -1024 || relX > 1023 || relZ < -1024 || relZ > 1023) {
                 throw new IllegalArgumentException("pos out of range: " + pos);
@@ -490,11 +489,12 @@ public class BlockList {
     }
 
     public void placeJson(ChunkPos chunkPos) {
-        toJson(new BlockPos(0, 0, 0), chunkPos);
+        toJson(new ChunkPos(0, 0), chunkPos);
     }
 
-    public void placeJson(BlockPos offset, ChunkPos chunkPos) {
+    public void placeJson(ChunkPos offset, ChunkPos chunkPos) {
         Gson gson = new Gson();
+        chunkPos = new ChunkPos(chunkPos.x + offset.x, chunkPos.z + offset.z);
         Path path = getNVerifyDataDir(chunkPos);
         JsonObject jsonObj = toJson(offset, chunkPos);
         try {

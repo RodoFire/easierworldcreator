@@ -276,10 +276,10 @@ public class BlockListManager {
 
 
     public JsonArray toJson(ChunkPos chunkPos) {
-        return toJson(chunkPos, new BlockPos(0, 0, 0));
+        return toJson(chunkPos, new ChunkPos(0, 0));
     }
 
-    public JsonArray toJson(ChunkPos chunkPos, BlockPos offset) {
+    public JsonArray toJson(ChunkPos chunkPos, ChunkPos offset) {
         JsonArray jsonArray = new JsonArray();
 
         ForkJoinPool pool = new ForkJoinPool(Math.min(blockLists.size(), Runtime.getRuntime().availableProcessors() / 2));
@@ -308,7 +308,7 @@ public class BlockListManager {
     }
 
     public void placeJson(ChunkPos chunkPos) {
-        placeJson(chunkPos, new BlockPos(0, 0, 0), "custom_feature_" + Random.create().nextLong());
+        placeJson(chunkPos, new ChunkPos(0, 0), "custom_feature_" + Random.create().nextLong());
     }
 
     /**
@@ -317,13 +317,12 @@ public class BlockListManager {
      * @param chunkPos the chunkpos of the manager. Positions will be written relative to this blockPos
      * @param offset   the offset to move the blockPos
      */
-    public void placeJson(ChunkPos chunkPos, BlockPos offset, String name) {
+    public void placeJson(ChunkPos chunkPos, ChunkPos offset, String name) {
         Gson gson = new Gson();
+        chunkPos = new ChunkPos(chunkPos.x + offset.x, chunkPos.z + offset.z);
         Path path = EwcFolderData.getNVerifyDataDir(chunkPos);
-        System.out.println("path: " + path);
         JsonArray jsonArray = toJson(chunkPos, offset);
         try {
-            System.out.println("json created");
             Files.writeString(path.resolve(name + ".json"), gson.toJson(jsonArray));
         } catch (IOException e) {
             e.fillInStackTrace();
