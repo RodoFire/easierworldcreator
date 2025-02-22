@@ -1,10 +1,7 @@
 package net.rodofire.easierworldcreator.util;
 
 import it.unimi.dsi.fastutil.longs.LongArrayList;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.ChunkPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.*;
 
 import java.util.List;
 
@@ -144,7 +141,10 @@ public class LongPosHelper {
     public static ChunkPos getChunkPos(long encoded) {
         int x = (int) ((encoded >> (Y_BITS + XZ_BITS)) & XZ_MASK) - (1 << (XZ_BITS - 1));
         int z = (int) ((encoded >> Y_BITS) & XZ_MASK) - (1 << (XZ_BITS - 1));
-        return new ChunkPos(x, z);
+        return new ChunkPos(
+                ChunkSectionPos.getSectionCoord(x),
+                ChunkSectionPos.getSectionCoord(z)
+        );
     }
 
     public static long add(long pos, int dx, int dy, int dz) {
