@@ -9,7 +9,9 @@ import net.minecraft.util.math.Vec3i;
 import net.minecraft.world.StructureWorldAccess;
 import net.rodofire.easierworldcreator.blockdata.blocklist.BlockListManager;
 import net.rodofire.easierworldcreator.blockdata.blocklist.DividedBlockListManager;
+import net.rodofire.easierworldcreator.blockdata.layer.BlockLayer;
 import net.rodofire.easierworldcreator.blockdata.layer.BlockLayerManager;
+import net.rodofire.easierworldcreator.util.LongPosHelper;
 
 import java.util.Collection;
 import java.util.Map;
@@ -44,76 +46,209 @@ public class LayerManager implements Layer {
 
     @Override
     public BlockListManager get(Map<ChunkPos, LongOpenHashSet> posMap) {
+        if (blockLayerManager.size() == 1) {
+            BlockListManager manager = new BlockListManager();
+            BlockLayer layer = blockLayerManager.getFirstLayer();
+            posMap.forEach((
+                    (chunkPos, longs) -> longs.forEach(
+                            (pos) ->
+                                    manager.put(layer.getPlacer().get(layer.getBlockStates(), LongPosHelper.decodeBlockPos(pos)), pos)
+                    ))
+            );
+            return manager;
+        }
         return getLayer().get(posMap);
     }
 
     @Override
     public void place(StructureWorldAccess world, Map<ChunkPos, LongOpenHashSet> posMap) {
+        if (blockLayerManager.size() == 1) {
+            BlockLayer layer = blockLayerManager.getFirstLayer();
+            posMap.forEach((
+                    (chunkPos, longs) -> longs.forEach(
+                            (pos) -> layer.getPlacer().place(world, layer.getBlockStates(), LongPosHelper.decodeBlockPos(pos), layer.getRuler())
+                    ))
+            );
+        }
         getLayer().place(world, posMap);
     }
 
     @Override
     public BlockListManager getVerified(StructureWorldAccess world, Map<ChunkPos, LongOpenHashSet> posMap) {
+        if (blockLayerManager.size() == 1) {
+            BlockListManager manager = new BlockListManager();
+            BlockLayer layer = blockLayerManager.getFirstLayer();
+            posMap.forEach((
+                    (chunkPos, longs) -> longs.forEach(
+                            (pos) -> {
+                                if (layer.getRuler().canPlace(world.getBlockState(LongPosHelper.decodeBlockPos(pos))))
+                                    manager.put(layer.getPlacer().get(layer.getBlockStates(), LongPosHelper.decodeBlockPos(pos)), pos);
+
+                            }
+                    ))
+            );
+            return manager;
+        }
         return getLayer().getVerified(world, posMap);
     }
 
     @Override
     public DividedBlockListManager getDivided(Map<ChunkPos, LongOpenHashSet> posMap) {
+        if (blockLayerManager.size() == 1) {
+            DividedBlockListManager manager = new DividedBlockListManager();
+            BlockLayer layer = blockLayerManager.getFirstLayer();
+            posMap.forEach((
+                    (chunkPos, longs) -> longs.forEach(
+                            (pos) ->
+                                    manager.putWithoutVerification(layer.getPlacer().get(layer.getBlockStates(), LongPosHelper.decodeBlockPos(pos)), pos)
+                    ))
+            );
+            return manager;
+        }
         return getLayer().getDivided(posMap);
     }
 
     @Override
     public DividedBlockListManager getVerifiedDivided(StructureWorldAccess world, Map<ChunkPos, LongOpenHashSet> posMap) {
+        if (blockLayerManager.size() == 1) {
+            DividedBlockListManager manager = new DividedBlockListManager();
+            BlockLayer layer = blockLayerManager.getFirstLayer();
+            posMap.forEach((
+                    (chunkPos, longs) -> longs.forEach(
+                            (pos) -> {
+                                if (layer.getRuler().canPlace(world.getBlockState(LongPosHelper.decodeBlockPos(pos))))
+                                    manager.putWithoutVerification(layer.getPlacer().get(layer.getBlockStates(), LongPosHelper.decodeBlockPos(pos)), pos);
+                            }
+                    ))
+            );
+            return manager;
+        }
         return getLayer().getVerifiedDivided(world, posMap);
     }
 
     @Override
     public <T extends Collection<BlockPos>> BlockListManager get(T posList) {
+        if (blockLayerManager.size() == 1) {
+            BlockListManager manager = new BlockListManager();
+            BlockLayer layer = blockLayerManager.getFirstLayer();
+            posList.forEach(((pos) -> manager.put(layer.getPlacer().get(layer.getBlockStates(), pos), pos)));
+            return manager;
+        }
         return getLayer().get(posList);
     }
 
     @Override
     public <T extends Collection<BlockPos>> void place(StructureWorldAccess world, T posList) {
+        if (blockLayerManager.size() == 1) {
+            BlockLayer layer = blockLayerManager.getFirstLayer();
+            posList.forEach(((pos) -> layer.getPlacer().place(world, layer.getBlockStates(), pos, layer.getRuler())));
+        }
         getLayer().place(world, posList);
     }
 
     @Override
     public <T extends Collection<BlockPos>> BlockListManager getVerified(StructureWorldAccess world, T posList) {
+        if (blockLayerManager.size() == 1) {
+            BlockListManager manager = new BlockListManager();
+            BlockLayer layer = blockLayerManager.getFirstLayer();
+            posList.forEach(((pos) -> {
+                if (layer.getRuler().canPlace(world.getBlockState(pos)))
+                    manager.put(layer.getPlacer().get(layer.getBlockStates(), pos), pos);
+            }));
+            return manager;
+        }
         return getLayer().getVerified(world, posList);
     }
 
     @Override
     public <T extends Collection<BlockPos>> DividedBlockListManager getDivided(T posList) {
+        if (blockLayerManager.size() == 1) {
+            DividedBlockListManager manager = new DividedBlockListManager();
+            BlockLayer layer = blockLayerManager.getFirstLayer();
+            posList.forEach(((pos) -> {
+                manager.put(layer.getPlacer().get(layer.getBlockStates(), pos), pos);
+            }));
+            return manager;
+        }
         return getLayer().getDivided(posList);
     }
 
     @Override
     public <T extends Collection<BlockPos>> DividedBlockListManager getVerifiedDivided(StructureWorldAccess world, T posList) {
+        if (blockLayerManager.size() == 1) {
+            DividedBlockListManager manager = new DividedBlockListManager();
+            BlockLayer layer = blockLayerManager.getFirstLayer();
+            posList.forEach(((pos) -> {
+                if (layer.getRuler().canPlace(world.getBlockState(pos)))
+                    manager.put(layer.getPlacer().get(layer.getBlockStates(), pos), pos);
+            }));
+            return manager;
+        }
         return getLayer().getVerifiedDivided(world, posList);
     }
 
     @Override
     public <U extends AbstractLongCollection> BlockListManager get(U posList) {
+        if (blockLayerManager.size() == 1) {
+            BlockListManager manager = new BlockListManager();
+            BlockLayer layer = blockLayerManager.getFirstLayer();
+            posList.forEach(((pos) -> {
+                manager.put(layer.getPlacer().get(layer.getBlockStates(), LongPosHelper.decodeBlockPos(pos)), pos);
+            }));
+            return manager;
+        }
         return getLayer().get(posList);
     }
 
     @Override
     public <U extends AbstractLongCollection> void place(StructureWorldAccess world, U posList) {
+        if (blockLayerManager.size() == 1) {
+            BlockLayer layer = blockLayerManager.getFirstLayer();
+            posList.forEach(((pos) -> {
+                layer.getPlacer().place(world, layer.getBlockStates(), LongPosHelper.decodeBlockPos(pos), layer.getRuler());
+            }));
+        }
         getLayer().place(world, posList);
     }
 
     @Override
     public <U extends AbstractLongCollection> BlockListManager getVerified(StructureWorldAccess world, U posList) {
+        if (blockLayerManager.size() == 1) {
+            BlockListManager manager = new BlockListManager();
+            BlockLayer layer = blockLayerManager.getFirstLayer();
+            posList.forEach(((pos) -> {
+                if (layer.getRuler().canPlace(world.getBlockState(LongPosHelper.decodeBlockPos(pos))))
+                    manager.put(layer.getPlacer().get(layer.getBlockStates(), LongPosHelper.decodeBlockPos(pos)), pos);
+            }));
+            return manager;
+        }
         return getLayer().getVerified(world, posList);
     }
 
     @Override
     public <U extends AbstractLongCollection> DividedBlockListManager getDivided(U posList) {
+        if (blockLayerManager.size() == 1) {
+            DividedBlockListManager manager = new DividedBlockListManager();
+            BlockLayer layer = blockLayerManager.getFirstLayer();
+            posList.forEach(((pos) -> {
+                manager.put(layer.getPlacer().get(layer.getBlockStates(), LongPosHelper.decodeBlockPos(pos)), pos);
+            }));
+            return manager;
+        }
         return getLayer().getDivided(posList);
     }
 
     @Override
     public <U extends AbstractLongCollection> DividedBlockListManager getVerifiedDivided(StructureWorldAccess world, U posList) {
+        if (blockLayerManager.size() == 1) {
+            DividedBlockListManager manager = new DividedBlockListManager();
+            BlockLayer layer = blockLayerManager.getFirstLayer();
+            posList.forEach(((pos) -> {
+                if (layer.getRuler().canPlace(world.getBlockState(LongPosHelper.decodeBlockPos(pos))))
+                    manager.put(layer.getPlacer().get(layer.getBlockStates(), LongPosHelper.decodeBlockPos(pos)), pos);
+            }));
+            return manager;
+        }
         return getLayer().getVerifiedDivided(world, posList);
     }
 
@@ -145,7 +280,7 @@ public class LayerManager implements Layer {
             case OUTER_RADIAL -> new OuterRadialLayer(blockLayerManager, centerPos);
             case INNER_CYLINDRICAL -> new InnerCylindricalLayer(blockLayerManager, centerPos, directionVector);
             case OUTER_CYLINDRICAL -> new OuterCylindricalLayer(blockLayerManager, centerPos, directionVector);
-            case ALONG_DIRECTION ->  new DirectionalLayer(blockLayerManager, centerPos, directionVector);
+            case ALONG_DIRECTION -> new DirectionalLayer(blockLayerManager, centerPos, directionVector);
         };
     }
 
