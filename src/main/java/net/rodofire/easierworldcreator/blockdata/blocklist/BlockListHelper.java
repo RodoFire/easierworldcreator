@@ -15,8 +15,12 @@ import net.rodofire.easierworldcreator.Ewc;
 import net.rodofire.easierworldcreator.blockdata.sorter.BlockSorter;
 import net.rodofire.easierworldcreator.util.BlockStateUtil;
 import net.rodofire.easierworldcreator.util.LongPosHelper;
+import net.rodofire.easierworldcreator.util.file.FileUtil;
 
+import java.nio.file.Path;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @SuppressWarnings("unused")
 public class BlockListHelper {
@@ -82,11 +86,35 @@ public class BlockListHelper {
         }
     }
 
+    public static BlockListManager fromJsonPath(StructureWorldAccess world, Path path) {
+        String fileName = path.getParent().getFileName().toString();
+        Pattern pattern = Pattern.compile("chunk_(-?\\d+)_(-?\\d+)$");
+        Matcher matcher = pattern.matcher(fileName);
+        int chunkX;
+        int chunkZ;
+
+        if (matcher.matches()) {
+            chunkX = Integer.parseInt(matcher.group(1));
+            chunkZ = Integer.parseInt(matcher.group(2));
+        }
+        //initialize in the else because if not, intellij cries
+        else {
+            chunkZ = 0;
+            chunkX = 0;
+        }
+
+        if (path.toString().endsWith(".json")) {
+            JsonArray jsonArray = new Gson().fromJson(FileUtil.loadJson(path), JsonArray.class);
+            if(jsonArray == null)
+                return null;
+            return BlockListHelper.fromJson(world, jsonArray, new ChunkPos(chunkX, chunkZ));
+        }
+        return null;
+    }
+
     public static BlockListManager fromJson(StructureWorldAccess worldAccess, JsonArray jsonArray, ChunkPos chunkPos) {
         BlockListManager manager = new BlockListManager();
         Gson gson = new Gson();
-
-        System.out.println("from json");
 
         for (JsonElement jsonElement : jsonArray) {
             BlockList blockList = new BlockList();
