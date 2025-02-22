@@ -216,14 +216,6 @@ public class BlockListManager {
         return this;
     }
 
-    public void set(int index, BlockList blockList) {
-        Pair<BlockState, NbtCompound> blockData = blockList.getBlockData();
-        if (this.blockDataMap.containsKey(blockData)) {
-        }
-        this.blockLists.set(index, blockList);
-
-    }
-
     public void clear() {
         this.blockLists.clear();
         this.stateIndexes.clear();

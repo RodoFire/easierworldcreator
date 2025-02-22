@@ -9,8 +9,9 @@ import net.rodofire.easierworldcreator.util.FastNoiseLite;
 
 import java.util.List;
 
+@SuppressWarnings("unused")
 public class LayerPlacer {
-    private LayerPlace type = LayerPlace.RANDOM;
+    private final LayerPlace type;
     FastNoiseLite noise;
     int placedBlocks = 0;
 

@@ -126,7 +126,6 @@ public class ChunkPosManager {
     }
 
     public boolean canPlaceMultiChunk(Set<ChunkPos> chunkPosSet, int maxDistance) {
-        System.out.println(chunkPosSet.size());
         int minOffset = Integer.MAX_VALUE;
         for (int distance = 0; distance <= maxDistance; distance++) {
             for (int x = -distance; x <= distance; x++) {

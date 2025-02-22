@@ -10,13 +10,11 @@ import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.ChunkPos;
-import net.minecraft.world.chunk.ChunkStatus;
 import net.rodofire.easierworldcreator.blockdata.blocklist.BlockListHelper;
 import net.rodofire.easierworldcreator.blockdata.blocklist.BlockListManager;
 import net.rodofire.easierworldcreator.util.ChunkUtil;
 import net.rodofire.easierworldcreator.util.file.EwcFolderData;
 import net.rodofire.easierworldcreator.util.file.FileUtil;
-import net.rodofire.easierworldcreator.world.chunk.ChunkRegionUtil;
 
 import java.io.IOException;
 import java.nio.file.Files;

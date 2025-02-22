@@ -1,27 +1,25 @@
 package net.rodofire.easierworldcreator.shape.block.layer;
 
 import it.unimi.dsi.fastutil.longs.AbstractLongCollection;
-import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
-import net.minecraft.block.BlockState;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3i;
 import net.minecraft.world.StructureWorldAccess;
-import net.rodofire.easierworldcreator.blockdata.blocklist.BlockList;
 import net.rodofire.easierworldcreator.blockdata.blocklist.BlockListManager;
 import net.rodofire.easierworldcreator.blockdata.blocklist.DividedBlockListManager;
 import net.rodofire.easierworldcreator.blockdata.blocklist.OrderedBlockListManager;
 import net.rodofire.easierworldcreator.blockdata.layer.BlockLayer;
 import net.rodofire.easierworldcreator.blockdata.layer.BlockLayerManager;
-import net.rodofire.easierworldcreator.blockdata.sorter.BlockSorter;
-import net.rodofire.easierworldcreator.maths.MathUtil;
 import net.rodofire.easierworldcreator.util.LongPosHelper;
 import net.rodofire.easierworldcreator.util.WorldGenUtil;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ForkJoinPool;
 
@@ -49,7 +47,7 @@ public class DirectionalLayer extends AbstractLayer {
                 for (long po : entry.getValue()) {
                     double b = WorldGenUtil.getDistanceFromPointToPlane(this.directionVector, this.centerPos, LongPosHelper.decodeBlockPos(po).toCenterPos()) / distanceMin;
 
-                    BlockLayer layer = blockLayer.get(binarySearch(depth, b, 0.000001));
+                    BlockLayer layer = blockLayer.get(binarySearch(depth, b));
                     threadedManager.put(layer.getPlacer().get(layer.getBlockStates(), LongPosHelper.decodeBlockPos(po)), po);
                 }
                 synchronized (manager) {
@@ -92,7 +90,7 @@ public class DirectionalLayer extends AbstractLayer {
                 for (long po : entry.getValue()) {
                     double b = WorldGenUtil.getDistanceFromPointToPlane(this.directionVector, this.centerPos, LongPosHelper.decodeBlockPos(po).toCenterPos()) / distanceMin;
 
-                    BlockLayer layer = blockLayer.get(binarySearch(depth, b, 0.000001));
+                    BlockLayer layer = blockLayer.get(binarySearch(depth, b));
                     if (layer.getRuler().canPlace(worldStates.getState(po)))
                         threadedManager.put(layer.getPlacer().get(layer.getBlockStates(), LongPosHelper.decodeBlockPos(po)), po);
                 }
@@ -125,7 +123,7 @@ public class DirectionalLayer extends AbstractLayer {
                 for (long po : entry.getValue()) {
                     double b = WorldGenUtil.getDistanceFromPointToPlane(this.directionVector, this.centerPos, LongPosHelper.decodeBlockPos(po).toCenterPos()) / distanceMin;
 
-                    BlockLayer layer = blockLayer.get(binarySearch(depth, b, 0.000001));
+                    BlockLayer layer = blockLayer.get(binarySearch(depth, b));
                     threadedManager.put(layer.getPlacer().get(layer.getBlockStates(), LongPosHelper.decodeBlockPos(po)), po);
                 }
                 synchronized (manager) {
@@ -163,7 +161,7 @@ public class DirectionalLayer extends AbstractLayer {
                 for (long po : entry.getValue()) {
                     double b = WorldGenUtil.getDistanceFromPointToPlane(this.directionVector, this.centerPos, LongPosHelper.decodeBlockPos(po).toCenterPos()) / distanceMin;
 
-                    BlockLayer layer = blockLayer.get(binarySearch(depth, b, 0.000001));
+                    BlockLayer layer = blockLayer.get(binarySearch(depth, b));
                     if (layer.getRuler().canPlace(worldStates.getState(po)))
                         threadedManager.put(layer.getPlacer().get(layer.getBlockStates(), LongPosHelper.decodeBlockPos(po)), po);
                 }
@@ -191,7 +189,7 @@ public class DirectionalLayer extends AbstractLayer {
         for (BlockPos pos : posList) {
             double b = WorldGenUtil.getDistanceFromPointToPlane(this.directionVector, this.centerPos, pos.toCenterPos()) / distanceMin;
 
-            BlockLayer layer = blockLayer.get(binarySearch(depth, b, 0.000001));
+            BlockLayer layer = blockLayer.get(binarySearch(depth, b));
             manager.put(layer.getPlacer().get(layer.getBlockStates(), pos), pos);
         }
         return manager;
@@ -219,7 +217,7 @@ public class DirectionalLayer extends AbstractLayer {
         for (BlockPos pos : posList) {
             double b = WorldGenUtil.getDistanceFromPointToPlane(this.directionVector, this.centerPos, pos.toCenterPos()) / distanceMin;
 
-            BlockLayer layer = blockLayer.get(binarySearch(depth, b, 0.000001));
+            BlockLayer layer = blockLayer.get(binarySearch(depth, b));
             if (layer.getRuler().canPlace(worldStates.getState(pos)))
                 manager.put(layer.getPlacer().get(layer.getBlockStates(), pos), pos);
         }
@@ -238,7 +236,7 @@ public class DirectionalLayer extends AbstractLayer {
         for (BlockPos pos : posList) {
             double b = WorldGenUtil.getDistanceFromPointToPlane(this.directionVector, this.centerPos, pos.toCenterPos()) / distanceMin;
 
-            BlockLayer layer = blockLayer.get(binarySearch(depth, b, 0.000001));
+            BlockLayer layer = blockLayer.get(binarySearch(depth, b));
 
             manager.put(layer.getPlacer().get(layer.getBlockStates(), pos), pos);
         }
@@ -262,7 +260,7 @@ public class DirectionalLayer extends AbstractLayer {
         for (BlockPos pos : posList) {
             double b = WorldGenUtil.getDistanceFromPointToPlane(this.directionVector, this.centerPos, pos.toCenterPos()) / distanceMin;
 
-            BlockLayer layer = blockLayer.get(binarySearch(depth, b, 0.000001));
+            BlockLayer layer = blockLayer.get(binarySearch(depth, b));
             if (layer.getRuler().canPlace(worldStates.getState(pos)))
                 manager.put(layer.getPlacer().get(layer.getBlockStates(), pos), pos);
         }
@@ -281,7 +279,7 @@ public class DirectionalLayer extends AbstractLayer {
         for (long pos : posList) {
             double b = WorldGenUtil.getDistanceFromPointToPlane(this.directionVector, this.centerPos, LongPosHelper.decodeBlockPos(pos).toCenterPos()) / distanceMin;
 
-            BlockLayer layer = blockLayer.get(binarySearch(depth, b, 0.000001));
+            BlockLayer layer = blockLayer.get(binarySearch(depth, b));
             manager.put(layer.getPlacer().get(layer.getBlockStates(), LongPosHelper.decodeBlockPos(pos)), pos);
         }
         return manager;
@@ -310,7 +308,7 @@ public class DirectionalLayer extends AbstractLayer {
         for (long pos : posList) {
             double b = WorldGenUtil.getDistanceFromPointToPlane(this.directionVector, this.centerPos, LongPosHelper.decodeBlockPos(pos).toCenterPos()) / distanceMin;
 
-            BlockLayer layer = blockLayer.get(binarySearch(depth, b, 0.000001));
+            BlockLayer layer = blockLayer.get(binarySearch(depth, b));
             if (layer.getRuler().canPlace(worldStates.getState(pos)))
                 manager.put(layer.getPlacer().get(layer.getBlockStates(), LongPosHelper.decodeBlockPos(pos)), pos);
         }
@@ -329,7 +327,7 @@ public class DirectionalLayer extends AbstractLayer {
         for (long pos : posList) {
             double b = WorldGenUtil.getDistanceFromPointToPlane(this.directionVector, this.centerPos, LongPosHelper.decodeBlockPos(pos).toCenterPos()) / distanceMin;
 
-            BlockLayer layer = blockLayer.get(binarySearch(depth, b, 0.000001));
+            BlockLayer layer = blockLayer.get(binarySearch(depth, b));
 
             manager.put(layer.getPlacer().get(layer.getBlockStates(), LongPosHelper.decodeBlockPos(pos)), pos);
         }
@@ -354,7 +352,7 @@ public class DirectionalLayer extends AbstractLayer {
         for (long pos : posList) {
             double b = WorldGenUtil.getDistanceFromPointToPlane(this.directionVector, this.centerPos, LongPosHelper.decodeBlockPos(pos).toCenterPos()) / distanceMin;
 
-            BlockLayer layer = blockLayer.get(binarySearch(depth, b, 0.000001));
+            BlockLayer layer = blockLayer.get(binarySearch(depth, b));
             if (layer.getRuler().canPlace(worldStates.getState(pos)))
                 manager.put(layer.getPlacer().get(layer.getBlockStates(), LongPosHelper.decodeBlockPos(pos)), pos);
         }
@@ -371,7 +369,7 @@ public class DirectionalLayer extends AbstractLayer {
         return depth;
     }
 
-    private int binarySearch(int[] depth, double distance, double epsilon) {
+    private int binarySearch(int[] depth, double distance) {
         int left = 0;
         int right = depth.length - 1;
 
@@ -380,7 +378,7 @@ public class DirectionalLayer extends AbstractLayer {
 
             double diff = Math.abs(depth[mid] - distance);
 
-            if (diff < epsilon) {
+            if (diff < 1.0E-6) {
                 return mid;
             } else if (depth[mid] < distance) {
                 left = mid + 1;

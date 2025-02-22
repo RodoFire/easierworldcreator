@@ -24,7 +24,7 @@ public class WGShapePlacerManager {
      * represents the name of the features.
      */
     private final String[] references;
-    private Set<String> placed = new HashSet<>();
+    private final Set<String> placed = new HashSet<>();
 
     short putReferences = 0;
 

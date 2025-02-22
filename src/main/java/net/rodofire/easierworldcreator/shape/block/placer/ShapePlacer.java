@@ -32,8 +32,6 @@ public class ShapePlacer {
 
     private WGShapeData shapeData;
 
-    ChunkPosManager chunkPosManager;
-
     public ShapePlacer(StructureWorldAccess world, ShapePlacer.PlaceMoment placeMoment, BlockPos center) {
         this(world, placeMoment, center, "custom_shape" + Random.create().nextLong());
     }
