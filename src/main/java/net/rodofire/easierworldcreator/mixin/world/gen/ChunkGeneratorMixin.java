@@ -97,8 +97,8 @@ public abstract class ChunkGeneratorMixin {
             Path[] paths = placerManager.getToPlace(old, placedFeature);
             for (Path path : paths) {
                 world.setCurrentlyGeneratingStructureName(() -> "\n\t-ewc multi-chunk feature generating: \n\t\t- " + path.getFileName() + "\n\t\t - step : feature");
-                BlockListManager comparator = LoadChunkShapeInfo.loadFromJson(world, path);
-                LoadChunkShapeInfo.placeStructure(world, comparator);
+                BlockListManager comparator = BlockListHelper.fromJsonPath(world, path);
+                comparator.placeAllNDelete(world);
                 FileUtil.removeFile(path);
             }
         }
