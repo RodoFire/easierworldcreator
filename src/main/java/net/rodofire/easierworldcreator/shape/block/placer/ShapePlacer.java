@@ -7,13 +7,13 @@ import net.minecraft.util.math.random.Random;
 import net.minecraft.world.StructureWorldAccess;
 import net.minecraft.world.gen.GenerationStep;
 import net.rodofire.easierworldcreator.Ewc;
+import net.rodofire.easierworldcreator.blockdata.blocklist.BlockListHelper;
 import net.rodofire.easierworldcreator.blockdata.blocklist.BlockListManager;
 import net.rodofire.easierworldcreator.blockdata.blocklist.DividedBlockListManager;
 import net.rodofire.easierworldcreator.blockdata.sorter.BlockSorter;
-import net.rodofire.easierworldcreator.placer.blocks.animator.StructurePlaceAnimator;
+import net.rodofire.easierworldcreator.shape.block.placer.animator.StructurePlaceAnimator;
 import net.rodofire.easierworldcreator.shape.block.layer.LayerManager;
 import net.rodofire.easierworldcreator.util.file.LoadChunkShapeInfo;
-import net.rodofire.easierworldcreator.util.file.SaveChunkShapeInfo;
 import net.rodofire.easierworldcreator.world.chunk.ChunkPosManager;
 
 import java.nio.file.Path;
@@ -84,22 +84,18 @@ public class ShapePlacer {
             List<CompletableFuture<Void>> futures = new ArrayList<>();
             ForkJoinPool pool = new ForkJoinPool(Runtime.getRuntime().availableProcessors());
 
-            chunkPosManager.canPlaceMultiChunk(posLit.keySet(), 6);
+            if (!chunkPosManager.canPlaceMultiChunk(posLit.keySet(), 8))
+                return;
 
             if (shapeData == null)
-                shapeData = WGShapeData.ofStep(GenerationStep.Feature.VEGETAL_DECORATION, "custom_shape_" + Random.create().nextLong());
+                shapeData = WGShapeData.ofStep(GenerationStep.Feature.VEGETAL_DECORATION, this.featureName);
 
-            WGShapeHandler.encodeInformations(posLit.keySet(), shapeData);
+            WGShapeHandler.encodeInformations(posLit.keySet(), shapeData, (chunkPosManager.getOffset()));
 
             for (Map.Entry<ChunkPos, LongOpenHashSet> posSet : posLit.entrySet()) {
                 futures.add(CompletableFuture.runAsync(() -> {
-                    Path path = SaveChunkShapeInfo.getMultiChunkPath(world, posSet.getKey());
-                    System.out.println("path");
-                    if (path != null) {
-                        System.out.println("manager");
-                        manager.get(posSet.getValue()).toJson(posSet.getKey(), path, chunkPosManager.getOffset(), featureName);
-                        System.out.println("placed");
-                    }
+                    manager.get(posSet.getValue())
+                            .placeJson(posSet.getKey(), chunkPosManager.getOffset(), featureName);
                 }, pool));
             }
             CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
@@ -122,8 +118,17 @@ public class ShapePlacer {
         if (placeMoment == PlaceMoment.WORLD_GEN &&
                 chunkPosManager.isMultiChunk(manager.getChunkPos(), center)) {
 
-            chunkPosManager.canPlaceMultiChunk(manager.getChunkPos(), 6);
-            manager.placeAll(world);
+
+            if (!chunkPosManager.canPlaceMultiChunk(manager.getChunkPos(), 8)) {
+                return;
+            }
+
+            if (shapeData == null)
+                shapeData = WGShapeData.ofStep(GenerationStep.Feature.VEGETAL_DECORATION, this.featureName);
+
+            WGShapeHandler.encodeInformations(manager.getChunkPos(), shapeData, chunkPosManager.getOffset());
+
+            manager.placeJson(this.featureName, chunkPosManager.getOffset());
 
             placeWorldGenFiles();
 
@@ -138,10 +143,12 @@ public class ShapePlacer {
     }
 
     private void placeWorldGenFiles() {
-        List<Path> path = LoadChunkShapeInfo.getWorldGenFiles(world, this.center);
+        List<Path> path = LoadChunkShapeInfo.getWorldGenFiles(this.center);
         for (Path path1 : path) {
-            BlockListManager defaultBlockLists = LoadChunkShapeInfo.loadFromJson(world, path1);
-            LoadChunkShapeInfo.placeStructure(world, defaultBlockLists);
+            world.setCurrentlyGeneratingStructureName(() -> "ewc multi-chunk feature generating: " + path1.getFileName());
+            BlockListManager manager = BlockListHelper.fromJsonPath(world, path1);
+            if (manager != null)
+                manager.placeAllNDelete(world);
         }
     }
 
