@@ -2,10 +2,34 @@ package net.rodofire.easierworldcreator.blockdata;
 
 import net.minecraft.block.BlockState;
 import net.minecraft.nbt.NbtCompound;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Objects;
 
-public record BlockDataKey(BlockState state, NbtCompound tag) {
+public class BlockDataKey {
+    private BlockState state;
+    private NbtCompound tag;
+
+    public BlockDataKey(BlockState state, @Nullable NbtCompound tag) {
+        this.state = state;
+        this.tag = tag;
+    }
+    public BlockState getState() {
+        return state;
+    }
+
+    public void setState(BlockState state) {
+        this.state = state;
+    }
+
+    public NbtCompound getTag() {
+        return tag;
+    }
+
+    public void setTag(NbtCompound tag) {
+        this.tag = tag;
+    }
+
     @Override
     public boolean equals(Object obj) {
         if (this == obj) return true;
