@@ -7,7 +7,6 @@ import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.fastutil.objects.Object2ShortOpenHashMap;
 import net.minecraft.block.BlockState;
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.util.Pair;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.random.Random;
@@ -87,28 +86,46 @@ public class BlockListManager {
     public BlockListManager() {
     }
 
-    public BlockList get(int index) {
+    public BlockList getBlockList(int index) {
         return blockLists.get(index);
     }
 
-    public List<BlockList> getAll() {
+    public List<BlockList> getAllBlockList() {
         return blockLists;
     }
 
-    public BlockList getFirst() {
+    public BlockList getFirstBlockList() {
         return blockLists.getFirst();
     }
 
-    public BlockList getLast() {
+    public BlockList getLastBlockList() {
         return blockLists.getLast();
     }
 
-    public BlockState getBlockState(int index) {
-        return stateIndexes.get(index).state();
+    public BlockState getState(int index) {
+        return stateIndexes.get(index).getState();
     }
 
     public short size() {
         return (short) blockLists.size();
+    }
+
+
+    /**
+     * Method to know the number of all blockPos stored in every {@link BlockList}.
+     * This is notabely used in {@link OrderedBlockListManager}.
+     * To avoid too much rehash, we count the size?.
+     */
+    public int totalSize(){
+        int sum = 0;
+        for(BlockList blockList : blockLists){
+            sum += blockList.size();
+        }
+        return sum;
+    }
+
+    public int stateSize(){
+        return stateIndexes.size();
     }
 
     /**
@@ -123,7 +140,7 @@ public class BlockListManager {
         BlockDataKey blockData = new BlockDataKey(state, tag);
         if (this.blockDataMap.containsKey(blockData)) {
             short index = this.blockDataMap.getShort(blockData);
-            this.blockLists.get(index).addAll(pos);
+            this.blockLists.get(index).addAllPos(pos);
             return this;
         }
         short index = size();
@@ -175,13 +192,13 @@ public class BlockListManager {
     }
 
     public BlockListManager put(BlockList blockList) {
-        BlockState state = blockList.getBlockState();
+        BlockState state = blockList.getState();
         NbtCompound tag = blockList.getTag().isPresent() ? blockList.getTag().get() : null;
         BlockDataKey blockData = new BlockDataKey(state, tag);
 
         if (this.blockDataMap.containsKey(blockData)) {
             short index = this.blockDataMap.getShort(blockData);
-            this.blockLists.get(index).addAll(blockList.getPosList());
+            this.blockLists.get(index).addAllPos(blockList.getPosList());
             return this;
         }
         short index = size();
