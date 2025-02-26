@@ -9,6 +9,9 @@ import net.minecraft.registry.DynamicRegistryManager;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.random.Random;
 import net.minecraft.world.StructureWorldAccess;
+import net.rodofire.easierworldcreator.blockdata.BlockDataKey;
+import net.rodofire.easierworldcreator.blockdata.StructurePlacementRuleManager;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.Map;
@@ -19,6 +22,36 @@ import java.util.Set;
  */
 @SuppressWarnings("unused")
 public class BlockPlaceUtil {
+    public static boolean place(StructureWorldAccess world, BlockPos pos, BlockDataKey data, @Nullable StructurePlacementRuleManager ruler, int flag){
+        BlockState state = world.getBlockState(pos);
+        if(ruler != null){
+            if(ruler.canPlace(state)){
+                return setBlockState(world, pos, data, flag);
+            }
+        }
+        if(!state.isAir())
+            return false;
+
+        return setBlockState(world, pos, data, flag);
+    }
+
+    private static boolean setBlockState(StructureWorldAccess world, BlockPos pos, BlockDataKey data, int flag) {
+        boolean bl = world.setBlockState(pos, data.getState(), flag);
+        if(bl && data.getTag() != null){
+            BlockEntity entity = world.getBlockEntity(pos);
+            if (entity != null) {
+                DynamicRegistryManager registry = world.getRegistryManager();
+                NbtCompound currentNbt = entity.createNbtWithIdentifyingData(registry);
+                currentNbt.copyFrom(data.getTag());
+                entity.read(currentNbt, registry);
+                entity.markDirty();
+            }
+            return true;
+        }
+        return bl;
+    }
+
+
     /**
      * method to verify that the block is not an unbreakable block or not and to verify if the block can be put or not.
      *
