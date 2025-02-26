@@ -7,7 +7,7 @@ import net.minecraft.util.math.Direction;
 import net.minecraft.world.StructureWorldAccess;
 import net.rodofire.easierworldcreator.Ewc;
 import net.rodofire.easierworldcreator.maths.FastMaths;
-import net.rodofire.easierworldcreator.placer.blocks.util.BlockPlaceUtil;
+import net.rodofire.easierworldcreator.util.BlockPlaceUtil;
 import net.rodofire.easierworldcreator.shape.block.gen.SphereGen;
 
 import java.util.List;

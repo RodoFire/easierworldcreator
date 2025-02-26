@@ -1,17 +1,19 @@
 package net.rodofire.easierworldcreator.shape.block.gen;
 
+import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.StructureWorldAccess;
-import net.rodofire.easierworldcreator.blockdata.layer.BlockLayer;
 import net.rodofire.easierworldcreator.maths.FastMaths;
 import net.rodofire.easierworldcreator.shape.block.instanciator.AbstractBlockShape;
 import net.rodofire.easierworldcreator.shape.block.instanciator.AbstractFillableBlockShape;
-import net.rodofire.easierworldcreator.util.WorldGenUtil;
+import net.rodofire.easierworldcreator.shape.block.rotations.Rotator;
+import net.rodofire.easierworldcreator.util.LongPosHelper;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 /*
 
                                          =======%
@@ -97,46 +99,54 @@ public class TorusGen extends AbstractFillableBlockShape {
     //float that determines how much of the structure is filled along the x-axis
     private float horizontalTorus = 1f;
 
+    private float outerSquared;
+    float outerXSquared;
+    float outerZSquared;
+    float innerSquared;
+    float innerXSquared;
+    float innerZSquared;
+
     /**
      * init the Torus Shape
      *
-     * @param world           the world the spiral will spawn in
-     * @param pos             the center of the spiral
-     * @param placeMoment     define the moment where the shape will be placed
-     * @param layerPlace      how the {@code @BlockStates} inside of a {@link BlockLayer} will be placed
-     * @param layersType      how the Layers will be placed
-     * @param yRotation       first rotation around the y-axis
-     * @param zRotation       second rotation around the z-axis
-     * @param secondYRotation last rotation around the y-axis
-     * @param featureName     the name of the feature
-     * @param innerRadiusX    the radius of the inner circle on the x-axis
-     * @param outerRadiusX    the radius of the outer circle on the x-axis
-     * @param innerRadiusZ    the radius of the inner circle on the z-axis
-     * @param outerRadiusZ    the radius of the outer circle on the z-axis
+     * @param pos          the center of the spiral
+     * @param innerRadiusX the radius of the inner circle on the x-axis
+     * @param outerRadiusX the radius of the outer circle on the x-axis
+     * @param innerRadiusZ the radius of the inner circle on the z-axis
+     * @param outerRadiusZ the radius of the outer circle on the z-axis
      */
-    public TorusGen(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, PlaceMoment placeMoment, LayerPlace layerPlace, LayersType layersType, int yRotation, int zRotation, int secondYRotation, String featureName, int innerRadiusX, int outerRadiusX, int innerRadiusZ, int outerRadiusZ) {
-        super(world, pos, placeMoment, layerPlace, layersType, yRotation, zRotation, secondYRotation, featureName);
+    public TorusGen(@NotNull BlockPos pos, Rotator rotator, int innerRadiusX, int outerRadiusX, int innerRadiusZ, int outerRadiusZ) {
+        super(pos, rotator);
         this.innerRadiusX = innerRadiusX;
         this.outerRadiusX = outerRadiusX;
         this.innerRadiusZ = innerRadiusZ;
         this.outerRadiusZ = outerRadiusZ;
+        init();
     }
 
     /**
      * init the Torus Shape
      *
-     * @param world       the world the spiral will spawn in
      * @param pos         the center of the spiral
-     * @param placeMoment define the moment where the shape will be placed
      * @param innerRadius the radius of the inner circle
      * @param outerRadius the radius of the outer circle
      */
-    public TorusGen(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, PlaceMoment placeMoment, int innerRadius, int outerRadius) {
-        super(world, pos, placeMoment);
+    public TorusGen(@NotNull BlockPos pos, int innerRadius, int outerRadius) {
+        super(pos);
         this.innerRadiusX = innerRadius;
         this.outerRadiusX = outerRadius;
         this.innerRadiusZ = innerRadius;
         this.outerRadiusZ = outerRadius;
+        init();
+    }
+
+    private void init() {
+        outerSquared = outerRadiusX * outerRadiusZ;
+        outerXSquared = outerRadiusX * outerRadiusX;
+        outerZSquared = outerRadiusZ * outerRadiusZ;
+        innerSquared = innerRadiusX * innerRadiusZ;
+        innerXSquared = innerRadiusX * innerRadiusX;
+        innerZSquared = innerRadiusZ * innerRadiusZ;
     }
 
     /**
@@ -283,13 +293,12 @@ public class TorusGen extends AbstractFillableBlockShape {
      * @return a list that contain divided BlockPos depending in the chunkPos
      */
     @Override
-    public Map<ChunkPos, Set<BlockPos>> getBlockPos() {
+    public Map<ChunkPos, LongOpenHashSet> getShapeCoordinates() {
         setTorusFill();
-        Map<ChunkPos, Set<BlockPos>> chunkMap = new HashMap<>();
         if (this.getFillingType() == Type.EMPTY) {
-            this.generateEmptyTore(chunkMap);
+            this.generateEmptyTore();
         } else {
-            this.generateFullTore(chunkMap);
+            this.generateFullTore();
         }
         return chunkMap;
     }
@@ -299,9 +308,8 @@ public class TorusGen extends AbstractFillableBlockShape {
      * generates a full torus / tore with custom filling
      * the shape with the torus might be different from the empty one if you're using custom torus filling
      */
-    public void generateFullTore(Map<ChunkPos, Set<BlockPos>> chunkMap) {
+    public void generateFullTore() {
         this.setFill();
-        List<BlockPos> poslist = new ArrayList<>();
 
         //TODO fix
         //float innerRadiusXSquared = (1 - this.getCustomFill()) * (1 - this.getCustomFill()) * radiusX * radiusX;
@@ -313,14 +321,13 @@ public class TorusGen extends AbstractFillableBlockShape {
 
         int b = maxOuterRadiusX + maxInnerRadiusX;
 
-        if ((verticalTorus == 1f && horizontalTorus == 1f && this.getYRotation() % 180 == 0 && this.getZRotation() == 0 && this.getSecondYRotation() % 180 == 0)
-                || (horizontalTorus == 1f && this.getYRotation() % 180 == 0 && this.getSecondYRotation() % 180 == 0)) {
+        if (rotator == null) {
             for (int x = (-b); x <= 2 * b * this.horizontalTorus - b; x++) {
                 int xSquared = x * x;
                 for (int z = -b; z <= b; z++) {
 
                     int zSquared = z * z;
-                    int angle = (int) Math.toDegrees(Math.atan2(z, x));
+                    float angle = (float) Math.toDegrees(Math.atan2(z, x));
                     double outerRadius = getOuterRadius(angle);
                     double innerRadius = getInnerRadius(angle);
                     int squaredSum = xSquared + zSquared;
@@ -347,10 +354,7 @@ public class TorusGen extends AbstractFillableBlockShape {
                                 }
                             }*/
                             if (bl) {
-                                BlockPos pos = new BlockPos(this.getPos().getX() + x, this.getPos().getY() + y, this.getPos().getZ() + z);
-                                if (!this.multiChunk && WorldGenUtil.isPosAChunkFar(pos, this.getPos()))
-                                    this.multiChunk = true;
-                                WorldGenUtil.modifyChunkMap(pos, chunkMap);
+                                modifyChunkMap(LongPosHelper.encodeBlockPos(x + centerX, y + centerY, z + centerZ));
                             }
                         }
 
@@ -358,12 +362,13 @@ public class TorusGen extends AbstractFillableBlockShape {
                 }
             }
         } else {
-            for (float x = -b; x <= 2 * b * this.horizontalTorus - b; x += 0.5f) {
+            float max = 2 * b * this.verticalTorus - b;
+            for (float x = -b; x <= max; x += 0.5f) {
                 float xSquared = x * x;
                 for (float z = -b; z <= b; z += 0.5f) {
                     float zSquared = z * z;
 
-                    int angle = (int) Math.toDegrees(Math.atan2(z, x));
+                    float angle = (float) Math.toDegrees(Math.atan2(z, x));
                     double outerRadius = getOuterRadius(angle);
                     double innerRadius = getInnerRadius(angle);
 
@@ -374,7 +379,7 @@ public class TorusGen extends AbstractFillableBlockShape {
                     float a1 = squaredSum + outerRadiusSquared - innerRadiusSquared;
 
                     float e = 4 * outerRadiusSquared * (squaredSum);
-                    for (float y = -b; y <= 2 * b * this.verticalTorus - b; y += 0.5f) {
+                    for (float y = -b; y <= max; y += 0.5f) {
                         float ySquared = y * y;
 
                         float a = a1 + ySquared;
@@ -391,10 +396,7 @@ public class TorusGen extends AbstractFillableBlockShape {
                                 }
                             }*/
                             if (bl) {
-                                BlockPos pos = this.getCoordinatesRotation(x, y, z, this.getPos());
-                                if (!this.multiChunk && WorldGenUtil.isPosAChunkFar(pos, this.getPos()))
-                                    this.multiChunk = true;
-                                WorldGenUtil.modifyChunkMap(pos, chunkMap);
+                                modifyChunkMap(rotator.get(x, y, z));
                             }
                         }
                     }
@@ -408,31 +410,27 @@ public class TorusGen extends AbstractFillableBlockShape {
      * generates an empty torus
      * the shape with the torus might be different from the full one if you're using custom torus filling
      */
-    public void generateEmptyTore(Map<ChunkPos, Set<BlockPos>> chunkMap) {
+    public void generateEmptyTore() {
         BlockPos.Mutable mutable = new BlockPos.Mutable();
         List<BlockPos> poslist = new ArrayList<>();
 
         int maxOuterRadius = Math.max(outerRadiusX, outerRadiusZ);
         int maxInnerRadius = Math.max(innerRadiusX, innerRadiusZ);
         //many if statement to avoid doing multiple if in the loops
-        if (this.getYRotation() % 180 == 0 && this.getZRotation() == 0 && this.getSecondYRotation() % 180 == 0) {
+        if (rotator == null) {
             for (int u = 0; u <= this.verticalTorus * 360; u += 40 / maxOuterRadius) {
                 for (int v = 0; v <= this.horizontalTorus * 360; v += 45 / maxInnerRadius) {
-                    Vec3d vec = this.getEllipsoidalToreCoordinates(u, v);
-                    BlockPos pos = new BlockPos((int) (getPos().getX() + vec.x), (int) (getPos().getY() + vec.y), (int) (getPos().getZ() + vec.z));
-                    if (!this.multiChunk && WorldGenUtil.isPosAChunkFar(pos, this.getPos()))
-                        this.multiChunk = true;
-                    WorldGenUtil.modifyChunkMap(pos, chunkMap);
+                    float[] vec = this.getEllipsoidalToreCoordinates(u, v);
+                    modifyChunkMap(LongPosHelper.encodeBlockPos((int) (centerX + vec[0]), (int) (centerY + vec[1]), (int) (centerZ + vec[3])));
                 }
             }
         } else {
-            for (int u = 0; u <= 360 * this.verticalTorus; u += 40 / maxOuterRadius) {
-                for (int v = 0; v <= 360 * this.horizontalTorus; v += 45 / maxInnerRadius) {
-                    Vec3d vec = this.getEllipsoidalToreCoordinates(u, v);
-                    BlockPos pos = this.getCoordinatesRotation((float) vec.x, (float) vec.y, (float) vec.z, this.getPos());
-                    if (!this.multiChunk && WorldGenUtil.isPosAChunkFar(pos, this.getPos()))
-                        this.multiChunk = true;
-                    WorldGenUtil.modifyChunkMap(pos, chunkMap);
+            float maxOuter = (float) 40 / (maxOuterRadius * 1.3f);
+            float maxInner = (float) 45 / (maxInnerRadius * 1.3f);
+            for (float u = 0; u <= 360 * this.verticalTorus; u += maxOuter) {
+                for (float v = 0; v <= 360 * this.horizontalTorus; v += maxInner) {
+                    double[] vec = this.getPreciseToreCoordinates(u, v);
+                    modifyChunkMap(rotator.get(vec[0], vec[1], vec[2]));
                 }
             }
         }
@@ -464,35 +462,68 @@ public class TorusGen extends AbstractFillableBlockShape {
     }
 
 
-    private Vec3d getPreciseToreCoordinates(int u, int v, int innerRadius, int outerRadius) {
-        double a = outerRadius + innerRadius * FastMaths.getPreciseCos(v);
+    private double[] getPreciseToreCoordinates(float u, float v) {
+        double sinU = FastMaths.getPreciseSin(u);
+        // Interpolating the radii based on the angle
+        double R = outerRadiusX + (outerRadiusZ - outerRadiusX) * Math.abs(sinU);
+        double r = innerRadiusX + (innerRadiusZ - innerRadiusX) * Math.abs(sinU);
+
+        double a = R + r * FastMaths.getPreciseCos(v);
         double x = (a * FastMaths.getPreciseCos(u));
-        double z = (a * FastMaths.getPreciseSin(u));
-        double y = (innerRadius * FastMaths.getPreciseSin(v));
-        return new Vec3d(x, y, z);
+        double z = (a * sinU);
+        double y = (r * FastMaths.getPreciseSin(v));
+
+        return new double[]{x, y, z};
     }
 
-    public Vec3d getEllipsoidalToreCoordinates(int u, int v) {
+    public float[] getEllipsoidalToreCoordinates(int u, int v) {
 
         // Interpolating the radii based on the angle
         double R = outerRadiusX + (outerRadiusZ - outerRadiusX) * Math.abs(FastMaths.getFastSin(u));
         double r = innerRadiusX + (innerRadiusZ - innerRadiusX) * Math.abs(FastMaths.getFastSin(u));
 
         double a = R + r * FastMaths.getFastCos(v);
-        double x = (a * FastMaths.getFastCos(u));
-        double z = (a * FastMaths.getFastSin(u));
-        double y = (r * FastMaths.getFastSin(v));
+        float x = (float) (a * FastMaths.getFastCos(u));
+        float z = (float) (a * FastMaths.getFastSin(u));
+        float y = (float) (r * FastMaths.getFastSin(v));
 
-        return new Vec3d(x, y, z);
+        return new float[]{x, y, z};
     }
 
-    public double getInnerRadius(int angle) {
-        return innerRadiusX + (innerRadiusZ - innerRadiusX) * Math.abs(FastMaths.getFastSin(angle));
-
+    //    public double getInnerRadius(int angle) {
+//        return innerRadiusX + (innerRadiusZ - innerRadiusX) * Math.abs(FastMaths.getFastSin(angle));
+//
+//    }
+//
+//    public double getOuterRadius(int angle) {
+//        return outerRadiusX + (outerRadiusZ - outerRadiusX) * Math.abs(FastMaths.getFastSin(angle));
+//    }
+ /*   public double getOuterRadius(double x, double z) {
+        double Rm = (outerRadiusX + outerRadiusZ) / 2.0;
+        return Rm * Math.sqrt((x * x) / (outerRadiusX * outerRadiusX) + (z * z) / (outerRadiusZ * outerRadiusZ));
     }
 
-    public double getOuterRadius(int angle) {
-        return outerRadiusX + (outerRadiusZ - outerRadiusX) * Math.abs(FastMaths.getFastSin(angle));
+    public double getInnerRadius(double x, double z) {
+        double Rm = (innerRadiusX + innerRadiusZ) / 2.0;
+        return Rm * Math.sqrt((x * x) / (innerRadiusX * innerRadiusX) + (z * z) / (innerRadiusZ * innerRadiusZ));
+    }
+*/
+    public double getInnerRadius(float angle) {
+        double cosAngle = Math.cos(angle);
+        double sinAngle = Math.sin(angle);
+
+        return (innerSquared) /
+                FastMaths.getFastSqrt(innerXSquared * sinAngle * sinAngle +
+                        innerZSquared * cosAngle * cosAngle, 0.01f);
+    }
+
+    public double getOuterRadius(float angle) {
+        double cosAngle = FastMaths.getFastCos(angle);
+        double sinAngle = FastMaths.getFastSin(angle);
+
+        return (outerSquared) /
+                FastMaths.getFastSqrt(outerRadiusX * sinAngle * sinAngle +
+                        outerZSquared * cosAngle * cosAngle, 0.01f);
     }
 
     /**

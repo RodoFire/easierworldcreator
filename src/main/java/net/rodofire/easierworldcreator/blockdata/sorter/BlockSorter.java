@@ -1,18 +1,18 @@
 package net.rodofire.easierworldcreator.blockdata.sorter;
 
+import it.unimi.dsi.fastutil.longs.LongArrayList;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.random.Random;
-import net.rodofire.easierworldcreator.blockdata.blocklist.basic.DefaultBlockList;
-import net.rodofire.easierworldcreator.blockdata.blocklist.ordered.comparator.AbstractOrderedBlockListComparator;
+import net.rodofire.easierworldcreator.blockdata.blocklist.BlockList;
+import net.rodofire.easierworldcreator.blockdata.blocklist.BlockListManager;
+import net.rodofire.easierworldcreator.blockdata.blocklist.OrderedBlockListManager;
 import net.rodofire.easierworldcreator.util.ListUtil;
+import net.rodofire.easierworldcreator.util.LongPosHelper;
 import net.rodofire.easierworldcreator.util.WorldGenUtil;
+import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.stream.Collectors;
+import java.util.*;
 
 /**
  * method to sort BlockPos depending on a parameter
@@ -108,24 +108,24 @@ public class BlockSorter {
             case FROM_POINT -> {
                 if (posList == null || posList.isEmpty() || posList.size() == 1)
                     yield posList;
-                yield posList.parallelStream().sorted(Comparator.comparingDouble((pos) -> -WorldGenUtil.getDistance(centerPoint, pos))).collect(Collectors.toList());
+                yield posList.parallelStream().sorted(Comparator.comparingDouble((pos) -> -WorldGenUtil.getDistance(centerPoint, pos))).toList();
             }
             case FROM_POINT_INVERTED -> {
                 if (posList == null || posList.isEmpty() || posList.size() == 1)
                     yield posList;
-                yield posList.parallelStream().sorted(Comparator.comparingDouble((pos) -> WorldGenUtil.getDistance(centerPoint, pos))).collect(Collectors.toList());
+                yield posList.parallelStream().sorted(Comparator.comparingDouble((pos) -> WorldGenUtil.getDistance(centerPoint, pos))).toList();
             }
             case FROM_RANDOM_POINT -> {
                 this.centerPoint = ListUtil.getRandomElement(posList);
                 yield posList.parallelStream().sorted(
                         Comparator.comparingDouble((pos) -> -WorldGenUtil.getDistance(centerPoint, pos)
-                        )).collect(Collectors.toList());
+                        )).toList();
             }
             case FROM_RANDOM_POINT_INVERTED -> {
                 this.centerPoint = ListUtil.getRandomElement(posList);
                 yield posList.parallelStream().sorted(
                         Comparator.comparingDouble((pos) -> WorldGenUtil.getDistance(centerPoint, pos)
-                        )).collect(Collectors.toList());
+                        )).toList();
             }
             case RANDOM -> {
                 List<BlockPos> copy = new ArrayList<>(posList);
@@ -137,8 +137,7 @@ public class BlockSorter {
                     yield posList;
                 Vec3d direction = this.axisDirection.normalize();
                 yield posList.parallelStream().sorted(Comparator.comparingDouble(
-                                (pos) -> pos.getX() * direction.x + pos.getY() * direction.y + pos.getZ() * direction.z))
-                        .toList();
+                        (pos) -> pos.getX() * direction.x + pos.getY() * direction.y + pos.getZ() * direction.z)).toList();
             }
             case RADIAL_AXIS -> {
                 if (posList == null || posList.isEmpty() || posList.size() == 1)
@@ -152,7 +151,7 @@ public class BlockSorter {
                     double projectionLength = pointToBlock.dotProduct(axisDirection);
                     Vec3d closestPointOnAxis = axisPoint.add(axisDirection.multiply(projectionLength));
                     return -WorldGenUtil.getDistance(BlockPos.ofFloored(closestPointOnAxis), BlockPos.ofFloored(axisPoint));
-                })).collect(Collectors.toList());
+                })).toList();
             }
             case FROM_LIST -> {
                 yield posList;
@@ -193,135 +192,204 @@ public class BlockSorter {
         };
     }
 
+    /**
+     * Method to sort the list depending on the {@code animatorType}.
+     *
+     * @param posList the list of BlockPos that will be sorted
+     * @return the sorted list
+     */
+    public LongArrayList sortBlockPos(LongArrayList posList) {
+        return switch (this.type) {
+            case FROM_POINT -> {
+                if (posList == null || posList.isEmpty() || posList.size() == 1)
+                    yield posList;
+                int[] centerPoint = LongPosHelper.convert2Array(this.centerPoint);
+                yield modifyPos(posList, Comparator.comparingDouble((pos) -> -WorldGenUtil.getDistance(centerPoint, pos.getValue())));
+            }
+            case FROM_POINT_INVERTED -> {
+                if (posList == null || posList.isEmpty() || posList.size() == 1)
+                    yield posList;
+                int[] centerPoint = LongPosHelper.convert2Array(this.centerPoint);
+                yield modifyPos(posList, Comparator.comparingDouble((pos) -> WorldGenUtil.getDistance(centerPoint, pos.getValue())));
+            }
+            case FROM_RANDOM_POINT -> {
+                int[] centerPoint = LongPosHelper.decodeBlockPos2Array(ListUtil.getRandomElement(posList));
+                yield modifyPos(posList,
+                        Comparator.comparingDouble((pos) -> -WorldGenUtil.getDistance(centerPoint, pos.getValue())
+                        ));
+            }
+            case FROM_RANDOM_POINT_INVERTED -> {
+                int[] centerPoint = LongPosHelper.decodeBlockPos2Array(ListUtil.getRandomElement(posList));
+                yield modifyPos(posList,
+                        Comparator.comparingDouble((pos) -> WorldGenUtil.getDistance(centerPoint, pos.getValue())
+                        ));
+            }
+            case RANDOM -> {
+                LongArrayList copy = posList.clone();
+                Collections.shuffle(copy);
+                yield copy;
+            }
+            case ALONG_AXIS -> {
+                if (posList == null || posList.isEmpty() || posList.size() == 1)
+                    yield posList;
+                Vec3d direction = this.axisDirection.normalize();
+                yield modifyPos(posList, Comparator.comparingDouble(
+                        (pos) -> pos.getValue()[0] * direction.x + pos.getValue()[1] * direction.y + pos.getValue()[2] * direction.z));
+            }
+            case RADIAL_AXIS -> {
+                if (posList == null || posList.isEmpty() || posList.size() == 1)
+                    yield posList;
+                yield modifyPos(posList, Comparator.comparingDouble((pos) -> {
+                    Vec3d axisPoint = this.centerPoint.toCenterPos();
+                    Vec3d axisDirection = this.axisDirection.normalize();
+                    Vec3d blockPosition = new Vec3d(pos.getValue()[0], pos.getValue()[1], pos.getValue()[2]);
+
+                    Vec3d pointToBlock = blockPosition.subtract(axisPoint);
+                    double projectionLength = pointToBlock.dotProduct(axisDirection);
+                    Vec3d closestPointOnAxis = axisPoint.add(axisDirection.multiply(projectionLength));
+                    return -WorldGenUtil.getDistance(BlockPos.ofFloored(closestPointOnAxis), BlockPos.ofFloored(axisPoint));
+                }));
+            }
+            case FROM_LIST -> {
+                yield posList;
+            }
+            case INVERSE -> {
+                LongArrayList copy = posList.clone();
+                Collections.reverse(copy);
+                yield copy;
+            }
+
+            case FROM_PLANE -> {
+                Vec3d axisPoint = this.centerPoint.toCenterPos();
+                Vec3d axisDirection = this.axisDirection.normalize();
+                if (posList == null || posList.isEmpty() || posList.size() == 1)
+                    yield posList;
+                yield modifyPos(posList, Comparator.comparingDouble((pos) -> {
+                    Vec3d blockVec = new Vec3d(pos.getValue()[0], pos.getValue()[1], pos.getValue()[2]);
+
+                    double distance = blockVec.subtract(axisPoint).dotProduct(axisDirection);
+
+                    return -Math.abs(distance);
+                }));
+            }
+            case FROM_PLANE_INVERTED -> {
+                Vec3d axisPoint = this.centerPoint.toCenterPos();
+                Vec3d axisDirection = this.axisDirection.normalize();
+                if (posList == null || posList.isEmpty() || posList.size() == 1)
+                    yield posList;
+                yield modifyPos(posList, Comparator.comparingDouble((pos) -> {
+                    Vec3d blockVec = new Vec3d(pos.getValue()[0], pos.getValue()[1], pos.getValue()[2]);
+
+                    double distance = blockVec.subtract(axisPoint).dotProduct(axisDirection);
+
+                    return Math.abs(distance);
+                }));
+            }
+            default -> throw new IllegalStateException("Unexpected sorter value: " + this.type);
+        };
+    }
+
 
     /**
      * Method to sort the list depending on the {@code animatorType}.
      * The method will only modify each {@code List<BLockPos>} in every BlockList.
      * If you want to force the method so that every blockPos getSorted, see {@code sortInsideBlockList()}
      *
-     * @param blockListShapeManager the list of BlockList that will be sorted
-     * @param <T>                   the object extending defaultBlockList
+     * @param manager the manager that will sort the BlockPos of the blockList
      */
-    public <T extends DefaultBlockList> void sortInsideBlockList(List<T> blockListShapeManager) {
+    public void sortInsideBlockList(BlockListManager manager) {
         switch (this.type) {
             case FROM_POINT -> {
-                for (T blockList : blockListShapeManager) {
-                    List<BlockPos> posList = blockList.getPosList();
-                    if (posList == null || posList.isEmpty() || posList.size() == 1)
-                        continue;
-
-                    posList = posList.parallelStream().sorted(Comparator.comparingDouble((pos) -> -WorldGenUtil.getDistance(centerPoint, pos))).collect(Collectors.toList());
-                    blockList.setPosList(posList);
+                for (BlockList blockList : manager.getAllBlockList()) {
+                    int[] center = LongPosHelper.convert2Array(this.centerPoint);
+                    modifyPos(blockList, Comparator.comparingDouble((pos) -> -WorldGenUtil.getDistance(center, pos.getValue())));
                 }
             }
             case FROM_POINT_INVERTED -> {
-                for (T blockList : blockListShapeManager) {
-                    List<BlockPos> posList = blockList.getPosList();
-                    if (posList == null || posList.isEmpty() || posList.size() == 1)
-                        continue;
-
-                    posList = posList.parallelStream().sorted(Comparator.comparingDouble((pos) -> WorldGenUtil.getDistance(centerPoint, pos))).collect(Collectors.toList());
-                    blockList.setPosList(posList);
+                for (BlockList blockList : manager.getAllBlockList()) {
+                    int[] center = LongPosHelper.convert2Array(this.centerPoint);
+                    modifyPos(blockList, Comparator.comparingDouble((pos) -> WorldGenUtil.getDistance(center, pos.getValue())));
                 }
             }
             case FROM_RANDOM_POINT -> {
-                for (T blockList : blockListShapeManager) {
+                for (BlockList blockList : manager.getAllBlockList()) {
                     this.centerPoint = blockList.getRandomPos();
-                    blockList.setPosList(
-                            blockList.getPosList().parallelStream().sorted(
-                                    Comparator.comparingDouble((pos) -> -WorldGenUtil.getDistance(centerPoint, pos)
-                                    )).collect(Collectors.toList())
+                    int[] center = LongPosHelper.convert2Array(this.centerPoint);
+                    modifyPos(blockList,
+                            Comparator.comparingDouble((pos) -> -WorldGenUtil.getDistance(center, pos.getValue()))
                     );
                 }
             }
             case FROM_RANDOM_POINT_INVERTED -> {
-                for (T blockList : blockListShapeManager) {
+                for (BlockList blockList : manager.getAllBlockList()) {
                     this.centerPoint = blockList.getRandomPos();
-                    blockList.setPosList(
-                            blockList.getPosList().parallelStream().sorted(
-                                    Comparator.comparingDouble((pos) -> WorldGenUtil.getDistance(centerPoint, pos)
-                                    )).collect(Collectors.toList())
+                    int[] center = LongPosHelper.convert2Array(this.centerPoint);
+                    modifyPos(blockList,
+                            Comparator.comparingDouble((pos) -> WorldGenUtil.getDistance(center, pos.getValue()))
                     );
                 }
             }
             case RANDOM -> {
-                for (T blockList : blockListShapeManager) {
+                for (BlockList blockList : manager.getAllBlockList()) {
                     Collections.shuffle(blockList.getPosList());
                 }
             }
             case ALONG_AXIS -> {
-                for (T blockList : blockListShapeManager) {
-                    List<BlockPos> posList = blockList.getPosList();
-                    if (posList == null || posList.isEmpty() || posList.size() == 1)
-                        continue;
+                for (BlockList blockList : manager.getAllBlockList()) {
                     Vec3d direction = this.axisDirection.normalize();
-                    blockList.setPosList(
-                            posList.parallelStream().sorted(Comparator.comparingDouble(
-                                            (pos) -> pos.getX() * direction.x + pos.getY() * direction.y + pos.getZ() * direction.z))
-                                    .toList()
+                    modifyPos(blockList, Comparator.comparingDouble(
+                            (pos) -> pos.getValue()[0] * direction.x + pos.getValue()[1] * direction.y + pos.getValue()[2] * direction.z)
+
                     );
                 }
             }
             case RADIAL_AXIS -> {
-                for (T blockList : blockListShapeManager) {
-                    List<BlockPos> posList = blockList.getPosList();
-                    if (posList == null || posList.isEmpty() || posList.size() == 1)
-                        continue;
-                    blockList.setPosList(
-                            posList.parallelStream().sorted(Comparator.comparingDouble((pos) -> {
+                for (BlockList blockList : manager.getAllBlockList()) {
+                    modifyPos(blockList, Comparator.comparingDouble((pos) -> {
                                 Vec3d axisPoint = this.centerPoint.toCenterPos();
                                 Vec3d axisDirection = this.axisDirection.normalize();
-                                Vec3d blockPosition = new Vec3d(pos.getX(), pos.getY(), pos.getZ());
+                                Vec3d blockPosition = new Vec3d(pos.getValue()[0], pos.getValue()[1], pos.getValue()[2]);
 
                                 Vec3d pointToBlock = blockPosition.subtract(axisPoint);
                                 double projectionLength = pointToBlock.dotProduct(axisDirection);
                                 Vec3d closestPointOnAxis = axisPoint.add(axisDirection.multiply(projectionLength));
                                 return -WorldGenUtil.getDistance(BlockPos.ofFloored(closestPointOnAxis), BlockPos.ofFloored(axisPoint));
-                            })).collect(Collectors.toList())
+                            })
                     );
                 }
             }
             case FROM_LIST -> {
             }
             case INVERSE -> {
-                for (T blockList : blockListShapeManager) {
+                for (BlockList blockList : manager.getAllBlockList()) {
                     Collections.reverse(blockList.getPosList());
                 }
             }
             case FROM_PLANE -> {
                 Vec3d axisPoint = this.centerPoint.toCenterPos();
                 Vec3d axisDirection = this.axisDirection.normalize();
-                for (T blockList : blockListShapeManager) {
-                    List<BlockPos> posList = blockList.getPosList();
-                    if (posList == null || posList.isEmpty() || posList.size() == 1)
-                        continue;
-                    blockList.setPosList(
-                            posList.parallelStream().sorted(Comparator.comparingDouble((pos) -> {
-                                Vec3d blockVec = new Vec3d(pos.getX(), pos.getY(), pos.getZ());
+                for (BlockList blockList : manager.getAllBlockList()) {
+                    modifyPos(blockList, Comparator.comparingDouble((pos) -> {
+                                Vec3d blockVec = new Vec3d(pos.getValue()[0], pos.getValue()[1], pos.getValue()[2]);
 
                                 double distance = blockVec.subtract(axisPoint).dotProduct(axisDirection);
 
                                 return -Math.abs(distance);
-                            })).toList()
+                            })
                     );
                 }
             }
             case FROM_PLANE_INVERTED -> {
                 Vec3d axisPoint = this.centerPoint.toCenterPos();
                 Vec3d axisDirection = this.axisDirection.normalize();
-                for (T blockList : blockListShapeManager) {
-                    List<BlockPos> posList = blockList.getPosList();
-                    if (posList == null || posList.isEmpty() || posList.size() == 1)
-                        continue;
-                    blockList.setPosList(
-                            posList.parallelStream().sorted(Comparator.comparingDouble((pos) -> {
-                                Vec3d blockVec = new Vec3d(pos.getX(), pos.getY(), pos.getZ());
+                for (BlockList blockList : manager.getAllBlockList()) {
+                    modifyPos(blockList, Comparator.comparingDouble((pos) -> {
+                        Vec3d blockVec = new Vec3d(pos.getValue()[0], pos.getValue()[1], pos.getValue()[2]);
 
-                                double distance = blockVec.subtract(axisPoint).dotProduct(axisDirection);
+                        double distance = blockVec.subtract(axisPoint).dotProduct(axisDirection);
 
-                                return Math.abs(distance);
-                            })).toList()
-                    );
+                        return Math.abs(distance);
+                    }));
                 }
             }
             default -> throw new IllegalStateException("Unexpected sorter value: " + this.type);
@@ -331,92 +399,125 @@ public class BlockSorter {
     /**
      * Method to sort the list depending on the {@code animatorType}. The method will sort every blockPos of the BlockList and will return the related class to
      *
-     * @param defaultBlockList the list of BlockList that will be sorted
-     * @param <U>              the data of the block, for example, the blockState or the NbtCompounds
-     * @param <W>              the object related to the orderedBlockListComparator
-     * @return a list of W of BlockStates and BlockPos
+     * @param orderedBlockList the list of BlockList that will be sorted
      */
-    public <W extends AbstractOrderedBlockListComparator<U>, U> W sortBlockList(W defaultBlockList) {
-
+    public OrderedBlockListManager sortOrderedBlockList(OrderedBlockListManager orderedBlockList) {
         return switch (this.type) {
             case ALONG_AXIS -> {
                 Vec3d direction = this.axisDirection.normalize();
-                defaultBlockList.setPosList(defaultBlockList.getPosList().parallelStream().sorted(Comparator.comparingDouble((pos) -> pos.getX() * direction.x + pos.getY() * direction.y + pos.getZ() * direction.z)).toList());
-
-                yield defaultBlockList;
+                modifyPos(orderedBlockList, Comparator.comparingDouble(entry -> {
+                    int[] pos = entry.getValue();
+                    return pos[0] * direction.x + pos[2] * direction.y + pos[1] * direction.z;
+                }));
+                yield orderedBlockList;
             }
             case RADIAL_AXIS -> {
                 Vec3d axisPoint = this.centerPoint.toCenterPos();
                 Vec3d axisDirection = this.axisDirection.normalize();
-                defaultBlockList.setPosList(defaultBlockList.getPosList().parallelStream().sorted(Comparator.comparingDouble((pos) -> {
-                    Vec3d blockPosition = new Vec3d(pos.getX(), pos.getY(), pos.getZ());
+                modifyPos(orderedBlockList, Comparator.comparingDouble((pos) -> {
+                    Vec3d blockPosition = new Vec3d(pos.getValue()[0], pos.getValue()[2], pos.getValue()[1]);
 
                     Vec3d pointToBlock = blockPosition.subtract(axisPoint);
                     double projectionLength = pointToBlock.dotProduct(axisDirection);
                     Vec3d closestPointOnAxis = axisPoint.add(axisDirection.multiply(projectionLength));
                     return -WorldGenUtil.getDistance(BlockPos.ofFloored(closestPointOnAxis), BlockPos.ofFloored(axisPoint));
-                })).toList());
-                yield defaultBlockList;
+                }));
+                yield orderedBlockList;
             }
             case FROM_POINT -> {
-                defaultBlockList.setPosList(defaultBlockList.getPosList().parallelStream().sorted(Comparator.comparingDouble((pos) ->
-                        -WorldGenUtil.getDistance(centerPoint, pos))
-                ).toList());
-                yield defaultBlockList;
+                int[] center = LongPosHelper.convert2Array(this.centerPoint);
+                modifyPos(orderedBlockList, Comparator.comparingDouble((pos) ->
+                        -WorldGenUtil.getDistance(center, pos.getValue()))
+                );
+                yield orderedBlockList;
             }
             case FROM_POINT_INVERTED -> {
-                defaultBlockList.setPosList(defaultBlockList.getPosList().parallelStream().sorted(Comparator.comparingDouble((pos) -> WorldGenUtil.getDistance(centerPoint, pos))
-                ).toList());
-                yield defaultBlockList;
+                int[] center = LongPosHelper.convert2Array(this.centerPoint);
+                modifyPos(orderedBlockList, Comparator.comparingDouble((pos) -> WorldGenUtil.getDistance(center, pos.getValue()))
+                );
+                yield orderedBlockList;
             }
             case FROM_RANDOM_POINT -> {
-                this.centerPoint = defaultBlockList.getRandomBlockPos();
-                defaultBlockList.setPosList(defaultBlockList.getPosList().parallelStream().sorted(Comparator.comparingDouble((pos) -> -WorldGenUtil.getDistance(centerPoint, pos))
-                ).toList());
-                yield defaultBlockList;
+                int[] center = LongPosHelper.decodeBlockPos2Array(orderedBlockList.getRandomBlockPos());
+                modifyPos(orderedBlockList, Comparator.comparingDouble((pos) -> -WorldGenUtil.getDistance(center, pos.getValue()))
+                );
+                yield orderedBlockList;
             }
             case FROM_RANDOM_POINT_INVERTED -> {
-                this.centerPoint = defaultBlockList.getRandomBlockPos();
-                defaultBlockList.setPosList(defaultBlockList.getPosList().parallelStream().sorted(Comparator.comparingDouble((pos) -> WorldGenUtil.getDistance(centerPoint, pos))
-                ).toList());
-                yield defaultBlockList;
+                int[] center = LongPosHelper.decodeBlockPos2Array(orderedBlockList.getRandomBlockPos());
+                modifyPos(orderedBlockList, Comparator.comparingDouble((pos) -> WorldGenUtil.getDistance(center, pos.getValue()))
+                );
+                yield orderedBlockList;
             }
             case FROM_PLANE -> {
                 Vec3d axisPoint = this.centerPoint.toCenterPos();
                 Vec3d axisDirection = this.axisDirection.normalize();
-                defaultBlockList.setPosList(defaultBlockList.getPosList().parallelStream().sorted(Comparator.comparingDouble(pos -> {
-                    Vec3d blockVec = new Vec3d(pos.getX(), pos.getY(), pos.getZ());
+                modifyPos(orderedBlockList, Comparator.comparingDouble(pos -> {
+                    Vec3d blockVec = new Vec3d(pos.getValue()[0], pos.getValue()[1], pos.getValue()[2]);
 
                     double distance = blockVec.subtract(axisPoint).dotProduct(axisDirection);
 
                     return -Math.abs(distance);
-                })).toList());
-                yield defaultBlockList;
+                }));
+                yield orderedBlockList;
             }
             case FROM_PLANE_INVERTED -> {
                 Vec3d axisPoint = this.centerPoint.toCenterPos();
                 Vec3d axisDirection = this.axisDirection.normalize();
-                defaultBlockList.setPosList(defaultBlockList.getPosList().parallelStream().sorted(Comparator.comparingDouble(pos -> {
-                    Vec3d blockVec = new Vec3d(pos.getX(), pos.getY(), pos.getZ());
+                modifyPos(orderedBlockList, Comparator.comparingDouble(pos -> {
+                    Vec3d blockVec = new Vec3d(pos.getValue()[0], pos.getValue()[1], pos.getValue()[2]);
 
                     double distance = blockVec.subtract(axisPoint).dotProduct(axisDirection);
 
                     return Math.abs(distance);
-                })).toList());
-                yield defaultBlockList;
+                }));
+                yield orderedBlockList;
 
             }
             case RANDOM -> {
-                Collections.shuffle(defaultBlockList.getPosList());
-                yield defaultBlockList;
+                Collections.shuffle(orderedBlockList.getPosList());
+                yield orderedBlockList;
             }
-            case FROM_LIST -> defaultBlockList;
+            case FROM_LIST -> orderedBlockList;
             case INVERSE -> {
-                Collections.reverse(defaultBlockList.getPosList());
-                yield defaultBlockList;
+                Collections.reverse(orderedBlockList.getPosList());
+                yield orderedBlockList;
             }
             default -> throw new IllegalStateException("Unexpected value: " + type);
         };
+    }
+
+    private static void modifyPos(OrderedBlockListManager orderedBlockList, @NotNull Comparator<AbstractMap.SimpleEntry<Long, int[]>> comparator) {
+        orderedBlockList.setPosList(
+                orderedBlockList.getPosList()
+                        .longStream()
+                        .parallel()
+                        .mapToObj(encodedLong -> new AbstractMap.SimpleEntry<>(encodedLong, LongPosHelper.decodeBlockPos2Array(encodedLong)))
+                        .sorted(comparator)
+                        .mapToLong(Map.Entry::getKey)
+                        .collect(LongArrayList::new, LongArrayList::addLast, LongArrayList::addAll)
+        );
+    }
+
+    private static LongArrayList modifyPos(LongArrayList list, @NotNull Comparator<AbstractMap.SimpleEntry<Long, int[]>> comparator) {
+        return list.longStream()
+                .parallel()
+                .mapToObj(encodedLong -> new AbstractMap.SimpleEntry<>(encodedLong, LongPosHelper.decodeBlockPos2Array(encodedLong)))
+                .sorted(comparator)
+                .mapToLong(Map.Entry::getKey)
+                .collect(LongArrayList::new, LongArrayList::addLast, LongArrayList::addAll);
+    }
+
+    private static void modifyPos(BlockList blockList, @NotNull Comparator<AbstractMap.SimpleEntry<Long, int[]>> comparator) {
+        blockList.setPosList(
+                blockList.getPosList()
+                        .longStream()
+                        .parallel()
+                        .mapToObj(encodedLong -> new AbstractMap.SimpleEntry<>(encodedLong, LongPosHelper.decodeBlockPos2Array(encodedLong)))
+                        .sorted(comparator)
+                        .mapToLong(Map.Entry::getKey)
+                        .collect(LongArrayList::new, LongArrayList::addLast, LongArrayList::addAll)
+        );
     }
 
     /**

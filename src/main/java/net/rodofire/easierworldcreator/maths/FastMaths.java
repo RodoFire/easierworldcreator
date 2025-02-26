@@ -106,7 +106,7 @@ public class FastMaths {
      * @return the sinus of the angle
      */
     public static float getPreciseSin(float x) {
-        return sinPreciseTable[((int) x * 10) % PRECISE_TRIGO_TABLE_SIZE];
+        return sinPreciseTable[((int) (x * 10)) % PRECISE_TRIGO_TABLE_SIZE];
     }
 
     /**
@@ -116,7 +116,7 @@ public class FastMaths {
      * @return the cosines of the angle
      */
     public static float getPreciseCos(float x) {
-        return cosPreciseTable[((int) x * 10) % PRECISE_TRIGO_TABLE_SIZE];
+        return cosPreciseTable[((int) (x * 10)) % PRECISE_TRIGO_TABLE_SIZE];
     }
 
     /**
@@ -126,11 +126,11 @@ public class FastMaths {
      * @return the tan of the angle
      */
     public static float getPreciseTan(float x) {
-        if ((int) x % 180 == 90) {
+        if ((int) (x * 10) % 180 == 90) {
             Ewc.LOGGER.error("getPreciseExp() :thrown error, tan can't accept values equal to 90° +- 180° (div by 0 error)");
             return 0;
         }
-        return sinPreciseTable[((int) x * 10) % PRECISE_TRIGO_TABLE_SIZE] / cosPreciseTable[((int) x * 10) % PRECISE_TRIGO_TABLE_SIZE];
+        return sinPreciseTable[((int) (x * 10)) % PRECISE_TRIGO_TABLE_SIZE] / cosPreciseTable[((int) x * 10) % PRECISE_TRIGO_TABLE_SIZE];
 
 
     }
@@ -263,6 +263,10 @@ public class FastMaths {
         return getFastSqrt(number, 0.2f);
     }
 
+    public static double getFastSqrt(double number) {
+        return getFastSqrt(number, 0.2f);
+    }
+
     /**
      * method to get a precise sqrt with the wanted precision
      *
@@ -282,6 +286,26 @@ public class FastMaths {
 
         float x = number;
         float prev;
+
+        do {
+            prev = x;
+            x = (x + number / x) / 2;
+        } while (Math.abs(x - prev) > precision);
+        return x;
+    }
+
+    public static double getFastSqrt(double number, float precision) {
+
+        if (number < 0) {
+            throw new IllegalArgumentException("Bound must be positive inside of sqrt");
+        }
+
+        if (number == 0 || number == 1) {
+            return number;
+        }
+
+        double x = number;
+        double prev;
 
         do {
             prev = x;

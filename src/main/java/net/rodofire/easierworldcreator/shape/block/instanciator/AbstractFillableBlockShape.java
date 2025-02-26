@@ -1,8 +1,7 @@
 package net.rodofire.easierworldcreator.shape.block.instanciator;
 
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.StructureWorldAccess;
-import net.rodofire.easierworldcreator.blockdata.layer.BlockLayer;
+import net.rodofire.easierworldcreator.shape.block.rotations.Rotator;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -28,29 +27,19 @@ public abstract class AbstractFillableBlockShape extends AbstractBlockShape {
     /**
      * init the ShapeFilling
      *
-     * @param world           the world the spiral will spawn in
      * @param pos             the center of the spiral
-     * @param placeMoment     define the moment where the shape will be placed
-     * @param layerPlace      how the {@code BlockStates} inside of a {@link BlockLayer} will be placed
-     * @param layersType      how the Layers will be placed
-     * @param yRotation       first rotation around the y-axis
-     * @param zRotation       second rotation around the z-axis
-     * @param secondYRotation last rotation around the y-axis
-     * @param featureName     the name of the feature
      */
-    public AbstractFillableBlockShape(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, PlaceMoment placeMoment, LayerPlace layerPlace, LayersType layersType, int yRotation, int zRotation, int secondYRotation, String featureName) {
-        super(world, pos, placeMoment, layerPlace, layersType, yRotation, zRotation, secondYRotation, featureName);
+    public AbstractFillableBlockShape(@NotNull BlockPos pos) {
+        super(pos);
     }
 
     /**
      * init the ShapeFilling
      *
-     * @param world       the world of the shape
      * @param pos         the pos of the shape (usually the center of the structure)
-     * @param placeMoment define the moment where the shape will be placed
      */
-    public AbstractFillableBlockShape(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, PlaceMoment placeMoment) {
-        super(world, pos, placeMoment);
+    public AbstractFillableBlockShape(@NotNull BlockPos pos, Rotator rotator) {
+        super(pos, rotator);
     }
 
     /**

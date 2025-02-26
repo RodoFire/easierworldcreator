@@ -33,7 +33,7 @@ public class ChunkRegionMixin implements ChunkRegionUtil {
 
 
     @Override
-    public Chunk getNullableChunk(int chunkX, int chunkZ, ChunkStatus leastStatus, boolean create) {
+    public Chunk ewc_main$getNullableChunk(int chunkX, int chunkZ, ChunkStatus leastStatus, boolean create) {
         int i = this.centerPos.getPos().getChebyshevDistance(chunkX, chunkZ);
         ChunkStatus chunkStatus = i >= this.generationStep.directDependencies().size() ? null : this.generationStep.directDependencies().get(i);
         AbstractChunkHolder abstractChunkHolder;

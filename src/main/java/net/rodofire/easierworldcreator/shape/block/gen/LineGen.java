@@ -1,15 +1,19 @@
 package net.rodofire.easierworldcreator.shape.block.gen;
 
+import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.Direction;
-import net.minecraft.world.StructureWorldAccess;
-import net.rodofire.easierworldcreator.blockdata.layer.BlockLayer;
 import net.rodofire.easierworldcreator.shape.block.instanciator.AbstractBlockShape;
+import net.rodofire.easierworldcreator.shape.block.rotations.Rotator;
+import net.rodofire.easierworldcreator.util.LongPosHelper;
 import net.rodofire.easierworldcreator.util.WorldGenUtil;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Class to generate Line related shapes
@@ -28,32 +32,22 @@ public class LineGen extends AbstractBlockShape {
     /**
      * init the Line Shape
      *
-     * @param world           the world the spiral will spawn in
-     * @param pos             the center of the spiral
-     * @param placeMoment     define the moment where the shape will be placed
-     * @param layerPlace      how the {@code @BlockStates} inside of a {@link BlockLayer} will be placed
-     * @param layersType      how the Layers will be placed
-     * @param yRotation       first rotation around the y-axis
-     * @param zRotation       second rotation around the z-axis
-     * @param secondYRotation last rotation around the y-axis
-     * @param featureName     the name of the feature
-     * @param secondPos       the second pos on which the line has to go
+     * @param pos       the position of the start of the line
+     * @param secondPos the second pos on which the line has to go
      */
-    public LineGen(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, @NotNull PlaceMoment placeMoment, LayerPlace layerPlace, LayersType layersType, int yRotation, int zRotation, int secondYRotation, String featureName, BlockPos secondPos) {
-        super(world, pos, placeMoment, layerPlace, layersType, yRotation, zRotation, secondYRotation, featureName);
+    public LineGen(@NotNull BlockPos pos, Rotator rotator, BlockPos secondPos) {
+        super(pos, rotator);
         this.secondPos = secondPos;
     }
 
     /**
      * init the Line Shape
      *
-     * @param world       the world the spiral will spawn in
-     * @param pos         the center of the spiral
-     * @param placeMoment define the moment where the shape will be placed
-     * @param secondPos   the second pos on which the line has to go
+     * @param pos       the position of the start of the line
+     * @param secondPos the second pos on which the line has to go
      */
-    public LineGen(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, @NotNull PlaceMoment placeMoment, BlockPos secondPos) {
-        super(world, pos, placeMoment);
+    public LineGen(@NotNull BlockPos pos, BlockPos secondPos) {
+        super(pos);
         this.secondPos = secondPos;
     }
 
@@ -66,16 +60,12 @@ public class LineGen extends AbstractBlockShape {
     }
 
     @Override
-    public Map<ChunkPos, Set<BlockPos>> getBlockPos() {
+    public Map<ChunkPos, LongOpenHashSet> getShapeCoordinates() {
         Direction direction;
-        Map<ChunkPos, Set<BlockPos>> chunkMap = new HashMap<>();
-        //faster coordinates generation
-        if (!this.multiChunk && WorldGenUtil.isPosAChunkFar(this.secondPos, this.getPos()))
-            this.multiChunk = true;
-        if ((direction = WorldGenUtil.getDirection(this.getPos(), secondPos)) != null) {
-            this.generateAxisLine(direction, chunkMap);
+        if ((direction = WorldGenUtil.getDirection(LongPosHelper.decodeBlockPos(this.centerPos), secondPos)) != null) {
+            this.generateAxisLine(direction);
         } else {
-            this.drawLine(chunkMap);
+            this.drawLine();
         }
         return chunkMap;
     }
@@ -84,23 +74,21 @@ public class LineGen extends AbstractBlockShape {
      * this method generates the coordinates
      *
      * @param dir      the direction of the line
-     * @param chunkMap the map used to get the coordinates
      */
-    public void generateAxisLine(Direction dir, Map<ChunkPos, Set<BlockPos>> chunkMap) {
-        int length = (int) WorldGenUtil.getDistance(this.getPos(), secondPos);
+    public void generateAxisLine(Direction dir) {
+        int length = (int) WorldGenUtil.getDistance(LongPosHelper.decodeBlockPos(centerPos), secondPos);
         for (int i = 0; i < length; i++) {
-            BlockPos pos = this.getPos().offset(dir, i);
-            WorldGenUtil.modifyChunkMap(pos, chunkMap);
+            modifyChunkMap(LongPosHelper.offset(dir, centerPos, i));
         }
     }
 
 
-    public void drawLine(Map<ChunkPos, Set<BlockPos>> chunkMap) {
-        WorldGenUtil.modifyChunkMap(this.getPos(), chunkMap);
+    public void drawLine() {
+        modifyChunkMap(this.centerPos);
 
-        int x1 = this.getPos().getX();
-        int y1 = this.getPos().getY();
-        int z1 = this.getPos().getZ();
+        int x1 = centerX;
+        int y1 = centerY;
+        int z1 = centerZ;
         int x2 = secondPos.getX();
         int y2 = secondPos.getY();
         int z2 = secondPos.getZ();
@@ -128,8 +116,7 @@ public class LineGen extends AbstractBlockShape {
                 }
                 p1 += 2 * dy;
                 p2 += 2 * dz;
-                BlockPos currentPos = new BlockPos(x1, y1, z1);
-                WorldGenUtil.modifyChunkMap(currentPos, chunkMap);
+                modifyChunkMap(LongPosHelper.encodeBlockPos(x1, y1, z1));
             }
         } else if (dy >= dx && dy >= dz) {
             int p1 = 2 * dx - dy;
@@ -146,8 +133,7 @@ public class LineGen extends AbstractBlockShape {
                 }
                 p1 += 2 * dx;
                 p2 += 2 * dz;
-                BlockPos currentPos = new BlockPos(x1, y1, z1);
-                WorldGenUtil.modifyChunkMap(currentPos, chunkMap);
+                modifyChunkMap(LongPosHelper.encodeBlockPos(x1, y1, z1));
             }
         } else {
             int p1 = 2 * dy - dz;
@@ -164,8 +150,7 @@ public class LineGen extends AbstractBlockShape {
                 }
                 p1 += 2 * dy;
                 p2 += 2 * dx;
-                BlockPos currentPos = new BlockPos(x1, y1, z1);
-                WorldGenUtil.modifyChunkMap(currentPos, chunkMap);
+                modifyChunkMap(LongPosHelper.encodeBlockPos(x1, y1, z1));
             }
         }
     }

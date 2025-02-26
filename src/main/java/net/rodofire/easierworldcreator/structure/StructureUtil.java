@@ -10,54 +10,25 @@ import net.minecraft.registry.DynamicRegistryManager;
 import net.minecraft.structure.StructurePlacementData;
 import net.minecraft.structure.StructureTemplate;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.random.Random;
 import net.minecraft.world.StructureWorldAccess;
-import net.rodofire.easierworldcreator.blockdata.blocklist.basic.CompoundBlockList;
-import net.rodofire.easierworldcreator.blockdata.blocklist.basic.DefaultBlockList;
-import net.rodofire.easierworldcreator.blockdata.blocklist.basic.FullBlockList;
-import net.rodofire.easierworldcreator.blockdata.blocklist.basic.comparator.AbstractBlockListComparator;
-import net.rodofire.easierworldcreator.blockdata.blocklist.basic.comparator.CompoundBlockListComparator;
-import net.rodofire.easierworldcreator.blockdata.blocklist.basic.comparator.FullBlockListComparator;
-import net.rodofire.easierworldcreator.blockdata.blocklist.ordered.comparator.AbstractOrderedBlockListComparator;
+import net.rodofire.easierworldcreator.blockdata.blocklist.BlockList;
+import net.rodofire.easierworldcreator.blockdata.blocklist.BlockListManager;
 import net.rodofire.easierworldcreator.maths.MathUtil;
 import net.rodofire.easierworldcreator.mixin.world.structure.StructureTemplateMixin;
-import net.rodofire.easierworldcreator.placer.blocks.animator.StructurePlaceAnimator;
-import net.rodofire.easierworldcreator.placer.blocks.util.BlockPlaceUtil;
+import net.rodofire.easierworldcreator.shape.block.placer.animator.StructurePlaceAnimator;
+import net.rodofire.easierworldcreator.util.BlockPlaceUtil;
+import net.rodofire.easierworldcreator.util.LongPosHelper;
 
 import java.util.*;
 
-//TODO check if tag is present, if yes, cast CompoundBlockList
 @SuppressWarnings("unused")
 public class StructureUtil {
-    public static void convertNbtToComparator(StructureTemplate structureTemplate, List<DefaultBlockList> defaultBlockLists) {
-        List<StructureTemplate.PalettedBlockInfoList> blockInfoLists = ((StructureTemplateMixin) structureTemplate).getBlockInfoLists();
-        Map<Pair<BlockState, NbtCompound>, List<BlockPos>> blockStateToPositionsMap = new HashMap<>();
-        for (StructureTemplate.PalettedBlockInfoList palettedList : blockInfoLists) {
-            for (StructureTemplate.StructureBlockInfo blockInfo : palettedList.getAll()) {
-                BlockState blockState = blockInfo.state();
-                BlockPos blockPos = blockInfo.pos();
-                NbtCompound tag = blockInfo.nbt();
-
-                //Pair<BlockState, NbtCompound> stateAndTagPair = new Pair<>(blockState/*, tag*/);
-
-                //blockStateToPositionsMap.computeIfAbsent(stateAndTagPair, k -> new ArrayList<>()).add(blockPos);
-            }
-        }
-
-        for (Map.Entry<Pair<BlockState, NbtCompound>, List<BlockPos>> entry : blockStateToPositionsMap.entrySet()) {
-            BlockState blockState = entry.getKey().getFirst();
-            NbtCompound tag = entry.getKey().getSecond();
-            List<BlockPos> positions = entry.getValue();
-
-            //defaultBlockLists.add(new DefaultBlockList(positions, blockState/*/*, tag*/*/));
-        }
-    }
-
-    public static void convertNbtToComparator(StructureTemplate structureTemplate, CompoundBlockListComparator comparator, StructurePlacementData data, StructureWorldAccess world, BlockPos pos) {
+    public static void convertNbtToManager(StructureTemplate structureTemplate, BlockListManager manager, StructurePlacementData data, StructureWorldAccess world, BlockPos pos) {
         List<StructureTemplate.StructureBlockInfo> list = data.getRandomBlockInfos(((StructureTemplateMixin) structureTemplate).getBlockInfoLists(), pos).getAll();
         List<StructureTemplate.StructureBlockInfo> blockInfoList = StructureTemplate.process(world, pos, new BlockPos(0, 0, 0), data, list);
 
         Map<Pair<BlockState, NbtCompound>, List<BlockPos>> blockStateToPositionsMap = new HashMap<>();
-        //for (StructureTemplate.PalettedBlockInfoList palettedList : ((StructureTemplateMixin) structureTemplate).getBlockInfoLists()) {
         for (StructureTemplate.StructureBlockInfo blockInfo : blockInfoList) {
             BlockState blockState = blockInfo.state();
             BlockPos blockPos = blockInfo.pos();
@@ -67,106 +38,114 @@ public class StructureUtil {
 
             blockStateToPositionsMap.computeIfAbsent(stateAndTagPair, k -> new ArrayList<>()).add(blockPos);
         }
-        //}
 
         for (Map.Entry<Pair<BlockState, NbtCompound>, List<BlockPos>> entry : blockStateToPositionsMap.entrySet()) {
             BlockState blockState = entry.getKey().getFirst();
             NbtCompound tag = entry.getKey().getSecond();
             List<BlockPos> positions = entry.getValue();
 
-            comparator.put(new CompoundBlockList(positions, blockState, tag));
-        }
-    }
-
-    public static void convertNbtToComparator(StructureTemplate structureTemplate, FullBlockListComparator comparator, StructurePlacementData data, StructureWorldAccess world, BlockPos pos) {
-        List<StructureTemplate.StructureBlockInfo> list = data.getRandomBlockInfos(((StructureTemplateMixin) structureTemplate).getBlockInfoLists(), pos).getAll();
-        List<StructureTemplate.StructureBlockInfo> blockInfoList = StructureTemplate.process(world, pos, new BlockPos(0, 0, 0), data, list);
-
-        Map<Pair<BlockState, NbtCompound>, List<BlockPos>> blockStateToPositionsMap = new HashMap<>();
-        //for (StructureTemplate.PalettedBlockInfoList palettedList : ((StructureTemplateMixin) structureTemplate).getBlockInfoLists()) {
-        for (StructureTemplate.StructureBlockInfo blockInfo : blockInfoList) {
-            BlockState blockState = blockInfo.state();
-            BlockPos blockPos = blockInfo.pos();
-            NbtCompound tag = blockInfo.nbt();
-
-            Pair<BlockState, NbtCompound> stateAndTagPair = new Pair<>(blockState, tag);
-
-            blockStateToPositionsMap.computeIfAbsent(stateAndTagPair, k -> new ArrayList<>()).add(blockPos);
-        }
-        //}
-
-        for (Map.Entry<Pair<BlockState, NbtCompound>, List<BlockPos>> entry : blockStateToPositionsMap.entrySet()) {
-            BlockState blockState = entry.getKey().getFirst();
-            NbtCompound tag = entry.getKey().getSecond();
-            List<BlockPos> positions = entry.getValue();
-
-            comparator.put(new FullBlockList(positions, blockState, tag));
+            manager.put(new BlockList(blockState, tag, positions));
         }
     }
 
 
-    public static <T extends AbstractBlockListComparator<U, V, W, X>, U extends DefaultBlockList, V, W extends AbstractOrderedBlockListComparator<X>, X> void place(StructureWorldAccess world, StructurePlaceAnimator animator, T comparator, BlockPos block, boolean force, Set<Block> blockToForce, Set<Block> blockToSkip, float integrity) {
+    public static void place(StructureWorldAccess world, StructurePlaceAnimator animator, BlockListManager manager, BlockPos block, boolean force, Set<Block> blockToForce, Set<Block> blockToSkip, float integrity) {
         //avoid errors due to aberrant values
         if (integrity < 0) integrity = 0;
         if (integrity > 1) integrity = 1;
 
-        Iterator<U> iterator = comparator.get().iterator();
-        while (iterator.hasNext()) {
-            U defaultBlockList = iterator.next();
-            BlockState blockState = defaultBlockList.getBlockState();
 
-            if (blockState.isOf(Blocks.JIGSAW) || blockState.isOf(Blocks.STRUCTURE_BLOCK) || blockState.isOf(Blocks.STRUCTURE_VOID) || blockState.isOf(Blocks.AIR))
-                iterator.remove();
-
-            if (blockToSkip != null && !blockToSkip.isEmpty())
-                if (blockToSkip.contains(blockState.getBlock()))
-                    iterator.remove();
-
-            //NbtCompound tag = defaultBlockList.getTag();
-
-            boolean bl1 = blockToForce == null || blockToForce.isEmpty();
-            for (BlockPos pos : defaultBlockList.getPosList()) {
-                defaultBlockList.replacePos(pos, pos.add(block));
-                if (!bl1 || force) {
-                    if (integrity < 1f) {
-                        if (MathUtil.getRandomBoolean(integrity)) {
-                            defaultBlockList.removePos(pos);
-                        }
-                    }
-                    if (!BlockPlaceUtil.verifyBlock(world, force, blockToForce, pos.add(block))) {
-                        defaultBlockList.removePos(pos);
-                    }
-                }
-            }
-
-        }
+        clean(world, manager, block, force, blockToForce, blockToSkip, integrity);
         //we place the structure depending on if the animator is present or not
         if (animator != null) {
-            animator.placeFromBlockList(comparator);
+            animator.place(manager);
         } else {
-            for (U blockList : comparator.get()) {
-                BlockState blockState = blockList.getBlockState();
-                for (BlockPos pos : blockList.getPosList()) {
-                    world.setBlockState(pos, blockState, 3);
-                    if (blockList instanceof CompoundBlockList cmp) {
-                        NbtCompound tag = cmp.getTag();
-                        if (tag != null) {
-                            BlockEntity blockEntity = world.getBlockEntity(pos);
-                            if (blockEntity != null) {
-                                DynamicRegistryManager registry =  world.getRegistryManager();
-                                NbtCompound currentNbt = blockEntity.createNbtWithIdentifyingData(registry);
-                                currentNbt.copyFrom(tag);
+            for (BlockList blockList : manager.getAllBlockList()) {
+                BlockState blockState = blockList.getState();
+                for (long pos : blockList.getPosList()) {
+                    BlockPos convertedPos = LongPosHelper.decodeBlockPos(pos);
+                    world.setBlockState(convertedPos, blockState, 3);
+                    if (blockList.getTag().isPresent()) {
+                        NbtCompound tag = blockList.getTag().get();
+                        BlockEntity blockEntity = world.getBlockEntity(convertedPos);
+                        if (blockEntity != null) {
+                            DynamicRegistryManager registry = world.getRegistryManager();
+                            NbtCompound currentNbt = blockEntity.createNbtWithIdentifyingData(registry);
+                            currentNbt.copyFrom(tag);
 
-                                blockEntity.read(currentNbt, registry);
-                                blockEntity.markDirty();
-                            }
+                            blockEntity.read(currentNbt, registry);
+                            blockEntity.markDirty();
                         }
                     }
-
                 }
             }
         }
+    }
 
+    private static void clean(StructureWorldAccess world, BlockListManager manager, BlockPos block, boolean force, Set<Block> blockToForce, Set<Block> blockToSkip, float integrity) {
+        if (integrity != 1.0f) {
+            Random random = world.getRandom();
+            Iterator<BlockList> iterator = manager.getAllBlockList().iterator();
+            while (iterator.hasNext()) {
+                BlockList blockList = iterator.next();
+                BlockState blockState = blockList.getState();
+
+                if (blockState.isOf(Blocks.JIGSAW) || blockState.isOf(Blocks.STRUCTURE_BLOCK) || blockState.isOf(Blocks.STRUCTURE_VOID) || blockState.isOf(Blocks.AIR))
+                    iterator.remove();
+
+                if (blockToSkip != null && !blockToSkip.isEmpty())
+                    if (blockToSkip.contains(blockState.getBlock()))
+                        iterator.remove();
+
+                boolean bl1 = blockToForce == null || blockToForce.isEmpty();
+                int size = blockList.size();
+                for (int i = 0; i < size; i++) {
+                    long posLong = blockList.getLongPos(i);
+                    BlockPos pos = LongPosHelper.decodeBlockPos(posLong);
+                    blockList.replacePos(i, pos.add(block));
+                    if (!bl1 || force) {
+                        if (integrity < 1f) {
+                            if (MathUtil.getRandomBoolean(random, integrity)) {
+                                blockList.removePos(i);
+                            }
+                        }
+                        if (!BlockPlaceUtil.verifyBlock(world, force, blockToForce, pos.add(block))) {
+                            blockList.removePos(i);
+                        }
+                    }
+                }
+            }
+        } else {
+            Random random = world.getRandom();
+            Iterator<BlockList> iterator = manager.getAllBlockList().iterator();
+            while (iterator.hasNext()) {
+                BlockList blockList = iterator.next();
+                BlockState blockState = blockList.getState();
+
+                if (blockState.isOf(Blocks.JIGSAW) || blockState.isOf(Blocks.STRUCTURE_BLOCK) || blockState.isOf(Blocks.STRUCTURE_VOID) || blockState.isOf(Blocks.AIR))
+                    iterator.remove();
+
+                if (blockToSkip != null && !blockToSkip.isEmpty())
+                    if (blockToSkip.contains(blockState.getBlock()))
+                        iterator.remove();
+
+                //NbtCompound tag = defaultBlockList.getTag();
+
+                boolean bl1 = blockToForce == null || blockToForce.isEmpty();
+                int size = blockList.size();
+                for (int i = 0; i < size; i++) {
+                    long posLong = blockList.getLongPos(i);
+                    BlockPos pos = LongPosHelper.decodeBlockPos(posLong);
+                    blockList.replacePos(i, pos.add(block));
+                    if (!bl1 || force) {
+                        if (!BlockPlaceUtil.verifyBlock(world, force, blockToForce, pos.add(block))) {
+                            blockList.removePos(i);
+                        }
+                    }
+                }
+            }
+
+        }
     }
 
 }

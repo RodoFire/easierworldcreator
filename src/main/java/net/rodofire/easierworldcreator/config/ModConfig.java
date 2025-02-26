@@ -69,7 +69,7 @@ public class ModConfig {
     }
 
     public Set<ConfigCategory> getCategories() {
-        return new HashSet<>(categories.values());
+        return new LinkedHashSet<>(categories.values());
     }
 
     public void refreshValues() {
