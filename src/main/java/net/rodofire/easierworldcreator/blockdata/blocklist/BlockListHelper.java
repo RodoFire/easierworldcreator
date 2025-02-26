@@ -72,13 +72,13 @@ public class BlockListHelper {
         Map<BlockState, Integer> blockStateIndexMap = new HashMap<>();
         int i = 0;
         for (BlockList list : defaultBlockList1) {
-            blockStateIndexMap.put(list.getBlockState(), i++);
+            blockStateIndexMap.put(list.getState(), i++);
         }
         for (BlockList list : defaultBlockList2) {
-            BlockState state = list.getBlockState();
+            BlockState state = list.getState();
             if (blockStateIndexMap.containsKey(state)) {
                 int index = blockStateIndexMap.get(state);
-                defaultBlockList1.get(index).addAll(list.getPosList());
+                defaultBlockList1.get(index).addAllPos(list.getPosList());
             } else {
                 defaultBlockList1.add(list);
             }
@@ -121,17 +121,17 @@ public class BlockListHelper {
             JsonObject jsonObject = jsonElement.getAsJsonObject();
             BlockState state = BlockStateUtil.parseBlockState(worldAccess, jsonObject.get("state").getAsString());
 
-            blockList.setBlockState(state);
+            blockList.setState(state);
 
 
             if (jsonObject.has("force")) {
                 boolean force = jsonObject.get("force").getAsBoolean();
-                blockList.manager.setForce(force);
+                blockList.ruler.setForce(force);
             }
             if (jsonObject.has("overriddenBlock")) {
                 Set<Block> overriddenBlocks = gson.fromJson(jsonObject.get("overriddenBlock"), new TypeToken<Set<Block>>() {
                 }.getType());
-                blockList.manager.setOverriddenBlocks(overriddenBlocks);
+                blockList.ruler.setOverriddenBlocks(overriddenBlocks);
             }
 
             // Récupération du tag (optionnel)
@@ -165,7 +165,7 @@ public class BlockListHelper {
                 int y = relY;
                 int z = relZ + chunkMinZ;
 
-                blockList.add(LongPosHelper.encodeBlockPos(x, y, z));
+                blockList.addPos(LongPosHelper.encodeBlockPos(x, y, z));
             }
             manager.put(blockList);
 
