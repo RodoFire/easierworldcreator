@@ -4,10 +4,12 @@ import it.unimi.dsi.fastutil.longs.AbstractLongCollection;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import net.minecraft.block.BlockState;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.StructureWorldAccess;
 import net.rodofire.easierworldcreator.blockdata.StructurePlacementRuleManager;
+import net.rodofire.easierworldcreator.blockdata.WorldStateCollector;
 import net.rodofire.easierworldcreator.blockdata.blocklist.BlockListManager;
 import net.rodofire.easierworldcreator.blockdata.blocklist.DividedBlockListManager;
 import net.rodofire.easierworldcreator.blockdata.blocklist.OrderedBlockListManager;
@@ -102,36 +104,36 @@ class SurfaceLayer extends AbstractLayer {
 
     @Override
     public BlockListManager getVerified(StructureWorldAccess world, Map<ChunkPos, LongOpenHashSet> posMap) {
-        OrderedBlockListManager worldStates = new OrderedBlockListManager();
-
-        for (Map.Entry<ChunkPos, LongOpenHashSet> entry : posMap.entrySet()) {
-            for (long pos : entry.getValue()) {
-                worldStates.put(world.getBlockState(LongPosHelper.decodeBlockPos(pos)), pos);
+        WorldStateCollector worldStates = new WorldStateCollector();
+        if(world instanceof ServerWorld world1) {
+            for(LongOpenHashSet set : posMap.values()) {
+                worldStates.collect(world1, set);
             }
+            BlockListManager manager = new BlockListManager();
+
+            List<CompletableFuture<Void>> futures = new ArrayList<>();
+            ForkJoinPool pool = new ForkJoinPool(Math.min(posMap.size(), Runtime.getRuntime().availableProcessors()));
+
+            for (Map.Entry<ChunkPos, LongOpenHashSet> entry : posMap.entrySet()) {
+                futures.add(CompletableFuture.runAsync(() -> {
+                    BlockListManager threadedManager = new BlockListManager();
+                    LongSet leftPositions = entry.getValue();
+
+                    processCommonGet(leftPositions, (placer, states, ruler, pos) -> {
+                        if (ruler.canPlace(worldStates.getState(pos)))
+                            manager.put(placer.get(states, LongPosHelper.decodeBlockPos(pos)), pos);
+                    });
+
+                    synchronized (manager) {
+                        manager.put(threadedManager);
+                    }
+                }, pool));
+            }
+
+            CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
+            return manager;
         }
-        BlockListManager manager = new BlockListManager();
-
-        List<CompletableFuture<Void>> futures = new ArrayList<>();
-        ForkJoinPool pool = new ForkJoinPool(Math.min(posMap.size(), Runtime.getRuntime().availableProcessors()));
-
-        for (Map.Entry<ChunkPos, LongOpenHashSet> entry : posMap.entrySet()) {
-            futures.add(CompletableFuture.runAsync(() -> {
-                BlockListManager threadedManager = new BlockListManager();
-                LongSet leftPositions = entry.getValue();
-
-                processCommonGet(leftPositions, (placer, states, ruler, pos) -> {
-                    if (ruler.canPlace(worldStates.getState(pos)))
-                        manager.put(placer.get(states, LongPosHelper.decodeBlockPos(pos)), pos);
-                });
-
-                synchronized (manager) {
-                    manager.put(threadedManager);
-                }
-            }, pool));
-        }
-
-        CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
-        return manager;
+        return null;
     }
 
     @Override
@@ -162,37 +164,37 @@ class SurfaceLayer extends AbstractLayer {
 
     @Override
     public DividedBlockListManager getVerifiedDivided(StructureWorldAccess world, Map<ChunkPos, LongOpenHashSet> posMap) {
-        OrderedBlockListManager worldStates = new OrderedBlockListManager();
-
-        for (Map.Entry<ChunkPos, LongOpenHashSet> entry : posMap.entrySet()) {
-            for (long pos : entry.getValue()) {
-                worldStates.put(world.getBlockState(LongPosHelper.decodeBlockPos(pos)), pos);
+        WorldStateCollector worldStates = new WorldStateCollector();
+        if(world instanceof ServerWorld world1) {
+            for(LongOpenHashSet set : posMap.values()) {
+                worldStates.collect(world1, set);
             }
+
+            DividedBlockListManager manager = new DividedBlockListManager();
+
+            List<CompletableFuture<Void>> futures = new ArrayList<>();
+            ForkJoinPool pool = new ForkJoinPool(Math.min(posMap.size(), Runtime.getRuntime().availableProcessors()));
+
+            for (Map.Entry<ChunkPos, LongOpenHashSet> entry : posMap.entrySet()) {
+                futures.add(CompletableFuture.runAsync(() -> {
+                    BlockListManager threadedManager = new BlockListManager();
+                    LongSet leftPositions = entry.getValue();
+
+                    processCommonGet(leftPositions, (placer, states, ruler, pos) -> {
+                        if (ruler.canPlace(worldStates.getState(pos)))
+                            threadedManager.put(placer.get(states, LongPosHelper.decodeBlockPos(pos)), pos);
+                    });
+
+                    synchronized (manager) {
+                        manager.putWithoutVerification(entry.getKey(), threadedManager);
+                    }
+                }, pool));
+            }
+
+            CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
+            return manager;
         }
-
-        DividedBlockListManager manager = new DividedBlockListManager();
-
-        List<CompletableFuture<Void>> futures = new ArrayList<>();
-        ForkJoinPool pool = new ForkJoinPool(Math.min(posMap.size(), Runtime.getRuntime().availableProcessors()));
-
-        for (Map.Entry<ChunkPos, LongOpenHashSet> entry : posMap.entrySet()) {
-            futures.add(CompletableFuture.runAsync(() -> {
-                BlockListManager threadedManager = new BlockListManager();
-                LongSet leftPositions = entry.getValue();
-
-                processCommonGet(leftPositions, (placer, states, ruler, pos) -> {
-                    if (ruler.canPlace(worldStates.getState(pos)))
-                        threadedManager.put(placer.get(states, LongPosHelper.decodeBlockPos(pos)), pos);
-                });
-
-                synchronized (manager) {
-                    manager.putWithoutVerification(entry.getKey(), threadedManager);
-                }
-            }, pool));
-        }
-
-        CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
-        return manager;
+        return null;
     }
 
     @Override
@@ -352,49 +354,49 @@ class SurfaceLayer extends AbstractLayer {
 
     @Override
     public <T extends Collection<BlockPos>> DividedBlockListManager getVerifiedDivided(StructureWorldAccess world, T posList) {
-        OrderedBlockListManager worldStates = new OrderedBlockListManager();
+        WorldStateCollector worldStates = new WorldStateCollector();
+        if(world instanceof ServerWorld world1) {
+            worldStates.collect(world1, posList);
 
-        for (BlockPos pos : posList) {
-            worldStates.put(world.getBlockState(pos), pos);
-        }
+            DividedBlockListManager manager = new DividedBlockListManager();
+            Set<BlockPos> leftPositions = new HashSet<>(posList);
 
-        DividedBlockListManager manager = new DividedBlockListManager();
-        Set<BlockPos> leftPositions = new HashSet<>(posList);
+            for (int i = 1; i < blockLayer.size(); i++) {
+                if (leftPositions.isEmpty()) {
+                    break;
+                }
 
-        for (int i = 1; i < blockLayer.size(); i++) {
-            if (leftPositions.isEmpty()) {
-                break;
+                BlockLayer layer = blockLayer.get(i - 1);
+                int depth = layer.getDepth();
+                Set<BlockPos> difference = new HashSet<>();
+
+                LayerPlacer placer = layer.getPlacer();
+                List<BlockState> states = layer.getBlockStates();
+                StructurePlacementRuleManager ruler = layer.getRuler();
+
+                for (BlockPos pos : leftPositions) {
+                    if (!leftPositions.contains(pos.up(depth))) {
+                        difference.add(pos);
+                        if (ruler.canPlace(worldStates.getState(LongPosHelper.encodeBlockPos(pos))))
+                            manager.put(placer.get(states, pos), pos);
+                    }
+                }
+                leftPositions.removeAll(difference);
             }
 
-            BlockLayer layer = blockLayer.get(i - 1);
-            int depth = layer.getDepth();
-            Set<BlockPos> difference = new HashSet<>();
-
-            LayerPlacer placer = layer.getPlacer();
-            List<BlockState> states = layer.getBlockStates();
-            StructurePlacementRuleManager ruler = layer.getRuler();
-
-            for (BlockPos pos : leftPositions) {
-                if (!leftPositions.contains(pos.up(depth))) {
-                    difference.add(pos);
+            if (!leftPositions.isEmpty()) {
+                LayerPlacer placer = blockLayer.getLastLayer().getPlacer();
+                List<BlockState> states = blockLayer.getLastLayer().getBlockStates();
+                StructurePlacementRuleManager ruler = blockLayer.getLastLayer().getRuler();
+                for (BlockPos pos : leftPositions) {
                     if (ruler.canPlace(worldStates.getState(LongPosHelper.encodeBlockPos(pos))))
                         manager.put(placer.get(states, pos), pos);
                 }
             }
-            leftPositions.removeAll(difference);
-        }
 
-        if (!leftPositions.isEmpty()) {
-            LayerPlacer placer = blockLayer.getLastLayer().getPlacer();
-            List<BlockState> states = blockLayer.getLastLayer().getBlockStates();
-            StructurePlacementRuleManager ruler = blockLayer.getLastLayer().getRuler();
-            for (BlockPos pos : leftPositions) {
-                if (ruler.canPlace(worldStates.getState(LongPosHelper.encodeBlockPos(pos))))
-                    manager.put(placer.get(states, pos), pos);
-            }
+            return manager;
         }
-
-        return manager;
+        return null;
     }
 
     @Override
@@ -448,22 +450,22 @@ class SurfaceLayer extends AbstractLayer {
 
     @Override
     public <U extends AbstractLongCollection> BlockListManager getVerified(StructureWorldAccess world, U posList) {
-        OrderedBlockListManager worldStates = new OrderedBlockListManager();
+        WorldStateCollector worldStates = new WorldStateCollector();
+        if(world instanceof ServerWorld world1) {
+            worldStates.collect(world1, posList);
 
-        for (long pos : posList) {
-            worldStates.put(world.getBlockState(LongPosHelper.decodeBlockPos(pos)), pos);
+            BlockListManager manager = new BlockListManager();
+            LongSet leftPositions = new LongOpenHashSet(posList);
+
+
+            processCommonGet(leftPositions, (placer, states, ruler, pos) -> {
+                if (ruler.canPlace(worldStates.getState(pos)))
+                    manager.put(placer.get(states, LongPosHelper.decodeBlockPos(pos)), pos);
+            });
+
+            return manager;
         }
-
-        BlockListManager manager = new BlockListManager();
-        LongSet leftPositions = new LongOpenHashSet(posList);
-
-
-        processCommonGet(leftPositions, (placer, states, ruler, pos) -> {
-            if (ruler.canPlace(worldStates.getState(pos)))
-                manager.put(placer.get(states, LongPosHelper.decodeBlockPos(pos)), pos);
-        });
-
-        return manager;
+        return null;
     }
 
     @Override
@@ -481,22 +483,22 @@ class SurfaceLayer extends AbstractLayer {
 
     @Override
     public <U extends AbstractLongCollection> DividedBlockListManager getVerifiedDivided(StructureWorldAccess world, U posList) {
-        OrderedBlockListManager worldStates = new OrderedBlockListManager();
+        WorldStateCollector worldStates = new WorldStateCollector();
+        if(world instanceof ServerWorld world1) {
+            worldStates.collect(world1, posList);
 
-        for (long pos : posList) {
-            worldStates.put(world.getBlockState(LongPosHelper.decodeBlockPos(pos)), pos);
+            DividedBlockListManager manager = new DividedBlockListManager();
+
+            LongSet leftPositions = new LongOpenHashSet(posList);
+
+            processCommonGet(leftPositions, (placer, states, ruler, pos) -> {
+                if (ruler.canPlace(worldStates.getState(pos)))
+                    manager.put(placer.get(states, LongPosHelper.decodeBlockPos(pos)), pos);
+            });
+
+            return manager;
         }
-
-        DividedBlockListManager manager = new DividedBlockListManager();
-
-        LongSet leftPositions = new LongOpenHashSet(posList);
-
-        processCommonGet(leftPositions, (placer, states, ruler, pos) -> {
-            if (ruler.canPlace(worldStates.getState(pos)))
-                manager.put(placer.get(states, LongPosHelper.decodeBlockPos(pos)), pos);
-        });
-
-        return manager;
+        return null;
     }
 
     private void processCommonGet(LongSet leftPositions, QuadConsumer<LayerPlacer, List<BlockState>, StructurePlacementRuleManager, Long> consumer) {

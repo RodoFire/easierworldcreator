@@ -2,11 +2,13 @@ package net.rodofire.easierworldcreator.shape.block.layer;
 
 import it.unimi.dsi.fastutil.longs.AbstractLongCollection;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3i;
 import net.minecraft.world.StructureWorldAccess;
+import net.rodofire.easierworldcreator.blockdata.WorldStateCollector;
 import net.rodofire.easierworldcreator.blockdata.blocklist.BlockListManager;
 import net.rodofire.easierworldcreator.blockdata.blocklist.DividedBlockListManager;
 import net.rodofire.easierworldcreator.blockdata.blocklist.OrderedBlockListManager;
@@ -69,41 +71,42 @@ public class DirectionalLayer extends AbstractLayer {
 
     @Override
     public BlockListManager getVerified(StructureWorldAccess world, Map<ChunkPos, LongOpenHashSet> posMap) {
-        OrderedBlockListManager worldStates = new OrderedBlockListManager();
-        for (LongOpenHashSet set : posMap.values()) {
-            for (long pos : set) {
-                worldStates.put(world.getBlockState(LongPosHelper.decodeBlockPos(pos)), pos);
+        WorldStateCollector worldStates = new WorldStateCollector();
+        if(world instanceof ServerWorld world1) {
+            for (LongOpenHashSet set : posMap.values()) {
+                worldStates.collect(world1, set);
             }
+            BlockListManager manager = new BlockListManager();
+
+            int[] depth = initDepth();
+
+            List<CompletableFuture<Void>> futures = new ArrayList<>();
+            ForkJoinPool pool = new ForkJoinPool(Math.min(Runtime.getRuntime().availableProcessors() / 2, posMap.size()));
+            double distanceMin = WorldGenUtil.getExactDistance(directionVector) / WorldGenUtil.getSquared(directionVector);
+
+            this.directionVector = this.directionVector.normalize();
+            for (Map.Entry<ChunkPos, LongOpenHashSet> entry : posMap.entrySet()) {
+                futures.add(CompletableFuture.runAsync(() -> {
+                    BlockListManager threadedManager = new BlockListManager();
+                    for (long po : entry.getValue()) {
+                        double b = WorldGenUtil.getDistanceFromPointToPlane(this.directionVector, this.centerPos, LongPosHelper.decodeBlockPos(po).toCenterPos()) / distanceMin;
+
+                        BlockLayer layer = blockLayer.get(binarySearch(depth, b));
+                        if (layer.getRuler().canPlace(worldStates.getState(po)))
+                            threadedManager.put(layer.getPlacer().get(layer.getBlockStates(), LongPosHelper.decodeBlockPos(po)), po);
+                    }
+                    synchronized (manager) {
+                        manager.put(threadedManager);
+                    }
+
+                }, pool));
+            }
+
+            CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
+
+            return manager;
         }
-        BlockListManager manager = new BlockListManager();
-
-        int[] depth = initDepth();
-
-        List<CompletableFuture<Void>> futures = new ArrayList<>();
-        ForkJoinPool pool = new ForkJoinPool(Math.min(Runtime.getRuntime().availableProcessors() / 2, posMap.size()));
-        double distanceMin = WorldGenUtil.getExactDistance(directionVector) / WorldGenUtil.getSquared(directionVector);
-
-        this.directionVector = this.directionVector.normalize();
-        for (Map.Entry<ChunkPos, LongOpenHashSet> entry : posMap.entrySet()) {
-            futures.add(CompletableFuture.runAsync(() -> {
-                BlockListManager threadedManager = new BlockListManager();
-                for (long po : entry.getValue()) {
-                    double b = WorldGenUtil.getDistanceFromPointToPlane(this.directionVector, this.centerPos, LongPosHelper.decodeBlockPos(po).toCenterPos()) / distanceMin;
-
-                    BlockLayer layer = blockLayer.get(binarySearch(depth, b));
-                    if (layer.getRuler().canPlace(worldStates.getState(po)))
-                        threadedManager.put(layer.getPlacer().get(layer.getBlockStates(), LongPosHelper.decodeBlockPos(po)), po);
-                }
-                synchronized (manager) {
-                    manager.put(threadedManager);
-                }
-
-            }, pool));
-        }
-
-        CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
-
-        return manager;
+        return null;
     }
 
     @Override
@@ -140,41 +143,42 @@ public class DirectionalLayer extends AbstractLayer {
 
     @Override
     public DividedBlockListManager getVerifiedDivided(StructureWorldAccess world, Map<ChunkPos, LongOpenHashSet> posMap) {
-        OrderedBlockListManager worldStates = new OrderedBlockListManager();
-        for (LongOpenHashSet set : posMap.values()) {
-            for (long pos : set) {
-                worldStates.put(world.getBlockState(LongPosHelper.decodeBlockPos(pos)), pos);
+        WorldStateCollector worldStates = new WorldStateCollector();
+        if(world instanceof ServerWorld world1) {
+            for (LongOpenHashSet set : posMap.values()) {
+                worldStates.collect(world1, set);
             }
+            DividedBlockListManager manager = new DividedBlockListManager();
+
+            int[] depth = initDepth();
+
+            List<CompletableFuture<Void>> futures = new ArrayList<>();
+            ForkJoinPool pool = new ForkJoinPool(Math.min(Runtime.getRuntime().availableProcessors() / 2, posMap.size()));
+            double distanceMin = WorldGenUtil.getExactDistance(directionVector) / WorldGenUtil.getSquared(directionVector);
+
+            this.directionVector = this.directionVector.normalize();
+            for (Map.Entry<ChunkPos, LongOpenHashSet> entry : posMap.entrySet()) {
+                futures.add(CompletableFuture.runAsync(() -> {
+                    BlockListManager threadedManager = new BlockListManager();
+                    for (long po : entry.getValue()) {
+                        double b = WorldGenUtil.getDistanceFromPointToPlane(this.directionVector, this.centerPos, LongPosHelper.decodeBlockPos(po).toCenterPos()) / distanceMin;
+
+                        BlockLayer layer = blockLayer.get(binarySearch(depth, b));
+                        if (layer.getRuler().canPlace(worldStates.getState(po)))
+                            threadedManager.put(layer.getPlacer().get(layer.getBlockStates(), LongPosHelper.decodeBlockPos(po)), po);
+                    }
+                    synchronized (manager) {
+                        manager.putWithoutVerification(threadedManager);
+                    }
+
+                }, pool));
+            }
+
+            CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
+
+            return manager;
         }
-        DividedBlockListManager manager = new DividedBlockListManager();
-
-        int[] depth = initDepth();
-
-        List<CompletableFuture<Void>> futures = new ArrayList<>();
-        ForkJoinPool pool = new ForkJoinPool(Math.min(Runtime.getRuntime().availableProcessors() / 2, posMap.size()));
-        double distanceMin = WorldGenUtil.getExactDistance(directionVector) / WorldGenUtil.getSquared(directionVector);
-
-        this.directionVector = this.directionVector.normalize();
-        for (Map.Entry<ChunkPos, LongOpenHashSet> entry : posMap.entrySet()) {
-            futures.add(CompletableFuture.runAsync(() -> {
-                BlockListManager threadedManager = new BlockListManager();
-                for (long po : entry.getValue()) {
-                    double b = WorldGenUtil.getDistanceFromPointToPlane(this.directionVector, this.centerPos, LongPosHelper.decodeBlockPos(po).toCenterPos()) / distanceMin;
-
-                    BlockLayer layer = blockLayer.get(binarySearch(depth, b));
-                    if (layer.getRuler().canPlace(worldStates.getState(po)))
-                        threadedManager.put(layer.getPlacer().get(layer.getBlockStates(), LongPosHelper.decodeBlockPos(po)), po);
-                }
-                synchronized (manager) {
-                    manager.putWithoutVerification(threadedManager);
-                }
-
-            }, pool));
-        }
-
-        CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
-
-        return manager;
+        return null;
     }
 
     @Override
@@ -202,26 +206,27 @@ public class DirectionalLayer extends AbstractLayer {
 
     @Override
     public <T extends Collection<BlockPos>> BlockListManager getVerified(StructureWorldAccess world, T posList) {
-        OrderedBlockListManager worldStates = new OrderedBlockListManager();
+        WorldStateCollector worldStates = new WorldStateCollector();
+        if(world instanceof ServerWorld world1) {
+            worldStates.collect(world1, posList);
 
-        for (BlockPos pos : posList) {
-            worldStates.put(world.getBlockState(pos), pos);
+            BlockListManager manager = new BlockListManager();
+
+            int[] depth = initDepth();
+
+            double distanceMin = WorldGenUtil.getExactDistance(directionVector) / WorldGenUtil.getSquared(directionVector);
+
+            this.directionVector = this.directionVector.normalize();
+            for (BlockPos pos : posList) {
+                double b = WorldGenUtil.getDistanceFromPointToPlane(this.directionVector, this.centerPos, pos.toCenterPos()) / distanceMin;
+
+                BlockLayer layer = blockLayer.get(binarySearch(depth, b));
+                if (layer.getRuler().canPlace(worldStates.getState(pos)))
+                    manager.put(layer.getPlacer().get(layer.getBlockStates(), pos), pos);
+            }
+            return manager;
         }
-        BlockListManager manager = new BlockListManager();
-
-        int[] depth = initDepth();
-
-        double distanceMin = WorldGenUtil.getExactDistance(directionVector) / WorldGenUtil.getSquared(directionVector);
-
-        this.directionVector = this.directionVector.normalize();
-        for (BlockPos pos : posList) {
-            double b = WorldGenUtil.getDistanceFromPointToPlane(this.directionVector, this.centerPos, pos.toCenterPos()) / distanceMin;
-
-            BlockLayer layer = blockLayer.get(binarySearch(depth, b));
-            if (layer.getRuler().canPlace(worldStates.getState(pos)))
-                manager.put(layer.getPlacer().get(layer.getBlockStates(), pos), pos);
-        }
-        return manager;
+        return null;
     }
 
     @Override
@@ -245,26 +250,26 @@ public class DirectionalLayer extends AbstractLayer {
 
     @Override
     public <T extends Collection<BlockPos>> DividedBlockListManager getVerifiedDivided(StructureWorldAccess world, T posList) {
-        OrderedBlockListManager worldStates = new OrderedBlockListManager();
+        WorldStateCollector worldStates = new WorldStateCollector();
+        if(world instanceof ServerWorld world1) {
+            worldStates.collect(world1, posList);
+            DividedBlockListManager manager = new DividedBlockListManager();
 
-        for (BlockPos pos : posList) {
-            worldStates.put(world.getBlockState(pos), pos);
+            int[] depth = initDepth();
+
+            double distanceMin = WorldGenUtil.getExactDistance(directionVector) / WorldGenUtil.getSquared(directionVector);
+
+            this.directionVector = this.directionVector.normalize();
+            for (BlockPos pos : posList) {
+                double b = WorldGenUtil.getDistanceFromPointToPlane(this.directionVector, this.centerPos, pos.toCenterPos()) / distanceMin;
+
+                BlockLayer layer = blockLayer.get(binarySearch(depth, b));
+                if (layer.getRuler().canPlace(worldStates.getState(pos)))
+                    manager.put(layer.getPlacer().get(layer.getBlockStates(), pos), pos);
+            }
+            return manager;
         }
-        DividedBlockListManager manager = new DividedBlockListManager();
-
-        int[] depth = initDepth();
-
-        double distanceMin = WorldGenUtil.getExactDistance(directionVector) / WorldGenUtil.getSquared(directionVector);
-
-        this.directionVector = this.directionVector.normalize();
-        for (BlockPos pos : posList) {
-            double b = WorldGenUtil.getDistanceFromPointToPlane(this.directionVector, this.centerPos, pos.toCenterPos()) / distanceMin;
-
-            BlockLayer layer = blockLayer.get(binarySearch(depth, b));
-            if (layer.getRuler().canPlace(worldStates.getState(pos)))
-                manager.put(layer.getPlacer().get(layer.getBlockStates(), pos), pos);
-        }
-        return manager;
+        return null;
     }
 
     @Override
@@ -292,27 +297,27 @@ public class DirectionalLayer extends AbstractLayer {
 
     @Override
     public <U extends AbstractLongCollection> BlockListManager getVerified(StructureWorldAccess world, U posList) {
-        OrderedBlockListManager worldStates = new OrderedBlockListManager();
+        WorldStateCollector worldStates = new WorldStateCollector();
+        if(world instanceof ServerWorld world1) {
+            worldStates.collect(world1, posList);
 
-        for (long pos : posList) {
-            worldStates.put(world.getBlockState(LongPosHelper.decodeBlockPos(pos)), pos);
+            BlockListManager manager = new BlockListManager();
+
+            int[] depth = initDepth();
+
+            double distanceMin = WorldGenUtil.getExactDistance(directionVector) / WorldGenUtil.getSquared(directionVector);
+
+            this.directionVector = this.directionVector.normalize();
+            for (long pos : posList) {
+                double b = WorldGenUtil.getDistanceFromPointToPlane(this.directionVector, this.centerPos, LongPosHelper.decodeBlockPos(pos).toCenterPos()) / distanceMin;
+
+                BlockLayer layer = blockLayer.get(binarySearch(depth, b));
+                if (layer.getRuler().canPlace(worldStates.getState(pos)))
+                    manager.put(layer.getPlacer().get(layer.getBlockStates(), LongPosHelper.decodeBlockPos(pos)), pos);
+            }
+            return manager;
         }
-
-        BlockListManager manager = new BlockListManager();
-
-        int[] depth = initDepth();
-
-        double distanceMin = WorldGenUtil.getExactDistance(directionVector) / WorldGenUtil.getSquared(directionVector);
-
-        this.directionVector = this.directionVector.normalize();
-        for (long pos : posList) {
-            double b = WorldGenUtil.getDistanceFromPointToPlane(this.directionVector, this.centerPos, LongPosHelper.decodeBlockPos(pos).toCenterPos()) / distanceMin;
-
-            BlockLayer layer = blockLayer.get(binarySearch(depth, b));
-            if (layer.getRuler().canPlace(worldStates.getState(pos)))
-                manager.put(layer.getPlacer().get(layer.getBlockStates(), LongPosHelper.decodeBlockPos(pos)), pos);
-        }
-        return manager;
+        return null;
     }
 
     @Override
@@ -336,27 +341,27 @@ public class DirectionalLayer extends AbstractLayer {
 
     @Override
     public <U extends AbstractLongCollection> DividedBlockListManager getVerifiedDivided(StructureWorldAccess world, U posList) {
-        OrderedBlockListManager worldStates = new OrderedBlockListManager();
+        WorldStateCollector worldStates = new WorldStateCollector();
+        if(world instanceof ServerWorld world1) {
+            worldStates.collect(world1, posList);
 
-        for (long pos : posList) {
-            worldStates.put(world.getBlockState(LongPosHelper.decodeBlockPos(pos)), pos);
+            DividedBlockListManager manager = new DividedBlockListManager();
+
+            int[] depth = initDepth();
+
+            double distanceMin = WorldGenUtil.getExactDistance(directionVector) / WorldGenUtil.getSquared(directionVector);
+
+            this.directionVector = this.directionVector.normalize();
+            for (long pos : posList) {
+                double b = WorldGenUtil.getDistanceFromPointToPlane(this.directionVector, this.centerPos, LongPosHelper.decodeBlockPos(pos).toCenterPos()) / distanceMin;
+
+                BlockLayer layer = blockLayer.get(binarySearch(depth, b));
+                if (layer.getRuler().canPlace(worldStates.getState(pos)))
+                    manager.put(layer.getPlacer().get(layer.getBlockStates(), LongPosHelper.decodeBlockPos(pos)), pos);
+            }
+            return manager;
         }
-
-        DividedBlockListManager manager = new DividedBlockListManager();
-
-        int[] depth = initDepth();
-
-        double distanceMin = WorldGenUtil.getExactDistance(directionVector) / WorldGenUtil.getSquared(directionVector);
-
-        this.directionVector = this.directionVector.normalize();
-        for (long pos : posList) {
-            double b = WorldGenUtil.getDistanceFromPointToPlane(this.directionVector, this.centerPos, LongPosHelper.decodeBlockPos(pos).toCenterPos()) / distanceMin;
-
-            BlockLayer layer = blockLayer.get(binarySearch(depth, b));
-            if (layer.getRuler().canPlace(worldStates.getState(pos)))
-                manager.put(layer.getPlacer().get(layer.getBlockStates(), LongPosHelper.decodeBlockPos(pos)), pos);
-        }
-        return manager;
+        return null;
     }
 
     private int @NotNull [] initDepth() {
