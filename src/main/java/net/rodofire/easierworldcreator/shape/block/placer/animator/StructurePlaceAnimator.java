@@ -267,8 +267,8 @@ public class StructurePlaceAnimator {
      *
      * @param manager the manager that will be placed
      */
-    public void placeFromBlockList(BlockListManager manager) {
-        if (blockListVerification(manager.getAll())) return;
+    public void place(BlockListManager manager) {
+        if (blockListVerification(manager.getAllBlockList())) return;
         Instant start = Instant.now();
         OrderedBlockListManager sortedBlockList = manager.getOrdered(this.blockSorter);
         Instant end = Instant.now();
@@ -334,15 +334,14 @@ public class StructurePlaceAnimator {
             }
 
             for (int i = 0; i < blocksThisTick && !manager.isPosEmpty(); i++) {
-                //init the state. the block doesn't matter
-
 
                 if (soundPlayed.get() >= 1) {
-                    BlockState state = manager.getLast().getLeft();
+                    BlockState state = manager.getLastBlockState();
                     BlockPos pos = LongPosHelper.decodeBlockPos(manager.getLastBlockPos());
                     world.playSound(null, pos, state.getSoundGroup().getPlaceSound(), SoundCategory.BLOCKS, (float) Random.create().nextBetween(20, 100) / 10, (float) Random.create().nextBetween(5, 20) / 10);
                     soundPlayed.set(soundPlayed.get() - 1);
                 }
+
                 manager.placeLastNDelete(world);
             }
             ticksPassed++;

@@ -58,11 +58,11 @@ public class ShapeRotator {
     public BlockListManager get(BlockListManager comparator) {
         List<CompletableFuture<Void>> futures = new ArrayList<>();
 
-        for (BlockList blockList : comparator.getAll()) {
+        for (BlockList blockList : comparator.getAllBlockList()) {
             futures.add(CompletableFuture.runAsync(() -> {
                 LongArrayList rotatedPositions = new LongArrayList(blockList.size());
                 for (int i = 0; i < blockList.size(); i++) {
-                    rotatedPositions.add(rotator.get(blockList.get(i)));
+                    rotatedPositions.add(rotator.get(blockList.getLongPos(i)));
                 }
                 synchronized (blockList) {
                     blockList.setPosList(rotatedPositions);
@@ -77,12 +77,12 @@ public class ShapeRotator {
     public DividedBlockListManager getDivided(DividedBlockListManager comparator) {
         List<CompletableFuture<Void>> futures = new ArrayList<>();
 
-        for (BlockListManager manager : comparator.getAll()) {
-            for (BlockList blockList : manager.getAll()) {
+        for (BlockListManager manager : comparator.getAllManager()) {
+            for (BlockList blockList : manager.getAllBlockList()) {
                 futures.add(CompletableFuture.runAsync(() -> {
                     LongArrayList rotatedPositions = new LongArrayList(blockList.size());
                     for (int i = 0; i < blockList.size(); i++) {
-                        rotatedPositions.add(rotator.get(blockList.get(i)));
+                        rotatedPositions.add(rotator.get(blockList.getLongPos(i)));
                     }
                     synchronized (blockList) {
                         blockList.setPosList(rotatedPositions);

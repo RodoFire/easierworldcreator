@@ -54,7 +54,7 @@ public class SaveNbt {
         List<StructureTemplate.StructureBlockInfo> list3 = Lists.newArrayList();
 
         for (BlockList blocks : defaultBlockLists) {
-            BlockState blockState = blocks.getBlockState();
+            BlockState blockState = blocks.getState();
             for (long pos : blocks.getPosList()) {
                 StructureTemplate.StructureBlockInfo structureBlockInfo = new StructureTemplate.StructureBlockInfo(LongPosHelper.decodeBlockPos(pos), blockState, null);
                 categorize(structureBlockInfo, list, list2, list3);

@@ -58,10 +58,10 @@ public class StructureUtil {
         clean(world, manager, block, force, blockToForce, blockToSkip, integrity);
         //we place the structure depending on if the animator is present or not
         if (animator != null) {
-            animator.placeFromBlockList(manager);
+            animator.place(manager);
         } else {
-            for (BlockList blockList : manager.getAll()) {
-                BlockState blockState = blockList.getBlockState();
+            for (BlockList blockList : manager.getAllBlockList()) {
+                BlockState blockState = blockList.getState();
                 for (long pos : blockList.getPosList()) {
                     BlockPos convertedPos = LongPosHelper.decodeBlockPos(pos);
                     world.setBlockState(convertedPos, blockState, 3);
@@ -85,10 +85,10 @@ public class StructureUtil {
     private static void clean(StructureWorldAccess world, BlockListManager manager, BlockPos block, boolean force, Set<Block> blockToForce, Set<Block> blockToSkip, float integrity) {
         if (integrity != 1.0f) {
             Random random = world.getRandom();
-            Iterator<BlockList> iterator = manager.getAll().iterator();
+            Iterator<BlockList> iterator = manager.getAllBlockList().iterator();
             while (iterator.hasNext()) {
                 BlockList blockList = iterator.next();
-                BlockState blockState = blockList.getBlockState();
+                BlockState blockState = blockList.getState();
 
                 if (blockState.isOf(Blocks.JIGSAW) || blockState.isOf(Blocks.STRUCTURE_BLOCK) || blockState.isOf(Blocks.STRUCTURE_VOID) || blockState.isOf(Blocks.AIR))
                     iterator.remove();
@@ -100,9 +100,9 @@ public class StructureUtil {
                 boolean bl1 = blockToForce == null || blockToForce.isEmpty();
                 int size = blockList.size();
                 for (int i = 0; i < size; i++) {
-                    long posLong = blockList.get(i);
+                    long posLong = blockList.getLongPos(i);
                     BlockPos pos = LongPosHelper.decodeBlockPos(posLong);
-                    blockList.replace(i, pos.add(block));
+                    blockList.replacePos(i, pos.add(block));
                     if (!bl1 || force) {
                         if (integrity < 1f) {
                             if (MathUtil.getRandomBoolean(random, integrity)) {
@@ -117,10 +117,10 @@ public class StructureUtil {
             }
         } else {
             Random random = world.getRandom();
-            Iterator<BlockList> iterator = manager.getAll().iterator();
+            Iterator<BlockList> iterator = manager.getAllBlockList().iterator();
             while (iterator.hasNext()) {
                 BlockList blockList = iterator.next();
-                BlockState blockState = blockList.getBlockState();
+                BlockState blockState = blockList.getState();
 
                 if (blockState.isOf(Blocks.JIGSAW) || blockState.isOf(Blocks.STRUCTURE_BLOCK) || blockState.isOf(Blocks.STRUCTURE_VOID) || blockState.isOf(Blocks.AIR))
                     iterator.remove();
@@ -134,9 +134,9 @@ public class StructureUtil {
                 boolean bl1 = blockToForce == null || blockToForce.isEmpty();
                 int size = blockList.size();
                 for (int i = 0; i < size; i++) {
-                    long posLong = blockList.get(i);
+                    long posLong = blockList.getLongPos(i);
                     BlockPos pos = LongPosHelper.decodeBlockPos(posLong);
-                    blockList.replace(i, pos.add(block));
+                    blockList.replacePos(i, pos.add(block));
                     if (!bl1 || force) {
                         if (!BlockPlaceUtil.verifyBlock(world, force, blockToForce, pos.add(block))) {
                             blockList.removePos(i);

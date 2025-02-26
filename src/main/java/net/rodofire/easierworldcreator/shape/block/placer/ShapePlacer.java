@@ -65,7 +65,7 @@ public class ShapePlacer {
                 if (animator == null) {
                     animator = new StructurePlaceAnimator(world, new BlockSorter(BlockSorter.BlockSorterType.RANDOM), StructurePlaceAnimator.AnimatorTime.CONSTANT_TICKS);
                 }
-                animator.placeFromBlockList(defaultManager);
+                animator.place(defaultManager);
             }
             case OTHER -> {
                 defaultManager.placeAll(world);
@@ -104,7 +104,7 @@ public class ShapePlacer {
             if (animator == null) {
                 animator = new StructurePlaceAnimator(world, new BlockSorter(BlockSorter.BlockSorterType.RANDOM), StructurePlaceAnimator.AnimatorTime.CONSTANT_TICKS);
             }
-            animator.placeFromBlockList(manager.get(posLit));
+            animator.place(manager.get(posLit));
         } else {
             manager.get(posLit).placeAll(world);
         }

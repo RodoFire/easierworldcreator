@@ -300,19 +300,19 @@ public class BlockSorter {
     public void sortInsideBlockList(BlockListManager manager) {
         switch (this.type) {
             case FROM_POINT -> {
-                for (BlockList blockList : manager.getAll()) {
+                for (BlockList blockList : manager.getAllBlockList()) {
                     int[] center = LongPosHelper.convert2Array(this.centerPoint);
                     modifyPos(blockList, Comparator.comparingDouble((pos) -> -WorldGenUtil.getDistance(center, pos.getValue())));
                 }
             }
             case FROM_POINT_INVERTED -> {
-                for (BlockList blockList : manager.getAll()) {
+                for (BlockList blockList : manager.getAllBlockList()) {
                     int[] center = LongPosHelper.convert2Array(this.centerPoint);
                     modifyPos(blockList, Comparator.comparingDouble((pos) -> WorldGenUtil.getDistance(center, pos.getValue())));
                 }
             }
             case FROM_RANDOM_POINT -> {
-                for (BlockList blockList : manager.getAll()) {
+                for (BlockList blockList : manager.getAllBlockList()) {
                     this.centerPoint = blockList.getRandomPos();
                     int[] center = LongPosHelper.convert2Array(this.centerPoint);
                     modifyPos(blockList,
@@ -321,7 +321,7 @@ public class BlockSorter {
                 }
             }
             case FROM_RANDOM_POINT_INVERTED -> {
-                for (BlockList blockList : manager.getAll()) {
+                for (BlockList blockList : manager.getAllBlockList()) {
                     this.centerPoint = blockList.getRandomPos();
                     int[] center = LongPosHelper.convert2Array(this.centerPoint);
                     modifyPos(blockList,
@@ -330,12 +330,12 @@ public class BlockSorter {
                 }
             }
             case RANDOM -> {
-                for (BlockList blockList : manager.getAll()) {
+                for (BlockList blockList : manager.getAllBlockList()) {
                     Collections.shuffle(blockList.getPosList());
                 }
             }
             case ALONG_AXIS -> {
-                for (BlockList blockList : manager.getAll()) {
+                for (BlockList blockList : manager.getAllBlockList()) {
                     Vec3d direction = this.axisDirection.normalize();
                     modifyPos(blockList, Comparator.comparingDouble(
                             (pos) -> pos.getValue()[0] * direction.x + pos.getValue()[1] * direction.y + pos.getValue()[2] * direction.z)
@@ -344,7 +344,7 @@ public class BlockSorter {
                 }
             }
             case RADIAL_AXIS -> {
-                for (BlockList blockList : manager.getAll()) {
+                for (BlockList blockList : manager.getAllBlockList()) {
                     modifyPos(blockList, Comparator.comparingDouble((pos) -> {
                                 Vec3d axisPoint = this.centerPoint.toCenterPos();
                                 Vec3d axisDirection = this.axisDirection.normalize();
@@ -361,14 +361,14 @@ public class BlockSorter {
             case FROM_LIST -> {
             }
             case INVERSE -> {
-                for (BlockList blockList : manager.getAll()) {
+                for (BlockList blockList : manager.getAllBlockList()) {
                     Collections.reverse(blockList.getPosList());
                 }
             }
             case FROM_PLANE -> {
                 Vec3d axisPoint = this.centerPoint.toCenterPos();
                 Vec3d axisDirection = this.axisDirection.normalize();
-                for (BlockList blockList : manager.getAll()) {
+                for (BlockList blockList : manager.getAllBlockList()) {
                     modifyPos(blockList, Comparator.comparingDouble((pos) -> {
                                 Vec3d blockVec = new Vec3d(pos.getValue()[0], pos.getValue()[1], pos.getValue()[2]);
 
@@ -382,7 +382,7 @@ public class BlockSorter {
             case FROM_PLANE_INVERTED -> {
                 Vec3d axisPoint = this.centerPoint.toCenterPos();
                 Vec3d axisDirection = this.axisDirection.normalize();
-                for (BlockList blockList : manager.getAll()) {
+                for (BlockList blockList : manager.getAllBlockList()) {
                     modifyPos(blockList, Comparator.comparingDouble((pos) -> {
                         Vec3d blockVec = new Vec3d(pos.getValue()[0], pos.getValue()[1], pos.getValue()[2]);
 
