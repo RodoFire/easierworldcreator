@@ -10,6 +10,10 @@ public class BlockDataKey {
     private BlockState state;
     private NbtCompound tag;
 
+    public BlockDataKey(BlockState state) {
+        this(state, null);
+    }
+
     public BlockDataKey(BlockState state, @Nullable NbtCompound tag) {
         this.state = state;
         this.tag = tag;
