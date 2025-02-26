@@ -1,19 +1,22 @@
 package net.rodofire.easierworldcreator.blockdata.blocklist;
 
 import it.unimi.dsi.fastutil.ints.Int2ShortOpenHashMap;
-import it.unimi.dsi.fastutil.ints.IntArrayList;
-import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
-import it.unimi.dsi.fastutil.objects.Object2ShortArrayMap;
+import it.unimi.dsi.fastutil.objects.Object2ShortOpenHashMap;
 import it.unimi.dsi.fastutil.shorts.Short2ReferenceOpenHashMap;
+import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.world.ServerChunkManager;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Pair;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.random.Random;
 import net.minecraft.world.StructureWorldAccess;
+import net.rodofire.easierworldcreator.blockdata.BlockDataKey;
 import net.rodofire.easierworldcreator.blockdata.StructurePlacementRuleManager;
-import net.rodofire.easierworldcreator.blockdata.sorter.BlockSorter;
+import net.rodofire.easierworldcreator.util.BlockPlaceUtil;
 import net.rodofire.easierworldcreator.util.LongPosHelper;
 
 import java.util.ArrayList;
@@ -22,7 +25,16 @@ import java.util.Map;
 import java.util.Optional;
 
 /**
- * Default Ordered BlockList comparator. The class provides the basic related to order blockList comparator
+ * OrderedBlockListManager class.
+ * It allows you to sort the positions no matter the {@code BlockData}.
+ * <p>It represents a final state of the BlockListManager,
+ * meaning that no modifications can be done after putting BlockData.
+ * For example, you cannot change a state related to a blockPos.
+ * You cannot get The BlockPos related to a `BlockData`.
+ * If you want to do something like this, use a {@code BlockListManager}.
+ * <p>While you can combine and put other Ordered / Base BlockListManager,
+ * it is not recommended as it has some important performance.
+ * You should combine BlockListManager then convert it to ordered.
  */
 @SuppressWarnings("unused")
 public class OrderedBlockListManager {
@@ -30,22 +42,30 @@ public class OrderedBlockListManager {
     /**
      * blockData objects
      */
-    List<Pair<BlockState, NbtCompound>> state = new ArrayList<>();
-    Object2ShortArrayMap<Pair<BlockState, NbtCompound>> blockDataMap = new Object2ShortArrayMap<>();
+    List<BlockDataKey> state = new ArrayList<>();
+    Object2ShortOpenHashMap<BlockDataKey> blockDataMap = new Object2ShortOpenHashMap<>();
 
     Short2ReferenceOpenHashMap<StructurePlacementRuleManager> ruler = new Short2ReferenceOpenHashMap<>();
 
     /**
      * Link between blockData and BlockPos
      */
-    Short2ReferenceOpenHashMap<IntArrayList> statePosLink = new Short2ReferenceOpenHashMap<>();
     Int2ShortOpenHashMap posStateLink = new Int2ShortOpenHashMap();
 
     /**
-     * BlockPos objects
+     * BlockPos objects.
+     * <li> {@code long} represent the encoded {@link BlockPos} to save some memory and improve performance.
+     * <li> {@code int} represents the index of the {@link List} that correponds to the encoded BlockPos
      */
-    Long2IntOpenHashMap posMap = new Long2IntOpenHashMap();
     LongArrayList posListOptimized = new LongArrayList();
+
+
+    /**
+     * used for placing blocks
+     */
+    ServerChunkManager chunkManager;
+    boolean markDirty = false;
+    boolean init = false;
 
     /**
      * constructor to init a {@link OrderedBlockListManager}.
@@ -53,7 +73,10 @@ public class OrderedBlockListManager {
      * @param comparator the comparator to be fused
      */
     public OrderedBlockListManager(OrderedBlockListManager comparator) {
-        put(comparator);
+        this.state = comparator.state;
+        this.ruler = comparator.ruler;
+        this.posStateLink = comparator.posStateLink;
+        this.posListOptimized = comparator.posListOptimized;
     }
 
     /**
@@ -62,8 +85,33 @@ public class OrderedBlockListManager {
      * @param manager the manager to be fused
      */
     public OrderedBlockListManager(BlockListManager manager) {
+
+        //we init at a good size to avoid computing intensive rehash
+        this.posListOptimized = new LongArrayList(manager.totalSize());
+        this.posStateLink = new Int2ShortOpenHashMap(manager.totalSize());
+
+
         for (BlockList blockList : manager.blockLists) {
-            put(blockList);
+            //we don't use put() to avoid temporary objects allocations.
+            // These are done to avoid rehash done when adding into the data,
+            // which is not required here thanks to the initialization
+            BlockDataKey blockData = blockList.getBlockData();
+
+            if (!this.blockDataMap.containsKey(blockData)) {
+                short index = (short) this.blockDataMap.size();
+                this.blockDataMap.put(blockData, index);
+                this.state.add(blockData);
+            }
+
+            short index = this.blockDataMap.getShort(blockData);
+            int normalizedIndex = posSize();
+            LongArrayList posList = blockList.getPosList();
+
+            for (long pos : posList) {
+                posStateLink.put(normalizedIndex, index);
+                normalizedIndex++;
+            }
+            posListOptimized.addAll(posList);
         }
     }
 
@@ -91,104 +139,13 @@ public class OrderedBlockListManager {
     }
 
     /**
-     * Method to know if a BlockPos is present in the comparator
-     *
-     * @param pos the state that will be tested to know if it is present or not
-     * @return <p>-true if the pos is present.
-     * <p>-false if not
-     */
-    public boolean isPresent(BlockPos pos) {
-        return this.posMap.containsKey(LongPosHelper.encodeBlockPos(pos));
-    }
-
-    /**
      * Method to know if no BlockPos are present in the {@code posMap}
      *
      * @return <p>-true if no BlockPos are present in the map.
      * <p>-false if at least one BlockPos is present.
      */
     public boolean arePosEmpty() {
-        return this.posMap.isEmpty();
-    }
-
-    /**
-     * method to get the index related to the {@code T} object.
-     *
-     * @param state the state that will be compared
-     * @return The index related to the {@code T} if it is present.
-     * <p>- We return -1 in case it is not present.
-     * <p>Be careful when using this method.
-     * <p>Always check that the value is not equals to -1
-     */
-    public short getStateIndex(BlockState state) {
-        Pair<BlockState, NbtCompound> blockData = new Pair<>(state, null);
-        return this.blockDataMap.containsKey(blockData) ? this.blockDataMap.getShort(blockData) : -1;
-    }
-
-    /**
-     * method to get the index related to the {@code T} object.
-     *
-     * @param state the state that will be compared
-     * @return The index related to the {@code T} if it is present.
-     * <p>- We return -1 in case it is not present.
-     * <p>Be careful when using this method.
-     * <p>Always check that the value is not equals to -1
-     */
-    public short getStateIndex(Pair<BlockState, NbtCompound> state) {
-        return this.blockDataMap.containsKey(state) ? this.blockDataMap.getShort(state) : -1;
-    }
-
-    /**
-     * method to remove a list of object from the {@code stateMap}
-     *
-     * @param states the objects that will be removed
-     */
-    public void removeState(List<Pair<BlockState, NbtCompound>> states) {
-        for (Pair<BlockState, NbtCompound> state : states) {
-            removeState(state);
-        }
-    }
-
-    /**
-     * <p>Method to remove a {@code T} object from the {@code stateMap}.
-     * <p>Removing that object will also remove every {@link BlockPos} related to that object
-     *
-     * @param state the object that will be removed form the {@code stateMap}
-     */
-    public OrderedBlockListManager removeState(Pair<BlockState, NbtCompound> state) {
-        //we check if the state is present
-        if (this.blockDataMap.containsKey(state)) {
-            short index = getStateIndex(state);
-            this.blockDataMap.removeShort(state);
-            for (int link : this.statePosLink.get(index)) {
-                this.posListOptimized.removeLong(link);
-            }
-            statePosLink.remove(index);
-        }
-        return this;
-    }
-
-    /**
-     * Removes multiple BlockPos entries from the position map.
-     *
-     * @param posList the list of BlockPos objects to be removed
-     * @throws NullPointerException if posList or any BlockPos in it is null
-     */
-    public void removeBlockPos(List<BlockPos> posList) {
-        for (BlockPos pos : posList) {
-            removeBlockPos(pos);
-        }
-    }
-
-    /**
-     * Removes a single BlockPos entry from the position map.
-     *
-     * @param pos the BlockPos to be removed
-     * @throws NullPointerException if pos is null
-     */
-    public void removeBlockPos(BlockPos pos) {
-        int index = this.posMap.remove(LongPosHelper.encodeBlockPos(pos));
-        this.posListOptimized.removeLong(index);
+        return this.posListOptimized.isEmpty();
     }
 
 
@@ -200,9 +157,7 @@ public class OrderedBlockListManager {
      * @throws IndexOutOfBoundsException if the index is out of range.
      */
     public long removeBlockPos(int index) {
-        long pos = posListOptimized.removeLong(index);
-        this.posMap.remove(pos);
-        return pos;
+        return posListOptimized.removeLong(index);
     }
 
     /**
@@ -215,7 +170,7 @@ public class OrderedBlockListManager {
     public Pair<Long, BlockState> removeBlockPosPair(int index) {
         long pos = posListOptimized.removeLong(index);
         short id = this.posStateLink.get(index);
-        return new Pair<>(pos, this.state.get(id).getLeft());
+        return new Pair<>(pos, this.state.get(id).getState());
     }
 
     /**
@@ -264,10 +219,7 @@ public class OrderedBlockListManager {
      */
     public void clear() {
         this.state.clear();
-        this.posMap.clear();
         this.posStateLink.clear();
-        this.blockDataMap.clear();
-        this.statePosLink.clear();
         this.posListOptimized.clear();
     }
 
@@ -342,7 +294,7 @@ public class OrderedBlockListManager {
      * @return the size of the state map
      */
     public int stateSize() {
-        return this.blockDataMap.size();
+        return this.state.size();
     }
 
     /**
@@ -370,10 +322,10 @@ public class OrderedBlockListManager {
      * @return the blockState related to the index
      */
     public BlockState getBlockState(short index) {
-        return this.state.get(index).getLeft();
+        return this.state.get(index).getState();
     }
 
-    public Pair<BlockState, NbtCompound> get(int index) {
+    public BlockDataKey get(int index) {
         return this.state.get(index);
     }
 
@@ -384,7 +336,7 @@ public class OrderedBlockListManager {
      * @return the blockState related to the index
      */
     public NbtCompound getCompound(short index) {
-        return this.state.get(index).getRight();
+        return this.state.get(index).getTag();
     }
 
     /**
@@ -393,15 +345,15 @@ public class OrderedBlockListManager {
      * @return the first BlockState
      */
     public BlockState getFirstBlockState() {
-        return this.state.getFirst().getLeft();
+        return this.state.getFirst().getState();
     }
 
-    public Pair<BlockState, NbtCompound> getFirst() {
+    public BlockDataKey getFirst() {
         return this.state.getFirst();
     }
 
     public NbtCompound getFirstCompound() {
-        return this.state.getFirst().getRight();
+        return this.state.getFirst().getTag();
     }
 
     /**
@@ -410,15 +362,15 @@ public class OrderedBlockListManager {
      * @return the last BlockState
      */
     public BlockState getLastBlockState() {
-        return this.state.getLast().getLeft();
+        return this.state.getLast().getState();
     }
 
-    public Pair<BlockState, NbtCompound> getLast() {
+    public BlockDataKey getLast() {
         return this.state.getLast();
     }
 
     public NbtCompound getLastCompound() {
-        return this.state.getLast().getRight();
+        return this.state.getLast().getTag();
     }
 
     public void setPosList(LongArrayList posList) {
@@ -431,7 +383,7 @@ public class OrderedBlockListManager {
 
 
     public void put(OrderedBlockListManager comparator) {
-        for (Pair<BlockState, NbtCompound> blockData : comparator.state) {
+        for (BlockDataKey blockData : comparator.state) {
             if (!this.blockDataMap.containsKey(blockData)) {
                 short index = (short) this.blockDataMap.size();
                 this.blockDataMap.put(blockData, index);
@@ -439,30 +391,21 @@ public class OrderedBlockListManager {
             }
             short index = this.blockDataMap.getShort(blockData);
 
-            IntArrayList positions = comparator.statePosLink.get(index);
-            if (positions != null) {
-                for (int idx : positions) {
-                    long pos = comparator.posListOptimized.getLong(idx);
-                    int normalizedIndex = posSize();
-                    if (posMap.containsKey(pos)) {
-                        continue;
-                    }
-                    posMap.put(pos, normalizedIndex);
-                    posListOptimized.add(pos);
-                    posStateLink.put(normalizedIndex, index);
-                    this.statePosLink.computeIfAbsent(index, k -> new IntArrayList()).add(normalizedIndex);
-                }
+            for (long pos : comparator.posListOptimized) {
+                //long pos = comparator.posListOptimized.getLong(idx);
+                int normalizedIndex = posSize();
+                posListOptimized.add(pos);
+                posStateLink.put(normalizedIndex, index);
             }
-
         }
     }
 
     public OrderedBlockListManager put(BlockList blockList) {
-        return put(blockList.getBlockState(), blockList.getTag().orElse(null), blockList.getPosList());
+        return put(blockList.getState(), blockList.getTag().orElse(null), blockList.getPosList());
     }
 
     public OrderedBlockListManager put(BlockState state, NbtCompound tag, LongArrayList posList) {
-        Pair<BlockState, NbtCompound> blockData = new Pair<>(state, tag);
+        BlockDataKey blockData = new BlockDataKey(state, tag);
         if (!this.blockDataMap.containsKey(blockData)) {
             short index = (short) this.blockDataMap.size();
             this.blockDataMap.put(blockData, index);
@@ -470,16 +413,17 @@ public class OrderedBlockListManager {
         }
         short index = this.blockDataMap.getShort(blockData);
 
+        Int2ShortOpenHashMap tempStateLinkMap = new Int2ShortOpenHashMap(posList.size());
+
+        int normalizedIndex = posSize();
         for (long pos : posList) {
-            int normalizedIndex = posSize();
-            if (posMap.containsKey(pos)) {
-                continue;
-            }
-            posMap.put(pos, normalizedIndex);
-            posListOptimized.add(pos);
-            posStateLink.put(normalizedIndex, index);
-            this.statePosLink.computeIfAbsent(index, k -> new IntArrayList()).add(normalizedIndex);
+            tempStateLinkMap.put(normalizedIndex, index);
+            normalizedIndex++;
         }
+        posListOptimized.addAll(posList);
+
+        posStateLink.putAll(tempStateLinkMap);
+
         return this;
     }
 
@@ -511,82 +455,93 @@ public class OrderedBlockListManager {
         return put(state, null, LongArrayList.of(LongPosHelper.encodeBlockPos(pos)));
     }
 
-    public Pair<BlockState, NbtCompound> get(long pos) {
-        return this.state.get(this.posStateLink.get(this.posMap.get(pos)));
+    public BlockDataKey getFromPosIndex(int index) {
+        return this.state.get(this.posStateLink.get(index));
     }
 
-    public BlockState getState(long pos) {
-        return this.state.get(this.posStateLink.get(this.posMap.get(pos))).getLeft();
-    }
-
-    public BlockState getState(BlockPos pos) {
-        return getState(LongPosHelper.encodeBlockPos(pos));
-    }
-
-    public NbtCompound getCompound(long pos) {
-        return this.state.get(this.posStateLink.get(this.posMap.get(pos))).getRight();
-    }
-
-    public Optional<StructurePlacementRuleManager> getPlacementRule(long pos) {
-        short index = this.posStateLink.get(this.posMap.get(pos));
-        return this.ruler.containsKey(index) ? Optional.of(this.ruler.get(index)) : Optional.empty();
+    public Optional<StructurePlacementRuleManager> getPlacementRuleFromPosIndex(int index) {
+        return Optional.ofNullable(this.ruler.get(this.posStateLink.get(index)));
     }
 
 
     public boolean placeLast(StructureWorldAccess world) {
-        return place(world, posListOptimized.getLast());
+        return place(world, posSize() - 1);
     }
 
     public boolean placeFirst(StructureWorldAccess world) {
-        return place(world, posListOptimized.getFirst());
-    }
-
-    public boolean place(StructureWorldAccess world, int index) {
-        return place(world, posListOptimized.getLong(index));
+        return place(world, 0);
     }
 
     public boolean placeAll(StructureWorldAccess worldAccess) {
         boolean placed = true;
-        for(long pos : this.posListOptimized){
-            if(!place(worldAccess, pos)){
+        boolean markdirty = false;
+        ServerChunkManager chunkManager = null;
+        MinecraftServer server = worldAccess.getServer();
+
+        if (server != null) {
+            if (worldAccess instanceof ServerWorld world) {
+                chunkManager = world.getChunkManager();
+                markdirty = true;
+            }
+        }
+
+        for (int i = 0; i < this.posListOptimized.size(); i++) {
+            if (!place(worldAccess, i)) {
                 placed = false;
+            } else if (markdirty) {
+                chunkManager.markForUpdate(LongPosHelper.decodeBlockPos(this.posListOptimized.getLong(i)));
             }
         }
         return placed;
     }
 
     public boolean placeLastNDelete(StructureWorldAccess world) {
-        return place(world, posListOptimized.removeLast());
+        boolean placed = place(world, posSize() - 1);
+        this.posListOptimized.removeLast();
+        return placed;
     }
 
     /**
      * for the most performance, it is recommended to not use this method where {@code placeLastNDelete()} can be applied
      */
     public boolean placeNDelete(StructureWorldAccess world, int index) {
-        return place(world, posListOptimized.removeLong(index));
+        return place(world, index);
     }
 
     public boolean placeAllNDelete(StructureWorldAccess worldAccess) {
-        boolean placed = true;
-        for(long pos : this.posListOptimized){
-            if(!place(worldAccess, pos)){
-                placed = false;
-            }
-        }
+        boolean placed = placeAll(worldAccess);
         this.posListOptimized.clear();
         return placed;
     }
 
-    public boolean place(StructureWorldAccess world, long pos) {
-        BlockState state = world.getBlockState(LongPosHelper.decodeBlockPos(pos));
-        Optional<StructurePlacementRuleManager> rule = getPlacementRule(pos);
-        if (rule.isPresent()) {
-            if (rule.get().canPlace(state)) {
-                world.setBlockState(LongPosHelper.decodeBlockPos(pos), state, 2);
-                return true;
-            }
-            return false;
+    public boolean place(StructureWorldAccess world, int index) {
+        if (!init)
+            init(world);
+
+        boolean placed;
+        if ((placed = place(world, index, Block.FORCE_STATE)) && markDirty) {
+            chunkManager.markForUpdate(LongPosHelper.decodeBlockPos(this.posListOptimized.getLong(index)));
         }
-        return state.isAir() && world.setBlockState(LongPosHelper.decodeBlockPos(pos), state, 2);
+        return placed;
+    }
+
+    public boolean place(StructureWorldAccess world, int index, int flag) {
+        BlockPos pos = LongPosHelper.decodeBlockPos(this.posListOptimized.getLong(index));
+        BlockState worldState = world.getBlockState(pos);
+
+        BlockDataKey data = getFromPosIndex(index);
+        Optional<StructurePlacementRuleManager> rule = getPlacementRuleFromPosIndex(index);
+        return worldState.isAir() && BlockPlaceUtil.place(world, pos, data, null, flag);
+    }
+
+    public void init(StructureWorldAccess world) {
+        MinecraftServer server = world.getServer();
+
+        if (server != null) {
+            if (world instanceof ServerWorld serverWorld) {
+                chunkManager = serverWorld.getChunkManager();
+                markDirty = true;
+            }
+        }
     }
 }
