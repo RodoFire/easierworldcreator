@@ -10,12 +10,13 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.world.ServerChunkManager;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.structure.StructureTemplate;
-import net.minecraft.util.Pair;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.random.Random;
 import net.minecraft.world.StructureWorldAccess;
+import net.rodofire.easierworldcreator.blockdata.BlockDataKey;
 import net.rodofire.easierworldcreator.blockdata.StructurePlacementRuleManager;
+import net.rodofire.easierworldcreator.util.BlockPlaceUtil;
 import net.rodofire.easierworldcreator.util.LongPosHelper;
 
 import java.io.IOException;
@@ -42,27 +43,31 @@ import static net.rodofire.easierworldcreator.util.file.EwcFolderData.getNVerify
  */
 @SuppressWarnings("unused")
 public class BlockList {
-    StructurePlacementRuleManager manager = new StructurePlacementRuleManager();
+    StructurePlacementRuleManager ruler = new StructurePlacementRuleManager();
 
     /**
      * BlockPos are compressed into a {@link LongArrayList}, saving ~30% memory and allowing for ~70% more performance </li>
      */
     private final LongArrayList posList = new LongArrayList();
-    private BlockState blockState;
+    private BlockDataKey dataKey;
 
-    private NbtCompound tag;
+    /**
+     * used for placing blocks
+     */
+    ServerChunkManager chunkManager;
+    boolean markDirty = false;
+    boolean init = false;
 
 
     /**
      * init a BlockShapeManager
      *
-     * @param posList    pos of the blockState
-     * @param blockState the blockState related to the pos list
+     * @param posList pos of the state
+     * @param state   the state related to the pos list
      */
-    public BlockList(BlockState blockState, NbtCompound tag, List<BlockPos> posList) {
-        addAll(posList);
-        this.blockState = blockState;
-        this.tag = tag;
+    public BlockList(BlockState state, NbtCompound tag, List<BlockPos> posList) {
+        addAllPos(posList);
+        this.dataKey = new BlockDataKey(state, tag);
     }
 
     /**
@@ -72,21 +77,18 @@ public class BlockList {
      * @param state the blockState related to the pos list
      */
     public BlockList(BlockState state, NbtCompound tag, BlockPos pos) {
-        add(pos);
-        this.blockState = state;
-        this.tag = tag;
+        this(state, tag, List.of(pos));
     }
 
     /**
      * init a BlockShapeManager
      *
-     * @param posList    pos of the blockState
-     * @param blockState the blockState related to the pos list
+     * @param posList pos of the state
+     * @param state   the state related to the pos list
      */
-    public BlockList(BlockState blockState, NbtCompound tag, LongArrayList posList) {
-        addAll(posList);
-        this.blockState = blockState;
-        this.tag = tag;
+    public BlockList(BlockState state, NbtCompound tag, LongArrayList posList) {
+        addAllPos(posList);
+        this.dataKey = new BlockDataKey(state, tag);
     }
 
     /**
@@ -96,20 +98,17 @@ public class BlockList {
      * @param state the blockState related to the pos list
      */
     public BlockList(BlockState state, NbtCompound tag, long pos) {
-        add(pos);
-        this.blockState = state;
-        this.tag = tag;
+        this(state, tag, LongArrayList.of(pos));
     }
 
     /**
      * init a BlockShapeManager
      *
-     * @param posList    pos of the blockState
-     * @param blockState the blockState related to the pos list
+     * @param posList pos of the state
+     * @param state   the state related to the pos list
      */
-    public BlockList(BlockState blockState, List<BlockPos> posList) {
-        addAll(posList);
-        this.blockState = blockState;
+    public BlockList(BlockState state, List<BlockPos> posList) {
+        this(state, null, posList);
     }
 
     /**
@@ -119,19 +118,17 @@ public class BlockList {
      * @param state the blockState related to the pos list
      */
     public BlockList(BlockState state, BlockPos pos) {
-        add(pos);
-        this.blockState = state;
+        this(state, null, pos);
     }
 
     /**
      * init a BlockShapeManager
      *
-     * @param posList    pos of the blockState
-     * @param blockState the blockState related to the pos list
+     * @param posList pos of the state
+     * @param state   the state related to the pos list
      */
-    public BlockList(BlockState blockState, LongArrayList posList) {
-        addAll(posList);
-        this.blockState = blockState;
+    public BlockList(BlockState state, LongArrayList posList) {
+        this(state, null, posList);
     }
 
     /**
@@ -141,8 +138,7 @@ public class BlockList {
      * @param state the blockState related to the pos list
      */
     public BlockList(BlockState state, long pos) {
-        add(pos);
-        this.blockState = state;
+        this(state, null, pos);
     }
 
     public BlockList() {
@@ -153,49 +149,49 @@ public class BlockList {
     }
 
 
-    public BlockList replace(int index, BlockPos newPos) {
+    public BlockList replacePos(int index, BlockPos newPos) {
         this.posList.set(index, LongPosHelper.encodeBlockPos(newPos));
         return this;
     }
 
-    public BlockList replace(int index, long newPos) {
+    public BlockList replacePos(int index, long newPos) {
         this.posList.set(index, newPos);
         return this;
     }
 
-    public BlockList addAll(List<BlockPos> list) {
-        for (BlockPos pos : list) {
-            add(pos);
+    public BlockList addAllPos(List<BlockPos> posList) {
+        for (BlockPos pos : posList) {
+            addPos(pos);
         }
         return this;
     }
 
-    public BlockList addAll(LongArrayList list) {
-        for (long pos : list) {
-            add(pos);
+    public BlockList addAllPos(LongArrayList posList) {
+        for (long pos : posList) {
+            addPos(pos);
         }
         return this;
     }
 
-    public BlockList add(BlockPos pos) {
+    public BlockList addPos(BlockPos pos) {
         posList.add(LongPosHelper.encodeBlockPos(pos));
         return this;
     }
 
-    public BlockList add(long pos) {
+    public BlockList addPos(long pos) {
         posList.add(pos);
         return this;
     }
 
     public BlockList setPosList(List<BlockPos> posList) {
         this.posList.clear();
-        this.addAll(posList);
+        this.addAllPos(posList);
         return this;
     }
 
     public BlockList setPosList(LongArrayList posList) {
         this.posList.clear();
-        this.addAll(posList);
+        this.addAllPos(posList);
         return this;
     }
 
@@ -236,23 +232,23 @@ public class BlockList {
         return LongPosHelper.decodeBlockPos(this.posList.getLong(random.nextBetween(0, this.size() - 1)));
     }
 
-    public long get(int index) {
+    public long getLongPos(int index) {
         return this.posList.getLong(index);
     }
 
-    public long getFirst() {
+    public long getFirstLongPos() {
         return this.posList.getFirst();
     }
 
-    public long getLast() {
+    public long getLastLongPos() {
         return this.posList.getLast();
     }
 
-    public long getRandom() {
+    public long getRandomLongPos() {
         return this.posList.getLong(Random.create().nextBetween(0, this.size() - 1));
     }
 
-    public long getRandom(Random random) {
+    public long getRandomLongPos(Random random) {
         return this.posList.getLong(random.nextBetween(0, this.size() - 1));
     }
 
@@ -268,22 +264,22 @@ public class BlockList {
         return LongPosHelper.decodeBlockPos(this.posList.removeLong(posList.size() - 1));
     }
 
-    public Optional<NbtCompound> getTag() {
-        return Optional.ofNullable(tag);
-    }
-
-    public void setTag(NbtCompound tag) {
-        this.tag = tag;
-    }
-
     /**
      * time complexity of O(n), avoid using this in performance crucial applications
      *
      * @return the removed pos
      */
-    public BlockList remove(BlockPos pos) {
+    public BlockList removePos(BlockPos pos) {
         this.posList.removeLong(posList.indexOf(LongPosHelper.encodeBlockPos(pos)));
         return this;
+    }
+
+    public Optional<NbtCompound> getTag() {
+        return Optional.ofNullable(dataKey.getTag());
+    }
+
+    public void setTag(NbtCompound tag) {
+        this.dataKey.setTag(tag);
     }
 
     /**
@@ -299,29 +295,28 @@ public class BlockList {
     }
 
 
-    public StructurePlacementRuleManager getManager() {
-        return manager;
+    public StructurePlacementRuleManager getRuler() {
+        return ruler;
     }
 
-    public void setManager(StructurePlacementRuleManager manager) {
-        this.manager = manager;
+    public void setRuler(StructurePlacementRuleManager ruler) {
+        this.ruler = ruler;
     }
 
-    public BlockState getBlockState() {
-        return blockState;
+    public BlockState getState() {
+        return this.dataKey.getState();
     }
 
-    public void setBlockState(BlockState blockState) {
-        this.blockState = blockState;
+    public void setState(BlockState state) {
+        this.dataKey.setState(state);
     }
 
-    public Pair<BlockState, NbtCompound> getBlockData() {
-        return new Pair<>(blockState, tag);
+    public BlockDataKey getBlockData() {
+        return dataKey;
     }
 
-    public void getBlockData(Pair<BlockState, NbtCompound> blockState) {
-        this.blockState = blockState.getLeft();
-        this.tag = blockState.getRight();
+    public void setBlockData(BlockDataKey data) {
+        this.dataKey = data;
     }
 
     public boolean placeLast(StructureWorldAccess world) {
@@ -360,21 +355,9 @@ public class BlockList {
 
     public boolean placeAll(StructureWorldAccess worldAccess) {
         boolean placed = true;
-        boolean markdirty = false;
-        ServerChunkManager chunkManager = null;
-        MinecraftServer server = worldAccess.getServer();
-        if (server != null) {
-            if (worldAccess instanceof ServerWorld world) {
-                chunkManager = world.getChunkManager();
-                markdirty = true;
-            }
-        }
-
         for (long pos : this.posList) {
-            if (!place(worldAccess, pos)) {
+            if (!place(worldAccess, pos) && placed) {
                 placed = false;
-            } else if (markdirty) {
-                chunkManager.markForUpdate(LongPosHelper.decodeBlockPos(pos));
             }
         }
         return placed;
@@ -417,19 +400,23 @@ public class BlockList {
      * <p>You can however still modify the flags using {@link #place(StructureWorldAccess, long, int)}
      */
     private boolean place(StructureWorldAccess world, long pos) {
-        return place(world, pos, Block.FORCE_STATE);
+        if (!init)
+            init(world);
+
+        boolean placed;
+        if ((placed = place(world, pos, Block.FORCE_STATE)) && markDirty) {
+            chunkManager.markForUpdate(LongPosHelper.decodeBlockPos(pos));
+        }
+        return placed;
     }
 
     private boolean place(StructureWorldAccess world, long pos, int flags) {
-        BlockState state = world.getBlockState(LongPosHelper.decodeBlockPos(pos));
-        if (this.manager != null) {
-            if (this.manager.canPlace(state)) {
-                world.setBlockState(LongPosHelper.decodeBlockPos(pos), this.blockState, flags);
-                return true;
-            }
-            return false;
+        BlockPos pos1 = LongPosHelper.decodeBlockPos(pos);
+        BlockState state = world.getBlockState(pos1);
+        if (this.ruler != null) {
+            return BlockPlaceUtil.place(world, pos1, dataKey, this.ruler, flags);
         }
-        return state.isAir() && world.setBlockState(LongPosHelper.decodeBlockPos(pos), this.blockState, flags);
+        return state.isAir() && BlockPlaceUtil.place(world, pos1, dataKey, null, flags);
     }
 
     public JsonObject toJson(ChunkPos chunkPos) {
@@ -447,14 +434,13 @@ public class BlockList {
         int chunkMinX = chunkPos.x << 4;
         int chunkMinZ = chunkPos.z << 4;
 
-        jsonObject.addProperty("type", blockState.toString());
-        jsonObject.addProperty("state", blockState.toString());
-        if (manager != null) {
-            jsonObject.addProperty("force", manager.isForce());
-            jsonObject.add("overriddenBlock", gson.toJsonTree(manager.getOverriddenBlocks()).getAsJsonArray());
+        jsonObject.addProperty("state", dataKey.getState().toString());
+        if (ruler != null) {
+            jsonObject.addProperty("force", ruler.isForce());
+            jsonObject.add("overriddenBlock", gson.toJsonTree(ruler.getOverriddenBlocks()).getAsJsonArray());
         }
-        if (tag != null) {
-            jsonObject.addProperty("tag", tag.toString());
+        if (dataKey.getTag() != null) {
+            jsonObject.addProperty("tag", dataKey.getTag().toString());
         }
         addCustomProperty(jsonObject);
 
@@ -501,6 +487,17 @@ public class BlockList {
             Files.writeString(path, gson.toJson(jsonObj));
         } catch (IOException e) {
             e.fillInStackTrace();
+        }
+    }
+
+    public void init(StructureWorldAccess world) {
+        MinecraftServer server = world.getServer();
+
+        if (server != null) {
+            if (world instanceof ServerWorld serverWorld) {
+                chunkManager = serverWorld.getChunkManager();
+                markDirty = true;
+            }
         }
     }
 }
