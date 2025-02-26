@@ -43,10 +43,22 @@ public class ObjectShortLinkHashBiMap<T> {
         return (short) object.size();
     }
 
-    public T put(T object) {
-        this.map.put(object, (short) (size() + 1));
+    public short put(T object) {
+        if (this.map.containsKey(object))
+            return this.map.getShort(object);
+
+        short size = size();
+        this.map.put(object, size);
         this.object.add(object);
-        return object;
+        return size;
+    }
+
+    public void putAll(List<T> objects) {
+        this.object.addAll(objects);
+        for (T t : objects) {
+            if (map.containsKey(t)) continue;
+            map.put(t, size());
+        }
     }
 
     public T remove(short index) {
