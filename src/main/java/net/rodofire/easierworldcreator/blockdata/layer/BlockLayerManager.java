@@ -1,6 +1,7 @@
 package net.rodofire.easierworldcreator.blockdata.layer;
 
 import net.minecraft.block.BlockState;
+import net.rodofire.easierworldcreator.blockdata.StructurePlacementRuleManager;
 import net.rodofire.easierworldcreator.shape.block.placer.LayerPlacer;
 
 import java.util.ArrayList;
@@ -17,7 +18,7 @@ public class BlockLayerManager {
     /**
      * The list of {@code BlockLayer} objects managed by this comparator.
      */
-    private List<BlockLayer> layers;
+    private List<BlockLayer> layers = new ArrayList<>();
 
     boolean repeatLayers = false;
 
@@ -46,6 +47,103 @@ public class BlockLayerManager {
     public BlockLayerManager(LayerPlacer placer, BlockState state, short depth) {
         this.layers = new ArrayList<>();
         this.layers.add(new BlockLayer(placer, state, depth));
+    }
+
+    /**
+     * init the BlockLayer
+     *
+     * @param states list of BlockStates
+     * @param depth  depth of the BlockStates
+     */
+    public BlockLayerManager(LayerPlacer placer, List<BlockState> states, int depth, StructurePlacementRuleManager ruler) {
+        this.layers.add(new BlockLayer(placer, states, depth, ruler));
+    }
+
+    /**
+     * init the BlockLayer
+     *
+     * @param states  list of BlockStates
+     * @param depth   depth of the BlockStates
+     * @param chances the chance of the related blockStates being chosen
+     */
+    public BlockLayerManager(LayerPlacer placer, List<BlockState> states, List<Short> chances, int depth, StructurePlacementRuleManager ruler) {
+        this.layers.add(new BlockLayer(placer, states, chances, depth, ruler));
+    }
+
+    /**
+     * init the BlockLayer
+     *
+     * @param states list of BlockStates
+     */
+    public BlockLayerManager(LayerPlacer placer, List<BlockState> states, StructurePlacementRuleManager ruler) {
+        this.layers.add(new BlockLayer(placer, states, ruler));
+    }
+
+    /**
+     * init the BlockLayer
+     *
+     * @param state if the layer is only composed of one BlockState, you don't necessary need to create a list (created automatically)
+     * @param depth list of BlockStates
+     */
+    public BlockLayerManager(LayerPlacer placer, BlockState state, int depth, StructurePlacementRuleManager ruler) {
+        this.layers.add(new BlockLayer(placer, state, depth, ruler));
+    }
+
+    /**
+     * init the BlockLayer
+     *
+     * @param state if the layer is only composed of one BlockState, you don't necessary need to create a list (created automatically)
+     */
+    public BlockLayerManager(LayerPlacer placer, BlockState state, StructurePlacementRuleManager ruler) {
+        this.layers.add(new BlockLayer(placer, state, ruler));
+    }
+
+    /**
+     * init the BlockLayer
+     *
+     * @param states list of BlockStates
+     * @param depth  depth of the BlockStates
+     */
+    public BlockLayerManager(LayerPlacer placer, List<BlockState> states, int depth) {
+        this.layers.add(new BlockLayer(placer, states, depth));
+    }
+
+    /**
+     * init the BlockLayer
+     *
+     * @param states list of BlockStates
+     */
+    public BlockLayerManager(LayerPlacer placer, List<BlockState> states) {
+        this.layers.add(new BlockLayer(placer, states));
+    }
+
+    /**
+     * init the BlockLayer
+     *
+     * @param states  list of BlockStates
+     * @param chances the chance of the state being chosen
+     */
+    public BlockLayerManager(LayerPlacer placer, List<BlockState> states, List<Short> chances) {
+        this.layers.add(new BlockLayer(placer, states, chances));
+    }
+
+    /**
+     * init the BlockLayer
+     *
+     * @param state if the layer is only composed of one BlockState, you don't necessary need to create a list (created automatically)
+     * @param depth list of BlockStates
+     */
+    public BlockLayerManager(LayerPlacer placer, BlockState state, int depth) {
+        this.layers.add(new BlockLayer(placer, state, depth));
+    }
+
+    /**
+     * init the BlockLayer
+     *
+     * @param state if the layer is only composed of one BlockState, you don't necessary need to create a list (created automatically)
+     */
+    public BlockLayerManager(LayerPlacer placer, BlockState state) {
+        this.layers.add(new BlockLayer(placer, state));
     }
 
     /**
