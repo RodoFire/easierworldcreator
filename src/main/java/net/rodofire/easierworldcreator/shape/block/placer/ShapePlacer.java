@@ -23,6 +23,11 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ForkJoinPool;
 
+/**
+ * Class that allow you to place a structure based on a coordinate map or a {@link BlockListManager}.
+ * It takes {@link PlaceMoment} argument which define when should the structure be placed.
+ * Different behaviors will happen depending on it
+ */
 public class ShapePlacer {
     StructureWorldAccess world;
     BlockPos center;

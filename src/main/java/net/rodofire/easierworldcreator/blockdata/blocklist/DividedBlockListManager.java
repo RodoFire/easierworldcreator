@@ -14,10 +14,23 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+/**
+ * During world gen, you can not place all your structure if it is larger than 3x3 chunks.
+ * With this call, the {@link BlockListManager} are stored in a {@code Map<ChunkPos, BlockListManager>}.
+ * This allows to place the manager only when allowed.
+ * Use this class if you will place a structure during world gen.
+ */
 public class DividedBlockListManager {
     private final Map<ChunkPos, BlockListManager> managers = new HashMap<>();
 
     public DividedBlockListManager() {
+    }
+
+    public DividedBlockListManager put(DividedBlockListManager manager) {
+        for(Map.Entry<ChunkPos, BlockListManager> entry : manager.managers.entrySet()) {
+            putWithoutVerification(entry.getKey(), entry.getValue());
+        }
+        return this;
     }
 
     public DividedBlockListManager put(BlockList blockList) {
@@ -57,11 +70,11 @@ public class DividedBlockListManager {
      * it might result in a crash or create unwanted behavior.
      *
      * @param pos        the chunkPos where the BlockPos are.
-     * @param comparator the comparator related to the chunkPos that will be put
-     * @return the resulted comparator.
+     * @param manager the manager related to the chunkPos that will be put
+     * @return the resulted manager.
      */
-    public DividedBlockListManager putWithoutVerification(ChunkPos pos, BlockListManager comparator) {
-        managers.computeIfAbsent(pos, (k) -> new BlockListManager()).put(comparator);
+    public DividedBlockListManager putWithoutVerification(ChunkPos pos, BlockListManager manager) {
+        managers.computeIfAbsent(pos, (k) -> new BlockListManager()).put(manager);
         return this;
     }
 

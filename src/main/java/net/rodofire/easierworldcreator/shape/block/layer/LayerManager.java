@@ -17,7 +17,37 @@ import java.util.Collection;
 import java.util.Map;
 
 /**
- * Manager class to connect the layerType to the classes
+ * Class to assign BlockStates based on coordinates.
+ * For that, we need a {@link BlockLayerManager}.
+ * It allows us to define which blocks will go where.
+ * This class will choose which block to assign depending on {@link Type}.
+ * For example based on this shape:
+ * <pre>
+ *     {@code
+ *     BlockLayer layer1, layer2, layer3
+ *
+ *     BlockLayerManager manager = new BlockLayerManager(
+ *          List.of(layer1, layer2, layer3),
+ *          List.of((short)1, (short)2, (short)5
+ *     );
+ *
+ *     LayerManager layerManager = new LayerManager(Type.SURFACE, manager);
+ *     }
+ *     <br>
+ *     The layer assignement will result on this:
+ *     <pre>
+ *     {@code
+ *           * * *                  1 1 1
+ *       * * * * * *            1 1 2 2 2 1
+ *     * * * * * * *          1 2 2 2 2 2 2
+ *     * * * * * * *      ->  2 2 2 3 3 3 2
+ *     * * * * * * * *        2 3 3 3 3 3 3 1
+ *     * * * * * * * *        3 3 3 3 3 3 3 2
+ *     }
+ *     </pre>
+ * </pre>
+ * Then, after choosing the layer, we choose which block of the layer will be placed.
+ * For more information, see {@link BlockLayer}
  */
 public class LayerManager implements Layer {
     Type layerType;

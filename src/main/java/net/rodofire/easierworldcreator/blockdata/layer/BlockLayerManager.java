@@ -5,7 +5,9 @@ import net.rodofire.easierworldcreator.blockdata.StructurePlacementRuleManager;
 import net.rodofire.easierworldcreator.shape.block.placer.LayerPlacer;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * The {@code BlockLayerComparator} class provides utility methods to manage a collection of {@code BlockLayer} objects.
@@ -29,6 +31,10 @@ public class BlockLayerManager {
      */
     public BlockLayerManager(List<BlockLayer> layers) {
         this.layers = new ArrayList<>(layers);
+    }
+
+    public BlockLayerManager(BlockLayer... layers) {
+        this.layers.addAll(Arrays.stream(layers).collect(Collectors.toSet()));
     }
 
     /**
