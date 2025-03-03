@@ -6,6 +6,12 @@ import net.minecraft.world.gen.feature.PlacedFeature;
 
 import java.util.Optional;
 
+/**
+ * Class to define how multi-chunk features should be placed.
+ * For example, for terrain modification,
+ * it is better to place the feature before {@link GenerationStep.Feature#VEGETAL_DECORATION} decorations.
+ * This class allows you to manage this and define when is the good moment to place your structure.
+ */
 public class WGShapeData {
     private final String name;
 

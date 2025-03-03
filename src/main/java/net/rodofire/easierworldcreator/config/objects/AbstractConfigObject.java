@@ -61,6 +61,10 @@ public abstract class AbstractConfigObject<T> {
     }
 
 
+    /**
+     * method to known if the game should restart after the modification of the value stored in the config
+     * @return true if yes, false else
+     */
     public boolean shouldRestart() {
         return restart;
     }

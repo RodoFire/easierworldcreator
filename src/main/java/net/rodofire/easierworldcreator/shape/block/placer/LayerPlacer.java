@@ -4,28 +4,32 @@ import net.minecraft.block.BlockState;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.StructureWorldAccess;
 import net.rodofire.easierworldcreator.blockdata.StructurePlacementRuleManager;
+import net.rodofire.easierworldcreator.blockdata.layer.BlockLayer;
 import net.rodofire.easierworldcreator.util.BlockPlaceUtil;
 import net.rodofire.easierworldcreator.util.FastNoiseLite;
 
 import java.util.List;
 
+/**
+ * Class to define how the {@link BlockState} inside a {@link BlockLayer} should be placed depending on {@link PlacingType}
+ */
 @SuppressWarnings("unused")
 public class LayerPlacer {
-    private final LayerPlace type;
+    private final PlacingType type;
     FastNoiseLite noise;
     int placedBlocks = 0;
 
-    public LayerPlacer(int placedBlocks, LayerPlace type) {
+    public LayerPlacer(int placedBlocks, PlacingType type) {
         this.placedBlocks = placedBlocks;
         this.type = type;
     }
 
-    public LayerPlacer(LayerPlace type, FastNoiseLite noise) {
+    public LayerPlacer(PlacingType type, FastNoiseLite noise) {
         this.type = type;
         this.noise = noise;
     }
 
-    public LayerPlacer(LayerPlace type) {
+    public LayerPlacer(PlacingType type) {
         this.type = type;
     }
 
@@ -48,6 +52,7 @@ public class LayerPlacer {
 
     public boolean place(StructureWorldAccess worldAccess, List<BlockState> states, BlockPos pos, StructurePlacementRuleManager ruler) {
         BlockState state;
+        //avoid doing unnecessary calculations if only one blockState is present.
         if (states.size() == 1)
             state = states.getFirst();
         else {
@@ -69,6 +74,7 @@ public class LayerPlacer {
 
     public boolean place(StructureWorldAccess worldAccess, BlockState[] states, BlockPos pos, StructurePlacementRuleManager ruler) {
         BlockState state;
+        //avoid doing unnecessary calculations if only one blockState is present.
         if (states.length == 1)
             state = states[0];
         else {
@@ -97,6 +103,7 @@ public class LayerPlacer {
      * @return the BlockState related to the pos
      **/
     public BlockState get(List<BlockState> states, BlockPos pos) {
+        //avoid doing unnecessary calculations if only one blockState is present.
         if (states.size() == 1)
             return states.getFirst();
 
@@ -113,6 +120,7 @@ public class LayerPlacer {
     }
 
     public BlockState get(BlockState[] states, BlockPos pos) {
+        //avoid doing unnecessary calculations if only one blockState is present.
         if (states.length == 1)
             return states[0];
         return switch (this.type) {
@@ -131,7 +139,7 @@ public class LayerPlacer {
     /**
      * set how the blocks/particles will be chosen inside a layer
      */
-    public enum LayerPlace {
+    public enum PlacingType {
         /**
          * will choose random Block/Particle in the layer
          */
@@ -141,11 +149,15 @@ public class LayerPlacer {
          */
         ORDER,
         /**
-         * will place the Block/Particle according to a 2d noise
+         * Will place the Block/Particle according to a 2d noise.
+         * This is slower than random placing type.
+         * If the placement does not matter for you, choose {@link PlacingType#RANDOM}
          */
         NOISE2D,
         /**
-         * will place the Block/Particle according to a 3d noise
+         * Will place the Block/Particle according to a 3d noise
+         * This is slower than random or 2d noise placing type.
+         * If the placement does not matter for you, choose {@link PlacingType#RANDOM}
          */
         NOISE3D
     }

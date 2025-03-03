@@ -2,7 +2,6 @@ package net.rodofire.easierworldcreator.blockdata;
 
 import it.unimi.dsi.fastutil.longs.AbstractLongCollection;
 import it.unimi.dsi.fastutil.longs.Long2ShortOpenHashMap;
-import it.unimi.dsi.fastutil.longs.LongArrayList;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.nbt.NbtCompound;
@@ -14,8 +13,10 @@ import net.rodofire.easierworldcreator.util.map.ObjectShortLinkHashBiMap;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;
-import java.util.List;
 
+/**
+ * class to collect blockState from a world based on a {@link BlockPos} list
+ */
 public class WorldStateCollector {
     ObjectShortLinkHashBiMap<BlockDataKey> data = new ObjectShortLinkHashBiMap<>();
     Long2ShortOpenHashMap posLink = new Long2ShortOpenHashMap();

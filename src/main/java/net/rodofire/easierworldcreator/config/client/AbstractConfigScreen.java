@@ -121,11 +121,23 @@ public abstract class AbstractConfigScreen extends BackgroundScreen {
         }
     }
 
+    /**
+     * method to change the actual value of an enum to the next value
+     * @param configObject the enum that will be cycled
+     * @param button the button on which the enum appears
+     */
     public void cycleEnum(EnumConfigObject configObject, ButtonWidget button) {
         configObject.setActualValue(configObject.getNext());
         button.setMessage(Text.translatable("config." + modId + "." + configObject.getActualValue()));
     }
 
+    /**
+     * Method to verify that the input is an integer and manage the addition of "-".
+     * It also manage the color of the text
+     * @param configObject the config object that will be verified
+     * @param button the entry that is used
+     * @param cgr the text
+     */
     protected void verifyInteger(IntegerConfigObject configObject, AbstractEntryWidget button, String cgr) {
         if (cgr.isEmpty()) return;
         if (cgr.equals("-")) {
@@ -150,11 +162,21 @@ public abstract class AbstractConfigScreen extends BackgroundScreen {
         return config.equals(copy);
     }
 
+    /**
+     * this saves the config
+     */
     protected void saveConfig() {
         this.config.apply(copy);
         this.config.save();
     }
 
+    /**
+     * method to know if the game should restart in the case one or many config got changed that requires the game to restart
+     * @return <ul>
+     *     <li> true if the game should restart
+     *         <li> false if not
+     * </ul>
+     */
     protected boolean shouldRestart() {
         return config.shouldRestart();
     }

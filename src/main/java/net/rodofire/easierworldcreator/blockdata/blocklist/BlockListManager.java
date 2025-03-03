@@ -192,15 +192,14 @@ public class BlockListManager {
     }
 
     public BlockListManager put(BlockList blockList) {
-        BlockState state = blockList.getState();
-        NbtCompound tag = blockList.getTag().isPresent() ? blockList.getTag().get() : null;
-        BlockDataKey blockData = new BlockDataKey(state, tag);
+        BlockDataKey blockData = blockList.getBlockData();
 
         if (this.blockDataMap.containsKey(blockData)) {
             short index = this.blockDataMap.getShort(blockData);
             this.blockLists.get(index).addAllPos(blockList.getPosList());
             return this;
         }
+
         short index = size();
         this.blockDataMap.put(blockData, index);
         this.stateIndexes.add(blockData);

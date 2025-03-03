@@ -1,6 +1,7 @@
 package net.rodofire.easierworldcreator.shape.block.placer;
 
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.random.Random;
@@ -26,24 +27,44 @@ import java.util.concurrent.ForkJoinPool;
 /**
  * Class that allow you to place a structure based on a coordinate map or a {@link BlockListManager}.
  * It takes {@link PlaceMoment} argument which define when should the structure be placed.
- * Different behaviors will happen depending on it
+ * Different behaviors will happen depending on it.
+ * Since that placement is different depending on the moment where the shape is being placed, we have to use the enum.
  */
 public class ShapePlacer {
     StructureWorldAccess world;
     BlockPos center;
-    private final String featureName;
+
+    /**
+     * for better debugging, the identifier is used to know which feature is being generated
+     */
+    private final Identifier featureName;
     private final PlaceMoment placeMoment;
     private StructurePlaceAnimator animator;
 
+    /**
+     * define the step at which should the multi-chunk feature be placed.
+     */
     private WGShapeData shapeData;
 
     public ShapePlacer(StructureWorldAccess world, ShapePlacer.PlaceMoment placeMoment, BlockPos center) {
-        this(world, placeMoment, center, "custom_shape" + Random.create().nextLong());
+        this(world, placeMoment, center, Identifier.of("unknow_mod:custom_shape" + Random.create().nextLong()));
     }
 
-    public ShapePlacer(StructureWorldAccess world, ShapePlacer.PlaceMoment placeMoment, BlockPos center, String featureName) {
+    public ShapePlacer(StructureWorldAccess world, ShapePlacer.PlaceMoment placeMoment, BlockPos center, Identifier featureName) {
         this.world = world;
         this.placeMoment = placeMoment;
+        this.featureName = featureName;
+        this.center = center;
+    }
+
+    public ShapePlacer(StructureWorldAccess world, ShapePlacer.PlaceMoment placeMoment, WGShapeData shapeData, BlockPos center) {
+        this(world, placeMoment, shapeData, center, Identifier.of("unknow_mod:custom_shape" + Random.create().nextLong()));
+    }
+
+    public ShapePlacer(StructureWorldAccess world, ShapePlacer.PlaceMoment placeMoment, WGShapeData shapeData, BlockPos center, Identifier featureName) {
+        this.world = world;
+        this.placeMoment = placeMoment;
+        this.shapeData = shapeData;
         this.featureName = featureName;
         this.center = center;
     }
@@ -57,6 +78,10 @@ public class ShapePlacer {
         this.shapeData = shapeData;
     }
 
+    /**
+     * Place the shape from a blockListManager. The place moment {@link PlaceMoment#WORLD_GEN} should not be used. Use instead {@link ShapePlacer#place(DividedBlockListManager)}.
+     * @param defaultManager the manager that will be placed
+     */
     public void place(BlockListManager defaultManager) {
         switch (placeMoment) {
             case WORLD_GEN -> {
@@ -90,14 +115,14 @@ public class ShapePlacer {
                 return;
 
             if (shapeData == null)
-                shapeData = WGShapeData.ofStep(GenerationStep.Feature.VEGETAL_DECORATION, this.featureName);
+                shapeData = WGShapeData.ofStep(GenerationStep.Feature.VEGETAL_DECORATION, this.featureName.toString());
 
             WGShapeHandler.encodeInformations(posLit.keySet(), shapeData, (chunkPosManager.getOffset()));
 
             for (Map.Entry<ChunkPos, LongOpenHashSet> posSet : posLit.entrySet()) {
                 futures.add(CompletableFuture.runAsync(() -> {
                     manager.get(posSet.getValue())
-                            .placeJson(posSet.getKey(), chunkPosManager.getOffset(), featureName);
+                            .placeJson(posSet.getKey(), chunkPosManager.getOffset(), featureName.toString());
                 }, pool));
             }
             CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
@@ -126,11 +151,11 @@ public class ShapePlacer {
             }
 
             if (shapeData == null)
-                shapeData = WGShapeData.ofStep(GenerationStep.Feature.VEGETAL_DECORATION, this.featureName);
+                shapeData = WGShapeData.ofStep(GenerationStep.Feature.VEGETAL_DECORATION, this.featureName.toString());
 
             WGShapeHandler.encodeInformations(manager.getChunkPos(), shapeData, chunkPosManager.getOffset());
 
-            manager.placeJson(this.featureName, chunkPosManager.getOffset());
+            manager.placeJson(this.featureName.toString(), chunkPosManager.getOffset());
 
             placeWorldGenFiles();
 
@@ -154,9 +179,24 @@ public class ShapePlacer {
         }
     }
 
+    /**
+     * Enum that define the moment of structure placing.
+     * You have to be sure that what you choose is good, or you might run into issues
+     */
     public enum PlaceMoment {
+        /**
+         * Place the structure during world generation.
+         * If the structure is bigger than 3x3 chunks,
+         * the structure will be cut into chunks and will use multi-chunk features.
+         */
         WORLD_GEN,
+        /**
+         * animate the shape placement
+         */
         ANIMATED_OTHER,
+        /**
+         * Will place all the structure at once. This should not be used during world gen.
+         */
         OTHER
     }
 }

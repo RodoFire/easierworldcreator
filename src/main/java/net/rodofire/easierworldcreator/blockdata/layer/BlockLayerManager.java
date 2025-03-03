@@ -299,10 +299,20 @@ public class BlockLayerManager {
         return this.layers.isEmpty();
     }
 
+    /**
+     * method to know if the layers should repeat
+     *
+     * @return the boolean value
+     */
     public boolean isRepeatLayers() {
         return repeatLayers;
     }
 
+    /**
+     * method to repeat the layer in the case the distance is bigger than the sum of all depth of all the {@link BlockLayer}
+     *
+     * @param repeatLayers boolean that manage if the layers have to be repeated
+     */
     public void setRepeatLayers(boolean repeatLayers) {
         this.repeatLayers = repeatLayers;
     }

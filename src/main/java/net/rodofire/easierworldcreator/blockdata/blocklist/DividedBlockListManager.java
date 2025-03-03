@@ -78,9 +78,9 @@ public class DividedBlockListManager {
         return this;
     }
 
-    public DividedBlockListManager put(BlockState state, NbtCompound tag, LongArrayList pos) {
-        for (long po : pos) {
-            put(state, tag, po);
+    public DividedBlockListManager put(BlockState state, NbtCompound tag, LongArrayList posList) {
+        for (long pos : posList) {
+            put(state, tag, pos);
         }
         return this;
     }

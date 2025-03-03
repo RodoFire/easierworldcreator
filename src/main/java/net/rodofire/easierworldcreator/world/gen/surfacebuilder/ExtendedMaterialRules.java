@@ -11,6 +11,9 @@ import net.minecraft.util.math.random.Random;
 import net.minecraft.util.math.random.RandomSplitter;
 import net.minecraft.world.gen.surfacebuilder.MaterialRules;
 
+/**
+ * class to manage new surface rules
+ */
 @SuppressWarnings("unused")
 public class ExtendedMaterialRules {
     public static MaterialRules.MaterialCondition fullNoiseThresold(RegistryKey<DoublePerlinNoiseSampler.NoiseParameters> noise, double minThreshold, double maxThreshold) {
