@@ -35,17 +35,17 @@ import java.util.Map;
  *     }
  *     <br>
  *     The layer assignement will result on this:
- *     <pre>
- *     {@code
- *           * * *                  1 1 1
- *       * * * * * *            1 1 2 2 2 1
- *     * * * * * * *          1 2 2 2 2 2 2
- *     * * * * * * *      ->  2 2 2 3 3 3 2
- *     * * * * * * * *        2 3 3 3 3 3 3 1
- *     * * * * * * * *        3 3 3 3 3 3 3 2
- *     }
- *     </pre>
  * </pre>
+ * <pre>
+ *       {@code
+ *             * * *                  1 1 1
+ *         * * * * * *            1 1 2 2 2 1
+ *       * * * * * * *          1 2 2 2 2 2 2
+ *       * * * * * * *      ->  2 2 2 3 3 3 2
+ *       * * * * * * * *        2 3 3 3 3 3 3 1
+ *       * * * * * * * *        3 3 3 3 3 3 3 2
+ *       }
+ *       </pre>
  * Then, after choosing the layer, we choose which block of the layer will be placed.
  * For more information, see {@link BlockLayer}
  */
