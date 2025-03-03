@@ -40,7 +40,6 @@ import org.jetbrains.annotations.NotNull;
  *     <li> allow a multithreaded block assignement when using {@link LayerManager}
  *     <li> allow to be used during WG, when using {@link DividedBlockListManager} or when placing using {@link ShapePlacer}
  * </ul>
- * </p>
  */
 @SuppressWarnings("unused")
 public abstract class AbstractFillableBlockShape extends AbstractBlockShape {
@@ -71,6 +70,7 @@ public abstract class AbstractFillableBlockShape extends AbstractBlockShape {
      * init the ShapeFilling
      *
      * @param pos the pos of the shape (usually the center of the structure)
+     * @param rotator the object that is used to rotate the structure
      */
     public AbstractFillableBlockShape(@NotNull BlockPos pos, Rotator rotator) {
         super(pos, rotator);

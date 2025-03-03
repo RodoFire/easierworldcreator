@@ -41,7 +41,6 @@ import java.util.Map;
  *     <li> allow a multithreaded block assignement when using {@link LayerManager}
  *     <li> allow to be used during WG, when using {@link DividedBlockListManager} or when placing using {@link ShapePlacer}
  * </ul>
- * </p>
  */
 @SuppressWarnings("unused")
 public abstract class AbstractBlockShape {
