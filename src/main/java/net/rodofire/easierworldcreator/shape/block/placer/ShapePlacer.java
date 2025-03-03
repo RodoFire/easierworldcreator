@@ -83,7 +83,6 @@ public class ShapePlacer {
         if (placeMoment == PlaceMoment.WORLD_GEN &&
                 chunkPosManager.isMultiChunk(posLit.keySet(), center)) {
 
-            System.out.println("placing");
             List<CompletableFuture<Void>> futures = new ArrayList<>();
             ForkJoinPool pool = new ForkJoinPool(Runtime.getRuntime().availableProcessors());
 

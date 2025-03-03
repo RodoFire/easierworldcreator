@@ -241,7 +241,6 @@ public class BlockListManager {
 
     public boolean placeAll(StructureWorldAccess worldAccess) {
         boolean placed = true;
-        System.out.println("size: " + this.blockLists.size());
         for (BlockList blockList : this.blockLists) {
             if (!blockList.placeAll(worldAccess)) {
                 placed = false;
@@ -263,7 +262,6 @@ public class BlockListManager {
 
     public boolean placeAll(StructureWorldAccess worldAccess, int flag) {
         boolean placed = true;
-        System.out.println("size: " + this.blockLists.size());
         for (BlockList blockList : this.blockLists) {
             if (!blockList.placeAll(worldAccess, flag)) {
                 placed = false;

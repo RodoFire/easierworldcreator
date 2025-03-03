@@ -304,7 +304,6 @@ public class GenSpiral {
          */
         public static void generateEllipsoidSpiral(int xRadius, int zRadius, int height, int turn, StructureWorldAccess world, BlockPos pos, boolean force, double k, List<Block> blocksToForce, List<BlockState> blocksToPlace) {
             BlockPos.Mutable mutable = new BlockPos.Mutable();
-            System.out.println("ok  " + blocksToPlace + "  " + blocksToForce);
             int blockStateLength = blocksToPlace.size();
             if (turn <= 0) {
                 Ewc.LOGGER.error("param turn can't be <= 0");
