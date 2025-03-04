@@ -4,7 +4,10 @@ import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.Direction;
+import net.rodofire.easierworldcreator.blockdata.blocklist.DividedBlockListManager;
 import net.rodofire.easierworldcreator.shape.block.instanciator.AbstractBlockShape;
+import net.rodofire.easierworldcreator.shape.block.layer.LayerManager;
+import net.rodofire.easierworldcreator.shape.block.placer.ShapePlacer;
 import net.rodofire.easierworldcreator.shape.block.rotations.Rotator;
 import net.rodofire.easierworldcreator.util.LongPosHelper;
 import net.rodofire.easierworldcreator.util.WorldGenUtil;
@@ -16,14 +19,32 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Class to generate Line related shapes
- * <p>
- * Since 2.1.0, the shape doesn't return a {@link List<BlockPos>} but it returns instead a {@code List<Set<BlockPos>>}
- * Before 2.1.0, the BlockPos list was a simple list.
- * Starting from 2.1.0, the shapes returns a list of {@link ChunkPos} that has a set of {@link BlockPos}
- * The change from {@link List} to {@link Set} was done to avoid duplicates BlockPos which resulted in unnecessary calculations.
- * This allow easy multithreading for the Block assignment done in the {@link AbstractBlockShape} which result in better performance;
- * </p>
+ * Class to generate line related shapes
+ * <br>
+ * The Main purpose of this class is to generate the coordinates based on a shape.
+ * The coordinates are organized depending on a {@code Map<ChunkPos, LongOpenHashSet>}.
+ * <p>It emply some things:
+ * <ul>
+ *     <li>The coordinates are divided in chunk</li>
+ *     <li>It uses {@link LongOpenHashSet} for several reasons.
+ *     <ul>
+ *     <li>First, We use a set to avoid doing unnecessary calculations on the shape. It ensures that no duplicate is present.
+ *     <li>Second, it compresses the BlockPos: The {@link BlockPos} are saved under long using {@link LongPosHelper}.
+ *     It saves some memory since that we save four bytes of data for each {@link BlockPos},
+ *     and there should not have overhead since that we use primitive data type.
+ *     <li>Third, since that we use primitive data types and that they take less memory,
+ *     coordinate generation, accession or deletion is much faster than using a {@code Set<BlockPos>}.
+ *     Encoding and decoding blockPos and then adding it into {@link LongOpenHashSet}is extremely faster
+ *     compared to only adding a {@link BlockPos}.
+ *     ~60- 70% facter.
+ *     </ul>
+ *     </li>
+ * </ul>
+ * <p>Dividing Coordinates into Chunk has some advantages :
+ * <ul>
+ *     <li> allow a multithreaded block assignement when using {@link LayerManager}
+ *     <li> allow to be used during WG, when using {@link DividedBlockListManager} or when placing using {@link ShapePlacer}
+ * </ul>
  */
 @SuppressWarnings("unused")
 public class LineGen extends AbstractBlockShape {

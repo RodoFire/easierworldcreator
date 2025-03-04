@@ -18,7 +18,6 @@ public class ShouldRestartScreen extends Screen {
     @Override
     protected void init() {
         this.addDrawableChild(new TextButtonWidget(this.width / 2 - this.width / 8, 2 * this.height / 3, this.width / 4, 30, Text.translatable("config.ewc.accept_restart"), (button) -> {
-            System.out.println("close");
             MinecraftClient.getInstance().stop();
         }, 0xFFFFFF, 0xFF8000));
     }

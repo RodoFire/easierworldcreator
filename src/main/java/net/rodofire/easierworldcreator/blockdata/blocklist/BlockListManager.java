@@ -192,15 +192,14 @@ public class BlockListManager {
     }
 
     public BlockListManager put(BlockList blockList) {
-        BlockState state = blockList.getState();
-        NbtCompound tag = blockList.getTag().isPresent() ? blockList.getTag().get() : null;
-        BlockDataKey blockData = new BlockDataKey(state, tag);
+        BlockDataKey blockData = blockList.getBlockData();
 
         if (this.blockDataMap.containsKey(blockData)) {
             short index = this.blockDataMap.getShort(blockData);
             this.blockLists.get(index).addAllPos(blockList.getPosList());
             return this;
         }
+
         short index = size();
         this.blockDataMap.put(blockData, index);
         this.stateIndexes.add(blockData);
@@ -241,7 +240,6 @@ public class BlockListManager {
 
     public boolean placeAll(StructureWorldAccess worldAccess) {
         boolean placed = true;
-        System.out.println("size: " + this.blockLists.size());
         for (BlockList blockList : this.blockLists) {
             if (!blockList.placeAll(worldAccess)) {
                 placed = false;
@@ -263,7 +261,6 @@ public class BlockListManager {
 
     public boolean placeAll(StructureWorldAccess worldAccess, int flag) {
         boolean placed = true;
-        System.out.println("size: " + this.blockLists.size());
         for (BlockList blockList : this.blockLists) {
             if (!blockList.placeAll(worldAccess, flag)) {
                 placed = false;

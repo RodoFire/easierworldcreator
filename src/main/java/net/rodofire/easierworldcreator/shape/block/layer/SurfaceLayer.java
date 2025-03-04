@@ -60,6 +60,7 @@ class SurfaceLayer extends AbstractLayer {
         }
 
         CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
+        pool.shutdown();
         return manager;
     }
 
@@ -131,6 +132,7 @@ class SurfaceLayer extends AbstractLayer {
             }
 
             CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
+            pool.shutdown();
             return manager;
         }
         return null;
@@ -159,6 +161,7 @@ class SurfaceLayer extends AbstractLayer {
         }
 
         CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
+        pool.shutdown();
         return manager;
     }
 
@@ -192,6 +195,7 @@ class SurfaceLayer extends AbstractLayer {
             }
 
             CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
+            pool.shutdown();
             return manager;
         }
         return null;

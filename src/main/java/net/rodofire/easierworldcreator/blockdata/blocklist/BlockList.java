@@ -36,10 +36,12 @@ import static net.rodofire.easierworldcreator.util.file.EwcFolderData.getNVerify
  * <br>
  * <p>this is an easier version of the {@link StructureTemplate.StructureBlockInfo}</p>
  * This approach allows for many improvements:
+ * <ul>
  * <li> BlockStates are not doubled, saving a lot of memory comparing to {@code Pair<BlockState, BlockPos>} since that no {@link BlockState} are duplicated</li>
  * <li> BlockPos are compressed into a {@link LongArrayList}, saving ~30% memory and allowing for ~70% more performance </li>
  * <li> Provides some describing on how should the Block be placed: {@code overrideBlocks} and {@code force}</li>
  * <li> provide some useful methods to simplify it's usage</li>
+ * </ul>
  */
 @SuppressWarnings("unused")
 public class BlockList {

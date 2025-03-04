@@ -11,7 +11,6 @@ import net.rodofire.easierworldcreator.blockdata.blocklist.BlockListManager;
 import net.rodofire.easierworldcreator.blockdata.blocklist.DividedBlockListManager;
 import net.rodofire.easierworldcreator.blockdata.layer.BlockLayerManager;
 import net.rodofire.easierworldcreator.util.LongPosHelper;
-import net.rodofire.easierworldcreator.util.WorldGenUtil;
 
 import java.util.Collection;
 import java.util.Map;

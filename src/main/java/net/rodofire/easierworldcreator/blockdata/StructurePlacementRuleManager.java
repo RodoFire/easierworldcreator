@@ -106,6 +106,11 @@ public class StructurePlacementRuleManager {
         return canPlace(state);
     }
 
+    /**
+     * method to know if a {@link BlockState} is allowed to be replaced
+     * @param state the state that will be tested
+     * @return true if it is possible, false else
+     */
     public boolean canPlace(BlockState state) {
         if (force) {
             return !overriddenBlocks.contains(state.getBlock());

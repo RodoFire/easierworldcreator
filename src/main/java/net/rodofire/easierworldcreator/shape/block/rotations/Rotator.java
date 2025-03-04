@@ -24,6 +24,23 @@ public class Rotator {
     private double sinZ = 0;
 
 
+    /**
+     * constructor of the object
+     *
+     * @param centerPos       the {@link BlockPos} on which the coordinates will rotates.
+     *                        This is an important parameter to define since that if it is not specified,
+     *                        the rotations will be done around the point 0,0,0
+     *                        <br>
+     * @param yRotation       the rotations of the object.
+     *                        <p> This is the first rotation applied.
+     *                        <p> The parameter will make the {@link BlockPos} rotate around the y-axis
+     * @param zRotation       the rotations of the object.
+     *                        <p> This is the second rotation applied.
+     *                        <p> The parameter will make the {@link BlockPos} rotate around the z-axis
+     * @param secondYRotation the rotations of the object.
+     *                        <p> This is the third rotation applied.
+     *                        <p> The parameter will make the {@link BlockPos} rotate around the y-axis
+     */
     public Rotator(BlockPos centerPos, int yRotation, int zRotation, int secondYRotation) {
         this.centerPos = centerPos;
         this.yRotation = yRotation;
@@ -35,12 +52,64 @@ public class Rotator {
     /**
      * init the ShapeRotation
      *
-     * @param yRotation       first rotation around the y-axis
-     * @param zRotation       second rotation around the z-axis
-     * @param secondYRotation last rotation around the y-axis
+     * @param yRotation       the rotations of the object.
+     *                        <p> This is the first rotation applied.
+     *                        <p> The parameter will make the {@link BlockPos} rotate around the y-axis
+     * @param zRotation       the rotations of the object.
+     *                        <p> This is the second rotation applied.
+     *                        <p> The parameter will make the {@link BlockPos} rotate around the z-axis
+     * @param secondYRotation the rotations of the object.
+     *                        <p> This is the third rotation applied.
+     *                        <p> The parameter will make the {@link BlockPos} rotate around the y-axis
      */
     public Rotator(int yRotation, int zRotation, int secondYRotation) {
         getRotations(yRotation, zRotation, secondYRotation);
+    }
+
+    /**
+     * constructor of the object
+     *
+     * @param centerPos the {@link BlockPos} on which the coordinates will rotates.
+     *                  This is an important parameter to define since that if it is not specified,
+     *                  the rotations will be done around the point 0,0,0
+     *                  <br>
+     * @param yRotation the rotations of the object.
+     *                  <p> This is the first rotation applied.
+     *                  <p> The parameter will make the {@link BlockPos} rotate around the y-axis
+     * @param zRotation the rotations of the object.
+     *                  <p> This is the second rotation applied.
+     *                  <p> The parameter will make the {@link BlockPos} rotate around the z-axis
+     */
+    public Rotator(BlockPos centerPos, int yRotation, int zRotation) {
+        this.centerPos = centerPos;
+        getRotations(yRotation, zRotation, 0);
+    }
+
+    /**
+     * constructor of the object
+     *
+     * @param centerPos the {@link BlockPos} on which the coordinates will rotates.
+     *                  This is an important parameter to define since that if it is not specified,
+     *                  the rotations will be done around the point 0,0,0
+     *                  <br>
+     * @param yRotation the rotations of the object.
+     *                  <p> This is the first rotation applied.
+     *                  <p> The parameter will make the {@link BlockPos} rotate around the y-axis
+     */
+    public Rotator(BlockPos centerPos, int yRotation) {
+        this.centerPos = centerPos;
+        getRotations(yRotation, 0, 0);
+    }
+
+    /**
+     * constructor of the object
+     *
+     * @param centerPos the {@link BlockPos} on which the coordinates will rotates.
+     *                  This is an important parameter to define since that if it is not specified,
+     *                  the rotations will be done around the point 0,0,0
+     */
+    public Rotator(BlockPos centerPos) {
+        this.centerPos = centerPos;
     }
 
     /**

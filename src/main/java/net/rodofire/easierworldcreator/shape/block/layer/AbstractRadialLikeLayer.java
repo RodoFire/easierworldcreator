@@ -66,6 +66,7 @@ public abstract class AbstractRadialLikeLayer extends AbstractLayer {
         }
 
         CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
+        pool.shutdown();
         return manager;
     }
 
@@ -126,6 +127,7 @@ public abstract class AbstractRadialLikeLayer extends AbstractLayer {
             }
 
             CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
+            pool.shutdown();
             return manager;
         }
         return null;
@@ -161,6 +163,7 @@ public abstract class AbstractRadialLikeLayer extends AbstractLayer {
         }
 
         CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
+        pool.shutdown();
         return manager;
     }
 
@@ -204,6 +207,7 @@ public abstract class AbstractRadialLikeLayer extends AbstractLayer {
             }
 
             CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
+            pool.shutdown();
             return manager;
         }
         return null;
@@ -236,6 +240,7 @@ public abstract class AbstractRadialLikeLayer extends AbstractLayer {
         }
 
         CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
+        pool.shutdown();
         return manager;
     }
 
@@ -289,6 +294,7 @@ public abstract class AbstractRadialLikeLayer extends AbstractLayer {
             }
 
             CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
+            pool.shutdown();
             return manager;
         }
         return null;
@@ -321,6 +327,7 @@ public abstract class AbstractRadialLikeLayer extends AbstractLayer {
         }
 
         CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
+        pool.shutdown();
         return manager;
     }
 
@@ -357,6 +364,7 @@ public abstract class AbstractRadialLikeLayer extends AbstractLayer {
             }
 
             CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
+            pool.shutdown();
             return manager;
         }
         return null;
@@ -389,6 +397,7 @@ public abstract class AbstractRadialLikeLayer extends AbstractLayer {
         }
 
         CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
+        pool.shutdown();
         return manager;
     }
 
@@ -443,6 +452,7 @@ public abstract class AbstractRadialLikeLayer extends AbstractLayer {
             }
 
             CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
+            pool.shutdown();
             return manager;
         }
         return null;
@@ -475,6 +485,7 @@ public abstract class AbstractRadialLikeLayer extends AbstractLayer {
         }
 
         CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
+        pool.shutdown();
         return manager;
     }
 
@@ -510,6 +521,7 @@ public abstract class AbstractRadialLikeLayer extends AbstractLayer {
             }
 
             CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
+            pool.shutdown();
             return manager;
         }
         return null;

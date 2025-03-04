@@ -465,6 +465,16 @@ public class FastNoiseLite {
         return GetNoise(pos.getX(), pos.getY(), pos.getZ());
     }
 
+    public float GetNoise(long pos) {
+        int[] positions = LongPosHelper.decodeBlockPos2Array(pos);
+        return GetNoise(positions[0], positions[1], positions[2]);
+    }
+
+    public float Get2DNoise(long pos) {
+        int[] positions = LongPosHelper.decodeBlockPos2Array(pos);
+        return GetNoise(positions[0], positions[2]);
+    }
+
     /**
      * 2D noise at given position using current settings
      *
