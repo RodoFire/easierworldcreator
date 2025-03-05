@@ -11,21 +11,21 @@ import java.util.List;
 
 @SuppressWarnings("unused")
 public class LayerPlacer {
-    private final LayerPlace type;
+    private final PlacingType type;
     FastNoiseLite noise;
     int placedBlocks = 0;
 
-    public LayerPlacer(int placedBlocks, LayerPlace type) {
+    public LayerPlacer(int placedBlocks, PlacingType type) {
         this.placedBlocks = placedBlocks;
         this.type = type;
     }
 
-    public LayerPlacer(LayerPlace type, FastNoiseLite noise) {
+    public LayerPlacer(PlacingType type, FastNoiseLite noise) {
         this.type = type;
         this.noise = noise;
     }
 
-    public LayerPlacer(LayerPlace type) {
+    public LayerPlacer(PlacingType type) {
         this.type = type;
     }
 
@@ -131,7 +131,7 @@ public class LayerPlacer {
     /**
      * set how the blocks/particles will be chosen inside a layer
      */
-    public enum LayerPlace {
+    public enum PlacingType {
         /**
          * will choose random Block/Particle in the layer
          */
