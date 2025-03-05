@@ -1,6 +1,7 @@
 package net.rodofire.easierworldcreator.blockdata.sorter;
 
 import it.unimi.dsi.fastutil.longs.LongArrayList;
+import it.unimi.dsi.fastutil.longs.LongShortImmutablePair;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.random.Random;
@@ -13,6 +14,7 @@ import net.rodofire.easierworldcreator.util.WorldGenUtil;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * method to sort BlockPos depending on a parameter
@@ -406,7 +408,7 @@ public class BlockSorter {
             case ALONG_AXIS -> {
                 Vec3d direction = this.axisDirection.normalize();
                 modifyPos(orderedBlockList, Comparator.comparingDouble(entry -> {
-                    int[] pos = entry.getValue();
+                    int[] pos = LongPosHelper.decodeBlockPos2Array(entry.leftLong());
                     return pos[0] * direction.x + pos[2] * direction.y + pos[1] * direction.z;
                 }));
                 yield orderedBlockList;
@@ -414,8 +416,9 @@ public class BlockSorter {
             case RADIAL_AXIS -> {
                 Vec3d axisPoint = this.centerPoint.toCenterPos();
                 Vec3d axisDirection = this.axisDirection.normalize();
-                modifyPos(orderedBlockList, Comparator.comparingDouble((pos) -> {
-                    Vec3d blockPosition = new Vec3d(pos.getValue()[0], pos.getValue()[2], pos.getValue()[1]);
+                modifyPos(orderedBlockList, Comparator.comparingDouble((entry) -> {
+                    int[] pos = LongPosHelper.decodeBlockPos2Array(entry.leftLong());
+                    Vec3d blockPosition = new Vec3d(pos[0], pos[1], pos[2]);
 
                     Vec3d pointToBlock = blockPosition.subtract(axisPoint);
                     double projectionLength = pointToBlock.dotProduct(axisDirection);
@@ -426,34 +429,35 @@ public class BlockSorter {
             }
             case FROM_POINT -> {
                 int[] center = LongPosHelper.convert2Array(this.centerPoint);
-                modifyPos(orderedBlockList, Comparator.comparingDouble((pos) ->
-                        -WorldGenUtil.getDistance(center, pos.getValue()))
+                modifyPos(orderedBlockList, Comparator.comparingDouble((entry) ->
+                        -WorldGenUtil.getDistance(center, LongPosHelper.decodeBlockPos2Array(entry.leftLong())))
                 );
                 yield orderedBlockList;
             }
             case FROM_POINT_INVERTED -> {
                 int[] center = LongPosHelper.convert2Array(this.centerPoint);
-                modifyPos(orderedBlockList, Comparator.comparingDouble((pos) -> WorldGenUtil.getDistance(center, pos.getValue()))
+                modifyPos(orderedBlockList, Comparator.comparingDouble((entry) -> WorldGenUtil.getDistance(center, LongPosHelper.decodeBlockPos2Array(entry.leftLong())))
                 );
                 yield orderedBlockList;
             }
             case FROM_RANDOM_POINT -> {
                 int[] center = LongPosHelper.decodeBlockPos2Array(orderedBlockList.getRandomBlockPos());
-                modifyPos(orderedBlockList, Comparator.comparingDouble((pos) -> -WorldGenUtil.getDistance(center, pos.getValue()))
+                modifyPos(orderedBlockList, Comparator.comparingDouble((entry) -> -WorldGenUtil.getDistance(center, LongPosHelper.decodeBlockPos2Array(entry.leftLong())))
                 );
                 yield orderedBlockList;
             }
             case FROM_RANDOM_POINT_INVERTED -> {
                 int[] center = LongPosHelper.decodeBlockPos2Array(orderedBlockList.getRandomBlockPos());
-                modifyPos(orderedBlockList, Comparator.comparingDouble((pos) -> WorldGenUtil.getDistance(center, pos.getValue()))
+                modifyPos(orderedBlockList, Comparator.comparingDouble((entry) -> WorldGenUtil.getDistance(center, LongPosHelper.decodeBlockPos2Array(entry.leftLong())))
                 );
                 yield orderedBlockList;
             }
             case FROM_PLANE -> {
                 Vec3d axisPoint = this.centerPoint.toCenterPos();
                 Vec3d axisDirection = this.axisDirection.normalize();
-                modifyPos(orderedBlockList, Comparator.comparingDouble(pos -> {
-                    Vec3d blockVec = new Vec3d(pos.getValue()[0], pos.getValue()[1], pos.getValue()[2]);
+                modifyPos(orderedBlockList, Comparator.comparingDouble(entry -> {
+                    int[] pos = LongPosHelper.decodeBlockPos2Array(entry.leftLong());
+                    Vec3d blockVec = new Vec3d(pos[0], pos[1], pos[2]);
 
                     double distance = blockVec.subtract(axisPoint).dotProduct(axisDirection);
 
@@ -464,8 +468,9 @@ public class BlockSorter {
             case FROM_PLANE_INVERTED -> {
                 Vec3d axisPoint = this.centerPoint.toCenterPos();
                 Vec3d axisDirection = this.axisDirection.normalize();
-                modifyPos(orderedBlockList, Comparator.comparingDouble(pos -> {
-                    Vec3d blockVec = new Vec3d(pos.getValue()[0], pos.getValue()[1], pos.getValue()[2]);
+                modifyPos(orderedBlockList, Comparator.comparingDouble(entry -> {
+                    int[] pos = LongPosHelper.decodeBlockPos2Array(entry.leftLong());
+                    Vec3d blockVec = new Vec3d(pos[0], pos[1], pos[2]);
 
                     double distance = blockVec.subtract(axisPoint).dotProduct(axisDirection);
 
@@ -487,15 +492,13 @@ public class BlockSorter {
         };
     }
 
-    private static void modifyPos(OrderedBlockListManager orderedBlockList, @NotNull Comparator<AbstractMap.SimpleEntry<Long, int[]>> comparator) {
+    private static void modifyPos(OrderedBlockListManager orderedBlockList, @NotNull Comparator<LongShortImmutablePair> comparator) {
         orderedBlockList.setPosList(
                 orderedBlockList.getPosList()
-                        .longStream()
+                        .stream()
                         .parallel()
-                        .mapToObj(encodedLong -> new AbstractMap.SimpleEntry<>(encodedLong, LongPosHelper.decodeBlockPos2Array(encodedLong)))
                         .sorted(comparator)
-                        .mapToLong(Map.Entry::getKey)
-                        .collect(LongArrayList::new, LongArrayList::addLast, LongArrayList::addAll)
+                        .collect(Collectors.toList())
         );
     }
 

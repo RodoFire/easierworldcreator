@@ -2,6 +2,7 @@ package net.rodofire.easierworldcreator.blockdata.blocklist;
 
 import it.unimi.dsi.fastutil.ints.Int2ShortOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
+import it.unimi.dsi.fastutil.longs.LongShortImmutablePair;
 import it.unimi.dsi.fastutil.objects.Object2ShortOpenHashMap;
 import it.unimi.dsi.fastutil.shorts.Short2ReferenceOpenHashMap;
 import net.minecraft.block.Block;
@@ -48,16 +49,11 @@ public class OrderedBlockListManager {
     Short2ReferenceOpenHashMap<StructurePlacementRuleManager> ruler = new Short2ReferenceOpenHashMap<>();
 
     /**
-     * Link between blockData and BlockPos
-     */
-    Int2ShortOpenHashMap posStateLink = new Int2ShortOpenHashMap();
-
-    /**
      * BlockPos objects.
      * <li> {@code long} represent the encoded {@link BlockPos} to save some memory and improve performance.
      * <li> {@code int} represents the index of the {@link List} that correponds to the encoded BlockPos
      */
-    LongArrayList posListOptimized = new LongArrayList();
+    List<LongShortImmutablePair> posListOptimized = new ArrayList<>();
 
 
     /**
@@ -70,13 +66,13 @@ public class OrderedBlockListManager {
     /**
      * constructor to init a {@link OrderedBlockListManager}.
      *
-     * @param comparator the comparator to be fused
+     * @param manager the manager to be fused
      */
-    public OrderedBlockListManager(OrderedBlockListManager comparator) {
-        this.state = comparator.state;
-        this.ruler = comparator.ruler;
-        this.posStateLink = comparator.posStateLink;
-        this.posListOptimized = comparator.posListOptimized;
+    public OrderedBlockListManager(OrderedBlockListManager manager) {
+        this.state = manager.state;
+        this.ruler = manager.ruler;
+        this.blockDataMap = manager.blockDataMap;
+        this.posListOptimized = manager.posListOptimized;
     }
 
     /**
@@ -87,8 +83,7 @@ public class OrderedBlockListManager {
     public OrderedBlockListManager(BlockListManager manager) {
 
         //we init at a good size to avoid computing intensive rehash
-        this.posListOptimized = new LongArrayList(manager.totalSize());
-        this.posStateLink = new Int2ShortOpenHashMap(manager.totalSize());
+        this.posListOptimized = new ArrayList<>(manager.totalSize());
 
 
         for (BlockList blockList : manager.blockLists) {
@@ -104,14 +99,11 @@ public class OrderedBlockListManager {
             }
 
             short index = this.blockDataMap.getShort(blockData);
-            int normalizedIndex = posSize();
             LongArrayList posList = blockList.getPosList();
 
             for (long pos : posList) {
-                posStateLink.put(normalizedIndex, index);
-                normalizedIndex++;
+                this.posListOptimized.add(new LongShortImmutablePair(pos, index));
             }
-            posListOptimized.addAll(posList);
         }
     }
 
@@ -157,7 +149,7 @@ public class OrderedBlockListManager {
      * @throws IndexOutOfBoundsException if the index is out of range.
      */
     public long removeBlockPos(int index) {
-        return posListOptimized.removeLong(index);
+        return posListOptimized.remove(index).leftLong();
     }
 
     /**
@@ -168,9 +160,8 @@ public class OrderedBlockListManager {
      * @throws IndexOutOfBoundsException if the index is out of range.
      */
     public Pair<Long, BlockState> removeBlockPosPair(int index) {
-        long pos = posListOptimized.removeLong(index);
-        short id = this.posStateLink.get(index);
-        return new Pair<>(pos, this.state.get(id).getState());
+        LongShortImmutablePair pos = posListOptimized.remove(index);
+        return new Pair<>(pos.leftLong(), this.state.get(pos.rightShort()).getState());
     }
 
     /**
@@ -219,11 +210,10 @@ public class OrderedBlockListManager {
      */
     public void clear() {
         this.state.clear();
-        this.posStateLink.clear();
         this.posListOptimized.clear();
     }
 
-    public LongArrayList getPosList() {
+    public List<LongShortImmutablePair> getPosList() {
         return this.posListOptimized;
     }
 
@@ -235,7 +225,7 @@ public class OrderedBlockListManager {
      * @throws IndexOutOfBoundsException if the index is out of bounds
      */
     public long getBlockPos(int index) {
-        return posListOptimized.getLong(index);
+        return posListOptimized.get(index).leftLong();
     }
 
     /**
@@ -245,7 +235,7 @@ public class OrderedBlockListManager {
      * @throws java.util.NoSuchElementException if the position map is empty
      */
     public long getFirstBlockPos() {
-        return posListOptimized.getFirst();
+        return posListOptimized.getFirst().leftLong();
     }
 
     /**
@@ -255,7 +245,7 @@ public class OrderedBlockListManager {
      * @throws java.util.NoSuchElementException if the position map is empty
      */
     public long getLastBlockPos() {
-        return posListOptimized.getLast();
+        return posListOptimized.getLast().leftLong();
     }
 
     /**
@@ -373,14 +363,9 @@ public class OrderedBlockListManager {
         return this.state.getLast().getTag();
     }
 
-    public void setPosList(LongArrayList posList) {
+    public void setPosList(List<LongShortImmutablePair> posList) {
         this.posListOptimized = posList;
     }
-
-    public void setPosListFromList(List<BlockPos> posList) {
-        this.posListOptimized = LongPosHelper.encodeBlockPos(posList);
-    }
-
 
     public void put(OrderedBlockListManager comparator) {
         for (BlockDataKey blockData : comparator.state) {
@@ -391,11 +376,8 @@ public class OrderedBlockListManager {
             }
             short index = this.blockDataMap.getShort(blockData);
 
-            for (long pos : comparator.posListOptimized) {
-                //long pos = comparator.posListOptimized.getLong(idx);
-                int normalizedIndex = posSize();
-                posListOptimized.add(pos);
-                posStateLink.put(normalizedIndex, index);
+            for (LongShortImmutablePair pos : comparator.posListOptimized) {
+                posListOptimized.add(new LongShortImmutablePair(pos.leftLong(), index));
             }
         }
     }
@@ -417,12 +399,8 @@ public class OrderedBlockListManager {
 
         int normalizedIndex = posSize();
         for (long pos : posList) {
-            tempStateLinkMap.put(normalizedIndex, index);
-            normalizedIndex++;
+            posListOptimized.add(new LongShortImmutablePair(pos, index));
         }
-        posListOptimized.addAll(posList);
-
-        posStateLink.putAll(tempStateLinkMap);
 
         return this;
     }
@@ -456,11 +434,11 @@ public class OrderedBlockListManager {
     }
 
     public BlockDataKey getFromPosIndex(int index) {
-        return this.state.get(this.posStateLink.get(index));
+        return this.state.get(this.posListOptimized.get(index).rightShort());
     }
 
     public Optional<StructurePlacementRuleManager> getPlacementRuleFromPosIndex(int index) {
-        return Optional.ofNullable(this.ruler.get(this.posStateLink.get(index)));
+        return Optional.ofNullable(this.ruler.get(this.posListOptimized.get(index).rightShort()));
     }
 
 
@@ -489,7 +467,7 @@ public class OrderedBlockListManager {
             if (!place(worldAccess, i)) {
                 placed = false;
             } else if (markdirty) {
-                chunkManager.markForUpdate(LongPosHelper.decodeBlockPos(this.posListOptimized.getLong(i)));
+                chunkManager.markForUpdate(LongPosHelper.decodeBlockPos(this.posListOptimized.get(i).leftLong()));
             }
         }
         return placed;
@@ -531,13 +509,13 @@ public class OrderedBlockListManager {
 
         boolean placed;
         if ((placed = place(world, index, Block.FORCE_STATE)) && markDirty) {
-            chunkManager.markForUpdate(LongPosHelper.decodeBlockPos(this.posListOptimized.getLong(index)));
+            chunkManager.markForUpdate(LongPosHelper.decodeBlockPos(this.posListOptimized.get(index).leftLong()));
         }
         return placed;
     }
 
     public boolean place(StructureWorldAccess world, int index, int flag) {
-        BlockPos pos = LongPosHelper.decodeBlockPos(this.posListOptimized.getLong(index));
+        BlockPos pos = LongPosHelper.decodeBlockPos(this.posListOptimized.get(index).leftLong());
         BlockState worldState = world.getBlockState(pos);
 
         BlockDataKey data = getFromPosIndex(index);
