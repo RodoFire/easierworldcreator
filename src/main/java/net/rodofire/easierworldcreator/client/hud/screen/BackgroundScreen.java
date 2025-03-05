@@ -51,6 +51,9 @@ public abstract class BackgroundScreen extends Screen {
     public void renderBackground(DrawContext context, int mouseX, int mouseY, float delta) {
     }
 
+    /**
+     * method to render the backgound
+     */
     public void renderBackgroundTexture(DrawContext context, int mouseX, int mouseY, float delta) {
         if (TEXTURE == null) {
             super.renderBackground(context, mouseX, mouseY, delta);
@@ -98,7 +101,15 @@ public abstract class BackgroundScreen extends Screen {
         context.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
     }
 
-
+    /**
+     * method to render a dark rectangle on top of the background, used in config screen
+     * @param context draw context
+     * @param x corner coordinates of the rectangle
+     * @param y corner coordinates of the rectangle
+     * @param x2 corner coordinates of the rectangle
+     * @param y2 corner coordinates of the rectangle
+     * @param color the color of the rectangle
+     */
     public void renderDarkRectangle(DrawContext context, int x, int y, int x2, int y2, int color) {
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();

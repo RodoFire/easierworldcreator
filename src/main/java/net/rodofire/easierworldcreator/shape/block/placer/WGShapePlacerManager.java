@@ -6,11 +6,17 @@ import net.minecraft.util.Pair;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.gen.GenerationStep;
 import net.minecraft.world.gen.feature.PlacedFeature;
+import net.rodofire.easierworldcreator.mixin.world.gen.ChunkGeneratorMixin;
 import net.rodofire.easierworldcreator.util.file.EwcFolderData;
 
 import java.nio.file.Path;
 import java.util.*;
 
+/**
+ * Class to manager all the multi-chunk features of a chunk.
+ * This an object of this class is created for each chunk in {@link ChunkGeneratorMixin} when the chunk get generated.
+ * The class gives the JSON files path of the moment being generated.
+ */
 public class WGShapePlacerManager {
 
     private final Map<PlacedFeature, ShortSet> beforeFeatures = new HashMap<>();

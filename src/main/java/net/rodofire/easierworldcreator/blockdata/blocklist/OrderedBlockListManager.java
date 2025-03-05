@@ -492,6 +492,17 @@ public class OrderedBlockListManager {
         return placed;
     }
 
+    /**
+     * Method to place a {@link BlockPos} based on the index.
+     * No placement flag is selected so the default took is {@link Block#FORCE_STATE}.
+     * No block updates are performed except for the client rendering, allowing for a huge gain in performance.
+     * @param world the world where the block will be placed
+     * @param index the index of the list of the {@link BlockPos}
+     * @return <pre>
+     *     <li>true if it was placed
+     *     <li>false else
+     * </pre>
+     */
     public boolean place(StructureWorldAccess world, int index) {
         if (!init)
             init(world);

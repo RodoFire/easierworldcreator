@@ -60,6 +60,7 @@ public class DirectionalLayer extends AbstractLayer {
         }
 
         CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
+        pool.shutdown();
 
         return manager;
     }
@@ -103,6 +104,7 @@ public class DirectionalLayer extends AbstractLayer {
             }
 
             CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
+            pool.shutdown();
 
             return manager;
         }
@@ -137,6 +139,7 @@ public class DirectionalLayer extends AbstractLayer {
         }
 
         CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
+        pool.shutdown();
 
         return manager;
     }
@@ -175,6 +178,7 @@ public class DirectionalLayer extends AbstractLayer {
             }
 
             CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
+            pool.shutdown();
 
             return manager;
         }

@@ -6,6 +6,9 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Objects;
 
+/**
+ * class to store objects that represents a block
+ */
 public class BlockDataKey {
     private BlockState state;
     private NbtCompound tag;

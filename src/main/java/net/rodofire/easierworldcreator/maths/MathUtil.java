@@ -171,7 +171,6 @@ public class MathUtil {
         double a = 0;
         for (double pos : coordinates) {
             a += pos * pos;
-            System.out.println(a + "   " + (pos) + "   " + (pos * pos));
         }
         return a;
     }
