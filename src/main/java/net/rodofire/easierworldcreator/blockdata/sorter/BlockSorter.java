@@ -14,6 +14,7 @@ import net.rodofire.easierworldcreator.util.WorldGenUtil;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * method to sort BlockPos depending on a parameter
@@ -497,7 +498,7 @@ public class BlockSorter {
                         .stream()
                         .parallel()
                         .sorted(comparator)
-                        .toList()
+                        .collect(Collectors.toList())
         );
     }
 
