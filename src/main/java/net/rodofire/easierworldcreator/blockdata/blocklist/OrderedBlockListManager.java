@@ -498,10 +498,10 @@ public class OrderedBlockListManager {
      * No block updates are performed except for the client rendering, allowing for a huge gain in performance.
      * @param world the world where the block will be placed
      * @param index the index of the list of the {@link BlockPos}
-     * @return <pre>
+     * @return <ul>
      *     <li>true if it was placed
      *     <li>false else
-     * </pre>
+     * </ul>
      */
     public boolean place(StructureWorldAccess world, int index) {
         if (!init)
