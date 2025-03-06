@@ -3,6 +3,7 @@ package net.rodofire.easierworldcreator.command;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.arguments.BoolArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.minecraft.command.CommandRegistryAccess;
@@ -29,11 +30,19 @@ public class PlaceAllMCFCommand {
                                 CommandManager.RegistrationEnvironment registrationEnvironmen) {
 
         dispatcher.register(CommandManager.literal("placeallmultichunkfeatures")
-                .executes(PlaceAllMCFCommand::run));
+                .executes(context -> run(context, false))
+                .then(CommandManager.argument("legacy", BoolArgumentType.bool())
+                        .executes(context -> run(context, BoolArgumentType.getBool(context, "legacy")))
+                )
+        );
     }
 
-    public static int run(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
-        Path path = EwcFolderData.getStructuresDirectory();
+    public static int run(CommandContext<ServerCommandSource> context, boolean legacy) throws CommandSyntaxException {
+        Path path;
+
+        if (legacy) path = EwcFolderData.getStructuresDirectory();
+        else path = EwcFolderData.Legacy.getLegacyStructureDir(context.getSource().getWorld());
+
         if (context.getSource().hasPermissionLevel(2)) {
             try (Stream<Path> paths = Files.list(path)) {
                 paths.forEach(filePath -> {
