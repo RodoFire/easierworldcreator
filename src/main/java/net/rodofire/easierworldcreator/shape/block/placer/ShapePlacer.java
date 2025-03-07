@@ -80,6 +80,7 @@ public class ShapePlacer {
 
     /**
      * Place the shape from a blockListManager. The place moment {@link PlaceMoment#WORLD_GEN} should not be used. Use instead {@link ShapePlacer#place(DividedBlockListManager)}.
+     *
      * @param defaultManager the manager that will be placed
      */
     public void place(BlockListManager defaultManager) {
@@ -115,14 +116,14 @@ public class ShapePlacer {
                 return;
 
             if (shapeData == null)
-                shapeData = WGShapeData.ofStep(GenerationStep.Feature.VEGETAL_DECORATION, this.featureName.toString());
+                shapeData = WGShapeData.ofStep(GenerationStep.Feature.VEGETAL_DECORATION, this.featureName.getNamespace() + "-" + this.featureName.getPath());
 
             WGShapeHandler.encodeInformations(posLit.keySet(), shapeData, (chunkPosManager.getOffset()));
 
             for (Map.Entry<ChunkPos, LongOpenHashSet> posSet : posLit.entrySet()) {
                 futures.add(CompletableFuture.runAsync(() -> {
                     manager.get(posSet.getValue())
-                            .placeJson(posSet.getKey(), chunkPosManager.getOffset(), featureName.toString());
+                            .placeJson(posSet.getKey(), chunkPosManager.getOffset(), this.featureName.getNamespace() + "-" + this.featureName.getPath());
                 }, pool));
             }
             CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
@@ -151,11 +152,11 @@ public class ShapePlacer {
             }
 
             if (shapeData == null)
-                shapeData = WGShapeData.ofStep(GenerationStep.Feature.VEGETAL_DECORATION, this.featureName.toString());
+                shapeData = WGShapeData.ofStep(GenerationStep.Feature.VEGETAL_DECORATION, this.featureName.getNamespace() + "-" + this.featureName.getPath());
 
             WGShapeHandler.encodeInformations(manager.getChunkPos(), shapeData, chunkPosManager.getOffset());
 
-            manager.placeJson(this.featureName.toString(), chunkPosManager.getOffset());
+            manager.placeJson(this.featureName.getNamespace() + "-" + this.featureName.getPath(), chunkPosManager.getOffset());
 
             placeWorldGenFiles();
 
