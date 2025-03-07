@@ -46,7 +46,7 @@ public class FastMaths {
      * method to initialize class when launching the mod
      */
     public static void registerMaths() {
-        Ewc.LOGGER.info("registering FastMaths class");
+        Ewc.LOGGER.info("|\t- Registering FastMaths");
     }
 
     /**

@@ -1,6 +1,5 @@
 package net.rodofire.easierworldcreator.blockdata.blocklist;
 
-import it.unimi.dsi.fastutil.ints.Int2ShortOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.fastutil.longs.LongShortImmutablePair;
 import it.unimi.dsi.fastutil.objects.Object2ShortOpenHashMap;
@@ -368,17 +367,23 @@ public class OrderedBlockListManager {
     }
 
     public void put(OrderedBlockListManager comparator) {
-        for (BlockDataKey blockData : comparator.state) {
+
+        for (short idx : comparator.blockDataMap.values()) {
+            BlockDataKey blockData = comparator.state.get(idx);
+            StructurePlacementRuleManager rule = comparator.ruler.get(idx);
+
             if (!this.blockDataMap.containsKey(blockData)) {
                 short index = (short) this.blockDataMap.size();
                 this.blockDataMap.put(blockData, index);
                 this.state.add(blockData);
+                if (rule != null) {
+                    this.ruler.put(index, rule);
+                }
             }
-            short index = this.blockDataMap.getShort(blockData);
+        }
 
-            for (LongShortImmutablePair pos : comparator.posListOptimized) {
-                posListOptimized.add(new LongShortImmutablePair(pos.leftLong(), index));
-            }
+        for (LongShortImmutablePair pos : comparator.posListOptimized) {
+            posListOptimized.add(new LongShortImmutablePair(pos.leftLong(), this.blockDataMap.getShort(comparator.state.get(pos.rightShort()))));
         }
     }
 
@@ -395,9 +400,6 @@ public class OrderedBlockListManager {
         }
         short index = this.blockDataMap.getShort(blockData);
 
-        Int2ShortOpenHashMap tempStateLinkMap = new Int2ShortOpenHashMap(posList.size());
-
-        int normalizedIndex = posSize();
         for (long pos : posList) {
             posListOptimized.add(new LongShortImmutablePair(pos, index));
         }
@@ -496,12 +498,13 @@ public class OrderedBlockListManager {
      * Method to place a {@link BlockPos} based on the index.
      * No placement flag is selected so the default took is {@link Block#FORCE_STATE}.
      * No block updates are performed except for the client rendering, allowing for a huge gain in performance.
+     *
      * @param world the world where the block will be placed
      * @param index the index of the list of the {@link BlockPos}
-     * @return <pre>
-     *     <li>true if it was placed
-     *     <li>false else
-     * </pre>
+     * @return <ul>
+     * <li>true if it was placed
+     * <li>false else
+     * </ul>
      */
     public boolean place(StructureWorldAccess world, int index) {
         if (!init)
@@ -515,12 +518,12 @@ public class OrderedBlockListManager {
     }
 
     public boolean place(StructureWorldAccess world, int index, int flag) {
-        BlockPos pos = LongPosHelper.decodeBlockPos(this.posListOptimized.get(index).leftLong());
+        LongShortImmutablePair pair = this.posListOptimized.get(index);
+        BlockPos pos = LongPosHelper.decodeBlockPos(pair.leftLong());
         BlockState worldState = world.getBlockState(pos);
 
-        BlockDataKey data = getFromPosIndex(index);
-        Optional<StructurePlacementRuleManager> rule = getPlacementRuleFromPosIndex(index);
-        return worldState.isAir() && BlockPlaceUtil.place(world, pos, data, null, flag);
+        BlockDataKey data = this.state.get(pair.rightShort());
+        return worldState.isAir() && BlockPlaceUtil.place(world, pos, data, this.ruler.get((short) index), flag);
     }
 
     public void init(StructureWorldAccess world) {

@@ -27,19 +27,22 @@ public class Ewc implements DedicatedServerModInitializer {
      * If the mod was already initialized, it won't be initialized another time
      */
     public static void init() {
+        if (initialized)
+            return;
+
         initialized = true;
+        LOGGER.info("[EWC] Initializing :");
         EwcConfig.setConfig();
         FastMaths.registerMaths();
         EwcFolderData.initFiles();
         ModCommands.registerCommands();
 
-        LOGGER.info("Starting Easierworldcreator");
+        LOGGER.info("[EWC] Started!");
     }
 
     @Override
     public void onInitializeServer() {
         if (!initialized)
             init();
-
     }
 }

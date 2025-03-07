@@ -8,6 +8,7 @@
     "world.gen.surfacebuilder.MaterialConditionMixin",
     "world.gen.surfacebuilder.SurfaceRulesMixin",
     "world.structure.PalettedBlockInfoListMixin",
+    "world.structure.StructureTemplateManagerInvoker",
     "world.structure.StructureTemplateMixin"
   ],
   "injectors": {
