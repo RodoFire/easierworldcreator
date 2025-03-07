@@ -218,15 +218,15 @@ public class DividedBlockListManager {
         return manager;
     }
 
-    public void placeJson(String name) {
+    public void placeJson(StructureWorldAccess worldAccess, String name) {
         for (Map.Entry<ChunkPos, BlockListManager> entry : managers.entrySet()) {
-            entry.getValue().placeJson(entry.getKey(), new ChunkPos(0, 0), name);
+            entry.getValue().placeJson(worldAccess, entry.getKey(), new ChunkPos(0, 0), name);
         }
     }
 
-    public void placeJson(String name, ChunkPos offset) {
+    public void placeJson(StructureWorldAccess worldAccess, String name, ChunkPos offset) {
         for (Map.Entry<ChunkPos, BlockListManager> entry : managers.entrySet()) {
-            entry.getValue().placeJson(entry.getKey(), offset, name);
+            entry.getValue().placeJson(worldAccess, entry.getKey(), offset, name);
         }
     }
 

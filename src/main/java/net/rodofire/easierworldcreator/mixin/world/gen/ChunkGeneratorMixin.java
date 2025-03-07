@@ -47,7 +47,7 @@ public abstract class ChunkGeneratorMixin {
         for (int i = -1; i <= 1; i++) {
             for (int j = -1; j <= 1; j++) {
                 ChunkPos pos = new ChunkPos(chunk.getPos().x + i, chunk.getPos().z + j);
-                shapePlacer.add(WGShapeHandler.decodeInformation(pos));
+                shapePlacer.add(WGShapeHandler.decodeInformation(world, pos));
             }
         }
 
@@ -64,7 +64,7 @@ public abstract class ChunkGeneratorMixin {
                 return;
             }
 
-            Path[] paths = placerManager.getToPlace(GenerationStep.Feature.values()[k]);
+            Path[] paths = placerManager.getToPlace(world, GenerationStep.Feature.values()[k]);
             for (Path path : paths) {
                 world.setCurrentlyGeneratingStructureName(() -> "\n\t-ewc multi-chunk feature generating: \n\t\t- " + path.getFileName() + "\n\t\t - step : generation step");
                 BlockListManager manager = BlockListHelper.fromJsonPath(world, path);
@@ -93,7 +93,7 @@ public abstract class ChunkGeneratorMixin {
     private void onFeatureGenerated(StructureWorldAccess world, Chunk chunk, StructureAccessor structureAccessor, CallbackInfo ci, @Local PlacedFeature placedFeature) {
         for (WGShapePlacerManager placerManager : placerManagers) {
             if (placerManager == null) return;
-            Path[] paths = placerManager.getToPlace(old, placedFeature);
+            Path[] paths = placerManager.getToPlace(world, old, placedFeature);
             for (Path path : paths) {
                 world.setCurrentlyGeneratingStructureName(() -> "\n\t-ewc multi-chunk feature generating: \n\t\t- " + path.getFileName() + "\n\t\t - step : feature");
                 BlockListManager comparator = BlockListHelper.fromJsonPath(world, path);
@@ -123,7 +123,7 @@ public abstract class ChunkGeneratorMixin {
         for (int i = -1; i <= 1; i++) {
             for (int j = -1; j <= 1; j++) {
                 ChunkPos pos = new ChunkPos(chunk.getPos().x + i, chunk.getPos().z + j);
-                Path basePaths = EwcFolderData.getStructureDataDir(pos);
+                Path basePaths = EwcFolderData.getStructureDataDir(world, pos);
                 try (Stream<Path> paths = Files.list(basePaths)) {
                     paths.forEach(path -> {
                         if (path.toString().endsWith(".json")) {
@@ -152,7 +152,7 @@ public abstract class ChunkGeneratorMixin {
             }
         }
 
-        Path managerPath = EwcFolderData.getStructureReference(chunk.getPos());
+        Path managerPath = EwcFolderData.getStructureReference(world, chunk.getPos());
         try {
             Files.delete(managerPath);
         } catch (Exception e) {

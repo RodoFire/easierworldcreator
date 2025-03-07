@@ -4,6 +4,7 @@ import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import net.minecraft.util.math.ChunkPos;
+import net.minecraft.world.StructureWorldAccess;
 import net.rodofire.easierworldcreator.util.file.EwcFolderData;
 
 import java.io.File;
@@ -25,18 +26,18 @@ public class WGShapeHandler {
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 
 
-    public static void encodeInformations(Set<ChunkPos> posSet, WGShapeData placer, ChunkPos posOffset) {
+    public static void encodeInformations(StructureWorldAccess worldAccess, Set<ChunkPos> posSet, WGShapeData placer, ChunkPos posOffset) {
         for (ChunkPos pos : posSet) {
             ChunkPos newPos = new ChunkPos(pos.x + posOffset.x, pos.z + posOffset.z);
-            encodeInformation(newPos, placer);
+            encodeInformation(worldAccess, newPos, placer);
         }
     }
 
     /**
      * store the information about when should the piece should be placed.
      */
-    public static void encodeInformation(ChunkPos pos, WGShapeData placer) {
-        List<WGShapeData> data = loadData(pos);
+    public static void encodeInformation(StructureWorldAccess worldAccess, ChunkPos pos, WGShapeData placer) {
+        List<WGShapeData> data = loadData(worldAccess, pos);
         data.add(
                 new WGShapeData(
                         placer.getName(),
@@ -44,15 +45,14 @@ public class WGShapeHandler {
                         placer.getFeatureShift().isPresent() ? placer.getFeatureShift().get().getLeft() : null,
                         placer.getStep().orElse(null))
         );
-        saveData(pos, data);
+        saveData(worldAccess, pos, data);
     }
 
     /**
      * Décode les informations d'un chunk pour savoir quels morceaux doivent être placés.
      */
-    public static WGShapePlacerManager decodeInformation(ChunkPos pos) {
-        List<WGShapeData> data = loadData(pos);
-
+    public static WGShapePlacerManager decodeInformation(StructureWorldAccess worldAccess, ChunkPos pos) {
+        List<WGShapeData> data = loadData(worldAccess, pos);
 
         if (data.isEmpty()) {
             return null;
@@ -67,8 +67,9 @@ public class WGShapeHandler {
     /**
      * Charge les données JSON.
      */
-    private static List<WGShapeData> loadData(ChunkPos pos) {
-        Path path = EwcFolderData.getStructureReference(pos);
+    private static List<WGShapeData> loadData(StructureWorldAccess worldAccess, ChunkPos pos) {
+        Path path = EwcFolderData.getStructureReference(worldAccess, pos);
+        if (path == null) return new ArrayList<>();
         File file = path.toFile();
         if (!file.exists()) {
             return new ArrayList<>();
@@ -86,8 +87,8 @@ public class WGShapeHandler {
     /**
      * Sauvegarde les données JSON.
      */
-    private static void saveData(ChunkPos pos, List<WGShapeData> data) {
-        Path path = EwcFolderData.getStructureReference(pos);
+    private static void saveData(StructureWorldAccess worldAccess, ChunkPos pos, List<WGShapeData> data) {
+        Path path = EwcFolderData.getStructureReference(worldAccess, pos);
         File file = path.toFile();
         try (FileWriter writer = new FileWriter(file)) {
             GSON.toJson(data, writer);

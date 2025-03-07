@@ -4,6 +4,7 @@ import it.unimi.dsi.fastutil.shorts.ShortOpenHashSet;
 import it.unimi.dsi.fastutil.shorts.ShortSet;
 import net.minecraft.util.Pair;
 import net.minecraft.util.math.ChunkPos;
+import net.minecraft.world.StructureWorldAccess;
 import net.minecraft.world.gen.GenerationStep;
 import net.minecraft.world.gen.feature.PlacedFeature;
 import net.rodofire.easierworldcreator.mixin.world.gen.ChunkGeneratorMixin;
@@ -65,7 +66,7 @@ public class WGShapePlacerManager {
         }
     }
 
-    public Path[] getToPlace(PlacedFeature beforeFeature, PlacedFeature featureAfter) {
+    public Path[] getToPlace(StructureWorldAccess worldAccess, PlacedFeature beforeFeature, PlacedFeature featureAfter) {
         ShortSet set = new ShortOpenHashSet();
         if (beforeFeature != null) {
             ShortSet result = beforeFeatures.get(beforeFeature);
@@ -83,19 +84,19 @@ public class WGShapePlacerManager {
             return new Path[0];
         }
 
-        return getPath(set);
+        return getPath(worldAccess, set);
     }
 
-    public Path[] getToPlace(GenerationStep.Feature feature) {
+    public Path[] getToPlace(StructureWorldAccess worldAccess, GenerationStep.Feature feature) {
         ShortSet set = steps.get(feature);
         if (set == null) {
             return new Path[0];
         }
-        return getPath(set);
+        return getPath(worldAccess, set);
     }
 
-    private Path[] getPath(ShortSet set) {
-        Path basePath = EwcFolderData.getStructureDataDir(pos);
+    private Path[] getPath(StructureWorldAccess worldAccess, ShortSet set) {
+        Path basePath = EwcFolderData.getStructureDataDir(worldAccess, pos);
         Path[] paths = new Path[set.size()];
 
         int i = 0;
@@ -107,8 +108,8 @@ public class WGShapePlacerManager {
         return paths;
     }
 
-    public Path[] getLeft() {
-        Path basePath = EwcFolderData.getStructureDataDir(pos);
+    public Path[] getLeft(StructureWorldAccess worldAccess) {
+        Path basePath = EwcFolderData.getStructureDataDir(worldAccess, pos);
         Set<Path> paths = new HashSet<>();
         for (String string : references) {
             if (!placed.contains(string)) {

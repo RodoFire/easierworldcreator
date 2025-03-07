@@ -1,55 +1,67 @@
 package net.rodofire.easierworldcreator.util.file;
 
-import net.fabricmc.loader.api.FabricLoader;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerWorldEvents;
+import net.minecraft.registry.RegistryKey;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.WorldSavePath;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.StructureWorldAccess;
+import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
+import net.minecraft.world.dimension.DimensionType;
 import net.rodofire.easierworldcreator.Ewc;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Path;
-import java.util.Objects;
+import java.util.*;
 
 public class EwcFolderData {
+    private static final Map<RegistryKey<World>, Path> dimensionPath = new HashMap<>();
 
     public static void initFiles() {
         Ewc.LOGGER.info("|\t- Registering Data Folders");
-        createDirectories();
+        ServerWorldEvents.LOAD.register((minecraftServer, serverWorld) -> {
+            dimensionPath.put(serverWorld.getRegistryKey(), DimensionType.getSaveDirectory(serverWorld.getRegistryKey(), minecraftServer.getSavePath(WorldSavePath.ROOT)));
+            createDirectories(serverWorld);
+        });
     }
 
-    private static void createDirectories() {
-        File file = getEwcDataDirectory().toFile();
+    private static void createDirectories(ServerWorld world) {
+        File file = getEwcDataDirectory(world).toFile();
         if (!file.exists()) {
             file.mkdirs();
         }
 
-        file = getStructuresDirectory().toFile();
+        file = getStructuresDirectory(world).toFile();
         if (!file.exists()) {
             file.mkdirs();
         }
 
-        file = getReferenceDir().toFile();
+        file = getReferenceDir(world).toFile();
         if (!file.exists()) {
             file.mkdirs();
         }
     }
 
 
-    public static Path getEwcDataDirectory() {
-        return FabricLoader.getInstance().getGameDir().resolve("ewc_data");
+    public static Path getEwcDataDirectory(StructureWorldAccess world) {
+        ServerWorld serverWorld = world.toServerWorld();
+        return dimensionPath.get(serverWorld.getRegistryKey()).resolve("ewc_data");
     }
 
-    public static Path getStructuresDirectory() {
-        return getEwcDataDirectory().resolve("structures");
+    public static Path getStructuresDirectory(StructureWorldAccess world) {
+        Path path = getEwcDataDirectory(world);
+        return path.resolve("structures");
     }
 
-    public static Path getStructureDataDir(ChunkPos chunk) {
-        return getStructuresDirectory().resolve("chunk_" + chunk.x + "_" + chunk.z);
+    public static Path getStructureDataDir(StructureWorldAccess world, ChunkPos chunk) {
+        Path path = getStructuresDirectory(world);
+        return path.resolve("chunk_" + chunk.x + "_" + chunk.z);
     }
 
-    public static Path getNVerifyDataDir(ChunkPos chunk) {
-        Path path = getStructureDataDir(chunk);
+    public static Path getNVerifyDataDir(StructureWorldAccess world, ChunkPos chunk) {
+        Path path = getStructureDataDir(world, chunk);
         if (path.toFile().exists()) {
             return path;
         }
@@ -57,12 +69,48 @@ public class EwcFolderData {
         return path;
     }
 
-    public static Path getReferenceDir() {
-        return getEwcDataDirectory().resolve("structure_references");
+    public static Path getReferenceDir(StructureWorldAccess world) {
+        Path path = getEwcDataDirectory(world);
+        return path.resolve("structure_references");
     }
 
-    public static Path getStructureReference(ChunkPos chunk) {
-        return getReferenceDir().resolve("chunk_" + chunk.x + "_" + chunk.z + ".json");
+    public static Path getStructureReference(StructureWorldAccess world, ChunkPos chunk) {
+        Path path = getReferenceDir(world);
+        return path.resolve("chunk_" + chunk.x + "_" + chunk.z + ".json");
+    }
+
+    public static Path getEwcDataDirectory(ServerWorld world) {
+        return dimensionPath.get(world.getRegistryKey()).resolve("ewc_data");
+
+    }
+
+    public static Path getStructuresDirectory(ServerWorld world) {
+        Path path = getEwcDataDirectory(world);
+        return path.resolve("structures");
+    }
+
+    public static Path getStructureDataDir(ServerWorld world, ChunkPos chunk) {
+        Path path = getStructuresDirectory(world);
+        return path.resolve("chunk_" + chunk.x + "_" + chunk.z);
+    }
+
+    public static Path getNVerifyDataDir(ServerWorld world, ChunkPos chunk) {
+        Path path = getStructureDataDir(world, chunk);
+        if (path.toFile().exists()) {
+            return path;
+        }
+        path.toFile().mkdirs();
+        return path;
+    }
+
+    public static Path getReferenceDir(ServerWorld world) {
+        Path path = getEwcDataDirectory(world);
+        return path.resolve("structure_references");
+    }
+
+    public static Path getStructureReference(ServerWorld world, ChunkPos chunk) {
+        Path path = getReferenceDir(world);
+        return path.resolve("chunk_" + chunk.x + "_" + chunk.z + ".json");
     }
 
     public static class Legacy {

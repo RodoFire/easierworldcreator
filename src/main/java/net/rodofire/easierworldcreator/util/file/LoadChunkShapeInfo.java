@@ -2,6 +2,7 @@ package net.rodofire.easierworldcreator.util.file;
 
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
+import net.minecraft.world.StructureWorldAccess;
 import net.rodofire.easierworldcreator.Ewc;
 import net.rodofire.easierworldcreator.config.ewc.EwcConfig;
 
@@ -20,11 +21,11 @@ public class LoadChunkShapeInfo {
     /**
      * method to verify if there's a JSON files in the chunk folder
      *
-     * @param pos   the {@link BlockPos} that will be converted into a {@link ChunkPos}
+     * @param pos the {@link BlockPos} that will be converted into a {@link ChunkPos}
      * @return the list of the structure path to be placed later
      */
-    public static List<Path> getWorldGenFiles(BlockPos pos) {
-        return getWorldGenFiles(new ChunkPos(pos));
+    public static List<Path> getWorldGenFiles(StructureWorldAccess worldAccess, BlockPos pos) {
+        return getWorldGenFiles(worldAccess, new ChunkPos(pos));
     }
 
     /**
@@ -33,10 +34,11 @@ public class LoadChunkShapeInfo {
      * @param chunk the chunk that needs to be verified
      * @return the list of the structure path to be placed later
      */
-    public static List<Path> getWorldGenFiles(ChunkPos chunk) {
+    public static List<Path> getWorldGenFiles(StructureWorldAccess worldAccess, ChunkPos chunk) {
         List<Path> pathList = new ArrayList<>();
         int distance = EwcConfig.getFeaturesChunkDistance();
-        Path generatedPath = EwcFolderData.getStructureDataDir(chunk);
+        Path generatedPath = EwcFolderData.getStructureDataDir(worldAccess, chunk);
+        if (generatedPath == null) return new ArrayList<>();
         generatedPath = generatedPath.resolve(Ewc.MOD_ID).resolve("structures");
 
         if (Files.exists(generatedPath) && Files.isDirectory(generatedPath)) {
