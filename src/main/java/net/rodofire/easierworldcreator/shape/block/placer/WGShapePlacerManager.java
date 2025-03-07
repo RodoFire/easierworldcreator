@@ -110,7 +110,6 @@ public class WGShapePlacerManager {
 
     public Path[] getLeft(StructureWorldAccess worldAccess) {
         Path basePath = EwcFolderData.getStructureDataDir(worldAccess, pos);
-        if(basePath == null) return new Path[0];
         Set<Path> paths = new HashSet<>();
         for (String string : references) {
             if (!placed.contains(string)) {
