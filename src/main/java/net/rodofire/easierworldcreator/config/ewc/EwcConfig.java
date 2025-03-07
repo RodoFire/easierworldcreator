@@ -15,6 +15,7 @@ public class EwcConfig {
 
 
     public static void setConfig() {
+        Ewc.LOGGER.info("|\t- Registering Config");
         BooleanConfigObject bool = new BooleanConfigObject(true, "performance_mode");
         bool.requireRestart = true;
         SERVER_CATEGORY.addBoolean(bool);

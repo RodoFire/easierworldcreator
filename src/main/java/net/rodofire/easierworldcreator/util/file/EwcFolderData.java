@@ -14,6 +14,7 @@ import java.util.Objects;
 public class EwcFolderData {
 
     public static void initFiles() {
+        Ewc.LOGGER.info("|\t- Registering Data Folders");
         createDirectories();
     }
 
