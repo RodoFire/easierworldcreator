@@ -116,15 +116,15 @@ public class BlockListManager {
      * This is notabely used in {@link OrderedBlockListManager}.
      * To avoid too much rehash, we count the size?.
      */
-    public int totalSize(){
+    public int totalSize() {
         int sum = 0;
-        for(BlockList blockList : blockLists){
+        for (BlockList blockList : blockLists) {
             sum += blockList.size();
         }
         return sum;
     }
 
-    public int stateSize(){
+    public int stateSize() {
         return stateIndexes.size();
     }
 
@@ -313,8 +313,8 @@ public class BlockListManager {
         return jsonArray;
     }
 
-    public void placeJson(ChunkPos chunkPos) {
-        placeJson(chunkPos, new ChunkPos(0, 0), "custom_feature_" + Random.create().nextLong());
+    public void placeJson(StructureWorldAccess worldAccess, ChunkPos chunkPos) {
+        placeJson(worldAccess, chunkPos, new ChunkPos(0, 0), "custom_feature_" + Random.create().nextLong());
     }
 
     /**
@@ -323,11 +323,13 @@ public class BlockListManager {
      * @param chunkPos the chunkpos of the manager. Positions will be written relative to this blockPos
      * @param offset   the offset to move the blockPos
      */
-    public void placeJson(ChunkPos chunkPos, ChunkPos offset, String name) {
+    public void placeJson(StructureWorldAccess worldAccess, ChunkPos chunkPos, ChunkPos offset, String name) {
         Gson gson = new Gson();
         chunkPos = new ChunkPos(chunkPos.x + offset.x, chunkPos.z + offset.z);
-        Path path = EwcFolderData.getNVerifyDataDir(chunkPos);
+        Path path = EwcFolderData.getNVerifyDataDir(worldAccess, chunkPos);
         JsonArray jsonArray = toJson(chunkPos, offset);
+        if (path == null)
+            return;
         try {
             Files.writeString(path.resolve(name + ".json"), gson.toJson(jsonArray));
         } catch (IOException e) {

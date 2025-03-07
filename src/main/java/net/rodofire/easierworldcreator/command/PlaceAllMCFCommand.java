@@ -40,7 +40,7 @@ public class PlaceAllMCFCommand {
     public static int run(CommandContext<ServerCommandSource> context, boolean legacy) throws CommandSyntaxException {
         Path path;
 
-        if (legacy) path = EwcFolderData.getStructuresDirectory();
+        if (legacy) path = EwcFolderData.getStructuresDirectory(context.getSource().getWorld());
         else path = EwcFolderData.Legacy.getLegacyStructureDir(context.getSource().getWorld());
 
         if (context.getSource().hasPermissionLevel(2)) {

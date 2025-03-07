@@ -12,8 +12,8 @@ import net.rodofire.easierworldcreator.blockdata.blocklist.BlockListHelper;
 import net.rodofire.easierworldcreator.blockdata.blocklist.BlockListManager;
 import net.rodofire.easierworldcreator.blockdata.blocklist.DividedBlockListManager;
 import net.rodofire.easierworldcreator.blockdata.sorter.BlockSorter;
-import net.rodofire.easierworldcreator.shape.block.placer.animator.StructurePlaceAnimator;
 import net.rodofire.easierworldcreator.shape.block.layer.LayerManager;
+import net.rodofire.easierworldcreator.shape.block.placer.animator.StructurePlaceAnimator;
 import net.rodofire.easierworldcreator.util.file.LoadChunkShapeInfo;
 import net.rodofire.easierworldcreator.world.chunk.ChunkPosManager;
 
@@ -30,6 +30,7 @@ import java.util.concurrent.ForkJoinPool;
  * Different behaviors will happen depending on it.
  * Since that placement is different depending on the moment where the shape is being placed, we have to use the enum.
  */
+@SuppressWarnings("unused")
 public class ShapePlacer {
     StructureWorldAccess world;
     BlockPos center;
@@ -47,7 +48,7 @@ public class ShapePlacer {
     private WGShapeData shapeData;
 
     public ShapePlacer(StructureWorldAccess world, ShapePlacer.PlaceMoment placeMoment, BlockPos center) {
-        this(world, placeMoment, center, Identifier.of("unknow_mod:custom_shape" + Random.create().nextLong()));
+        this(world, placeMoment, center, Identifier.of("unknown_mod:custom_shape" + Random.create().nextLong()));
     }
 
     public ShapePlacer(StructureWorldAccess world, ShapePlacer.PlaceMoment placeMoment, BlockPos center, Identifier featureName) {
@@ -58,7 +59,7 @@ public class ShapePlacer {
     }
 
     public ShapePlacer(StructureWorldAccess world, ShapePlacer.PlaceMoment placeMoment, WGShapeData shapeData, BlockPos center) {
-        this(world, placeMoment, shapeData, center, Identifier.of("unknow_mod:custom_shape" + Random.create().nextLong()));
+        this(world, placeMoment, shapeData, center, Identifier.of("unknown_mod:custom_shape" + Random.create().nextLong()));
     }
 
     public ShapePlacer(StructureWorldAccess world, ShapePlacer.PlaceMoment placeMoment, WGShapeData shapeData, BlockPos center, Identifier featureName) {
@@ -98,9 +99,7 @@ public class ShapePlacer {
                 }
                 animator.place(defaultManager);
             }
-            case OTHER -> {
-                defaultManager.placeAll(world);
-            }
+            case OTHER -> defaultManager.placeAll(world);
         }
     }
 
@@ -118,13 +117,11 @@ public class ShapePlacer {
             if (shapeData == null)
                 shapeData = WGShapeData.ofStep(GenerationStep.Feature.VEGETAL_DECORATION, this.featureName.getNamespace() + "-" + this.featureName.getPath());
 
-            WGShapeHandler.encodeInformations(posLit.keySet(), shapeData, (chunkPosManager.getOffset()));
+            WGShapeHandler.encodeInformations(world, posLit.keySet(), shapeData, (chunkPosManager.getOffset()));
 
             for (Map.Entry<ChunkPos, LongOpenHashSet> posSet : posLit.entrySet()) {
-                futures.add(CompletableFuture.runAsync(() -> {
-                    manager.get(posSet.getValue())
-                            .placeJson(posSet.getKey(), chunkPosManager.getOffset(), this.featureName.getNamespace() + "-" + this.featureName.getPath());
-                }, pool));
+                futures.add(CompletableFuture.runAsync(() -> manager.get(posSet.getValue())
+                        .placeJson(world, posSet.getKey(), chunkPosManager.getOffset(), this.featureName.getNamespace() + "-" + this.featureName.getPath()), pool));
             }
             CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
 
@@ -154,9 +151,9 @@ public class ShapePlacer {
             if (shapeData == null)
                 shapeData = WGShapeData.ofStep(GenerationStep.Feature.VEGETAL_DECORATION, this.featureName.getNamespace() + "-" + this.featureName.getPath());
 
-            WGShapeHandler.encodeInformations(manager.getChunkPos(), shapeData, chunkPosManager.getOffset());
+            WGShapeHandler.encodeInformations(world, manager.getChunkPos(), shapeData, chunkPosManager.getOffset());
 
-            manager.placeJson(this.featureName.getNamespace() + "-" + this.featureName.getPath(), chunkPosManager.getOffset());
+            manager.placeJson(world, this.featureName.getNamespace() + "-" + this.featureName.getPath(), chunkPosManager.getOffset());
 
             placeWorldGenFiles();
 
@@ -171,7 +168,7 @@ public class ShapePlacer {
     }
 
     private void placeWorldGenFiles() {
-        List<Path> path = LoadChunkShapeInfo.getWorldGenFiles(this.center);
+        List<Path> path = LoadChunkShapeInfo.getWorldGenFiles(world, this.center);
         for (Path path1 : path) {
             world.setCurrentlyGeneratingStructureName(() -> "ewc multi-chunk feature generating: " + path1.getFileName());
             BlockListManager manager = BlockListHelper.fromJsonPath(world, path1);
