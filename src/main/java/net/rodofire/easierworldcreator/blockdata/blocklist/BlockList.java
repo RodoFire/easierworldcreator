@@ -5,6 +5,7 @@ import com.google.gson.JsonObject;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
+import net.minecraft.block.Blocks;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.world.ServerChunkManager;
@@ -144,6 +145,7 @@ public class BlockList {
     }
 
     public BlockList() {
+        this(Blocks.REDSTONE_BLOCK.getDefaultState(), null, List.of());
     }
 
     public int size() {
@@ -480,11 +482,13 @@ public class BlockList {
         toJson(new ChunkPos(0, 0), chunkPos);
     }
 
-    public void placeJson(ChunkPos offset, ChunkPos chunkPos) {
+    public void placeJson(StructureWorldAccess world, ChunkPos offset, ChunkPos chunkPos) {
         Gson gson = new Gson();
         chunkPos = new ChunkPos(chunkPos.x + offset.x, chunkPos.z + offset.z);
-        Path path = getNVerifyDataDir(chunkPos);
+        Path path = getNVerifyDataDir(world, chunkPos);
         JsonObject jsonObj = toJson(offset, chunkPos);
+        if(path == null)
+            return;
         try {
             Files.writeString(path, gson.toJson(jsonObj));
         } catch (IOException e) {
