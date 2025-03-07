@@ -138,7 +138,7 @@ public abstract class ChunkGeneratorMixin {
                                             + "\n\t- generating: " + path.getFileName()
                             );
                             manager.placeAllNDelete(world);
-                            //FileUtil.removeFile(path);
+                            FileUtil.removeFile(path);
                         }
                     });
                 } catch (Exception e) {

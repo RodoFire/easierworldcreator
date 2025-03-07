@@ -102,7 +102,6 @@ public class WGShapePlacerManager {
         int i = 0;
         for (short index : set) {
             paths[i] = basePath.resolve(references[index] + ".json");
-            System.out.println(paths[i]);
             placed.add(references[index]);
             i++;
         }
