@@ -102,21 +102,23 @@ public class FastMaths {
     /**
      * method to get a precise sinus: more precise but slower (0.05° of precision)
      *
-     * @param x the angle in degrees
+     * @param angle the angle in degrees
      * @return the sinus of the angle
      */
-    public static float getPreciseSin(float x) {
-        return sinPreciseTable[((int) (x * 10)) % PRECISE_TRIGO_TABLE_SIZE];
+    public static float getPreciseSin(float angle) {
+        int angle1 = ((int) (angle * 10)) % PRECISE_TRIGO_TABLE_SIZE;
+        return sinPreciseTable[(angle1 + PRECISE_TRIGO_TABLE_SIZE) % PRECISE_TRIGO_TABLE_SIZE];
     }
 
     /**
      * method to get a precise sinus: more precise but slower (0.05° of precision)
      *
-     * @param x the angle in degrees
+     * @param angle the angle in degrees
      * @return the cosines of the angle
      */
-    public static float getPreciseCos(float x) {
-        return cosPreciseTable[((int) (x * 10)) % PRECISE_TRIGO_TABLE_SIZE];
+    public static float getPreciseCos(float angle) {
+        int angle1 = ((int) (angle * 10)) % PRECISE_TRIGO_TABLE_SIZE;
+        return cosPreciseTable[(angle1 + PRECISE_TRIGO_TABLE_SIZE) % PRECISE_TRIGO_TABLE_SIZE];
     }
 
     /**
