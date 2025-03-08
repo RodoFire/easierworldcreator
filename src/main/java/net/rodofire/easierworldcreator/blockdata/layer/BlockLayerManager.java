@@ -34,7 +34,7 @@ public class BlockLayerManager {
     }
 
     public BlockLayerManager(BlockLayer... layers) {
-        this.layers.addAll(Arrays.stream(layers).collect(Collectors.toSet()));
+        this.layers.addAll(Arrays.stream(layers).toList());
     }
 
     /**
@@ -221,7 +221,7 @@ public class BlockLayerManager {
      * @return the first {@code BlockLayer}
      */
     public BlockLayer getFirstLayer() {
-        return this.layers.get(0);
+        return this.layers.getFirst();
     }
 
     /**
