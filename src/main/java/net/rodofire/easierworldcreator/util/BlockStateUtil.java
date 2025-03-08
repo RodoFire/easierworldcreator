@@ -5,10 +5,7 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.registry.DynamicRegistryManager;
-import net.minecraft.registry.RegistryEntryLookup;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.registry.RegistryKeys;
+import net.minecraft.registry.*;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.state.StateManager;
 import net.minecraft.state.property.Property;
@@ -117,6 +114,21 @@ public class BlockStateUtil {
 
         executorService.shutdown();
         //blockStateMap.putAll(concurrentMap);
+    }
+
+    public static Block parseBlock(StructureWorldAccess world, String blockString) {
+        RegistryEntryLookup<Block> blockLookup = world.createCommandRegistryWrapper(RegistryKeys.BLOCK);
+
+        //Identifier identifier = new Identifier(stateString.split("\\[")[0]);
+        Identifier identifier = Identifier.of(extractBlockName(blockString.split("\\[")[0]));
+        Optional<? extends RegistryEntry<Block>> optional = blockLookup.getOptional(RegistryKey.of(RegistryKeys.BLOCK, identifier));
+        if (optional.isEmpty()) {
+            Ewc.LOGGER.error("error parsing BlockState: {}", blockString.split("\\[")[0]);
+            return Blocks.AIR;
+        }
+
+        Block block = (Block) ((RegistryEntry<?>) optional.get()).value();
+        return block;
     }
 
     public static BlockListManager getCompoundBlockStatesFromWorld(List<Set<BlockPos>> posList, StructureWorldAccess world) {

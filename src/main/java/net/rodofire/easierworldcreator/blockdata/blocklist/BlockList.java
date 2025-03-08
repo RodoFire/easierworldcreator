@@ -1,6 +1,7 @@
 package net.rodofire.easierworldcreator.blockdata.blocklist;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
 import net.minecraft.block.Block;
@@ -441,7 +442,11 @@ public class BlockList {
         jsonObject.addProperty("state", dataKey.getState().toString());
         if (ruler != null) {
             jsonObject.addProperty("force", ruler.isForce());
-            jsonObject.add("overriddenBlock", gson.toJsonTree(ruler.getOverriddenBlocks()).getAsJsonArray());
+            JsonArray overriddenBlockArray = new JsonArray();
+            for (Block block : ruler.getOverriddenBlocks()) {
+                overriddenBlockArray.add(block.toString()); // Convertir en String
+            }
+            jsonObject.add("overriddenBlock", overriddenBlockArray);
         }
         if (dataKey.getTag() != null) {
             jsonObject.addProperty("tag", dataKey.getTag().toString());

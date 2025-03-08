@@ -1,6 +1,5 @@
 package net.rodofire.easierworldcreator.blockdata.blocklist;
 
-import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -129,8 +128,15 @@ public class BlockListHelper {
                 blockList.ruler.setForce(force);
             }
             if (jsonObject.has("overriddenBlock")) {
-                Set<Block> overriddenBlocks = gson.fromJson(jsonObject.get("overriddenBlock"), new TypeToken<Set<Block>>() {
-                }.getType());
+                Set<Block> overriddenBlocks = new HashSet<>();
+
+                JsonArray overrideArray = jsonObject.getAsJsonArray("overriddenBlock");
+
+                for (JsonElement element : overrideArray) {
+                    String blockId = element.getAsString();
+                    Block block = BlockStateUtil.parseBlock(worldAccess, blockId);
+                    overriddenBlocks.add(block);
+                }
                 blockList.ruler.setOverriddenBlocks(overriddenBlocks);
             }
 

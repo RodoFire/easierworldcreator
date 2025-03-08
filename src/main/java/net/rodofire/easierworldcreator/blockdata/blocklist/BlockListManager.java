@@ -329,9 +329,7 @@ public class BlockListManager {
 
         // Création des CompletableFutures pour chaque BlockList
         for (BlockList blockList : blockLists) {
-            CompletableFuture<JsonObject> future = CompletableFuture.supplyAsync(() -> {
-                return blockList.toJson(offset, chunkPos);
-            }, pool);
+            CompletableFuture<JsonObject> future = CompletableFuture.supplyAsync(() -> blockList.toJson(offset, chunkPos), pool);
             futures.add(future);
         }
 
@@ -364,8 +362,6 @@ public class BlockListManager {
         chunkPos = new ChunkPos(chunkPos.x + offset.x, chunkPos.z + offset.z);
         Path path = EwcFolderData.getNVerifyDataDir(worldAccess, chunkPos);
         JsonArray jsonArray = toJson(chunkPos, offset);
-        if (path == null)
-            return;
         try {
             Files.writeString(path.resolve(name + ".json"), gson.toJson(jsonArray));
         } catch (IOException e) {
