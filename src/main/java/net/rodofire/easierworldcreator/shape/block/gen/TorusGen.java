@@ -187,6 +187,7 @@ public class TorusGen extends AbstractFillableBlockShape {
      */
     public void setInnerRadiusX(int innerRadiusX) {
         this.innerRadiusX = innerRadiusX;
+        init();
     }
 
     /**
@@ -205,6 +206,7 @@ public class TorusGen extends AbstractFillableBlockShape {
      */
     public void setOuterRadiusX(int outerRadiusX) {
         this.outerRadiusX = outerRadiusX;
+        init();
     }
 
     /**
@@ -223,6 +225,7 @@ public class TorusGen extends AbstractFillableBlockShape {
      */
     public void setInnerRadiusZ(int innerRadiusZ) {
         this.innerRadiusZ = innerRadiusZ;
+        init();
     }
 
     /**
@@ -241,6 +244,7 @@ public class TorusGen extends AbstractFillableBlockShape {
      */
     public void setOuterRadiusZ(int outerRadiusZ) {
         this.outerRadiusZ = outerRadiusZ;
+        init();
     }
 
     /**
@@ -544,7 +548,7 @@ public class TorusGen extends AbstractFillableBlockShape {
         double sinAngle = FastMaths.getFastSin(angle);
 
         return (outerSquared) /
-                FastMaths.getFastSqrt(outerRadiusX * sinAngle * sinAngle +
+                FastMaths.getFastSqrt(outerXSquared * sinAngle * sinAngle +
                         outerZSquared * cosAngle * cosAngle, 0.01f);
     }
 
