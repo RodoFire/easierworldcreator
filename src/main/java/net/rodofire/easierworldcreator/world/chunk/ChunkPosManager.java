@@ -114,12 +114,13 @@ public class ChunkPosManager {
      * @return true if it is, false if not
      */
     public boolean isMultiChunk(Set<ChunkPos> posSetMap, BlockPos centerPos) {
-        if (posSetMap.size() > Math.pow(2 * EwcConfig.getFeaturesChunkDistance() + 1, 2))
+        int distance = EwcConfig.getFeaturesChunkDistance();
+        if (posSetMap.size() > Math.pow(2 * distance + 1, 2))
             return true;
         for (ChunkPos set : posSetMap) {
-            if (Math.abs(set.x) > EwcConfig.getFeaturesChunkDistance() + Math.abs(new ChunkPos(centerPos).x))
+            if (set.x > distance + new ChunkPos(centerPos).x || set.x < -distance + new ChunkPos(centerPos).x)
                 return true;
-            if (Math.abs(set.z) > EwcConfig.getFeaturesChunkDistance() + Math.abs(new ChunkPos(centerPos).z))
+            if (set.z > distance + new ChunkPos(centerPos).z || set.z < -distance + new ChunkPos(centerPos).z)
                 return true;
         }
         return false;

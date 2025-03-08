@@ -6,6 +6,7 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.StructureWorldAccess;
+import net.rodofire.easierworldcreator.blockdata.StructurePlacementRuleManager;
 import net.rodofire.easierworldcreator.blockdata.sorter.BlockSorter;
 import net.rodofire.easierworldcreator.util.LongPosHelper;
 
@@ -159,6 +160,89 @@ public class DividedBlockListManager {
 
     public DividedBlockListManager putWithoutVerification(BlockState state, NbtCompound tag, BlockPos pos) {
         return putWithoutVerification(state, tag, LongArrayList.of(LongPosHelper.encodeBlockPos(pos)));
+    }
+
+    public DividedBlockListManager put(BlockState state, NbtCompound tag, LongArrayList posList, StructurePlacementRuleManager ruler) {
+        for (long pos : posList) {
+            put(state, tag, pos, ruler);
+        }
+        return this;
+    }
+
+    public DividedBlockListManager put(BlockState state, LongArrayList pos, StructurePlacementRuleManager ruler) {
+        for (long po : pos) {
+            put(state, null, po, ruler);
+        }
+        return this;
+    }
+
+    public DividedBlockListManager put(BlockState state, long pos, StructurePlacementRuleManager ruler) {
+        return put(state, null, pos, ruler);
+    }
+
+    public DividedBlockListManager put(BlockState state, NbtCompound tag, long pos, StructurePlacementRuleManager ruler) {
+        managers.computeIfAbsent(LongPosHelper.getChunkPos(pos), (k) -> new BlockListManager()).put(state, tag, pos, ruler);
+        return this;
+    }
+
+    public DividedBlockListManager put(BlockState state, NbtCompound tag, List<BlockPos> posList, StructurePlacementRuleManager ruler) {
+        for (BlockPos pos : posList) {
+            put(state, tag, LongPosHelper.encodeBlockPos(pos), ruler);
+        }
+        return this;
+    }
+
+    public DividedBlockListManager put(BlockState state, List<BlockPos> posList, StructurePlacementRuleManager ruler) {
+        for (BlockPos pos : posList) {
+            put(state, null, LongPosHelper.encodeBlockPos(pos), ruler);
+        }
+        return this;
+    }
+
+    public DividedBlockListManager put(BlockState state, BlockPos pos, StructurePlacementRuleManager ruler) {
+        return put(state, null, LongPosHelper.encodeBlockPos(pos), ruler);
+    }
+
+    public DividedBlockListManager put(BlockState state, NbtCompound tag, BlockPos pos, StructurePlacementRuleManager ruler) {
+        return put(state, tag, LongPosHelper.encodeBlockPos(pos), ruler);
+    }
+
+    /**
+     * Method will perform verification on only one position, improving performance but might result in a crash,
+     * or behave incorrectly in the case where the BlockPos in not in the good chunk.
+     * Only use this method in a controlled environment.
+     */
+    public DividedBlockListManager putWithoutVerification(BlockState state, NbtCompound tag, LongArrayList pos, StructurePlacementRuleManager ruler) {
+        managers.computeIfAbsent(LongPosHelper.getChunkPos(pos.getFirst()), (k) -> new BlockListManager()).put(state, tag, pos, ruler);
+        return this;
+    }
+
+    public DividedBlockListManager putWithoutVerification(BlockState state, LongArrayList pos, StructurePlacementRuleManager ruler) {
+        return putWithoutVerification(state, null, pos, ruler);
+    }
+
+    public DividedBlockListManager putWithoutVerification(BlockState state, long pos, StructurePlacementRuleManager ruler) {
+        return putWithoutVerification(state, null, LongArrayList.of(pos), ruler);
+    }
+
+    public DividedBlockListManager putWithoutVerification(BlockState state, NbtCompound tag, long pos, StructurePlacementRuleManager ruler) {
+        return putWithoutVerification(state, tag, LongArrayList.of(pos), ruler);
+    }
+
+    public DividedBlockListManager putWithoutVerification(BlockState state, NbtCompound tag, List<BlockPos> pos, StructurePlacementRuleManager ruler) {
+        return putWithoutVerification(state, tag, LongPosHelper.encodeBlockPos(pos), ruler);
+    }
+
+    public DividedBlockListManager putWithoutVerification(BlockState state, List<BlockPos> pos, StructurePlacementRuleManager ruler) {
+        return putWithoutVerification(state, null, LongPosHelper.encodeBlockPos(pos), ruler);
+    }
+
+    public DividedBlockListManager putWithoutVerification(BlockState state, BlockPos pos, StructurePlacementRuleManager ruler) {
+        return putWithoutVerification(state, null, LongArrayList.of(LongPosHelper.encodeBlockPos(pos)));
+    }
+
+    public DividedBlockListManager putWithoutVerification(BlockState state, NbtCompound tag, BlockPos pos, StructurePlacementRuleManager ruler) {
+        return putWithoutVerification(state, tag, LongArrayList.of(LongPosHelper.encodeBlockPos(pos)), ruler);
     }
 
     public BlockListManager getManager(ChunkPos pos) {

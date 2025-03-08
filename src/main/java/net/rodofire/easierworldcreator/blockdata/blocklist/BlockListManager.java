@@ -12,6 +12,7 @@ import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.random.Random;
 import net.minecraft.world.StructureWorldAccess;
 import net.rodofire.easierworldcreator.blockdata.BlockDataKey;
+import net.rodofire.easierworldcreator.blockdata.StructurePlacementRuleManager;
 import net.rodofire.easierworldcreator.blockdata.sorter.BlockSorter;
 import net.rodofire.easierworldcreator.util.LongPosHelper;
 import net.rodofire.easierworldcreator.util.file.EwcFolderData;
@@ -128,6 +129,10 @@ public class BlockListManager {
         return stateIndexes.size();
     }
 
+    public BlockListManager put(BlockState state, NbtCompound tag, LongArrayList pos){
+        return put(state, tag, pos, null);
+    }
+
     /**
      * Method to put a list of encoded blockPos in the manager.
      * In the case where the pair of {@link BlockState} and {@link NbtCompound} is already present,
@@ -136,11 +141,14 @@ public class BlockListManager {
      *
      * @return the modified instance of the manager
      */
-    public BlockListManager put(BlockState state, NbtCompound tag, LongArrayList pos) {
+    public BlockListManager put(BlockState state, NbtCompound tag, LongArrayList pos, StructurePlacementRuleManager ruler) {
         BlockDataKey blockData = new BlockDataKey(state, tag);
         if (this.blockDataMap.containsKey(blockData)) {
             short index = this.blockDataMap.getShort(blockData);
             this.blockLists.get(index).addAllPos(pos);
+            if(ruler != null) {
+                this.blockLists.get(index).setRuler(ruler);
+            }
             return this;
         }
         short index = size();
@@ -189,6 +197,34 @@ public class BlockListManager {
             put(blockList);
         }
         return this;
+    }
+
+    public BlockListManager put(BlockState state, NbtCompound tag, long pos, StructurePlacementRuleManager ruler) {
+        return put(state, tag, LongArrayList.of(pos), ruler);
+    }
+
+    public BlockListManager put(BlockState state, NbtCompound tag, List<BlockPos> posList, StructurePlacementRuleManager ruler) {
+        return put(state, tag, LongPosHelper.encodeBlockPos(posList), ruler);
+    }
+
+    public BlockListManager put(BlockState state, NbtCompound tag, BlockPos pos, StructurePlacementRuleManager ruler) {
+        return put(state, tag, LongArrayList.of(LongPosHelper.encodeBlockPos(pos)), ruler);
+    }
+
+    public BlockListManager put(BlockState state, LongArrayList pos, StructurePlacementRuleManager ruler) {
+        return put(state, null, pos, ruler);
+    }
+
+    public BlockListManager put(BlockState state, long pos, StructurePlacementRuleManager ruler) {
+        return put(state, null, LongArrayList.of(pos), ruler);
+    }
+
+    public BlockListManager put(BlockState state, List<BlockPos> posList, StructurePlacementRuleManager ruler) {
+        return put(state, null, LongPosHelper.encodeBlockPos(posList), ruler);
+    }
+
+    public BlockListManager put(BlockState state, BlockPos pos, StructurePlacementRuleManager ruler) {
+        return put(state, null, LongArrayList.of(LongPosHelper.encodeBlockPos(pos)), ruler);
     }
 
     public BlockListManager put(BlockList blockList) {

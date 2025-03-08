@@ -50,7 +50,7 @@ public class DirectionalLayer extends AbstractLayer {
                     double b = WorldGenUtil.getDistanceFromPointToPlane(this.directionVector, this.centerPos, LongPosHelper.decodeBlockPos(po).toCenterPos()) / distanceMin;
 
                     BlockLayer layer = blockLayer.get(binarySearch(depth, b));
-                    threadedManager.put(layer.getPlacer().get(layer.getBlockStates(), LongPosHelper.decodeBlockPos(po)), po);
+                    threadedManager.put(layer.getPlacer().get(layer.getBlockStates(), LongPosHelper.decodeBlockPos(po)), po, layer.getRuler());
                 }
                 synchronized (manager) {
                     manager.put(threadedManager);
@@ -129,7 +129,7 @@ public class DirectionalLayer extends AbstractLayer {
                     double b = WorldGenUtil.getDistanceFromPointToPlane(this.directionVector, this.centerPos, LongPosHelper.decodeBlockPos(po).toCenterPos()) / distanceMin;
 
                     BlockLayer layer = blockLayer.get(binarySearch(depth, b));
-                    threadedManager.put(layer.getPlacer().get(layer.getBlockStates(), LongPosHelper.decodeBlockPos(po)), po);
+                    threadedManager.put(layer.getPlacer().get(layer.getBlockStates(), LongPosHelper.decodeBlockPos(po)), po, layer.getRuler());
                 }
                 synchronized (manager) {
                     manager.putWithoutVerification(threadedManager);
@@ -198,7 +198,7 @@ public class DirectionalLayer extends AbstractLayer {
             double b = WorldGenUtil.getDistanceFromPointToPlane(this.directionVector, this.centerPos, pos.toCenterPos()) / distanceMin;
 
             BlockLayer layer = blockLayer.get(binarySearch(depth, b));
-            manager.put(layer.getPlacer().get(layer.getBlockStates(), pos), pos);
+            manager.put(layer.getPlacer().get(layer.getBlockStates(), pos), pos, layer.getRuler());
         }
         return manager;
     }
@@ -247,7 +247,7 @@ public class DirectionalLayer extends AbstractLayer {
 
             BlockLayer layer = blockLayer.get(binarySearch(depth, b));
 
-            manager.put(layer.getPlacer().get(layer.getBlockStates(), pos), pos);
+            manager.put(layer.getPlacer().get(layer.getBlockStates(), pos), pos, layer.getRuler());
         }
         return manager;
     }
@@ -289,7 +289,7 @@ public class DirectionalLayer extends AbstractLayer {
             double b = WorldGenUtil.getDistanceFromPointToPlane(this.directionVector, this.centerPos, LongPosHelper.decodeBlockPos(pos).toCenterPos()) / distanceMin;
 
             BlockLayer layer = blockLayer.get(binarySearch(depth, b));
-            manager.put(layer.getPlacer().get(layer.getBlockStates(), LongPosHelper.decodeBlockPos(pos)), pos);
+            manager.put(layer.getPlacer().get(layer.getBlockStates(), LongPosHelper.decodeBlockPos(pos)), pos, layer.getRuler());
         }
         return manager;
     }
@@ -338,7 +338,7 @@ public class DirectionalLayer extends AbstractLayer {
 
             BlockLayer layer = blockLayer.get(binarySearch(depth, b));
 
-            manager.put(layer.getPlacer().get(layer.getBlockStates(), LongPosHelper.decodeBlockPos(pos)), pos);
+            manager.put(layer.getPlacer().get(layer.getBlockStates(), LongPosHelper.decodeBlockPos(pos)), pos, layer.getRuler());
         }
         return manager;
     }
