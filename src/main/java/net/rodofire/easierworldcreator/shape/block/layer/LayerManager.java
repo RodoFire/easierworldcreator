@@ -2,11 +2,13 @@ package net.rodofire.easierworldcreator.shape.block.layer;
 
 import it.unimi.dsi.fastutil.longs.AbstractLongCollection;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
+import net.minecraft.block.BlockState;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3i;
 import net.minecraft.world.StructureWorldAccess;
+import net.rodofire.easierworldcreator.blockdata.StructurePlacementRuleManager;
 import net.rodofire.easierworldcreator.blockdata.blocklist.BlockListManager;
 import net.rodofire.easierworldcreator.blockdata.blocklist.DividedBlockListManager;
 import net.rodofire.easierworldcreator.blockdata.layer.BlockLayer;
@@ -14,6 +16,7 @@ import net.rodofire.easierworldcreator.blockdata.layer.BlockLayerManager;
 import net.rodofire.easierworldcreator.util.LongPosHelper;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -79,10 +82,13 @@ public class LayerManager implements Layer {
         if (blockLayerManager.size() == 1) {
             BlockListManager manager = new BlockListManager();
             BlockLayer layer = blockLayerManager.getFirstLayer();
+            StructurePlacementRuleManager ruler = layer.getRuler();
+            List<BlockState> states = layer.getBlockStates();
+
             posMap.forEach((
                     (chunkPos, longs) -> longs.forEach(
                             (pos) ->
-                                    manager.put(layer.getPlacer().get(layer.getBlockStates(), LongPosHelper.decodeBlockPos(pos)), pos)
+                                    manager.put(layer.getPlacer().get(states, LongPosHelper.decodeBlockPos(pos)), pos, ruler)
                     ))
             );
             return manager;
@@ -94,6 +100,8 @@ public class LayerManager implements Layer {
     public void place(StructureWorldAccess world, Map<ChunkPos, LongOpenHashSet> posMap) {
         if (blockLayerManager.size() == 1) {
             BlockLayer layer = blockLayerManager.getFirstLayer();
+            StructurePlacementRuleManager ruler = layer.getRuler();
+            List<BlockState> states = layer.getBlockStates();
             posMap.forEach((
                     (chunkPos, longs) -> longs.forEach(
                             (pos) -> layer.getPlacer().place(world, layer.getBlockStates(), LongPosHelper.decodeBlockPos(pos), layer.getRuler())
@@ -108,11 +116,13 @@ public class LayerManager implements Layer {
         if (blockLayerManager.size() == 1) {
             BlockListManager manager = new BlockListManager();
             BlockLayer layer = blockLayerManager.getFirstLayer();
+            StructurePlacementRuleManager ruler = layer.getRuler();
+            List<BlockState> states = layer.getBlockStates();
             posMap.forEach((
                     (chunkPos, longs) -> longs.forEach(
                             (pos) -> {
-                                if (layer.getRuler().canPlace(world.getBlockState(LongPosHelper.decodeBlockPos(pos))))
-                                    manager.put(layer.getPlacer().get(layer.getBlockStates(), LongPosHelper.decodeBlockPos(pos)), pos);
+                                if (ruler.canPlace(world.getBlockState(LongPosHelper.decodeBlockPos(pos))))
+                                    manager.put(layer.getPlacer().get(states, LongPosHelper.decodeBlockPos(pos)), pos, ruler);
 
                             }
                     ))
@@ -127,10 +137,12 @@ public class LayerManager implements Layer {
         if (blockLayerManager.size() == 1) {
             DividedBlockListManager manager = new DividedBlockListManager();
             BlockLayer layer = blockLayerManager.getFirstLayer();
+            StructurePlacementRuleManager ruler = layer.getRuler();
+            List<BlockState> states = layer.getBlockStates();
             posMap.forEach((
                     (chunkPos, longs) -> longs.forEach(
                             (pos) ->
-                                    manager.putWithoutVerification(layer.getPlacer().get(layer.getBlockStates(), LongPosHelper.decodeBlockPos(pos)), pos)
+                                    manager.putWithoutVerification(layer.getPlacer().get(states, LongPosHelper.decodeBlockPos(pos)), pos, ruler)
                     ))
             );
             return manager;
@@ -143,11 +155,13 @@ public class LayerManager implements Layer {
         if (blockLayerManager.size() == 1) {
             DividedBlockListManager manager = new DividedBlockListManager();
             BlockLayer layer = blockLayerManager.getFirstLayer();
+            StructurePlacementRuleManager ruler = layer.getRuler();
+            List<BlockState> states = layer.getBlockStates();
             posMap.forEach((
                     (chunkPos, longs) -> longs.forEach(
                             (pos) -> {
-                                if (layer.getRuler().canPlace(world.getBlockState(LongPosHelper.decodeBlockPos(pos))))
-                                    manager.putWithoutVerification(layer.getPlacer().get(layer.getBlockStates(), LongPosHelper.decodeBlockPos(pos)), pos);
+                                if (ruler.canPlace(world.getBlockState(LongPosHelper.decodeBlockPos(pos))))
+                                    manager.putWithoutVerification(layer.getPlacer().get(states, LongPosHelper.decodeBlockPos(pos)), pos, ruler);
                             }
                     ))
             );
@@ -161,7 +175,9 @@ public class LayerManager implements Layer {
         if (blockLayerManager.size() == 1) {
             BlockListManager manager = new BlockListManager();
             BlockLayer layer = blockLayerManager.getFirstLayer();
-            posList.forEach(((pos) -> manager.put(layer.getPlacer().get(layer.getBlockStates(), pos), pos)));
+            StructurePlacementRuleManager ruler = layer.getRuler();
+            List<BlockState> states = layer.getBlockStates();
+            posList.forEach(((pos) -> manager.put(layer.getPlacer().get(states, pos), pos)));
             return manager;
         }
         return getLayer().get(posList);
@@ -171,6 +187,8 @@ public class LayerManager implements Layer {
     public <T extends Collection<BlockPos>> void place(StructureWorldAccess world, T posList) {
         if (blockLayerManager.size() == 1) {
             BlockLayer layer = blockLayerManager.getFirstLayer();
+            StructurePlacementRuleManager ruler = layer.getRuler();
+            List<BlockState> states = layer.getBlockStates();
             posList.forEach(((pos) -> layer.getPlacer().place(world, layer.getBlockStates(), pos, layer.getRuler())));
         }
         getLayer().place(world, posList);
@@ -181,9 +199,11 @@ public class LayerManager implements Layer {
         if (blockLayerManager.size() == 1) {
             BlockListManager manager = new BlockListManager();
             BlockLayer layer = blockLayerManager.getFirstLayer();
+            StructurePlacementRuleManager ruler = layer.getRuler();
+            List<BlockState> states = layer.getBlockStates();
             posList.forEach(((pos) -> {
-                if (layer.getRuler().canPlace(world.getBlockState(pos)))
-                    manager.put(layer.getPlacer().get(layer.getBlockStates(), pos), pos);
+                if (ruler.canPlace(world.getBlockState(pos)))
+                    manager.put(layer.getPlacer().get(states, pos), pos);
             }));
             return manager;
         }
@@ -195,8 +215,10 @@ public class LayerManager implements Layer {
         if (blockLayerManager.size() == 1) {
             DividedBlockListManager manager = new DividedBlockListManager();
             BlockLayer layer = blockLayerManager.getFirstLayer();
+            StructurePlacementRuleManager ruler = layer.getRuler();
+            List<BlockState> states = layer.getBlockStates();
             posList.forEach(((pos) -> {
-                manager.put(layer.getPlacer().get(layer.getBlockStates(), pos), pos);
+                manager.put(layer.getPlacer().get(states, pos), pos);
             }));
             return manager;
         }
@@ -208,9 +230,11 @@ public class LayerManager implements Layer {
         if (blockLayerManager.size() == 1) {
             DividedBlockListManager manager = new DividedBlockListManager();
             BlockLayer layer = blockLayerManager.getFirstLayer();
+            StructurePlacementRuleManager ruler = layer.getRuler();
+            List<BlockState> states = layer.getBlockStates();
             posList.forEach(((pos) -> {
-                if (layer.getRuler().canPlace(world.getBlockState(pos)))
-                    manager.put(layer.getPlacer().get(layer.getBlockStates(), pos), pos);
+                if (ruler.canPlace(world.getBlockState(pos)))
+                    manager.put(layer.getPlacer().get(states, pos), pos);
             }));
             return manager;
         }
@@ -222,8 +246,10 @@ public class LayerManager implements Layer {
         if (blockLayerManager.size() == 1) {
             BlockListManager manager = new BlockListManager();
             BlockLayer layer = blockLayerManager.getFirstLayer();
+            StructurePlacementRuleManager ruler = layer.getRuler();
+            List<BlockState> states = layer.getBlockStates();
             posList.forEach(((pos) -> {
-                manager.put(layer.getPlacer().get(layer.getBlockStates(), LongPosHelper.decodeBlockPos(pos)), pos);
+                manager.put(layer.getPlacer().get(states, LongPosHelper.decodeBlockPos(pos)), pos, ruler);
             }));
             return manager;
         }
@@ -234,6 +260,8 @@ public class LayerManager implements Layer {
     public <U extends AbstractLongCollection> void place(StructureWorldAccess world, U posList) {
         if (blockLayerManager.size() == 1) {
             BlockLayer layer = blockLayerManager.getFirstLayer();
+            StructurePlacementRuleManager ruler = layer.getRuler();
+            List<BlockState> states = layer.getBlockStates();
             posList.forEach(((pos) -> {
                 layer.getPlacer().place(world, layer.getBlockStates(), LongPosHelper.decodeBlockPos(pos), layer.getRuler());
             }));
@@ -246,9 +274,11 @@ public class LayerManager implements Layer {
         if (blockLayerManager.size() == 1) {
             BlockListManager manager = new BlockListManager();
             BlockLayer layer = blockLayerManager.getFirstLayer();
+            StructurePlacementRuleManager ruler = layer.getRuler();
+            List<BlockState> states = layer.getBlockStates();
             posList.forEach(((pos) -> {
-                if (layer.getRuler().canPlace(world.getBlockState(LongPosHelper.decodeBlockPos(pos))))
-                    manager.put(layer.getPlacer().get(layer.getBlockStates(), LongPosHelper.decodeBlockPos(pos)), pos);
+                if (ruler.canPlace(world.getBlockState(LongPosHelper.decodeBlockPos(pos))))
+                    manager.put(layer.getPlacer().get(states, LongPosHelper.decodeBlockPos(pos)), pos, ruler);
             }));
             return manager;
         }
@@ -260,8 +290,10 @@ public class LayerManager implements Layer {
         if (blockLayerManager.size() == 1) {
             DividedBlockListManager manager = new DividedBlockListManager();
             BlockLayer layer = blockLayerManager.getFirstLayer();
+            StructurePlacementRuleManager ruler = layer.getRuler();
+            List<BlockState> states = layer.getBlockStates();
             posList.forEach(((pos) -> {
-                manager.put(layer.getPlacer().get(layer.getBlockStates(), LongPosHelper.decodeBlockPos(pos)), pos);
+                manager.put(layer.getPlacer().get(states, LongPosHelper.decodeBlockPos(pos)), pos, ruler);
             }));
             return manager;
         }
@@ -273,9 +305,11 @@ public class LayerManager implements Layer {
         if (blockLayerManager.size() == 1) {
             DividedBlockListManager manager = new DividedBlockListManager();
             BlockLayer layer = blockLayerManager.getFirstLayer();
+            StructurePlacementRuleManager ruler = layer.getRuler();
+            List<BlockState> states = layer.getBlockStates();
             posList.forEach(((pos) -> {
-                if (layer.getRuler().canPlace(world.getBlockState(LongPosHelper.decodeBlockPos(pos))))
-                    manager.put(layer.getPlacer().get(layer.getBlockStates(), LongPosHelper.decodeBlockPos(pos)), pos);
+                if (ruler.canPlace(world.getBlockState(LongPosHelper.decodeBlockPos(pos))))
+                    manager.put(layer.getPlacer().get(states, LongPosHelper.decodeBlockPos(pos)), pos, ruler);
             }));
             return manager;
         }
