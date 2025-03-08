@@ -56,7 +56,7 @@ public abstract class AbstractRadialLikeLayer extends AbstractLayer {
                     int index = findLayerIndex(layerDistance, distance);
                     BlockLayer layer = (index >= 0) ? blockLayer.get(index) : blockLayer.get(0);
                     BlockState state = layer.getPlacer().get(layer.getBlockStates(), LongPosHelper.decodeBlockPos(pos));
-                    manager1.put(state, pos);
+                    manager1.put(state, pos, layer.getRuler());
                 }
                 synchronized (manager) {
                     manager.put(manager1);
@@ -154,7 +154,7 @@ public abstract class AbstractRadialLikeLayer extends AbstractLayer {
                     int index = findLayerIndex(layerDistance, distance);
                     BlockLayer layer = (index >= 0) ? blockLayer.get(index) : blockLayer.get(0);
                     BlockState state = layer.getPlacer().get(layer.getBlockStates(), LongPosHelper.decodeBlockPos(pos));
-                    manager1.put(state, pos);
+                    manager1.put(state, pos, layer.getRuler());
                 }
                 synchronized (manager) {
                     manager.putWithoutVerification(set.getKey(), manager1);
@@ -234,7 +234,7 @@ public abstract class AbstractRadialLikeLayer extends AbstractLayer {
                 BlockLayer layer = (index >= 0) ? blockLayer.get(index) : blockLayer.get(0);
                 BlockState state = layer.getPlacer().get(layer.getBlockStates(), pos);
                 synchronized (manager) {
-                    manager.put(state, pos);
+                    manager.put(state, pos, layer.getRuler());
                 }
             }, pool));
         }
@@ -287,7 +287,7 @@ public abstract class AbstractRadialLikeLayer extends AbstractLayer {
                     if (layer.getRuler().canPlace(worldStates.getState(LongPosHelper.encodeBlockPos(pos)))) {
                         BlockState state = layer.getPlacer().get(layer.getBlockStates(), pos);
                         synchronized (manager) {
-                            manager.put(state, pos);
+                            manager.put(state, pos, layer.getRuler());
                         }
                     }
                 }, pool));
@@ -321,7 +321,7 @@ public abstract class AbstractRadialLikeLayer extends AbstractLayer {
                 BlockLayer layer = (index >= 0) ? blockLayer.get(index) : blockLayer.get(0);
                 BlockState state = layer.getPlacer().get(layer.getBlockStates(), pos);
                 synchronized (manager) {
-                    manager.put(state, pos);
+                    manager.put(state, pos, layer.getRuler());
                 }
             }, pool));
         }
@@ -390,7 +390,7 @@ public abstract class AbstractRadialLikeLayer extends AbstractLayer {
                 BlockLayer layer = (index >= 0) ? blockLayer.get(index) : blockLayer.get(0);
                 BlockState state = layer.getPlacer().get(layer.getBlockStates(), LongPosHelper.decodeBlockPos(pos));
                 synchronized (manager) {
-                    manager.put(state, pos);
+                    manager.put(state, pos, layer.getRuler());
                 }
             }, pool));
 
@@ -478,7 +478,7 @@ public abstract class AbstractRadialLikeLayer extends AbstractLayer {
                 BlockLayer layer = (index >= 0) ? blockLayer.get(index) : blockLayer.get(0);
                 BlockState state = layer.getPlacer().get(layer.getBlockStates(), LongPosHelper.decodeBlockPos(pos));
                 synchronized (manager) {
-                    manager.put(state, pos);
+                    manager.put(state, pos, layer.getRuler());
                 }
             }, pool));
 

@@ -47,7 +47,7 @@ class SurfaceLayer extends AbstractLayer {
                 LongSet leftPositions = entry.getValue();
 
                 processCommonGet(leftPositions, (placer, states, ruler, pos) -> {
-                    threadedManager.put(placer.get(states, LongPosHelper.decodeBlockPos(pos)), pos);
+                    threadedManager.put(placer.get(states, LongPosHelper.decodeBlockPos(pos)), pos, ruler);
                 });
                 //System.out.println("process common");
 
@@ -151,7 +151,7 @@ class SurfaceLayer extends AbstractLayer {
                 LongSet leftPositions = entry.getValue();
 
                 processCommonGet(leftPositions, (placer, states, ruler, pos) -> {
-                    threadedManager.put(placer.get(states, LongPosHelper.decodeBlockPos(pos)), pos);
+                    threadedManager.put(placer.get(states, LongPosHelper.decodeBlockPos(pos)), pos, ruler);
                 });
 
                 synchronized (manager) {
@@ -218,11 +218,12 @@ class SurfaceLayer extends AbstractLayer {
 
             LayerPlacer placer = layer.getPlacer();
             List<BlockState> states = layer.getBlockStates();
+            StructurePlacementRuleManager ruler = layer.getRuler();
 
             for (BlockPos pos : leftPositions) {
                 if (!leftPositions.contains(pos.up(depth))) {
                     difference.add(pos);
-                    manager.put(placer.get(states, pos), pos);
+                    manager.put(placer.get(states, pos), pos, ruler);
                 }
             }
             leftPositions.removeAll(difference);
@@ -231,8 +232,9 @@ class SurfaceLayer extends AbstractLayer {
         if (!leftPositions.isEmpty()) {
             LayerPlacer placer = blockLayer.getLastLayer().getPlacer();
             List<BlockState> states = blockLayer.getLastLayer().getBlockStates();
+            StructurePlacementRuleManager ruler = blockLayer.getLastLayer().getRuler();
             for (BlockPos pos : leftPositions) {
-                manager.put(placer.get(states, pos), pos);
+                manager.put(placer.get(states, pos), pos, ruler);
             }
         }
 
@@ -335,11 +337,12 @@ class SurfaceLayer extends AbstractLayer {
 
             LayerPlacer placer = layer.getPlacer();
             List<BlockState> states = layer.getBlockStates();
+            StructurePlacementRuleManager ruler = layer.getRuler();
 
             for (BlockPos pos : leftPositions) {
                 if (!leftPositions.contains(pos.up(depth))) {
                     difference.add(pos);
-                    manager.put(placer.get(states, pos), pos);
+                    manager.put(placer.get(states, pos), pos, ruler);
                 }
             }
             leftPositions.removeAll(difference);
@@ -348,8 +351,9 @@ class SurfaceLayer extends AbstractLayer {
         if (!leftPositions.isEmpty()) {
             LayerPlacer placer = blockLayer.getLastLayer().getPlacer();
             List<BlockState> states = blockLayer.getLastLayer().getBlockStates();
+            StructurePlacementRuleManager ruler = blockLayer.getLastLayer().getRuler();
             for (BlockPos pos : leftPositions) {
-                manager.put(placer.get(states, pos), pos);
+                manager.put(placer.get(states, pos), pos, ruler);
             }
         }
 
@@ -410,7 +414,7 @@ class SurfaceLayer extends AbstractLayer {
         LongSet leftPositions = new LongOpenHashSet(posList);
 
         processCommonGet(leftPositions, (placer, states, ruler, pos) -> {
-            manager.put(placer.get(states, LongPosHelper.decodeBlockPos(pos)), pos);
+            manager.put(placer.get(states, LongPosHelper.decodeBlockPos(pos)), pos, ruler);
         });
 
         return manager;
@@ -479,7 +483,7 @@ class SurfaceLayer extends AbstractLayer {
         LongSet leftPositions = new LongOpenHashSet(posList);
 
         processCommonGet(leftPositions, (placer, states, ruler, pos) -> {
-            manager.put(placer.get(states, LongPosHelper.decodeBlockPos(pos)), pos);
+            manager.put(placer.get(states, LongPosHelper.decodeBlockPos(pos)), pos, ruler);
         });
 
         return manager;
