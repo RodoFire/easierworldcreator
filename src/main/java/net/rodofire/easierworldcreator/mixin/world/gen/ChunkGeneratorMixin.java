@@ -66,7 +66,10 @@ public abstract class ChunkGeneratorMixin {
 
             Path[] paths = placerManager.getToPlace(world, GenerationStep.Feature.values()[k]);
             for (Path path : paths) {
-                world.setCurrentlyGeneratingStructureName(() -> "\n\t-ewc multi-chunk feature generating: \n\t\t- " + path.getFileName() + "\n\t\t - step : generation step");
+                world.setCurrentlyGeneratingStructureName(() ->
+                        "\n\t-ewc multi-chunk feature generating: " +
+                                "\n\t\t- " + path.getFileName() +
+                                "\n\t\t- mixin step : generation step");
                 BlockListManager manager = BlockListHelper.fromJsonPath(world, path);
                 if (manager == null) continue;
                 manager.placeAllNDelete(world);
@@ -95,7 +98,10 @@ public abstract class ChunkGeneratorMixin {
             if (placerManager == null) return;
             Path[] paths = placerManager.getToPlace(world, old, placedFeature);
             for (Path path : paths) {
-                world.setCurrentlyGeneratingStructureName(() -> "\n\t-ewc multi-chunk feature generating: \n\t\t- " + path.getFileName() + "\n\t\t - step : feature");
+                world.setCurrentlyGeneratingStructureName(() ->
+                        "\n\t-ewc multi-chunk feature generating: " +
+                                "\n\t\t- " + path.getFileName() +
+                                "\n\t\t- mixin step : feature");
                 BlockListManager comparator = BlockListHelper.fromJsonPath(world, path);
                 if (comparator == null) {
                     continue;
@@ -132,7 +138,7 @@ public abstract class ChunkGeneratorMixin {
 
                             world.setCurrentlyGeneratingStructureName(() ->
                                     "\n| ewc multi-chunk feature generating: "
-                                            + "\n\t- step: end generation"
+                                            + "\n\t- mixin step: end generation"
                                             + "\n\t- center chunkPos: " + chunk.getPos().toString()
                                             + "\n\t- parent directory: " + path.getParent().getFileName().toString()
                                             + "\n\t- generating: " + path.getFileName()
