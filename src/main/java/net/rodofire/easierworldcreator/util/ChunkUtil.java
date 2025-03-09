@@ -1,15 +1,11 @@
 package net.rodofire.easierworldcreator.util;
 
 import net.minecraft.util.math.ChunkPos;
-import net.minecraft.world.StructureWorldAccess;
-import net.minecraft.world.WorldAccess;
 import net.minecraft.world.WorldView;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.ChunkStatus;
 import net.minecraft.world.chunk.ProtoChunk;
-import net.minecraft.world.chunk.WrapperProtoChunk;
 import net.rodofire.easierworldcreator.config.ewc.EwcConfig;
-import net.rodofire.easierworldcreator.mixin.world.gen.ChunkRegionMixin;
 import net.rodofire.easierworldcreator.world.chunk.ChunkRegionUtil;
 
 /**
@@ -25,7 +21,7 @@ public class ChunkUtil {
      * @return <p>- true if the features of the chunk were generated. <p>- false if not
      */
     public static boolean isFeaturesGenerated(WorldView world, ChunkPos chunkPos) {
-        Chunk chunk = ((ChunkRegionUtil) world).getNullableChunk(chunkPos.x, chunkPos.z, ChunkStatus.EMPTY, false);
+        Chunk chunk = ((ChunkRegionUtil) world).ewc_main$getNullableChunk(chunkPos.x, chunkPos.z, ChunkStatus.EMPTY, false);
         return !(chunk instanceof ProtoChunk && chunk.getStatus().isAtMost(ChunkStatus.FEATURES));
     }
 

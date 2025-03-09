@@ -1,15 +1,21 @@
 package net.rodofire.easierworldcreator.shape.block.gen;
 
+import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
-import net.minecraft.world.StructureWorldAccess;
+import net.rodofire.easierworldcreator.blockdata.blocklist.DividedBlockListManager;
 import net.rodofire.easierworldcreator.maths.FastMaths;
 import net.rodofire.easierworldcreator.shape.block.instanciator.AbstractBlockShape;
 import net.rodofire.easierworldcreator.shape.block.instanciator.AbstractFillableBlockShape;
-import net.rodofire.easierworldcreator.util.WorldGenUtil;
+import net.rodofire.easierworldcreator.shape.block.layer.LayerManager;
+import net.rodofire.easierworldcreator.shape.block.placer.ShapePlacer;
+import net.rodofire.easierworldcreator.shape.block.rotations.Rotator;
+import net.rodofire.easierworldcreator.util.LongPosHelper;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /*
 
@@ -71,16 +77,32 @@ import java.util.*;
  */
 
 /**
- * Class to generate Sphere related shapes
- * the methods in this class basically stack multiple circles to generate a cylinder
- * <p> - Since 2.1.0, the shape doesn't return a {@link List<BlockPos>} but it returns instead a {@code List<Set<BlockPos>>}
- * <p> - Before 2.1.0, the BlockPos list was a simple list.
- * <p> - Starting from 2.1.0, the shapes return a list of {@link ChunkPos} that has a set of {@link BlockPos}
- * <p>The change from {@link List} to {@link Set} was done to avoid duplicates BlockPos,
- * which resulted in unnecessary calculations.
- * <p>this allows easy multithreading for the Block assignment
- * done in the {@link AbstractBlockShape} which result in better performance;
- * </p>
+ * Class to generate cylinder related shapes
+ * <br>
+ * The Main purpose of this class is to generate the coordinates based on a shape.
+ * The coordinates are organized depending on a {@code Map<ChunkPos, LongOpenHashSet>}.
+ * <p>It emply some things:
+ * <ul>
+ *     <li>The coordinates are divided in chunk</li>
+ *     <li>It uses {@link LongOpenHashSet} for several reasons.
+ *     <ul>
+ *     <li>First, We use a set to avoid doing unnecessary calculations on the shape. It ensures that no duplicate is present.
+ *     <li>Second, it compresses the BlockPos: The {@link BlockPos} are saved under long using {@link LongPosHelper}.
+ *     It saves some memory since that we save four bytes of data for each {@link BlockPos},
+ *     and there should not have overhead since that we use primitive data type.
+ *     <li>Third, since that we use primitive data types and that they take less memory,
+ *     coordinate generation, accession or deletion is much faster than using a {@code Set<BlockPos>}.
+ *     Encoding and decoding blockPos and then adding it into {@link LongOpenHashSet}is extremely faster
+ *     compared to only adding a {@link BlockPos}.
+ *     ~60- 70% facter.
+ *     </ul>
+ *     </li>
+ * </ul>
+ * <p>Dividing Coordinates into Chunk has some advantages :
+ * <ul>
+ *     <li> allow a multithreaded block assignement when using {@link LayerManager}
+ *     <li> allow to be used during WG, when using {@link DividedBlockListManager} or when placing using {@link ShapePlacer}
+ * </ul>
  */
 @SuppressWarnings("unused")
 public class CylinderGen extends AbstractFillableBlockShape {
@@ -91,21 +113,13 @@ public class CylinderGen extends AbstractFillableBlockShape {
     /**
      * init a Cylinder object
      *
-     * @param world           the world the spiral will spawn in
-     * @param pos             the center of the spiral
-     * @param placeMoment     define the moment where the shape will be placed
-     * @param layerPlace      how the {@code @BlockStates} inside of a {@code BlockLayer} will be placed
-     * @param layersType      how the Layers will be placed
-     * @param yRotation       first rotation around the y-axis
-     * @param zRotation       second rotation around the z-axis
-     * @param secondYRotation last rotation around the y-axis
-     * @param featureName     the name of the feature
-     * @param radiusX         the radius of the cylinder on the x-axis
-     * @param radiusZ         the radius of the cylinder on the z-axis
-     * @param height          the height of the cylinder
+     * @param pos     the center of the spiral
+     * @param radiusX the radius of the cylinder on the x-axis
+     * @param radiusZ the radius of the cylinder on the z-axis
+     * @param height  the height of the cylinder
      */
-    public CylinderGen(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, PlaceMoment placeMoment, LayerPlace layerPlace, LayersType layersType, int yRotation, int zRotation, int secondYRotation, String featureName, int radiusX, int radiusZ, int height) {
-        super(world, pos, placeMoment, layerPlace, layersType, yRotation, zRotation, secondYRotation, featureName);
+    public CylinderGen(@NotNull BlockPos pos, Rotator rotator, int radiusX, int radiusZ, int height) {
+        super(pos, rotator);
         this.radiusX = radiusX;
         this.radiusZ = radiusZ;
         this.height = height;
@@ -114,14 +128,12 @@ public class CylinderGen extends AbstractFillableBlockShape {
     /**
      * init a cylinder object
      *
-     * @param world       the world the spiral will spawn in
-     * @param pos         the center of the spiral
-     * @param placeMoment define the moment where the shape will be placed
-     * @param radius      the radius of the cylinder
-     * @param height      the height of the cylinder
+     * @param pos    the center of the spiral
+     * @param radius the radius of the cylinder
+     * @param height the height of the cylinder
      */
-    public CylinderGen(@NotNull StructureWorldAccess world, @NotNull BlockPos pos, PlaceMoment placeMoment, int radius, int height) {
-        super(world, pos, placeMoment);
+    public CylinderGen(@NotNull BlockPos pos, int radius, int height) {
+        super(pos);
         this.radiusX = radius;
         this.radiusZ = radius;
         this.height = height;
@@ -200,29 +212,13 @@ public class CylinderGen extends AbstractFillableBlockShape {
      * @return the blockPos divided into chunkPos
      */
     @Override
-    public Map<ChunkPos, Set<BlockPos>> getBlockPos() {
-        return this.generateCylinder();
-    }
-
-    /**
-     * Method to get the BlockPos of the shape
-     *
-     * @return the blockPos divided into chunkPos
-     */
-    public Map<ChunkPos, Set<BlockPos>> generateCylinder() {
-
-        Map<ChunkPos, Set<BlockPos>> chunkMap = new HashMap<>();
+    public Map<ChunkPos, LongOpenHashSet> getShapeCoordinates() {
         this.setFill();
 
-        //Rotating a shape requires more blocks.
-        //This verification is there to avoid some unnecessary calculations when the rotations don't have any impact on the number of blocks
         if (this.getFillingType() == Type.EMPTY) {
-
-            this.generateEmptyCylinder(chunkMap);
-            this.setPos(this.getPos().up());
-
+            this.generateEmptyCylinder();
         } else {
-            this.generateFullCylinder(chunkMap);
+            this.generateFullCylinder();
         }
 
         return chunkMap;
@@ -231,9 +227,8 @@ public class CylinderGen extends AbstractFillableBlockShape {
     /**
      * this generates a full cylinder
      *
-     * @param chunkMap the Map of ChunkPos that will be converted into {@code List<Set<BlockPos>>}
      */
-    public void generateFullCylinder(Map<ChunkPos, Set<BlockPos>> chunkMap) {
+    public void generateFullCylinder() {
         int radiusXSquared = radiusX * radiusX;
         int radiusZSquared = radiusZ * radiusZ;
         float innerRadiusXSquared = (1 - this.getCustomFill()) * (1 - this.getCustomFill()) * radiusX * radiusX;
@@ -241,7 +236,7 @@ public class CylinderGen extends AbstractFillableBlockShape {
 
         //Rotating a shape requires more blocks.
         //This verification is there to avoid some unnecessary calculations when the rotations don't have any impact on the number of blocks
-        if (this.getYRotation() % 180 == 0 && this.getZRotation() % 180 == 0 && this.getSecondYRotation() % 180 == 0) {
+        if (rotator == null) {
 
             for (float x = -this.radiusX; x <= this.radiusX; x += 1f) {
                 float x2 = x * x;
@@ -261,18 +256,13 @@ public class CylinderGen extends AbstractFillableBlockShape {
                         }
                         if (bl) {
                             for (float y = 0; y <= this.height; y += 1f) {
-
-                                BlockPos pos = new BlockPos((int) (this.getPos().getX() + x), (int) (this.getPos().getY() + y), (int) (this.getPos().getZ() + z));
-                                if (!this.multiChunk && WorldGenUtil.isPosAChunkFar(pos, this.getPos()))
-                                    this.multiChunk = true;
-                                WorldGenUtil.modifyChunkMap(pos, chunkMap);
+                                modifyChunkMap(LongPosHelper.encodeBlockPos((int) x + centerX, (int) y + centerY, (int) z + centerZ));
                             }
                         }
                     }
                 }
             }
         } else {
-
             for (float x = -this.radiusX; x <= this.radiusX; x += 0.5f) {
                 float x2 = x * x;
                 float xSquared = x * x / radiusXSquared;
@@ -289,12 +279,7 @@ public class CylinderGen extends AbstractFillableBlockShape {
                     if (bl) {
                         for (float y = 0; y <= this.height; y += 0.5f) {
                             if (xSquared + (z * z) / radiusZSquared <= 1) {
-
-                                BlockPos pos = this.getCoordinatesRotation(x, y, z, this.getPos());
-                                if (!this.multiChunk && WorldGenUtil.isPosAChunkFar(pos, this.getPos()))
-                                    this.multiChunk = true;
-                                WorldGenUtil.modifyChunkMap(pos, chunkMap);
-
+                                modifyChunkMap(rotator.get(x, y, z));
                             }
                         }
                     }
@@ -305,21 +290,16 @@ public class CylinderGen extends AbstractFillableBlockShape {
 
     /**
      * this generates a full cylinder.
-     *
-     * @param chunkMap the map that will be converted into {@code List<Set>blockPos>>}
      */
-    public void generateEmptyCylinder(Map<ChunkPos, Set<BlockPos>> chunkMap) {
+    public void generateEmptyCylinder() {
         //Rotating a shape requires more blocks.
         //This verification is there to avoid some unnecessary calculations when the rotations don't have any impact on the number of blocks
-        if (this.getYRotation() % 180 == 0 && this.getZRotation() % 180 == 0 && this.getSecondYRotation() == 0) {
+        if (rotator == null) {
             for (float u = 0; u < 360; u += (float) 45 / Math.max(this.radiusZ, this.radiusX)) {
                 float x = radiusX * FastMaths.getFastCos(u);
                 float z = radiusZ * FastMaths.getFastSin(u);
                 for (float y = 0; y <= this.height; y += 1f) {
-                    BlockPos pos = new BlockPos((int) (this.getPos().getX() + x), this.getPos().getY(), (int) (this.getPos().getZ() + z));
-                    if (!this.multiChunk && WorldGenUtil.isPosAChunkFar(pos, this.getPos()))
-                        this.multiChunk = true;
-                    WorldGenUtil.modifyChunkMap(pos, chunkMap);
+                    modifyChunkMap(LongPosHelper.encodeBlockPos((int) (centerX + x), (int) (centerY + y), (int) (centerZ + z)));
                 }
             }
         } else {
@@ -327,10 +307,7 @@ public class CylinderGen extends AbstractFillableBlockShape {
                 float x = radiusX * FastMaths.getFastCos(u);
                 float z = radiusZ * FastMaths.getFastSin(u);
                 for (float y = 0; y <= this.height; y += 0.5f) {
-                    BlockPos pos = this.getCoordinatesRotation(x, 0, z, this.getPos());
-                    if (!this.multiChunk && WorldGenUtil.isPosAChunkFar(pos, this.getPos()))
-                        this.multiChunk = true;
-                    WorldGenUtil.modifyChunkMap(pos, chunkMap);
+                    modifyChunkMap(rotator.get(x, y, z));
                 }
             }
         }

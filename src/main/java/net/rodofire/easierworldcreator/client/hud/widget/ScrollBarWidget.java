@@ -138,7 +138,7 @@ public class ScrollBarWidget extends PressableWidget {
         this.height = this.scrollHeight;
 
 
-        context.drawGuiTexture(TEXTURES.get(this.active, this.isSelected()), this.getX()-2, this.getY(), 10, this.height);
+        context.drawGuiTexture(TEXTURES.get(this.active, this.isSelected()), this.getX(), this.getY(), 10, this.height);
 
 
         int i = this.active ? 16777215 : 10526880;
