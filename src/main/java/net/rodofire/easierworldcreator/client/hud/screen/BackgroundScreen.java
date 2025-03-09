@@ -5,8 +5,10 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.render.RenderLayer;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.math.ColorHelper;
 
 @SuppressWarnings("unused")
 @Environment(EnvType.CLIENT)
@@ -63,16 +65,17 @@ public abstract class BackgroundScreen extends Screen {
         float screenRatio = (float) this.width / this.height;
 
         int renderWidth, renderHeight, offsetX, offsetY;
-        context.setShaderColor(
-                (float) ((this.backgroundShaderColor & 0xFF000000) >>> 24) / 0xFF,
-                (float) ((this.backgroundShaderColor & 0x00FF0000) >> 16) / 0xFF,
-                (float) ((this.backgroundShaderColor & 0x0000FF00) >> 8) / 0xFF,
-                (float) (this.backgroundShaderColor & 0x0000000FF) / 0xFF
-        );
         if (textureRatio == 1) {
             context.drawTexture(
+                    RenderLayer::getGuiTextured,
                     TEXTURE, 0, 0,
-                    0, 0, this.width, this.height, this.backgroundWidth, this.backgroundHeight
+                    0, 0, this.width, this.height, this.backgroundWidth, this.backgroundHeight,
+                    ColorHelper.fromFloats(
+                            (float) ((this.backgroundShaderColor & 0xFF000000) >>> 24) / 0xFF,
+                            (float) ((this.backgroundShaderColor & 0x00FF0000) >> 16) / 0xFF,
+                            (float) ((this.backgroundShaderColor & 0x0000FF00) >> 8) / 0xFF,
+                            (float) (this.backgroundShaderColor & 0x0000000FF) / 0xFF
+                    )
             );
         } else {
             if (screenRatio > textureRatio) {
@@ -88,6 +91,7 @@ public abstract class BackgroundScreen extends Screen {
             }
 
             context.drawTexture(
+                    RenderLayer::getGuiTextured,
                     TEXTURE,
                     -offsetX,
                     -offsetY,
@@ -95,10 +99,15 @@ public abstract class BackgroundScreen extends Screen {
                     renderWidth,
                     renderHeight,
                     renderWidth,
-                    renderHeight
+                    renderHeight,
+                    ColorHelper.fromFloats(
+                            (float) ((this.backgroundShaderColor & 0xFF000000) >>> 24) / 0xFF,
+                            (float) ((this.backgroundShaderColor & 0x00FF0000) >> 16) / 0xFF,
+                            (float) ((this.backgroundShaderColor & 0x0000FF00) >> 8) / 0xFF,
+                            (float) (this.backgroundShaderColor & 0x0000000FF) / 0xFF
+                    )
             );
         }
-        context.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
     }
 
     /**
@@ -113,14 +122,14 @@ public abstract class BackgroundScreen extends Screen {
     public void renderDarkRectangle(DrawContext context, int x, int y, int x2, int y2, int color) {
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
-        context.setShaderColor(
+        /*context.setShaderColor(
                 (float) ((color & 0x00FF0000) >> 16) / 256,
                 (float) ((color & 0x0000FF00) >> 8) / 256,
                 (float) (color & 0x000000FF) / 256,
                 (float) (color >>> 24) / 256
-        );
+        );*/
         context.fill(x, y, x2, y2, color);
-        context.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+       // context.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
         RenderSystem.disableBlend();
     }
 }

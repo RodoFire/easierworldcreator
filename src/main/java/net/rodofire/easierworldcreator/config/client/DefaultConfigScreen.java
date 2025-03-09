@@ -70,7 +70,7 @@ public class DefaultConfigScreen extends AbstractConfigScreen {
     }
 
     public DefaultConfigScreen(Screen parent, ModClientConfig config, String modId, Identifier background, int backgroundWidth, int backgroundHeight, int backgroundShaderColor, int backgroundDarkRectangleShaderColor) {
-        super(background, backgroundWidth, backgroundHeight, config, modId);
+        super(background, backgroundWidth, backgroundHeight,backgroundShaderColor, config, modId);
         this.parent = parent;
         this.backgroundDarkRectangleShaderColor = backgroundDarkRectangleShaderColor;
     }
@@ -313,7 +313,6 @@ public class DefaultConfigScreen extends AbstractConfigScreen {
             this.renderDarkRectangle(context, darkRectX, holeY + holeEndY, darkRectX + darkRectWidth, darkRectY + darkRectHeight, this.backgroundDarkRectangleShaderColor);
             this.renderDarkRectangle(context, darkRectX, holeY, holeX, holeY + holeEndY, this.backgroundDarkRectangleShaderColor);
 
-            context.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
         }
     }
 

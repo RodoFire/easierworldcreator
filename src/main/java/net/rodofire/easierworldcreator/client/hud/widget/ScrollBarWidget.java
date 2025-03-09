@@ -8,6 +8,7 @@ import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.ButtonTextures;
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
 import net.minecraft.client.gui.widget.PressableWidget;
+import net.minecraft.client.render.RenderLayer;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.MathHelper;
@@ -122,13 +123,6 @@ public class ScrollBarWidget extends PressableWidget {
         scrollHeight = (short) (((float) (adjustedHeight) / (maxScroll + adjustedHeight)) * (adjustedHeight));
 
 
-        context.setShaderColor(
-                (float) ((buttonColor & 0xFF0000) >> 16) / 256,
-                (float) ((buttonColor & 0xFF00) >> 8) / 256,
-                (float) (buttonColor & 0xFF) / 256,
-                this.alpha
-        );
-
         RenderSystem.enableBlend();
         RenderSystem.enableDepthTest();
 
@@ -138,12 +132,11 @@ public class ScrollBarWidget extends PressableWidget {
         this.height = this.scrollHeight;
 
 
-        context.drawGuiTexture(TEXTURES.get(this.active, this.isSelected()), this.getX(), this.getY(), 10, this.height);
+        context.drawGuiTexture(RenderLayer::getGuiTextured, TEXTURES.get(this.active, this.isSelected()), this.getX()-2, this.getY(), 10, this.height, this.buttonColor);
 
 
         int i = this.active ? 16777215 : 10526880;
         this.drawMessage(context, minecraftClient.textRenderer, i | MathHelper.ceil(this.alpha * 255.0F) << 24);
-        context.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
         super.renderWidget(context, mouseX, mouseY, delta);
     }
 

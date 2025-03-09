@@ -14,6 +14,6 @@ public interface MaterialConditionMixin {
     @Inject(method = "registerAndGetDefault", at = @At("TAIL"))
     private static void addCustomConditions(Registry<MapCodec<? extends MaterialRules.MaterialCondition>> registry, CallbackInfoReturnable<MapCodec<? extends MaterialRules.MaterialCondition>> cir) {
         SurfaceRulesMixin.register(registry, "full_noise_threshold", ExtendedMaterialRules.FullNoiseThresholdMaterialCondition.CODEC);
-        SurfaceRulesMixin.register(registry, "random", ExtendedMaterialRules.FullNoiseThresholdMaterialCondition.CODEC);
+        SurfaceRulesMixin.register(registry, "random", ExtendedMaterialRules.RandomMaterialCondition.CODEC);
     }
 }
