@@ -7,6 +7,7 @@ import net.minecraft.client.font.MultilineText;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.ConfirmLinkScreen;
 import net.minecraft.client.gui.tooltip.Tooltip;
+import net.minecraft.client.render.RenderLayer;
 import net.minecraft.text.*;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
@@ -90,6 +91,7 @@ public class MultiChunkInfoScreen extends AbstractInfoScreen {
 
         context.drawCenteredTextWithShadow(this.textRenderer, Text.translatable("config.ewc.multi_chunk.with"), this.width / 2 + (width1 + 10) / 2, yOffset + calculateTextHeight(Text.translatable("config.ewc.multi_chunk.concept").getString(), 4 * this.width / 5) + 26, 0xFFFFFF);
         context.drawTexture(
+                RenderLayer::getGuiTextured,
                 Identifier.of(Ewc.MOD_ID, "textures/gui/info/with_multi_chunk.png"),
                 this.width / 2 + 10,
                 yOffset + calculateTextHeight(Text.translatable("config.ewc.multi_chunk.concept").getString(), 4 * this.width / 5) + 36,
@@ -102,6 +104,7 @@ public class MultiChunkInfoScreen extends AbstractInfoScreen {
         );
         context.drawCenteredTextWithShadow(this.textRenderer, Text.translatable("config.ewc.multi_chunk.without"), this.width / 2 - (width1 - 10) / 2, yOffset + calculateTextHeight(Text.translatable("config.ewc.multi_chunk.concept").getString(), 4 * this.width / 5) + 26, 0xFFFFFF);
         context.drawTexture(
+                RenderLayer::getGuiTextured,
                 Identifier.of(Ewc.MOD_ID, "textures/gui/info/without_multi_chunk.png"),
                 this.width / 2 - width1 - 10,
                 yOffset + calculateTextHeight(Text.translatable("config.ewc.multi_chunk.concept").getString(), 4 * this.width / 5) + 36,

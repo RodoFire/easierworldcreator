@@ -50,7 +50,7 @@ dependencies {
 
     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 
-    modApi "com.terraformersmc:modmenu:11.0.1"
+    modApi "com.terraformersmc:modmenu:13.0.2"
     include 'com.moandjiezana.toml:toml4j:0.7.2'
     implementation 'com.moandjiezana.toml:toml4j:0.7.2'
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
@@ -99,7 +99,7 @@ publishMods {
     curseforge {
         accessToken = getApiKey()["CURSEFORGE_API_KEY"]
         projectId = "1069458"
-        minecraftVersions.add("1.21.1")
+        minecraftVersions.add("1.21.4")
         javaVersions.add(JavaVersion.VERSION_21)
         serverRequired = true
         requires("fabric-api")
@@ -109,14 +109,14 @@ publishMods {
     modrinth {
         accessToken = getApiKey()["MODRINTH_API_KEY"]
         projectId = "Ut6vTr1q"
-        minecraftVersions.add("1.21.1")
+        minecraftVersions.add("1.21.4")
         requires("fabric-api")
     }
 
     github {
         accessToken = getApiKey()["GITHUB_API_KEY"]
         repository = "McMellonTeam/easierworldcreator"
-        commitish = "1.21.1"
+        commitish = "1.21.4"
     }
 }
 
