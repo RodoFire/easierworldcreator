@@ -13,6 +13,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Class to create custom shapes
@@ -119,4 +120,6 @@ public abstract class AbstractBlockShape {
 
         lastSet.getValue().add(pos);
     }
+
+    public abstract LongOpenHashSet getCoveredChunks();
 }
