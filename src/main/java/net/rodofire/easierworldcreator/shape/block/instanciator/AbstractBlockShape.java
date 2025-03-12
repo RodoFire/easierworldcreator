@@ -98,6 +98,14 @@ public abstract class AbstractBlockShape {
      */
     public abstract Map<ChunkPos, LongOpenHashSet> getShapeCoordinates();
 
+    /**
+     * Method to know the chunks that will be covered by the shape. This avoids generating all the structure, enhancing performance
+     * @return a set of chunkPos.
+     * For performance reasons, we use long instead of {@link ChunkPos}.
+     * <p>To convert the long into a {@link ChunkPos}, use the long in a constructor.
+     */
+    public abstract LongOpenHashSet getCoveredChunks();
+
     private void setCenterPos() {
         centerX = LongPosHelper.decodeX(centerPos);
         centerY = LongPosHelper.decodeY(centerPos);
@@ -120,6 +128,4 @@ public abstract class AbstractBlockShape {
 
         lastSet.getValue().add(pos);
     }
-
-    public abstract LongOpenHashSet getCoveredChunks();
 }

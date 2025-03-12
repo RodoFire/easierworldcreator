@@ -46,9 +46,7 @@ public abstract class AbstractFillableBlockShape extends AbstractBlockShape {
     /**
      * if ==0, there will be no circle
      * if ==1f, it will be a full circle
-     * Don't need to care if
-     *
-     * @see AbstractFillableBlockShape is not set on CUSTOM
+     * Don't need to care if {@link AbstractFillableBlockShape} is not set on CUSTOM
      **/
     float customFill = 1f;
 
@@ -69,7 +67,7 @@ public abstract class AbstractFillableBlockShape extends AbstractBlockShape {
     /**
      * init the ShapeFilling
      *
-     * @param pos the pos of the shape (usually the center of the structure)
+     * @param pos     the pos of the shape (usually the center of the structure)
      * @param rotator the object that is used to rotate the structure
      */
     public AbstractFillableBlockShape(@NotNull BlockPos pos, Rotator rotator) {
