@@ -91,12 +91,26 @@ public class LineGen extends AbstractBlockShape {
         return chunkMap;
     }
 
+    @Override
+    public LongOpenHashSet getCoveredChunks() {
+        BlockPos.Mutable pos1 = (BlockPos.Mutable) LongPosHelper.decodeBlockPos(this.centerPos);
+        pos1.set(pos1.getX() >> 4, 0, pos1.getZ() >> 4);
+
+        BlockPos.Mutable pos2 = (BlockPos.Mutable) secondPos;
+        pos2.set(pos2.getX() >> 4, 0, pos2.getZ() >> 4);
+        int estimatedSurface = (int) WorldGenUtil.getDistance(pos1, pos2);
+
+        LongOpenHashSet coveredChunks = new LongOpenHashSet(estimatedSurface);
+        getCovered(coveredChunks);
+        return coveredChunks;
+    }
+
     /**
      * this method generates the coordinates
      *
-     * @param dir      the direction of the line
+     * @param dir the direction of the line
      */
-    public void generateAxisLine(Direction dir) {
+    private void generateAxisLine(Direction dir) {
         int length = (int) WorldGenUtil.getDistance(LongPosHelper.decodeBlockPos(centerPos), secondPos);
         for (int i = 0; i < length; i++) {
             modifyChunkMap(LongPosHelper.offset(dir, centerPos, i));
@@ -104,7 +118,7 @@ public class LineGen extends AbstractBlockShape {
     }
 
 
-    public void drawLine() {
+    private void drawLine() {
         modifyChunkMap(this.centerPos);
 
         int x1 = centerX;
@@ -172,6 +186,99 @@ public class LineGen extends AbstractBlockShape {
                 p1 += 2 * dy;
                 p2 += 2 * dx;
                 modifyChunkMap(LongPosHelper.encodeBlockPos(x1, y1, z1));
+            }
+        }
+    }
+
+    private void getCovered(LongOpenHashSet covered) {
+        modifyChunkMap(this.centerPos);
+
+        int lastChunkX = Integer.MAX_VALUE, lastChunkZ = Integer.MAX_VALUE;
+
+        int x1 = centerX;
+        int y1 = centerY;
+        int z1 = centerZ;
+        int x2 = secondPos.getX();
+        int y2 = secondPos.getY();
+        int z2 = secondPos.getZ();
+
+        int dx = Math.abs(x2 - x1);
+        int dy = Math.abs(y2 - y1);
+        int dz = Math.abs(z2 - z1);
+
+        int xs = x1 < x2 ? 1 : -1;
+        int ys = y1 < y2 ? 1 : -1;
+        int zs = z1 < z2 ? 1 : -1;
+
+        if (dx >= dy && dx >= dz) {
+            int p1 = 2 * dy - dx;
+            int p2 = 2 * dz - dx;
+            while (x1 != x2) {
+                x1 += xs;
+                if (p1 >= 0) {
+                    y1 += ys;
+                    p1 -= 2 * dx;
+                }
+                if (p2 >= 0) {
+                    z1 += zs;
+                    p2 -= 2 * dx;
+                }
+                p1 += 2 * dy;
+                p2 += 2 * dz;
+
+                int chunkX = x1 >> 4;
+                int chunkZ = z1 >> 4;
+                if (chunkX != lastChunkX || chunkZ != lastChunkZ) {
+                    covered.add(ChunkPos.toLong(chunkX, chunkZ));
+                    lastChunkX = chunkX;
+                    lastChunkZ = chunkZ;
+                }
+            }
+        } else if (dy >= dx && dy >= dz) {
+            int p1 = 2 * dx - dy;
+            int p2 = 2 * dz - dy;
+            while (y1 != y2) {
+                y1 += ys;
+                if (p1 >= 0) {
+                    x1 += xs;
+                    p1 -= 2 * dy;
+                }
+                if (p2 >= 0) {
+                    z1 += zs;
+                    p2 -= 2 * dy;
+                }
+                p1 += 2 * dx;
+                p2 += 2 * dz;
+                int chunkX = x1 >> 4;
+                int chunkZ = z1 >> 4;
+                if (chunkX != lastChunkX || chunkZ != lastChunkZ) {
+                    covered.add(ChunkPos.toLong(chunkX, chunkZ));
+                    lastChunkX = chunkX;
+                    lastChunkZ = chunkZ;
+                }
+            }
+        } else {
+            int p1 = 2 * dy - dz;
+            int p2 = 2 * dx - dz;
+            while (z1 != z2) {
+                z1 += zs;
+                if (p1 >= 0) {
+                    y1 += ys;
+                    p1 -= 2 * dz;
+                }
+                if (p2 >= 0) {
+                    x1 += xs;
+                    p2 -= 2 * dz;
+                }
+                p1 += 2 * dy;
+                p2 += 2 * dx;
+                int chunkX = x1 >> 4;
+                int chunkZ = z1 >> 4;
+                if (chunkX != lastChunkX || chunkZ != lastChunkZ) {
+                    covered.add(ChunkPos.toLong(chunkX, chunkZ));
+                    lastChunkX = chunkX;
+                    lastChunkZ = chunkZ;
+                }
             }
         }
     }
