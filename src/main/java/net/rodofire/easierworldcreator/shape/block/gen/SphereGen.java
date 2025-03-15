@@ -12,6 +12,7 @@ import net.rodofire.easierworldcreator.shape.block.instanciator.AbstractFillable
 import net.rodofire.easierworldcreator.shape.block.layer.LayerManager;
 import net.rodofire.easierworldcreator.shape.block.placer.ShapePlacer;
 import net.rodofire.easierworldcreator.shape.block.rotations.Rotator;
+import net.rodofire.easierworldcreator.util.DirectionUtil;
 import net.rodofire.easierworldcreator.util.LongPosHelper;
 import org.jetbrains.annotations.NotNull;
 
@@ -219,32 +220,109 @@ public class SphereGen extends AbstractFillableBlockShape {
         return chunkMap;
     }
 
+    @Override
+    public LongOpenHashSet getCoveredChunks() {
+        int estimatedSurface;
 
-    public void generateHalfEmptyEllipsoid() {
-        if (direction == Direction.UP) {
-            generateEmptyEllipsoid(-180, 180, 0, 90);
-        } else if (direction == Direction.DOWN) {
-            generateEmptyEllipsoid(-180, 180, -90, 0);
-        } else if (direction == Direction.WEST) {
-            generateEmptyEllipsoid(0, 180, -90, 90);
-        } else if (direction == Direction.EAST) {
-            generateEmptyEllipsoid(-180, 0, -90, 90);
-        } else if (direction == Direction.NORTH) {
-            generateEmptyEllipsoid(-90, 90, -90, 90);
+        if (halfSphere == SphereType.HALF && DirectionUtil.isHorizontal(direction)) {
+            estimatedSurface = (int) (Math.PI * radiusZ * radiusX / 2);
         } else {
-            generateEmptyEllipsoid(90, 270, -90, 90);
+            estimatedSurface = (int) (Math.PI * radiusZ * radiusX);
         }
+        LongOpenHashSet covered = new LongOpenHashSet(estimatedSurface);
+
+        int minTheta = -180, minPhi = -90;
+        int maxTheta = 180, maxPhi = 90;
+
+        switch (direction) {
+            case UP:
+                minPhi = 0;
+                break;
+            case DOWN:
+                maxPhi = 0;
+                break;
+            case WEST:
+                minTheta = 0;
+                break;
+            case EAST:
+                maxTheta = 0;
+                break;
+            case NORTH:
+                minTheta = -90;
+                maxTheta = 90;
+                break;
+            case SOUTH:
+                minTheta = 90;
+                maxTheta = 270;
+                break;
+        }
+
+        getCovered(covered, minTheta, maxTheta, minPhi, maxPhi);
+        return covered;
     }
 
-    public void generateEmptyEllipsoid() {
+
+    private void generateHalfEmptyEllipsoid() {
+        int minTheta = -180, minPhi = -90;
+        int maxTheta = 180, maxPhi = 90;
+
+        switch (direction) {
+            case UP:
+                minPhi = 0;
+                break;
+            case DOWN:
+                maxPhi = 0;
+                break;
+            case WEST:
+                minTheta = 0;
+                break;
+            case EAST:
+                maxTheta = 0;
+                break;
+            case NORTH:
+                minTheta = -90;
+                maxTheta = 90;
+                break;
+            case SOUTH:
+                minTheta = 90;
+                maxTheta = 270;
+                break;
+        }
+        generateEmptyEllipsoid(minTheta, maxTheta, minPhi, maxPhi);
+    }
+
+    private void generateEmptyEllipsoid() {
         this.generateEmptyEllipsoid(-180, 180, -90, 90);
+    }
+
+    private void generateHalfFullEllipsoid() {
+        int minX = -radiusX, minY = -radiusY, minZ = -radiusZ;
+        int maxX = radiusX, maxY = radiusY, maxZ = radiusZ;
+        switch (direction) {
+            case UP:
+                minY = 0;
+                break;
+            case DOWN:
+                maxY = 0;
+                break;
+            case WEST:
+                minX = 0;
+                break;
+            case EAST:
+                maxX = 0;
+                break;
+            case NORTH:
+                minZ = 0;
+                break;
+            case SOUTH:
+                maxZ = 0;
+                break;
+        }
+        this.generateFullEllipsoid(minX, maxX, minY, maxY, minZ, maxZ);
     }
 
     public void generateEmptyEllipsoid(int minLarge, int maxLarge, int minHeight, int maxHeight) {
         int maxLarge1 = Math.max(radiusZ, Math.max(radiusX, radiusY));
-
-        BlockPos.Mutable mutable = new BlockPos.Mutable();
-        List<BlockPos> poslist = new ArrayList<>();
         if (rotator == null) {
             for (float theta = minLarge; theta <= maxLarge; theta += (float) 45 / maxLarge1) {
 
@@ -278,22 +356,6 @@ public class SphereGen extends AbstractFillableBlockShape {
         }
     }
 
-
-    public void generateHalfFullEllipsoid() {
-        if (direction == Direction.UP) {
-            this.generateFullEllipsoid(-radiusX, radiusX, 0, radiusY, -radiusZ, radiusZ);
-        } else if (direction == Direction.DOWN) {
-            this.generateFullEllipsoid(-radiusX, radiusX, -radiusY, 0, -radiusZ, radiusZ);
-        } else if (direction == Direction.WEST) {
-            this.generateFullEllipsoid(0, radiusX, -radiusY, radiusY, -radiusZ, radiusZ);
-        } else if (direction == Direction.EAST) {
-            this.generateFullEllipsoid(-radiusX, 0, -radiusY, radiusY, -radiusZ, radiusZ);
-        } else if (direction == Direction.NORTH) {
-            this.generateFullEllipsoid(-radiusX, radiusX, -radiusY, radiusY, -radiusZ, 0);
-        } else {
-            this.generateFullEllipsoid(-radiusX, radiusX, -radiusY, radiusY, 0, radiusZ);
-        }
-    }
 
     public void generateFullEllipsoid() {
         this.generateFullEllipsoid(-radiusX, radiusX, -radiusY, radiusY, -radiusZ, radiusZ);
@@ -378,6 +440,52 @@ public class SphereGen extends AbstractFillableBlockShape {
                                 modifyChunkMap(rotator.get(x, y, z));
                             }
                         }
+                    }
+                }
+            }
+        }
+    }
+
+    private void getCovered(LongOpenHashSet set, int minLarge, int maxLarge, int minHeight, int maxHeight) {
+        int maxLarge1 = Math.max(radiusZ, Math.max(radiusX, radiusY));
+        int lastChunkX = Integer.MAX_VALUE, lastChunkZ = Integer.MAX_VALUE;
+
+        if (rotator == null) {
+            int xBound = (360 - maxLarge + minLarge) / 360 * radiusX;
+            int zBound = (360 - maxLarge + minLarge) / 360 * radiusZ;
+
+            for (int x = (180 - maxLarge + minLarge) / 180 * radiusX; x < xBound; x++) {
+                int chunkX = x >> 4;
+                boolean sameX = chunkX == lastChunkX;
+                for (int z = (180 - maxLarge + minLarge) / 180 * radiusZ; z < zBound; z++) {
+                    int chunkZ = z >> 4;
+                    if (!sameX || chunkZ != lastChunkZ) {
+                        set.add(ChunkPos.toLong(chunkX, chunkZ));
+                        lastChunkX = chunkX;
+                        lastChunkZ = chunkZ;
+                    }
+                }
+            }
+        } else {
+            for (float theta = minLarge; theta <= maxLarge; theta += (float) 45 / maxLarge1) {
+
+                float xCosTheta = radiusX * FastMaths.getFastCos(theta);
+                float zSinTheta = radiusZ * FastMaths.getFastSin(theta);
+
+                for (float phi = minHeight; phi <= maxHeight; phi += (float) 45 / maxLarge1) {
+                    float cosPhi = FastMaths.getFastCos(phi);
+
+                    float x = xCosTheta * cosPhi;
+                    float y = (radiusY * FastMaths.getFastSin(phi));
+                    float z = zSinTheta * cosPhi;
+                    BlockPos pos = rotator.getBlockPos(x, y, z);
+                    int chunkX = pos.getX() >> 4;
+                    int chunkZ = pos.getZ() >> 4;
+
+                    if (chunkX != lastChunkX || chunkZ != lastChunkZ) {
+                        set.add(ChunkPos.toLong(chunkX, chunkZ));
+                        lastChunkX = chunkX;
+                        lastChunkZ = chunkZ;
                     }
                 }
             }

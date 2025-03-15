@@ -13,7 +13,9 @@ import net.rodofire.easierworldcreator.shape.block.rotations.Rotator;
 import net.rodofire.easierworldcreator.util.LongPosHelper;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 /*
 
 
@@ -162,26 +164,51 @@ public class CircleGen extends AbstractFillableBlockShape {
      */
     @Override
     public Map<ChunkPos, LongOpenHashSet> getShapeCoordinates() {
-        if (this.getFillingType() == AbstractFillableBlockShape.Type.HALF) {
-            this.setCustomFill(0.5f);
-        }
-        if (this.getCustomFill() > 1f) this.setCustomFill(1f);
-        if (this.getCustomFill() < 0f) this.setCustomFill(0f);
+        initFilling();
 
         if (this.getFillingType() == AbstractFillableBlockShape.Type.EMPTY) {
             this.generateEmptyOval();
-        }else{
+        } else {
             this.generateFullOval();
         }
         return chunkMap;
     }
 
+    @Override
+    public LongOpenHashSet getCoveredChunks() {
+        int estimatedSurface;
+
+        //we try to estimate the number of chunks for the shape to avoid the maximum rehash calls
+        if (this.getFillingType() == Type.EMPTY) {
+            estimatedSurface = (int) (Math.PI * (this.radiusX >> 4 + this.radiusZ >> 4));
+        } else {
+            estimatedSurface = (int) (Math.PI * (radiusX >> 4) * (radiusZ >> 4) - Math.PI * (1 - this.getCustomFill()) * (1 - this.getCustomFill()) * (radiusX >> 4) * (radiusZ >> 4));
+        }
+
+        LongOpenHashSet covered = new LongOpenHashSet(estimatedSurface);
+        initFilling();
+
+        if (this.getFillingType() == AbstractFillableBlockShape.Type.EMPTY) {
+            this.getCoveredEmptyOval(covered);
+        } else {
+            this.getCoveredFullOval(covered);
+        }
+
+        return covered;
+    }
+
+    private void initFilling() {
+        if (this.getFillingType() == Type.HALF) {
+            this.setCustomFill(0.5f);
+        }
+        if (this.getCustomFill() > 1f) this.setCustomFill(1f);
+        if (this.getCustomFill() < 0f) this.setCustomFill(0f);
+    }
+
     /**
      * method to create a full oval/ with custom filling
-     *
      */
-    public void generateFullOval() {
-
+    private void generateFullOval() {
         int radiusXSquared = radiusX * radiusX;
         int radiusZSquared = radiusZ * radiusZ;
         float innerRadiusXSquared = (1 - this.getCustomFill()) * (1 - this.getCustomFill()) * radiusX * radiusX;
@@ -239,14 +266,14 @@ public class CircleGen extends AbstractFillableBlockShape {
     /**
      * method to create an empty oval with rotations
      */
-    public void generateEmptyOval() {
+    private void generateEmptyOval() {
         //Rotating a shape requires more blocks.
         //This verification is there to avoid some unnecessary calculations when the rotations don't have any impact on the number of blocks
         if (rotator == null) {
             for (float u = 0; u < 360; u += (float) 45 / Math.max(this.radiusZ, this.radiusX)) {
                 float x = radiusX * FastMaths.getFastCos(u);
                 float z = radiusZ * FastMaths.getFastSin(u);
-                modifyChunkMap(LongPosHelper.encodeBlockPos((int) (x + centerX),  centerY, (int) (z+ centerZ)));
+                modifyChunkMap(LongPosHelper.encodeBlockPos((int) (x + centerX), centerY, (int) (z + centerZ)));
             }
         } else {
             for (float u = 0; u < 360; u += (float) 35 / Math.max(this.radiusZ, this.radiusX)) {
@@ -254,6 +281,108 @@ public class CircleGen extends AbstractFillableBlockShape {
                 float z = radiusZ * FastMaths.getFastSin(u);
 
                 modifyChunkMap(rotator.get(x, 0, z));
+            }
+        }
+    }
+
+    /**
+     * method to create a full oval/ with custom filling
+     */
+    private void getCoveredFullOval(LongOpenHashSet covered) {
+        int radiusXSquared = radiusX * radiusX;
+        int radiusZSquared = radiusZ * radiusZ;
+        float innerRadiusXSquared = (1 - this.getCustomFill()) * (1 - this.getCustomFill()) * radiusX * radiusX;
+        float innerRadiusZSquared = (1 - this.getCustomFill()) * (1 - this.getCustomFill()) * radiusZ * radiusZ;
+        float invRadiusXSquared = 1.0f / radiusXSquared;
+        float invRadiusZSquared = 1.0f / radiusZSquared;
+        boolean hasInnerRadius = innerRadiusXSquared > 0;
+
+        //Rotating a shape requires more blocks.
+        //This verification is there to avoid some unnecessary calculations when the rotations don't have any impact on the number of blocks
+        int lastChunkX = Integer.MIN_VALUE, lastChunkZ = Integer.MIN_VALUE;
+
+        if (rotator == null) {
+            for (int x = -this.radiusX; x <= this.radiusX; x += 1) {
+                int x2 = x * x;
+                int xSquared = x2 / radiusXSquared;
+                int chunkX = (centerX + x) >> 4;
+
+                boolean differentChunkX = chunkX != lastChunkX;
+
+                for (int z = -this.radiusZ; z <= this.radiusZ; z += 1) {
+                    int z2 = z * z;
+                    if (xSquared + z2 * invRadiusZSquared <= 1) {
+                        if (!hasInnerRadius || (x2 / innerRadiusXSquared + z2 / innerRadiusZSquared > 1)) {
+                            int chunkZ = (centerZ + z) >> 4;
+                            if (differentChunkX || chunkZ != lastChunkZ) {
+                                covered.add(ChunkPos.toLong(chunkX, chunkZ));
+                                lastChunkX = chunkX;
+                                lastChunkZ = chunkZ;
+                            }
+                        }
+
+                    }
+                }
+            }
+        } else {
+            for (float x = -this.radiusX; x <= this.radiusX; x += 0.5f) {
+                float x2 = x * x;
+                float xSquared = x2 / radiusXSquared;
+
+                for (float z = -this.radiusZ; z <= this.radiusZ; z += 0.5f) {
+                    float z2 = z * z;
+                    if (xSquared + (z2) / radiusZSquared <= 1) {
+                        boolean bl = true;
+                        if (!hasInnerRadius || (x2 / innerRadiusXSquared + z2 / innerRadiusZSquared > 1f)) {
+                            BlockPos pos = rotator.getBlockPos(x, 0, z);
+                            int chunkX = pos.getX() >> 4;
+                            int chunkZ = pos.getZ() >> 4;
+                            if (chunkX != lastChunkX || chunkZ != lastChunkZ) { // Évite les doublons
+                                covered.add(ChunkPos.toLong(chunkX, chunkZ));
+                                lastChunkX = chunkX;
+                                lastChunkZ = chunkZ;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * method to create an empty oval with rotations
+     */
+    private void getCoveredEmptyOval(LongOpenHashSet covered) {
+        //Rotating a shape requires more blocks.
+        //This verification is there to avoid some unnecessary calculations when the rotations don't have any impact on the number of blocks
+        int lastX = Integer.MAX_VALUE, lastZ = Integer.MAX_VALUE;
+
+
+        if (rotator == null) {
+            for (float u = 0; u < 360; u += (float) 45 / Math.max(this.radiusZ, this.radiusX)) {
+                float x = radiusX * FastMaths.getFastCos(u);
+                float z = radiusZ * FastMaths.getFastSin(u);
+                int chunkX = (int) (centerX + x) >> 4;
+                int chunkZ = (int) (centerZ + z) >> 4;
+                if (chunkX != lastX || chunkZ != lastZ) {
+                    covered.add(ChunkPos.toLong(chunkX, chunkZ));
+                    lastX = chunkX;
+                    lastZ = chunkZ;
+                }
+            }
+        } else {
+            for (float u = 0; u < 360; u += (float) 35 / Math.max(this.radiusZ, this.radiusX)) {
+                float x = radiusX * FastMaths.getFastCos(u);
+                float z = radiusZ * FastMaths.getFastSin(u);
+
+                BlockPos pos = rotator.getBlockPos(x, 0, z);
+                int chunkX = pos.getX() >> 4;
+                int chunkZ = pos.getZ() >> 4;
+                if (chunkX != lastX || chunkZ != lastZ) {
+                    covered.add(ChunkPos.toLong(chunkX, chunkZ));
+                    lastX = chunkX;
+                    lastZ = chunkZ;
+                }
             }
         }
     }
