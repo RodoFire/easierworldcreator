@@ -72,10 +72,6 @@ public class LineGen extends AbstractBlockShape {
         this.secondPos = secondPos;
     }
 
-    public BlockPos getSecondPos() {
-        return secondPos;
-    }
-
     public void setSecondPos(BlockPos secondPos) {
         this.secondPos = secondPos;
     }
@@ -100,9 +96,9 @@ public class LineGen extends AbstractBlockShape {
         pos2.set(pos2.getX() >> 4, 0, pos2.getZ() >> 4);
         int estimatedSurface = (int) WorldGenUtil.getDistance(pos1, pos2);
 
-        LongOpenHashSet coveredChunks = new LongOpenHashSet(estimatedSurface);
-        getCovered(coveredChunks);
-        return coveredChunks;
+        covered = new LongOpenHashSet(estimatedSurface);
+        getCovered();
+        return covered;
     }
 
     /**
@@ -190,10 +186,8 @@ public class LineGen extends AbstractBlockShape {
         }
     }
 
-    private void getCovered(LongOpenHashSet covered) {
-        modifyChunkMap(this.centerPos);
-
-        int lastChunkX = Integer.MAX_VALUE, lastChunkZ = Integer.MAX_VALUE;
+    private void getCovered() {
+        shouldAddChunk(centerX, centerZ);
 
         int x1 = centerX;
         int y1 = centerY;
@@ -226,13 +220,7 @@ public class LineGen extends AbstractBlockShape {
                 p1 += 2 * dy;
                 p2 += 2 * dz;
 
-                int chunkX = x1 >> 4;
-                int chunkZ = z1 >> 4;
-                if (chunkX != lastChunkX || chunkZ != lastChunkZ) {
-                    covered.add(ChunkPos.toLong(chunkX, chunkZ));
-                    lastChunkX = chunkX;
-                    lastChunkZ = chunkZ;
-                }
+                shouldAddChunk(x1, z1);
             }
         } else if (dy >= dx && dy >= dz) {
             int p1 = 2 * dx - dy;
@@ -249,13 +237,7 @@ public class LineGen extends AbstractBlockShape {
                 }
                 p1 += 2 * dx;
                 p2 += 2 * dz;
-                int chunkX = x1 >> 4;
-                int chunkZ = z1 >> 4;
-                if (chunkX != lastChunkX || chunkZ != lastChunkZ) {
-                    covered.add(ChunkPos.toLong(chunkX, chunkZ));
-                    lastChunkX = chunkX;
-                    lastChunkZ = chunkZ;
-                }
+                shouldAddChunk(x1, z1);
             }
         } else {
             int p1 = 2 * dy - dz;
@@ -272,13 +254,7 @@ public class LineGen extends AbstractBlockShape {
                 }
                 p1 += 2 * dy;
                 p2 += 2 * dx;
-                int chunkX = x1 >> 4;
-                int chunkZ = z1 >> 4;
-                if (chunkX != lastChunkX || chunkZ != lastChunkZ) {
-                    covered.add(ChunkPos.toLong(chunkX, chunkZ));
-                    lastChunkX = chunkX;
-                    lastChunkZ = chunkZ;
-                }
+                shouldAddChunk(x1, z1);
             }
         }
     }

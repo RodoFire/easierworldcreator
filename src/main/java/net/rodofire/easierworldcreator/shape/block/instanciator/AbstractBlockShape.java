@@ -13,7 +13,6 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * Class to create custom shapes
@@ -57,6 +56,10 @@ public abstract class AbstractBlockShape {
     protected Rotator rotator;
 
     protected Map<ChunkPos, LongOpenHashSet> chunkMap = new HashMap<>();
+    protected LongOpenHashSet covered = new LongOpenHashSet();
+
+    protected int lastChunkX = Integer.MAX_VALUE;
+    protected int lastChunkZ = Integer.MAX_VALUE;
 
     /**
      * instead of using always get on {@code chunkMap} which is pretty expensive in terms of performance,
@@ -100,6 +103,7 @@ public abstract class AbstractBlockShape {
 
     /**
      * Method to know the chunks that will be covered by the shape. This avoids generating all the structure, enhancing performance
+     *
      * @return a set of chunkPos.
      * For performance reasons, we use long instead of {@link ChunkPos}.
      * <p>To convert the long into a {@link ChunkPos}, use the long in a constructor.
@@ -127,5 +131,24 @@ public abstract class AbstractBlockShape {
         }
 
         lastSet.getValue().add(pos);
+    }
+
+    protected void shouldAddChunk(int x, int z) {
+        int chunkX = x >> 4;
+        int chunkZ = z >> 4;
+        if (lastChunkX != chunkX || lastChunkZ != chunkZ) {
+            covered.add(ChunkPos.toLong(chunkX, chunkZ));
+            lastChunkX = chunkX;
+            lastChunkZ = chunkZ;
+        }
+    }
+
+    protected void shouldAddChunkPrecomputedX(int z, boolean different, int chunkX) {
+        int chunkZ = z >> 4;
+        if (different || lastChunkZ != chunkZ) {
+            covered.add(ChunkPos.toLong(chunkX, chunkZ));
+            lastChunkZ = chunkZ;
+            lastChunkX = chunkX;
+        }
     }
 }

@@ -48,12 +48,14 @@ public abstract class AbstractFillableBlockShape extends AbstractBlockShape {
      * if ==1f, it will be a full circle
      * Don't need to care if {@link AbstractFillableBlockShape} is not set on CUSTOM
      **/
-    float customFill = 1f;
+    protected float customFill = 1f;
 
     /**
      * set the default filling type
      */
-    AbstractFillableBlockShape.Type fillingType = AbstractFillableBlockShape.Type.FULL;
+    protected AbstractFillableBlockShape.Type fillingType = AbstractFillableBlockShape.Type.FULL;
+
+
 
     /**
      * init the ShapeFilling
@@ -99,30 +101,12 @@ public abstract class AbstractFillableBlockShape extends AbstractBlockShape {
     /*----------- FillingType Related -----------*/
 
     /**
-     * method to get the filling Type
-     *
-     * @return the filling type
-     */
-    public AbstractFillableBlockShape.Type getFillingType() {
-        return fillingType;
-    }
-
-    /**
      * method to change the filling Type
      *
      * @param fillingType change the fillingType
      */
     public void setFillingType(AbstractFillableBlockShape.Type fillingType) {
         this.fillingType = fillingType;
-    }
-
-    /**
-     * method to get the custom fill
-     *
-     * @return the float of the custom fill
-     */
-    public float getCustomFill() {
-        return customFill;
     }
 
     /**
@@ -139,13 +123,10 @@ public abstract class AbstractFillableBlockShape extends AbstractBlockShape {
      * set the filling value depending on the filling type
      */
     protected void setFill() {
-        if (this.fillingType == AbstractFillableBlockShape.Type.HALF) {
-            this.customFill = 0.5f;
-        }
-        if (this.fillingType == AbstractFillableBlockShape.Type.FULL) {
-            this.customFill = 1.0f;
-        }
-        if (this.getCustomFill() > 1f) this.customFill = 1f;
-        if (this.getCustomFill() < 0f) this.customFill = 0f;
+        if (this.fillingType == AbstractFillableBlockShape.Type.HALF) this.customFill = 0.5f;
+        if (this.fillingType == AbstractFillableBlockShape.Type.FULL) this.customFill = 1.0f;
+
+        if (this.customFill > 1f) this.customFill = 1f;
+        if (this.customFill < 0f) this.customFill = 0f;
     }
 }

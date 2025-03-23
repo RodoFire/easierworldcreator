@@ -5,7 +5,6 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.rodofire.easierworldcreator.blockdata.blocklist.DividedBlockListManager;
 import net.rodofire.easierworldcreator.maths.FastMaths;
-import net.rodofire.easierworldcreator.shape.block.instanciator.AbstractBlockShape;
 import net.rodofire.easierworldcreator.shape.block.instanciator.AbstractFillableBlockShape;
 import net.rodofire.easierworldcreator.shape.block.layer.LayerManager;
 import net.rodofire.easierworldcreator.shape.block.placer.ShapePlacer;
@@ -13,10 +12,7 @@ import net.rodofire.easierworldcreator.shape.block.rotations.Rotator;
 import net.rodofire.easierworldcreator.util.LongPosHelper;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
 /*
 
                                          =======%
@@ -172,15 +168,6 @@ public class TorusGen extends AbstractFillableBlockShape {
     }
 
     /**
-     * Gets the inner radius of the torus along the X-axis.
-     *
-     * @return the inner radius along the X-axis.
-     */
-    public int getInnerRadiusX() {
-        return innerRadiusX;
-    }
-
-    /**
      * Sets the inner radius of the torus along the X-axis.
      *
      * @param innerRadiusX the inner radius to set along the X-axis.
@@ -188,15 +175,6 @@ public class TorusGen extends AbstractFillableBlockShape {
     public void setInnerRadiusX(int innerRadiusX) {
         this.innerRadiusX = innerRadiusX;
         init();
-    }
-
-    /**
-     * Gets the outer radius of the torus along the X-axis.
-     *
-     * @return the outer radius along the X-axis.
-     */
-    public int getOuterRadiusX() {
-        return outerRadiusX;
     }
 
     /**
@@ -210,15 +188,6 @@ public class TorusGen extends AbstractFillableBlockShape {
     }
 
     /**
-     * Gets the inner radius of the torus along the Z-axis.
-     *
-     * @return the inner radius along the Z-axis.
-     */
-    public int getInnerRadiusZ() {
-        return innerRadiusZ;
-    }
-
-    /**
      * Sets the inner radius of the torus along the Z-axis.
      *
      * @param innerRadiusZ the inner radius to set along the Z-axis.
@@ -226,15 +195,6 @@ public class TorusGen extends AbstractFillableBlockShape {
     public void setInnerRadiusZ(int innerRadiusZ) {
         this.innerRadiusZ = innerRadiusZ;
         init();
-    }
-
-    /**
-     * Gets the outer radius of the torus along the Z-axis.
-     *
-     * @return the outer radius along the Z-axis.
-     */
-    public int getOuterRadiusZ() {
-        return outerRadiusZ;
     }
 
     /**
@@ -248,17 +208,6 @@ public class TorusGen extends AbstractFillableBlockShape {
     }
 
     /**
-     * Gets the type of the torus.
-     *
-     * <p>The torus type determines the configuration of the torus, such as whether it is hollow, solid, or has other specific properties.</p>
-     *
-     * @return the {@link TorusType} of the torus.
-     */
-    public TorusType getTorusType() {
-        return torusType;
-    }
-
-    /**
      * Sets the type of the torus.
      *
      * <p>The torus type determines the configuration of the torus, such as whether it is hollow, solid, or has other specific properties.</p>
@@ -269,16 +218,6 @@ public class TorusGen extends AbstractFillableBlockShape {
         this.torusType = torusType;
     }
 
-    /**
-     * Gets the vertical torus ratio.
-     *
-     * <p>The vertical torus determines the percentage of the torus's height relative to its overall dimensions.</p>
-     *
-     * @return the vertical torus ratio as a float.
-     */
-    public float getVerticalTorus() {
-        return verticalTorus;
-    }
 
     /**
      * Sets the vertical torus ratio.
@@ -289,17 +228,6 @@ public class TorusGen extends AbstractFillableBlockShape {
      */
     public void setVerticalTorus(float verticalTorus) {
         this.verticalTorus = verticalTorus;
-    }
-
-    /**
-     * Gets the horizontal torus ratio.
-     *
-     * <p>The horizontal torus determines the percentage of the torus's width relative to its overall dimensions.</p>
-     *
-     * @return the horizontal torus ratio as a float.
-     */
-    public float getHorizontalTorus() {
-        return horizontalTorus;
     }
 
     /**
@@ -321,7 +249,7 @@ public class TorusGen extends AbstractFillableBlockShape {
     @Override
     public Map<ChunkPos, LongOpenHashSet> getShapeCoordinates() {
         setTorusFill();
-        if (this.getFillingType() == Type.EMPTY) {
+        if (this.fillingType == Type.EMPTY) {
             this.generateEmptyTore();
         } else {
             this.generateFullTore();
@@ -329,12 +257,18 @@ public class TorusGen extends AbstractFillableBlockShape {
         return chunkMap;
     }
 
+    @Override
+    public LongOpenHashSet getCoveredChunks() {
+        this.getCovered();
+        return covered;
+    }
+
 
     /**
      * generates a full torus / tore with custom filling
      * the shape with the torus might be different from the empty one if you're using custom torus filling
      */
-    public void generateFullTore() {
+    private void generateFullTore() {
         this.setFill();
 
         //TODO fix
@@ -436,27 +370,59 @@ public class TorusGen extends AbstractFillableBlockShape {
      * generates an empty torus
      * the shape with the torus might be different from the full one if you're using custom torus filling
      */
-    public void generateEmptyTore() {
-        BlockPos.Mutable mutable = new BlockPos.Mutable();
-        List<BlockPos> poslist = new ArrayList<>();
-
+    private void generateEmptyTore() {
         int maxOuterRadius = Math.max(outerRadiusX, outerRadiusZ);
         int maxInnerRadius = Math.max(innerRadiusX, innerRadiusZ);
         //many if statement to avoid doing multiple if in the loops
         if (rotator == null) {
-            for (int u = 0; u <= this.verticalTorus * 360; u += 40 / maxOuterRadius) {
-                for (int v = 0; v <= this.horizontalTorus * 360; v += 45 / maxInnerRadius) {
-                    float[] vec = this.getEllipsoidalToreCoordinates(u, v);
-                    modifyChunkMap(LongPosHelper.encodeBlockPos((int) (centerX + vec[0]), (int) (centerY + vec[1]), (int) (centerZ + vec[3])));
+            for (float u = 0; u <= this.verticalTorus * 360; u += (float) 40 / maxOuterRadius) {
+                double cosU = FastMaths.getFastCos(u);
+                double sinU = FastMaths.getFastSin(u);
+
+                for (float v = 0; v <= this.horizontalTorus * 360; v += (float) 45 / maxInnerRadius) {
+                    double[] vec = this.getEllipsoidalToreCoordinates((int) u, (int) v, cosU, sinU);
+                    modifyChunkMap(LongPosHelper.encodeBlockPos((int) (centerX + vec[0]), (int) (centerY + vec[1]), (int) (centerZ + vec[2])));
                 }
             }
         } else {
             float maxOuter = (float) 40 / (maxOuterRadius * 1.3f);
             float maxInner = (float) 45 / (maxInnerRadius * 1.3f);
             for (float u = 0; u <= 360 * this.verticalTorus; u += maxOuter) {
+                double cosU = FastMaths.getPreciseCos(u);
+                double sinU = FastMaths.getPreciseSin(u);
+
                 for (float v = 0; v <= 360 * this.horizontalTorus; v += maxInner) {
-                    double[] vec = this.getPreciseToreCoordinates(u, v);
+                    double[] vec = this.getPreciseToreCoordinates(u, v, cosU, sinU);
                     modifyChunkMap(rotator.get(vec[0], vec[1], vec[2]));
+                }
+            }
+        }
+    }
+
+    private void getCovered() {
+        int maxOuterRadius = Math.max(outerRadiusX, outerRadiusZ);
+        int maxInnerRadius = Math.max(innerRadiusX, innerRadiusZ);
+        if (rotator == null) {
+            for (float u = 0; u <= this.verticalTorus * 360; u += (float) 40 / maxOuterRadius) {
+                double cosU = FastMaths.getFastCos(u);
+                double sinU = FastMaths.getFastSin(u);
+
+                for (float v = 0; v <= this.horizontalTorus * 360; v += (float) 45 / maxInnerRadius) {
+                    double[] vec = this.getEllipsoidalToreCoordinates((int) u, (int) v, cosU, sinU);
+                    shouldAddChunk((int) (vec[0] + centerX), (int) (vec[2] + centerZ));
+                }
+            }
+        } else {
+            float maxOuter = (float) 40 / (maxOuterRadius * 1.3f);
+            float maxInner = (float) 45 / (maxInnerRadius * 1.3f);
+            for (float u = 0; u <= 360 * this.verticalTorus; u += maxOuter) {
+                double cosU = FastMaths.getPreciseCos(u);
+                double sinU = FastMaths.getPreciseSin(u);
+
+                for (float v = 0; v <= 360 * this.horizontalTorus; v += maxInner) {
+                    double[] vec = this.getPreciseToreCoordinates(u, v, cosU, sinU);
+                    BlockPos pos = rotator.getBlockPos(vec);
+                    shouldAddChunk(pos.getX(), pos.getZ());
                 }
             }
         }
@@ -488,53 +454,29 @@ public class TorusGen extends AbstractFillableBlockShape {
     }
 
 
-    private double[] getPreciseToreCoordinates(float u, float v) {
-        double sinU = FastMaths.getPreciseSin(u);
-        // Interpolating the radii based on the angle
-        double R = outerRadiusX + (outerRadiusZ - outerRadiusX) * Math.abs(sinU);
-        double r = innerRadiusX + (innerRadiusZ - innerRadiusX) * Math.abs(sinU);
+    private double[] getPreciseToreCoordinates(float u, float v, double cosU, double sinU) {
+        double cosV = FastMaths.getPreciseCos(v);
+        double sinV = FastMaths.getPreciseSin(v);
 
-        double a = R + r * FastMaths.getPreciseCos(v);
-        double x = (a * FastMaths.getPreciseCos(u));
-        double z = (a * sinU);
-        double y = (r * FastMaths.getPreciseSin(v));
+        double x = (float) ((outerRadiusX + innerRadiusX * cosV) * cosU);
+        double z = (float) ((outerRadiusZ + innerRadiusZ * cosV) * sinU);
+        double y = (float) (innerRadiusX * sinV);
 
         return new double[]{x, y, z};
     }
 
-    public float[] getEllipsoidalToreCoordinates(int u, int v) {
+    private double[] getEllipsoidalToreCoordinates(int u, int v, double cosU, double sinU) {
+        double cosV = FastMaths.getFastCos(v);
+        double sinV = FastMaths.getFastSin(v);
 
-        // Interpolating the radii based on the angle
-        double R = outerRadiusX + (outerRadiusZ - outerRadiusX) * Math.abs(FastMaths.getFastSin(u));
-        double r = innerRadiusX + (innerRadiusZ - innerRadiusX) * Math.abs(FastMaths.getFastSin(u));
+        double x = (float) ((outerRadiusX + innerRadiusX * cosV) * cosU);
+        double z = (float) ((outerRadiusZ + innerRadiusZ * cosV) * sinU);
+        double y = (float) (innerRadiusX * sinV);
 
-        double a = R + r * FastMaths.getFastCos(v);
-        float x = (float) (a * FastMaths.getFastCos(u));
-        float z = (float) (a * FastMaths.getFastSin(u));
-        float y = (float) (r * FastMaths.getFastSin(v));
-
-        return new float[]{x, y, z};
+        return new double[]{x, y, z};
     }
 
-    //    public double getInnerRadius(int angle) {
-//        return innerRadiusX + (innerRadiusZ - innerRadiusX) * Math.abs(FastMaths.getFastSin(angle));
-//
-//    }
-//
-//    public double getOuterRadius(int angle) {
-//        return outerRadiusX + (outerRadiusZ - outerRadiusX) * Math.abs(FastMaths.getFastSin(angle));
-//    }
- /*   public double getOuterRadius(double x, double z) {
-        double Rm = (outerRadiusX + outerRadiusZ) / 2.0;
-        return Rm * Math.sqrt((x * x) / (outerRadiusX * outerRadiusX) + (z * z) / (outerRadiusZ * outerRadiusZ));
-    }
-
-    public double getInnerRadius(double x, double z) {
-        double Rm = (innerRadiusX + innerRadiusZ) / 2.0;
-        return Rm * Math.sqrt((x * x) / (innerRadiusX * innerRadiusX) + (z * z) / (innerRadiusZ * innerRadiusZ));
-    }
-*/
-    public double getInnerRadius(float angle) {
+    private double getInnerRadius(float angle) {
         double cosAngle = Math.cos(angle);
         double sinAngle = Math.sin(angle);
 
@@ -543,7 +485,7 @@ public class TorusGen extends AbstractFillableBlockShape {
                         innerZSquared * cosAngle * cosAngle, 0.01f);
     }
 
-    public double getOuterRadius(float angle) {
+    private double getOuterRadius(float angle) {
         double cosAngle = FastMaths.getFastCos(angle);
         double sinAngle = FastMaths.getFastSin(angle);
 

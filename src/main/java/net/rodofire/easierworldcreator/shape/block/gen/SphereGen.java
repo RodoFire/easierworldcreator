@@ -132,13 +132,6 @@ public class SphereGen extends AbstractFillableBlockShape {
     }
 
     /**
-     * Gets the direction of the half-sphere. * * @return The direction of the half-sphere.
-     */
-    public Direction getHalfSphereDirection() {
-        return direction;
-    }
-
-    /**
      * Sets the direction of the half-sphere. * * @param direction The direction to set.
      */
     public void setHalfSphereDirection(Direction direction) {
@@ -146,25 +139,13 @@ public class SphereGen extends AbstractFillableBlockShape {
     }
 
     /**
-     * Checks if it is a half sphere. * * @return The type of the half-sphere.
-     */
-    public SphereType isHalfSphere() {
-        return halfSphere;
-    }
-
-    /**
      * Sets the half-sphere type. * * @param halfSphere The half-sphere type to set.
      */
     public void setHalfSphere(SphereType halfSphere) {
         this.halfSphere = halfSphere;
-    } /*---------- Radius Related ----------*/
-
-    /**
-     * Gets the X radius of the sphere. * * @return The X radius.
-     */
-    public int getRadiusX() {
-        return radiusX;
     }
+
+    /*---------- Radius Related ----------*/
 
     /**
      * Sets the X radius of the sphere. * * @param radiusX The X radius to set.
@@ -174,24 +155,10 @@ public class SphereGen extends AbstractFillableBlockShape {
     }
 
     /**
-     * Gets the Y radius of the sphere. * * @return The Y radius.
-     */
-    public int getRadiusY() {
-        return radiusY;
-    }
-
-    /**
      * Sets the Y radius of the sphere. * * @param radiusY The Y radius to set.
      */
     public void setRadiusY(int radiusY) {
         this.radiusY = radiusY;
-    }
-
-    /**
-     * Gets the Z radius of the sphere. * * @return The Z radius.
-     */
-    public int getRadiusZ() {
-        return radiusZ;
     }
 
     /**
@@ -204,7 +171,7 @@ public class SphereGen extends AbstractFillableBlockShape {
     @Override
     public Map<ChunkPos, LongOpenHashSet> getShapeCoordinates() {
         //verify if the rotations == 0 to avoid some unnecessary calculations
-        if (this.getFillingType() == Type.EMPTY) {
+        if (this.fillingType == Type.EMPTY) {
             if (this.halfSphere == SphereType.HALF) {
                 this.generateHalfEmptyEllipsoid();
             } else {
@@ -229,7 +196,7 @@ public class SphereGen extends AbstractFillableBlockShape {
         } else {
             estimatedSurface = (int) (Math.PI * radiusZ * radiusX);
         }
-        LongOpenHashSet covered = new LongOpenHashSet(estimatedSurface);
+        covered = new LongOpenHashSet(estimatedSurface);
 
         int minTheta = -180, minPhi = -90;
         int maxTheta = 180, maxPhi = 90;
@@ -257,7 +224,7 @@ public class SphereGen extends AbstractFillableBlockShape {
                 break;
         }
 
-        getCovered(covered, minTheta, maxTheta, minPhi, maxPhi);
+        getCovered(minTheta, maxTheta, minPhi, maxPhi);
         return covered;
     }
 
@@ -379,9 +346,9 @@ public class SphereGen extends AbstractFillableBlockShape {
         int largeYSquared = radiusY * radiusY;
         int largeZSquared = radiusZ * radiusZ;
 
-        float innerRadiusXSquared = (1 - this.getCustomFill()) * (1 - this.getCustomFill()) * largeXSquared;
-        float innerRadiusYSquared = (1 - this.getCustomFill()) * (1 - this.getCustomFill()) * largeYSquared;
-        float innerRadiusZSquared = (1 - this.getCustomFill()) * (1 - this.getCustomFill()) * largeZSquared;
+        float innerRadiusXSquared = (1 - this.customFill) * (1 - this.customFill) * largeXSquared;
+        float innerRadiusYSquared = (1 - this.customFill) * (1 - this.customFill) * largeYSquared;
+        float innerRadiusZSquared = (1 - this.customFill) * (1 - this.customFill) * largeZSquared;
 
 
         if (radiusX > 32 || radiusY > 32 || radiusZ > 32) {
@@ -446,23 +413,24 @@ public class SphereGen extends AbstractFillableBlockShape {
         }
     }
 
-    private void getCovered(LongOpenHashSet set, int minLarge, int maxLarge, int minHeight, int maxHeight) {
+    private void getCovered(int minLarge, int maxLarge, int minHeight, int maxHeight) {
         int maxLarge1 = Math.max(radiusZ, Math.max(radiusX, radiusY));
-        int lastChunkX = Integer.MAX_VALUE, lastChunkZ = Integer.MAX_VALUE;
-
         if (rotator == null) {
+            int largeXSquared = radiusX * radiusX;
+            int largeZSquared = radiusZ * radiusZ;
+
             int xBound = (360 - maxLarge + minLarge) / 360 * radiusX;
             int zBound = (360 - maxLarge + minLarge) / 360 * radiusZ;
 
             for (int x = (180 - maxLarge + minLarge) / 180 * radiusX; x < xBound; x++) {
-                int chunkX = x >> 4;
-                boolean sameX = chunkX == lastChunkX;
+                int chunkX = (x + centerX) >> 4;
+                boolean different = chunkX != lastChunkX;
+
+                float x2 = (float) (x * x) / largeXSquared;
+
                 for (int z = (180 - maxLarge + minLarge) / 180 * radiusZ; z < zBound; z++) {
-                    int chunkZ = z >> 4;
-                    if (!sameX || chunkZ != lastChunkZ) {
-                        set.add(ChunkPos.toLong(chunkX, chunkZ));
-                        lastChunkX = chunkX;
-                        lastChunkZ = chunkZ;
+                    if (x2 + (float) (z * z) / largeZSquared <= 1f) {
+                        shouldAddChunkPrecomputedX(z + centerZ, different, chunkX);
                     }
                 }
             }
@@ -479,14 +447,7 @@ public class SphereGen extends AbstractFillableBlockShape {
                     float y = (radiusY * FastMaths.getFastSin(phi));
                     float z = zSinTheta * cosPhi;
                     BlockPos pos = rotator.getBlockPos(x, y, z);
-                    int chunkX = pos.getX() >> 4;
-                    int chunkZ = pos.getZ() >> 4;
-
-                    if (chunkX != lastChunkX || chunkZ != lastChunkZ) {
-                        set.add(ChunkPos.toLong(chunkX, chunkZ));
-                        lastChunkX = chunkX;
-                        lastChunkZ = chunkZ;
-                    }
+                    shouldAddChunk(pos.getX(), pos.getZ());
                 }
             }
         }
