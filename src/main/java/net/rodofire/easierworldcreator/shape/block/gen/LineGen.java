@@ -4,7 +4,9 @@ import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.Direction;
+import net.minecraft.world.StructureWorldAccess;
 import net.rodofire.easierworldcreator.blockdata.blocklist.DividedBlockListManager;
+import net.rodofire.easierworldcreator.blockdata.layer.BlockLayerManager;
 import net.rodofire.easierworldcreator.shape.block.instanciator.AbstractBlockShape;
 import net.rodofire.easierworldcreator.shape.block.layer.LayerManager;
 import net.rodofire.easierworldcreator.shape.block.placer.ShapePlacer;
@@ -99,6 +101,11 @@ public class LineGen extends AbstractBlockShape {
         covered = new LongOpenHashSet(estimatedSurface);
         getCovered();
         return covered;
+    }
+
+    @Override
+    public void place(StructureWorldAccess world, BlockLayerManager blockLayerManager) {
+
     }
 
     /**
