@@ -21,36 +21,67 @@ public class LayerPlacer {
     int placedBlocks = 0;
     private Random random = Random.create();
 
-
+    /**
+     * use factory methods {@link LayerPlacer#ofNoise(PlacingType, FastNoiseLite)}
+     */
+    @Deprecated(forRemoval = true)
     public LayerPlacer(int placedBlocks, PlacingType type) {
         this.placedBlocks = placedBlocks;
         this.type = type;
     }
 
+    /**
+     * use factory methods {@link LayerPlacer#ofNoise(PlacingType, FastNoiseLite)}
+     */
+    @Deprecated(forRemoval = true)
     public LayerPlacer(PlacingType type, FastNoiseLite noise) {
         this.type = type;
         this.noise = noise;
     }
 
+    /**
+     * use factory methods {@link LayerPlacer#ofNoise(PlacingType, FastNoiseLite)}
+     */
+    @Deprecated(forRemoval = true)
     public LayerPlacer(PlacingType type) {
         this.type = type;
     }
 
+    /**
+     * use factory methods {@link LayerPlacer#ofNoise(PlacingType, FastNoiseLite)}
+     */
+    @Deprecated(forRemoval = true)
     public LayerPlacer(int placedBlocks, PlacingType type, Random random) {
         this.placedBlocks = placedBlocks;
         this.random = random;
         this.type = type;
     }
 
-    public LayerPlacer(PlacingType type, FastNoiseLite noise, Random random) {
+    /**
+     * use factory methods {@link LayerPlacer#ofNoise(PlacingType, FastNoiseLite)}
+     */
+    @Deprecated(forRemoval = true)
+    public LayerPlacer(PlacingType type, Random random) {
+        this.type = type;
+        this.random = random;
+    }
+
+    private LayerPlacer(PlacingType type, FastNoiseLite noise, Random random) {
         this.type = type;
         this.random = random;
         this.noise = noise;
     }
 
-    public LayerPlacer(PlacingType type, Random random) {
-        this.type = type;
-        this.random = random;
+    public static LayerPlacer ofRandom(PlacingType type, Random random) {
+        return new LayerPlacer(type, null, random);
+    }
+
+    public static LayerPlacer ofNoise(PlacingType type, FastNoiseLite noise) {
+        return new LayerPlacer(type, noise, null);
+    }
+
+    public LayerPlacer() {
+        this.type = PlacingType.RANDOM;
     }
 
     public boolean place(StructureWorldAccess worldAccess, List<BlockState> states, BlockPos pos) {
