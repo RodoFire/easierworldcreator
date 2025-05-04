@@ -80,7 +80,7 @@ publishMods {
     modLoaders.add("fabric")
     modLoaders.add("quilt")
 
-    displayName = "ewc ${project.mod_version}"
+    displayName = "ewc-fabric ${project.mod_version}"
 
     curseforge {
         accessToken = providers.environmentVariable("CURSEFORGE_API_KEY")
