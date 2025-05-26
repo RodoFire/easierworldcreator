@@ -1,4 +1,4 @@
-package fr.rodofire.ewc.tag;
+package fr.rodofire.ewc.util;
 
 
 import net.minecraft.core.Registry;

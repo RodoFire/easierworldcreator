@@ -2,7 +2,7 @@ package fr.rodofire.ewc.blockdata;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import fr.rodofire.ewc.tag.TagUtil;
+import fr.rodofire.ewc.util.TagUtil;
 import fr.rodofire.ewc.util.LongPosHelper;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;

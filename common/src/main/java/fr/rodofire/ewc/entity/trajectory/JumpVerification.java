@@ -1,7 +1,7 @@
 package fr.rodofire.ewc.entity.trajectory;
 
 import fr.rodofire.ewc.entity.EntityUtil;
-import fr.rodofire.ewc.tag.TagUtil;
+import fr.rodofire.ewc.util.TagUtil;
 import fr.rodofire.ewc.util.WorldGenUtil;
 import jdk.jfr.Experimental;
 import net.minecraft.core.BlockPos;
